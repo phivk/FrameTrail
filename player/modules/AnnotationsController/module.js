@@ -246,7 +246,7 @@
             ViewVideo.shownDetails = 'bottom';
 
             if ( annotation.data.type == 'location' && annotation.annotationElement.children('.resourceDetail').data('map') ) {
-                annotation.annotationElement.children('.resourceDetail').data('map').updateSize();
+                annotation.annotationElement.children('.resourceDetail').data('map').invalidateSize();
             }
 
         } else {

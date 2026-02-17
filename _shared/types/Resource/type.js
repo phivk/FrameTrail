@@ -101,7 +101,7 @@ FrameTrail.defineType(
                             closeOnEscape: true,
                             open: function( event, ui ) {
                                 if ($(this).find('.resourceDetail').data().map) {
-                                    $(this).find('.resourceDetail').data().map.updateSize();
+                                    $(this).find('.resourceDetail').data().map.invalidateSize();
                                 }
                                 $('.ui-widget-overlay').click(function() {
                                     previewDialog.dialog('close');

@@ -1098,7 +1098,7 @@ FrameTrail.defineType(
                             && (contentView.whichArea == 'left' || contentView.whichArea == 'right')
                             && this.contentViewElements[i].children('.resourceDetail').data('map') ) {
 
-                            this.contentViewElements[i].children('.resourceDetail').data('map').updateSize();
+                            this.contentViewElements[i].children('.resourceDetail').data('map').invalidateSize();
                         }
                     }
                     //console.log(this, 'setActiveInContentView', contentView);

@@ -390,10 +390,12 @@ function fileUpload($type, $name, $description="", $attributes, $files, $lat, $l
 			}
 			$newResource["type"] = "location";
 			$newResource["src"] = "";
-			$newResource["attributes"] = ($attributes) ? $attributes : Array();
-			$newResource["attributes"]["lat"] = $lat;
-			$newResource["attributes"]["lon"] = $lon;
-			$newResource["attributes"]["boundingBox"] = $boundingBox;
+			$mapAttr = ($attributes) ? json_decode($attributes, true) : Array();
+			if (!$mapAttr) { $mapAttr = Array(); }
+			$mapAttr["lat"] = $lat;
+			$mapAttr["lon"] = $lon;
+			$mapAttr["boundingBox"] = $boundingBox;
+			$newResource["attributes"] = $mapAttr;
 		break;
 		default:
 			$return["status"] = "fail";

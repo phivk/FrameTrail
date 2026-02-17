@@ -295,7 +295,7 @@ FrameTrail.defineType(
                     });
 
                     if (this.overlayElement.find('.resourceDetail').data().map) {
-                        this.overlayElement.find('.resourceDetail').data().map.updateSize();
+                        this.overlayElement.find('.resourceDetail').data().map.invalidateSize();
                     }
 
                 },
@@ -387,7 +387,7 @@ FrameTrail.defineType(
                         this.overlayElement.addClass('active');
 
                         if (this.overlayElement.find('.resourceDetail').data().map) {
-                            this.overlayElement.find('.resourceDetail').data().map.updateSize();
+                            this.overlayElement.find('.resourceDetail').data().map.invalidateSize();
                         }
 
                     }

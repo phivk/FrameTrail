@@ -395,7 +395,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
 
         domElement.find('.resourceDetail[data-type="location"]').each(function() {
             if ( $(this).data('map') ) {
-                $(this).data('map').updateSize();
+                $(this).data('map').invalidateSize();
             }
         });
 

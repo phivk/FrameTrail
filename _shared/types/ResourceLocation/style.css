@@ -17,3 +17,46 @@
 .editPropertiesContainer .propertiesTypeIcon[data-type="location"] [class^="icon-"]::before, .editPropertiesContainer .propertiesTypeIcon[data-type="location"] [class*=" icon-"]::before {
 	content: "\e8c8";
 }
+
+/* Leaflet z-index fix: prevent map from covering overlay resize handles */
+.resourceDetail[data-type="location"] .leaflet-pane,
+.resourceDetail[data-type="location"] .leaflet-control,
+.resourceDetail[data-type="location"] .leaflet-top,
+.resourceDetail[data-type="location"] .leaflet-bottom {
+	z-index: auto !important;
+}
+.resourceDetail[data-type="location"] .leaflet-tile-pane {
+	z-index: 1 !important;
+}
+.resourceDetail[data-type="location"] .leaflet-overlay-pane {
+	z-index: 2 !important;
+}
+.resourceDetail[data-type="location"] .leaflet-marker-pane {
+	z-index: 3 !important;
+}
+
+/* Custom Leaflet marker styling */
+.leaflet-marker-custom {
+	background: transparent;
+	border: none;
+}
+
+/* Normalize zoom control size on touch devices */
+.resourceDetail[data-type="location"] .leaflet-touch .leaflet-bar a,
+.resourceDetail[data-type="location"].leaflet-touch .leaflet-bar a {
+	width: 26px;
+	height: 26px;
+	line-height: 26px;
+}
+.resourceDetail[data-type="location"] .leaflet-touch .leaflet-control-zoom-in,
+.resourceDetail[data-type="location"] .leaflet-touch .leaflet-control-zoom-out,
+.resourceDetail[data-type="location"].leaflet-touch .leaflet-control-zoom-in,
+.resourceDetail[data-type="location"].leaflet-touch .leaflet-control-zoom-out {
+	font-size: 18px;
+}
+
+/* Prevent map from overflowing its container */
+.resourceDetail[data-type="location"] {
+	overflow: hidden;
+	min-height: 0;
+}

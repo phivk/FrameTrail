@@ -590,7 +590,6 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 
 
 
-
                     //Ajaxform
                     uploadDialog.find('.uploadForm').ajaxForm({
                         method:     'POST',
@@ -631,6 +630,10 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                                 uploadDialog.find('#resourceInputTabImage input').prop('disabled',true);
                                 uploadDialog.find('#resourceInputTabVideo input').prop('disabled',true);
                                 uploadDialog.find('#resourceInputTabAudio input').prop('disabled',true);
+                            }
+
+                            else if (tmpType == 'map') {
+                                uploadDialog.find('.nameInputContainer input[name="attributes"]').val('{}');
                             }
 
                             var percentVal = '0%';
