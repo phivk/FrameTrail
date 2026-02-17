@@ -78,6 +78,7 @@
 
             state = {
                 target:             options.target || 'body',
+                fullscreenTarget:   options.fullscreenTarget || null,
                 contentTargets:     options.contentTargets || {},
                 contents:           options.contents,
                 startID:            options.startID,
