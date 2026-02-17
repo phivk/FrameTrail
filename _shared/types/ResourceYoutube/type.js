@@ -55,7 +55,7 @@ FrameTrail.defineType(
                             '<iframe class="resourceDetail" data-type="'+ this.resourceData.type +'" '
                         +   'frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen src="'
                         +   uri
-                        +   '?rel=0&theme=light&color=white&showinfo=0&modestbranding=1&autohide=1&start='+ timecode +'">'
+                        +   '?enablejsapi=1&rel=0&theme=light&color=white&showinfo=0&modestbranding=1&autohide=1&start='+ timecode +'">'
                         +    '</iframe>'
                     ).bind('error', function() {
                         return true;

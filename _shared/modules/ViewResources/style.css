@@ -73,38 +73,9 @@
 	border-bottom: 1px solid #afafaf;
 	display: flex;
 	align-items: center;
-	flex-wrap: wrap;
-	gap: 6px;
+	gap: 10px;
 }
 
-/* Hide radio button inputs, style labels as pills */
-.viewResources .resourcesFilter input[type="radio"] {
-	position: absolute;
-	opacity: 0;
-	pointer-events: none;
-}
-
-.viewResources .resourcesFilter label {
-	cursor: pointer;
-	padding: 6px 12px;
-	border-radius: 16px;
-	background-color: var(--primary-fg-color);
-	border: 2px solid var(--primary-bg-color);
-	font-size: 12px;
-	transition: all 0.2s ease;
-	display: inline-block;
-	user-select: none;
-}
-
-.viewResources .resourcesFilter label:hover {
-	background-color: rgba(0, 0, 0, 0.05);
-}
-
-.viewResources .resourcesFilter input[type="radio"]:checked + label {
-	background-color: var(--primary-bg-color);
-	color: var(--primary-fg-color);
-	font-weight: bold;
-}
 
 .viewResources .resourcesFilter .resourcesCheckboxes {
 	margin-left: auto;

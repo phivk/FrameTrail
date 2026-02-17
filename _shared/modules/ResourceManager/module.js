@@ -1114,6 +1114,277 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                     return null;
                 },
                 function (src, name) {
+                    // Dailymotion
+                    var res = /dailymotion\.com\/video\/([a-zA-Z0-9]+)/.exec(src);
+                    if (!res) res = /dai\.ly\/([a-zA-Z0-9]+)/.exec(src);
+                    if (res !== null) {
+                        return createResource("https://www.dailymotion.com/embed/video/" + res[1], "dailymotion", name);
+                    }
+                    return null;
+                },
+                function (src, name) {
+                    // Wistia
+                    var res = /(?:fast\.)?wistia\.(?:com|net)\/medias\/([a-zA-Z0-9]+)/.exec(src);
+                    if (!res) res = /wi\.st\/medias\/([a-zA-Z0-9]+)/.exec(src);
+                    if (res !== null) {
+                        return createResource("https://fast.wistia.net/embed/iframe/" + res[1], "wistia", name);
+                    }
+                    return null;
+                },
+                function (src, name) {
+                    // SoundCloud
+                    var thumbSrc = (thumbValue) ? thumbValue : null;
+                    if (/soundcloud\.com\/[\w-]+\/[\w-]+/.exec(src)) {
+                        return createResource("https://w.soundcloud.com/player/?url=" + encodeURIComponent(src) + "&auto_play=false&show_artwork=true", "soundcloud", name, thumbSrc);
+                    }
+                    return null;
+                },
+                function (src, name) {
+                    // Twitch
+                    var res = /twitch\.tv\/videos\/(\d+)/.exec(src);
+                    if (res !== null) {
+                        return createResource("https://player.twitch.tv/?video=" + res[1] + "&parent=" + window.location.hostname, "twitch", name);
+                    }
+                    res = /twitch\.tv\/([\w]+)$/.exec(src);
+                    if (res !== null) {
+                        return createResource("https://player.twitch.tv/?channel=" + res[1] + "&parent=" + window.location.hostname, "twitch", name);
+                    }
+                    return null;
+                },
+                function (src, name) {
+                    // Bluesky
+                    var res = /bsky\.app\/profile\/([\w.:-]+)\/post\/([\w]+)/.exec(src);
+                    if (res !== null) {
+                        return createResource(res[1] + "/post/" + res[2], "bluesky", name);
+                    }
+                    return null;
+                },
+                function (src, name) {
+                    // CodePen
+                    var res = /codepen\.io\/([\w-]+)\/(?:pen|full|details)\/([\w]+)/.exec(src);
+                    if (res !== null) {
+                        return createResource("https://codepen.io/" + res[1] + "/embed/" + res[2] + "?default-tab=result", "codepen", name);
+                    }
+                    return null;
+                },
+                function (src, name) {
+                    // Figma
+                    if (/figma\.com\/(file|proto|design|board)\//.exec(src)) {
+                        return createResource(src, "figma", name);
+                    }
+                    return null;
+                },
+                function (src, name) {
+                    // Loom
+                    var res = /loom\.com\/share\/([a-zA-Z0-9]+)/.exec(src);
+                    if (res !== null) {
+                        return createResource("https://www.loom.com/embed/" + res[1], "loom", name);
+                    }
+                    return null;
+                },
+                function (src, name) {
+                    // X/Twitter
+                    var res = /(?:twitter\.com|x\.com)\/([a-zA-Z0-9_]+)\/status\/(\d+)/.exec(src);
+                    if (res !== null) {
+                        var r = createResource(src, "xtwitter", name);
+                        $.ajax({
+                            url: "https://publish.twitter.com/oembed?url=" + encodeURIComponent(src) + "&omit_script=true",
+                            async: false,
+                            timeout: 5000,
+                            success: function(data) {
+                                if (data.html) r.attributes.html = data.html;
+                                if (data.author_name && (!r.name || r.name.length < 3)) r.name = data.author_name + "'s post";
+                            },
+                            error: function() {
+                                r.type = 'urlpreview';
+                                r.attributes.originalType = 'xtwitter';
+                            }
+                        });
+                        return r;
+                    }
+                    return null;
+                },
+                function (src, name) {
+                    // TikTok
+                    var res = /tiktok\.com\/@([a-zA-Z0-9_.]+)\/video\/(\d+)/.exec(src);
+                    if (res !== null) {
+                        var r = createResource(src, "tiktok", name);
+                        $.ajax({
+                            url: "https://www.tiktok.com/oembed?url=" + encodeURIComponent(src),
+                            async: false,
+                            timeout: 5000,
+                            success: function(data) {
+                                if (data.html) r.attributes.html = data.html;
+                                if (data.thumbnail_url) r.thumb = data.thumbnail_url;
+                                if (data.title && (!r.name || r.name.length < 3)) r.name = data.title;
+                            },
+                            error: function() {
+                                r.type = 'urlpreview';
+                                r.attributes.originalType = 'tiktok';
+                            }
+                        });
+                        return r;
+                    }
+                    return null;
+                },
+                function (src, name) {
+                    // Mastodon (/@user/id pattern with oEmbed probe)
+                    var res = /^https?:\/\/([^\/]+)\/@([a-zA-Z0-9_.@]+)\/(\d+)/.exec(src);
+                    if (!res) res = /^https?:\/\/([^\/]+)\/users\/([a-zA-Z0-9_.@]+)\/statuses\/(\d+)/.exec(src);
+                    if (res !== null) {
+                        var instance = res[1];
+                        var r = createResource(src, "mastodon", name);
+                        r.attributes.instance = instance;
+                        var oembedSuccess = false;
+                        $.ajax({
+                            url: "https://" + instance + "/api/oembed?url=" + encodeURIComponent(src),
+                            async: false,
+                            timeout: 3000,
+                            success: function(data) {
+                                if (data.html) {
+                                    r.attributes.html = data.html;
+                                    oembedSuccess = true;
+                                }
+                                if (data.author_name && (!r.name || r.name.length < 3)) r.name = data.author_name + "'s post";
+                            }
+                        });
+                        if (!oembedSuccess) {
+                            return null;
+                        }
+                        return r;
+                    }
+                    return null;
+                },
+                function (src, name) {
+                    // Spotify
+                    var res = /open\.spotify\.com\/(track|album|playlist|show|episode)\/([a-zA-Z0-9]+)/.exec(src);
+                    if (res !== null) {
+                        var thumbSrc = (thumbValue) ? thumbValue : null;
+                        var r = createResource(src, "spotify", name, thumbSrc);
+                        r.attributes.contentType = res[1];
+                        r.attributes.contentId = res[2];
+                        $.ajax({
+                            url: "https://open.spotify.com/oembed?url=" + encodeURIComponent(src),
+                            async: false,
+                            timeout: 5000,
+                            success: function(data) {
+                                if (data.html) r.attributes.html = data.html;
+                                if (data.thumbnail_url) r.thumb = data.thumbnail_url;
+                                if (data.title && (!r.name || r.name.length < 3)) r.name = data.title;
+                            }
+                        });
+                        return r;
+                    }
+                    return null;
+                },
+                function (src, name) {
+                    // SlideShare
+                    var res = /slideshare\.net\/([^\/]+)\/([^\/\?]+)/.exec(src);
+                    if (res !== null) {
+                        var r = createResource(src, "slideshare", name);
+                        $.ajax({
+                            url: "https://www.slideshare.net/api/oembed/2?url=" + encodeURIComponent(src) + "&format=json",
+                            async: false,
+                            timeout: 5000,
+                            success: function(data) {
+                                if (data.html) r.attributes.html = data.html;
+                                if (data.thumbnail) r.thumb = data.thumbnail;
+                                if (data.title && (!r.name || r.name.length < 3)) r.name = data.title;
+                            },
+                            error: function() {
+                                r.type = 'urlpreview';
+                                r.attributes.originalType = 'slideshare';
+                            }
+                        });
+                        return r;
+                    }
+                    return null;
+                },
+                function (src, name) {
+                    // Reddit
+                    var res = /reddit\.com\/r\/([^\/]+)\/comments\/([a-zA-Z0-9]+)/.exec(src);
+                    if (res !== null) {
+                        var r = createResource(src, "reddit", name);
+                        $.ajax({
+                            url: "https://www.reddit.com/oembed?url=" + encodeURIComponent(src),
+                            async: false,
+                            timeout: 5000,
+                            success: function(data) {
+                                if (data.html) r.attributes.html = data.html;
+                                if (data.author_name && (!r.name || r.name.length < 3)) r.name = data.author_name + "'s post";
+                            },
+                            error: function() {
+                                r.type = 'urlpreview';
+                                r.attributes.originalType = 'reddit';
+                            }
+                        });
+                        return r;
+                    }
+                    return null;
+                },
+                function (src, name) {
+                    // Flickr
+                    var flickr_patterns = [
+                        /flickr\.com\/photos\/([^\/]+)\/(\d+)/,
+                        /flickr\.com\/photos\/([^\/]+)\/albums\/(\d+)/,
+                        /flickr\.com\/photos\/([^\/]+)\/galleries\/(\d+)/
+                    ];
+                    for (var i in flickr_patterns) {
+                        var res = flickr_patterns[i].exec(src);
+                        if (res !== null) {
+                            var r = createResource(src, "flickr", name);
+                            $.ajax({
+                                url: "https://www.flickr.com/services/oembed/?url=" + encodeURIComponent(src) + "&format=json",
+                                async: false,
+                                timeout: 5000,
+                                success: function(data) {
+                                    if (data.type === 'photo') {
+                                        r.thumb = data.url;
+                                        r.attributes.photoUrl = data.url;
+                                    } else if (data.html) {
+                                        r.attributes.html = data.html;
+                                    }
+                                    if (data.title && (!r.name || r.name.length < 3)) r.name = data.title;
+                                },
+                                error: function() {
+                                    r.type = 'urlpreview';
+                                    r.attributes.originalType = 'flickr';
+                                }
+                            });
+                            return r;
+                        }
+                    }
+                    return null;
+                },
+                function (src, name) {
+                    // Instagram (always URL preview - no open embedding)
+                    var res = /instagram\.com\/(p|reel|tv)\/([a-zA-Z0-9_-]+)/.exec(src);
+                    if (res !== null) {
+                        var r = createResource(src, "urlpreview", name);
+                        r.attributes.originalType = 'instagram';
+                        return r;
+                    }
+                    return null;
+                },
+                function (src, name) {
+                    // Facebook (always URL preview - no open embedding)
+                    var fb_patterns = [
+                        /facebook\.com\/([^\/]+)\/posts\/([a-zA-Z0-9]+)/,
+                        /facebook\.com\/([^\/]+)\/videos\/([a-zA-Z0-9]+)/,
+                        /facebook\.com\/watch\/\?v=(\d+)/,
+                        /fb\.watch\/([a-zA-Z0-9_-]+)/
+                    ];
+                    for (var i in fb_patterns) {
+                        var res = fb_patterns[i].exec(src);
+                        if (res !== null) {
+                            var r = createResource(src, "urlpreview", name);
+                            r.attributes.originalType = 'facebook';
+                            return r;
+                        }
+                    }
+                    return null;
+                },
+                function (src, name) {
                     // Default fallback, will work for any URL
                     var thumbSrc = (thumbValue) ? thumbValue : null;
                     if (/(http|https):\/\/[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:\/~+#-]*[\w@?^=%&amp;\/~+#-])/.exec(src)) {

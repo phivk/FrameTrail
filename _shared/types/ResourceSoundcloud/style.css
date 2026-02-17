@@ -1,0 +1,11 @@
+.resourceDetail[data-type="soundcloud"] {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.resourceDetail[data-type="soundcloud"] iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}

@@ -29,16 +29,34 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
                         +  '        <div style="clear: both;"></div>'
                         +  '    </div>'
                         +  '    <div class="resourcesFilter">'
-                        +  '        <input id="cbAll" name="ResourceFilterType" type="radio" value="ALL" checked /><label for="cbAll">'+ labels['ResourceTypesAll'] +'</label>'
-                        +  '        <input id="cbVideo" name="ResourceFilterType" type="radio" value="video" /><label for="cbVideo">'+ labels['ResourceTypeVideo'] +'</label>'
-                        +  '        <input id="cbImage" name="ResourceFilterType" type="radio" value="image" /><label for="cbImage">'+ labels['ResourceTypeImage'] +'</label>'
-                        +  '        <input id="cbPDF" name="ResourceFilterType" type="radio" value="pdf" /><label for="cbPDF">'+ labels['ResourceTypePDF'] +'</label>'
-                        +  '        <input id="cbAudio" name="ResourceFilterType" type="radio" value="audio" /><label for="cbAudio">'+ labels['ResourceTypeAudio'] +'</label>'
-                        +  '        <input id="cbWebpage" name="ResourceFilterType" type="radio" value="webpage" /><label for="cbWebpage">'+ labels['ResourceTypeWebpage'] +'</label>'
-                        +  '        <input id="cbLocation" name="ResourceFilterType" type="radio" value="location" /><label for="cbLocation">'+ labels['ResourceTypeLocation'] +'</label>'
-                        +  '        <input id="cbWikipedia" name="ResourceFilterType" type="radio" value="wikipedia" /><label for="cbWikipedia">'+ labels['ResourceTypeWikipedia'] +'</label>'
-                        +  '        <input id="cbYoutube" name="ResourceFilterType" type="radio" value="youtube" /><label for="cbYoutube">'+ labels['ResourceTypeYoutube'] +'</label>'
-                        +  '        <input id="cbVimeo" name="ResourceFilterType" type="radio" value="vimeo" /><label for="cbVimeo">'+ labels['ResourceTypeVimeo'] +'</label>'
+                        +  '        <div class="custom-select"><select name="ResourceFilterType">'
+                        +  '            <option value="ALL">'+ labels['ResourceTypesAll'] +'</option>'
+                        +  '            <option value="video">'+ labels['ResourceTypeVideo'] +'</option>'
+                        +  '            <option value="image">'+ labels['ResourceTypeImage'] +'</option>'
+                        +  '            <option value="pdf">'+ labels['ResourceTypePDF'] +'</option>'
+                        +  '            <option value="audio">'+ labels['ResourceTypeAudio'] +'</option>'
+                        +  '            <option value="webpage">'+ labels['ResourceTypeWebpage'] +'</option>'
+                        +  '            <option value="location">'+ labels['ResourceTypeLocation'] +'</option>'
+                        +  '            <option value="wikipedia">'+ labels['ResourceTypeWikipedia'] +'</option>'
+                        +  '            <option value="youtube">'+ labels['ResourceTypeYoutube'] +'</option>'
+                        +  '            <option value="vimeo">'+ labels['ResourceTypeVimeo'] +'</option>'
+                        +  '            <option value="dailymotion">'+ labels['ResourceTypeDailymotion'] +'</option>'
+                        +  '            <option value="wistia">'+ labels['ResourceTypeWistia'] +'</option>'
+                        +  '            <option value="soundcloud">'+ labels['ResourceTypeSoundcloud'] +'</option>'
+                        +  '            <option value="twitch">'+ labels['ResourceTypeTwitch'] +'</option>'
+                        +  '            <option value="bluesky">'+ labels['ResourceTypeBluesky'] +'</option>'
+                        +  '            <option value="codepen">'+ labels['ResourceTypeCodepen'] +'</option>'
+                        +  '            <option value="figma">'+ labels['ResourceTypeFigma'] +'</option>'
+                        +  '            <option value="loom">'+ labels['ResourceTypeLoom'] +'</option>'
+                        +  '            <option value="urlpreview">'+ labels['ResourceTypeUrlPreview'] +'</option>'
+                        +  '            <option value="xtwitter">'+ labels['ResourceTypeXTwitter'] +'</option>'
+                        +  '            <option value="tiktok">'+ labels['ResourceTypeTiktok'] +'</option>'
+                        +  '            <option value="mastodon">'+ labels['ResourceTypeMastodon'] +'</option>'
+                        +  '            <option value="spotify">'+ labels['ResourceTypeSpotify'] +'</option>'
+                        +  '            <option value="slideshare">'+ labels['ResourceTypeSlideshare'] +'</option>'
+                        +  '            <option value="reddit">'+ labels['ResourceTypeReddit'] +'</option>'
+                        +  '            <option value="flickr">'+ labels['ResourceTypeFlickr'] +'</option>'
+                        +  '        </select></div>'
                         +  '        <div class="resourcesCheckboxes">'
                         +  '            <input type="checkbox" id="onlyCC" name="onlyCC" /><label for="onlyCC">'+ labels['ResourceTypesOnlyCC'] +'</label>'
                         +  '        </div>'
@@ -72,7 +90,7 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
         executeDelete();
     });
 
-    domElement.find('input[name=ResourceFilterType]').change(updateList);
+    domElement.find('select[name=ResourceFilterType]').change(updateList);
 
     domElement.find('input[name=onlyCC]').change( function (evt) {
      if ($(this).is(':checked')) {
@@ -154,7 +172,7 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
      */
     function updateList() {
 
-        var type = domElement.find('input[name=ResourceFilterType]:checked').val();
+        var type = domElement.find('select[name=ResourceFilterType]').val();
 
         if (type === 'ALL') {
 

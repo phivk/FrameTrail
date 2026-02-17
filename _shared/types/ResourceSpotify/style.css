@@ -1,0 +1,12 @@
+.resourceDetail[data-type="spotify"] {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.resourceDetail[data-type="spotify"] iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 12px;
+}
