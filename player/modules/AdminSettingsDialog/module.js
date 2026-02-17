@@ -53,9 +53,7 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                         + '    <div id="Configuration"></div>'
                         + '    <div id="ChangeTheme"></div>'
                         + '    <div id="ChangeGlobalCSS"></div>'
-                        + '    <div id="TagDefinitions">'
-                        + '        <div class="message active">'+ labels['MessageManageTags'] +'</div>'
-                        + '    </div>'
+                        + '    <div id="TagDefinitions"></div>'
                         + '</div>');
 
         adminDialog.append(adminTabs);
@@ -250,6 +248,258 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                 }).fail(function() {
                     console.log(labels['ErrorCouldNotRetrieveCustomCSS']);
                 });
+        }
+
+        /* Tag Definitions UI */
+        var tagDefinitionsUI = $('<div class="tagDefinitionsContainer">'
+            + '    <div class="tagListHeader">'
+            + '        <button class="addTagButton"><span class="icon-plus"></span> '+ labels['TagAdd'] +'</button>'
+            + '        <input type="text" class="tagFilterInput" placeholder="'+ labels['SettingsFilterByName'] +'">'
+            + '    </div>'
+            + '    <div class="tagList"></div>'
+            + '</div>');
+
+        adminTabs.find('#TagDefinitions').append(tagDefinitionsUI);
+
+        function renderTagList(filterText) {
+            var tagList = tagDefinitionsUI.find('.tagList').empty();
+            var allTags = FrameTrail.module('TagModel').getAllTags();
+
+            for (var tagId in allTags) {
+                if (filterText && tagId.toLowerCase().indexOf(filterText.toLowerCase()) === -1) {
+                    continue;
+                }
+
+                var tagData = allTags[tagId];
+                var tagItem = $('<div class="tagListItem" data-tag-id="'+ tagId +'">'
+                    + '    <div class="tagId">'+ tagId +'</div>'
+                    + '    <div class="tagLanguages"></div>'
+                    + '    <div class="tagActions">'
+                    + '        <button class="editTagButton" title="'+ labels['GenericEditStart'] +'"><span class="icon-pencil"></span></button>'
+                    + '        <button class="deleteTagButton" title="'+ labels['GenericDelete'] +'"><span class="icon-trash"></span></button>'
+                    + '    </div>'
+                    + '</div>');
+
+                var langContainer = tagItem.find('.tagLanguages');
+                for (var lang in tagData) {
+                    langContainer.append(
+                        '<div class="tagLang">'
+                        + '    <span class="langCode">'+ lang.toUpperCase() +':</span> '
+                        + '    <span class="langLabel">'+ tagData[lang].label +'</span>'
+                        + '    <span class="langDesc">&mdash; '+ tagData[lang].description +'</span>'
+                        + '</div>'
+                    );
+                }
+
+                tagList.append(tagItem);
+            }
+
+            if (tagList.children().length === 0) {
+                tagList.append('<div class="message active">'+ labels['TagNoTagsDefined'] +'</div>');
+            }
+        }
+
+        renderTagList('');
+
+        tagDefinitionsUI.find('.tagFilterInput').on('input', function() {
+            renderTagList($(this).val());
+        });
+
+        tagDefinitionsUI.find('.addTagButton').click(function() {
+            openTagEditDialog(null);
+        });
+
+        tagDefinitionsUI.on('click', '.editTagButton', function() {
+            var tagId = $(this).closest('.tagListItem').data('tag-id');
+            openTagEditDialog(tagId);
+        });
+
+        tagDefinitionsUI.on('click', '.deleteTagButton', function() {
+            var tagId = $(this).closest('.tagListItem').data('tag-id');
+            confirmDeleteTag(tagId);
+        });
+
+        function openTagEditDialog(tagId) {
+            var isNew = (tagId === null);
+            var allTags = FrameTrail.module('TagModel').getAllTags();
+            var existingData = isNew ? {} : (allTags[tagId] || {});
+            var existingLangs = isNew ? [] : Object.keys(existingData);
+
+            var dialogContent = $('<div class="tagEditDialog">'
+                + '    <div class="formRow">'
+                + '        <label>'+ labels['TagID'] +'</label>'
+                + '        <input type="text" class="tagIdInput" value="'+ (tagId || '') +'" '+ (isNew ? '' : 'readonly') +'>'
+                + '        <div class="fieldHint">'+ labels['TagIDHint'] +'</div>'
+                + '    </div>'
+                + '    <div class="languagesContainer">'
+                + '        <label>'+ labels['TagLanguages'] +'</label>'
+                + '        <div class="languagesList"></div>'
+                + '        <button class="addLanguageButton"><span class="icon-plus"></span> '+ labels['TagAddLanguage'] +'</button>'
+                + '    </div>'
+                + '</div>');
+
+            var languagesList = dialogContent.find('.languagesList');
+
+            function addLanguageRow(lang, label, description, isExisting) {
+                var row = $('<div class="languageRow" data-lang="'+ (lang || '') +'">'
+                    + '    <div class="langHeader">'
+                    + '        <input type="text" class="langCodeInput" value="'+ (lang || '') +'" placeholder="en" maxlength="2" '+ (isExisting ? 'readonly' : '') +'>'
+                    + (isExisting ? '' : '        <button class="removeLangButton"><span class="icon-cancel"></span></button>')
+                    + '    </div>'
+                    + '    <div class="langFields">'
+                    + '        <input type="text" class="langLabelInput" value="'+ (label || '') +'" placeholder="'+ labels['TagLabel'] +'">'
+                    + '        <input type="text" class="langDescInput" value="'+ (description || '') +'" placeholder="'+ labels['TagDescription'] +'">'
+                    + '    </div>'
+                    + '</div>');
+
+                row.find('.removeLangButton').click(function() {
+                    row.remove();
+                });
+
+                languagesList.append(row);
+            }
+
+            for (var lang in existingData) {
+                addLanguageRow(lang, existingData[lang].label, existingData[lang].description, true);
+            }
+
+            if (isNew) {
+                addLanguageRow('', '', '', false);
+            }
+
+            dialogContent.find('.addLanguageButton').click(function() {
+                addLanguageRow('', '', '', false);
+            });
+
+            dialogContent.dialog({
+                title: isNew ? labels['TagAddNew'] : labels['TagEdit'] + ': ' + tagId,
+                modal: true,
+                width: 500,
+                buttons: [
+                    {
+                        text: labels['GenericCancel'],
+                        click: function() { $(this).dialog('close'); }
+                    },
+                    {
+                        text: labels['GenericSave'],
+                        click: function() {
+                            saveTag(dialogContent, isNew, existingLangs, function() {
+                                dialogContent.dialog('close');
+                                renderTagList(tagDefinitionsUI.find('.tagFilterInput').val());
+                            });
+                        }
+                    }
+                ],
+                close: function() { $(this).dialog('destroy').remove(); }
+            });
+        }
+
+        function saveTag(dialogContent, isNew, existingLangs, onSuccess) {
+            var tagId = dialogContent.find('.tagIdInput').val().trim();
+            var languageRows = dialogContent.find('.languageRow');
+
+            if (tagId.length < 2) {
+                FrameTrail.module('InterfaceModal').showErrorMessage(labels['TagErrorIDTooShort']);
+                return;
+            }
+
+            if (languageRows.length === 0) {
+                FrameTrail.module('InterfaceModal').showErrorMessage(labels['TagErrorNoLanguages']);
+                return;
+            }
+
+            var saveQueue = [];
+            languageRows.each(function() {
+                var row = $(this);
+                var lang = row.find('.langCodeInput').val().trim().toLowerCase();
+                var label = row.find('.langLabelInput').val().trim();
+                var desc = row.find('.langDescInput').val().trim();
+
+                if (lang.length === 2 && label.length >= 4 && desc.length >= 4) {
+                    saveQueue.push({ lang: lang, label: label, description: desc });
+                }
+            });
+
+            if (saveQueue.length === 0) {
+                FrameTrail.module('InterfaceModal').showErrorMessage(labels['TagErrorInvalidLanguages']);
+                return;
+            }
+
+            var savedCount = 0;
+
+            function saveNext(idx) {
+                if (idx >= saveQueue.length) {
+                    onSuccess();
+                    return;
+                }
+                var item = saveQueue[idx];
+                FrameTrail.module('TagModel').setTag(
+                    tagId,
+                    item.lang,
+                    item.label,
+                    item.description,
+                    function() {
+                        savedCount++;
+                        saveNext(idx + 1);
+                    },
+                    function() {
+                        FrameTrail.module('InterfaceModal').showErrorMessage(labels['TagErrorSaveFailed']);
+                    }
+                );
+            }
+
+            saveNext(0);
+        }
+
+        function confirmDeleteTag(tagId) {
+            FrameTrail.module('TagModel').deleteTag(tagId,
+                function(response) {
+                    renderTagList(tagDefinitionsUI.find('.tagFilterInput').val());
+                    FrameTrail.module('InterfaceModal').showStatusMessage(labels['TagDeleted']);
+                    setTimeout(function() {
+                        FrameTrail.module('InterfaceModal').hideMessage(500);
+                    }, 1500);
+                },
+                function(response) {
+                    if (response && response.code === 5 && response.response) {
+                        showTagUsageWarning(tagId, response.response);
+                    } else {
+                        FrameTrail.module('InterfaceModal').showErrorMessage(labels['TagErrorDeleteFailed']);
+                    }
+                }
+            );
+        }
+
+        function showTagUsageWarning(tagId, usageData) {
+            var content = $('<div class="tagUsageWarning">'
+                + '    <p><strong>'+ labels['TagCannotDelete'].replace('{tagId}', tagId) +'</strong></p>'
+                + '    <p>'+ labels['TagInUseCount'].replace('{count}', usageData.count) +'</p>'
+                + '    <ul class="usageList"></ul>'
+                + '    <p>'+ labels['TagRemoveBeforeDelete'] +'</p>'
+                + '</div>');
+
+            var usageList = content.find('.usageList');
+
+            if (usageData.matches) {
+                for (var i = 0; i < usageData.matches.length; i++) {
+                    var match = usageData.matches[i];
+                    usageList.append(
+                        '<li>Hypervideo "'+ match.hypervideo +'" &mdash; '
+                        + match.where + ' ('+ match.type +') by '+ match.owner
+                        + '</li>'
+                    );
+                }
+            }
+
+            content.dialog({
+                title: labels['TagCannotDeleteTitle'],
+                modal: true,
+                width: 450,
+                buttons: [
+                    { text: labels['GenericOK'], click: function() { $(this).dialog('close'); } }
+                ],
+                close: function() { $(this).dialog('destroy').remove(); }
+            });
         }
 
         adminDialog.dialog({

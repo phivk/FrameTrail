@@ -123,9 +123,22 @@
             }
 
         }).done(function(data) {
-            updateTagModel(success, fail);
+            if (typeof data === 'string') {
+                try { data = JSON.parse(data); } catch(e) {}
+            }
+            if (data && data.code === 0) {
+                updateTagModel(function() {
+                    success(data);
+                }, fail);
+            } else {
+                if (fail) fail(data);
+            }
         }).fail(fail);
 
+    }
+
+    function getAllTags() {
+        return tags;
     }
 
 
@@ -236,6 +249,7 @@
         initTagModel: initTagModel,
         updateTagModel: updateTagModel,
 
+        getAllTags: getAllTags,
         getAllTagLabelsAndDescriptions: getAllTagLabelsAndDescriptions,
         getTagLabelAndDescription: getTagLabelAndDescription,
 
