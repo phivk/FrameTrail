@@ -237,7 +237,9 @@ FrameTrail.defineType(
                     
                     var quizEditorContainer = $('<div class="quizEditorContainer"></div>');
                     
-                    quizEditorContainer.append('<label>'+ this.labels['SettingsQuizQuestionLabel'] +'</label>');
+                    var questionRow = $('<div class="layoutRow"></div>');
+                    var questionCol = $('<div class="column-12"></div>');
+                    questionCol.append('<label>'+ this.labels['SettingsQuizQuestionLabel'] +'</label>');
                     var questionText = $('<input type="text" value="' +currentAttributes.question+ '"/>');
                     
                     questionText.on('keyup', function(evt) {
@@ -262,7 +264,9 @@ FrameTrail.defineType(
                         }
                     });
 
-                    quizEditorContainer.append(questionText);
+                    questionCol.append(questionText);
+                    questionRow.append(questionCol);
+                    quizEditorContainer.append(questionRow);
 
                     /* Add Answer Text Fields */
 

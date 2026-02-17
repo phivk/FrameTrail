@@ -87,10 +87,6 @@
 	content: "\f29c";
 }
 
-.editPropertiesContainer .quizEditorContainer .layoutRow > * {
-	margin-top: 10px;
-}
-
 .editPropertiesContainer .quizEditorAnswersContainer .answerWrapper {
 	margin-bottom: 4px;
 }

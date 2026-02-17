@@ -179,6 +179,10 @@
 
 /* Edit Overlay Properties */
 
+.editPropertiesContainer .layoutRow > * {
+	margin-bottom: 10px;
+}
+
 .editPropertiesContainer .controlsWrapper {
 	width: 100%;
 	height: 100%;
@@ -350,15 +354,16 @@
 	background: #cfcfcf;
 }
 
-.editPropertiesContainer .opacitySlider .ui-slider-range {
+.editPropertiesContainer .ui-slider-range {
 	background: rgba(47, 50, 58, .5);
 }
 
-.editPropertiesContainer .opacitySlider .ui-slider-handle {
+.editPropertiesContainer .ui-slider-handle {
 	background: var(--primary-bg-color);
 	height: 14px;
-	width: 10px;
-	margin-left: -5px;
+	width: 14px;
+	margin-left: -7px;
+	border-radius: 50%;
 }
 
 .editPropertiesContainer .ui-tabs textarea, 

@@ -116,11 +116,7 @@ a.hotspot-element {
 
 .hotspotEditorContainer input[type="number"] {
 	width: calc(100% - 30px);
-	padding: 8px;
-	border: 1px solid #ccc;
-	border-radius: 4px;
-	box-sizing: border-box;
-	display: inline-block;
+	margin: 0px;
 }
 
 .hotspotEditorContainer .innerSizeWrapper {
@@ -133,15 +129,6 @@ a.hotspot-element {
 	font-weight: normal;
 }
 
-.hotspotEditorContainer select {
-	width: 100%;
-	padding: 8px;
-	border: 1px solid #ccc;
-	border-radius: 4px;
-	box-sizing: border-box;
-	background-color: white;
-	cursor: pointer;
-}
 
 .hotspotEditorContainer .linkInputRow {
 	display: flex;

@@ -250,6 +250,16 @@ FrameTrail.defineType(
 
                     var hotspotEditorContainer = $('<div class="hotspotEditorContainer"></div>');
 
+                    // Helper to sync editor UI controls from current data attributes
+                    var syncHotspotUI = function(a) {
+                        var c = $('.hotspotEditorContainer');
+                        if (!c.length) return;
+                        c.find('.hotspotPropShape').val(a.shape || 'circle');
+                        c.find('.hotspotPropColor').val(a.color || '#0096ff');
+                        c.find('.hotspotPropBorderWidth').val(a.borderWidth !== undefined ? a.borderWidth : 5);
+                        c.find('.hotspotPropBorderRadius').val(a.borderRadius !== undefined ? a.borderRadius : 10);
+                    };
+
                     // Helper function to convert hex color to rgba
                     var hexToRgba = function(hex, alpha) {
                         var r = parseInt(hex.slice(1, 3), 16);
@@ -357,7 +367,7 @@ FrameTrail.defineType(
 
                     // Shape selector column
                     shapeColumn.append('<label>'+ this.labels['SettingsHotspotShape'] +'</label>');
-                    var shapeSelect = $('<select></select>');
+                    var shapeSelect = $('<select class="hotspotPropShape"></select>');
                     shapeSelect.append('<option value="circle"' + (currentAttributes.shape === 'circle' ? ' selected' : '') + '>'+ this.labels['SettingsHotspotShapeCircle'] +'</option>');
                     shapeSelect.append('<option value="rectangle"' + (currentAttributes.shape === 'rectangle' ? ' selected' : '') + '>'+ this.labels['SettingsHotspotShapeRectangle'] +'</option>');
                     shapeSelect.append('<option value="rounded"' + (currentAttributes.shape === 'rounded' ? ' selected' : '') + '>'+ this.labels['SettingsHotspotShapeRounded'] +'</option>');
@@ -413,6 +423,7 @@ FrameTrail.defineType(
                                         var c = el.data.attributes.color || '#0096ff';
                                         var br = el.data.attributes.borderRadius || 10;
                                         applyFn(el, oldS, br, bw, c);
+                                        syncHotspotUI(el.data.attributes);
                                         FrameTrail.module('HypervideoModel').newUnsavedChange(cat);
                                     },
                                     redo: function() {
@@ -423,6 +434,7 @@ FrameTrail.defineType(
                                         var c = el.data.attributes.color || '#0096ff';
                                         var br = el.data.attributes.borderRadius || 10;
                                         applyFn(el, newS, br, bw, c);
+                                        syncHotspotUI(el.data.attributes);
                                         FrameTrail.module('HypervideoModel').newUnsavedChange(cat);
                                     }
                                 });
@@ -431,11 +443,13 @@ FrameTrail.defineType(
                         shapeBeforeChange = newShape;
                     });
                     
-                    shapeColumn.append(shapeSelect);
+                    var shapeWrapper = $('<div class="custom-select"></div>');
+                    shapeWrapper.append(shapeSelect);
+                    shapeColumn.append(shapeWrapper);
 
                     // Color picker column
                     colorColumn.append('<label>'+ this.labels['SettingsHotspotColor'] +'</label>');
-                    var colorInput = $('<input type="color" value="' + currentAttributes.color + '"/>');
+                    var colorInput = $('<input type="color" class="hotspotPropColor" value="' + currentAttributes.color + '"/>');
 
                     // Helper function to update color visually
                     var updateColor = function(newColor, trackChange) {
@@ -535,6 +549,7 @@ FrameTrail.defineType(
                                         var bw = el.data.attributes.borderWidth || 5;
                                         var br = el.data.attributes.borderRadius || 10;
                                         applyFn(el, shape, br, bw, oldC);
+                                        syncHotspotUI(el.data.attributes);
                                         FrameTrail.module('HypervideoModel').newUnsavedChange(cat);
                                     },
                                     redo: function() {
@@ -545,6 +560,7 @@ FrameTrail.defineType(
                                         var bw = el.data.attributes.borderWidth || 5;
                                         var br = el.data.attributes.borderRadius || 10;
                                         applyFn(el, shape, br, bw, newC);
+                                        syncHotspotUI(el.data.attributes);
                                         FrameTrail.module('HypervideoModel').newUnsavedChange(cat);
                                     }
                                 });
@@ -561,7 +577,7 @@ FrameTrail.defineType(
 
                     // Border width control column
                     borderWidthColumn.append('<label>'+ this.labels['SettingsHotspotBorderWidth'] +'</label>');
-                    var borderWidthInput = $('<input type="number" min="0" max="50" step="0.5" value="' + currentAttributes.borderWidth + '"/>');
+                    var borderWidthInput = $('<input type="number" class="hotspotPropBorderWidth" min="0" max="50" step="0.5" value="' + currentAttributes.borderWidth + '"/>');
                     var borderWidthLabel = $('<span>%</span>');
                     var borderWidthWrapper = $('<div class="innerSizeWrapper"></div>');
                     borderWidthWrapper.append(borderWidthInput, borderWidthLabel);
@@ -616,6 +632,7 @@ FrameTrail.defineType(
                                         var br = el.data.attributes.borderRadius || 10;
                                         var c = el.data.attributes.color || '#0096ff';
                                         applyFn(el, shape, br, oldW, c);
+                                        syncHotspotUI(el.data.attributes);
                                         FrameTrail.module('HypervideoModel').newUnsavedChange(cat);
                                     },
                                     redo: function() {
@@ -626,6 +643,7 @@ FrameTrail.defineType(
                                         var br = el.data.attributes.borderRadius || 10;
                                         var c = el.data.attributes.color || '#0096ff';
                                         applyFn(el, shape, br, newW, c);
+                                        syncHotspotUI(el.data.attributes);
                                         FrameTrail.module('HypervideoModel').newUnsavedChange(cat);
                                     }
                                 });
@@ -638,7 +656,7 @@ FrameTrail.defineType(
 
                     // Border radius input column (only visible for rounded rectangles)
                     borderRadiusColumn.append('<label>'+ this.labels['SettingsHotspotBorderRadius'] +'</label>');
-                    var borderRadiusInput = $('<input type="number" min="0" max="100" step="1" value="' + currentAttributes.borderRadius + '"/>');
+                    var borderRadiusInput = $('<input type="number" class="hotspotPropBorderRadius" min="0" max="100" step="1" value="' + currentAttributes.borderRadius + '"/>');
                     var borderRadiusLabel = $('<span>px</span>');
                     var borderRadiusWrapper = $('<div class="innerSizeWrapper"></div>');
                     borderRadiusWrapper.append(borderRadiusInput, borderRadiusLabel);
@@ -695,6 +713,7 @@ FrameTrail.defineType(
                                         var bw = el.data.attributes.borderWidth || 5;
                                         var c = el.data.attributes.color || '#0096ff';
                                         applyFn(el, shape, oldR, bw, c);
+                                        syncHotspotUI(el.data.attributes);
                                         FrameTrail.module('HypervideoModel').newUnsavedChange(cat);
                                     },
                                     redo: function() {
@@ -705,6 +724,7 @@ FrameTrail.defineType(
                                         var bw = el.data.attributes.borderWidth || 5;
                                         var c = el.data.attributes.color || '#0096ff';
                                         applyFn(el, shape, newR, bw, c);
+                                        syncHotspotUI(el.data.attributes);
                                         FrameTrail.module('HypervideoModel').newUnsavedChange(cat);
                                     }
                                 });

@@ -119,6 +119,17 @@ input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
 input[type="color"] {
 	cursor: pointer;
     width: 100%;
+    border: 2px solid var(--primary-bg-color);
+    background: var(--primary-fg-color);
+}
+
+input[type="range"] {
+    width: 100%;
+    background: #cfcfcf;
+    accent-color: var(--primary-bg-color);
+    border-radius: 3px;
+    margin: 7px 0px;
+    display: block;
 }
 
 input[readonly], textarea[readonly] {
@@ -1188,12 +1199,17 @@ input:checked + .slider:before {
     display: inline-block;
 }
 
+.layoutRow .custom-select {
+    display: block;
+}
+
 .custom-select select {
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
+    width: 100%;
+    box-sizing: border-box;
     padding: 4px 30px 4px 10px;
-    min-width: 150px;
     border: 2px solid var(--primary-bg-color);
     background-color: var(--primary-fg-color);
     cursor: pointer;
