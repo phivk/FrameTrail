@@ -556,7 +556,7 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 
 				callback.call();
 			}
-			
+
 
 		} else {
 
@@ -1025,7 +1025,7 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 			onPlaySuccess();
 
 		} else if (HypervideoModel.videoType == 'vimeo') {
-			
+
 			var lastVimeoPlayerID = FrameTrail.getState('lastVimeoPlayerID');
 			setMuted(false);
 
@@ -1113,9 +1113,9 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 			_pause();
 
 		} else if (HypervideoModel.videoType == 'vimeo') {
-			
+
 			var lastVimeoPlayerID = FrameTrail.getState('lastVimeoPlayerID');
-			
+
 			if (window.player_vimeo[lastVimeoPlayerID]) {
 				window.player_vimeo[lastVimeoPlayerID].pause();
 			}
@@ -1333,7 +1333,7 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 			window.player_youtube[lastYoutubePlayerID].seekTo(currentTime, true);
 
 		} else if (HypervideoModel.videoType == 'vimeo') {
-			
+
 			var lastVimeoPlayerID = FrameTrail.getState('lastVimeoPlayerID');
 
 			currentTime = aNumberAsFloat;
@@ -1396,7 +1396,7 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 		} else if (HypervideoModel.videoType == 'vimeo') {
 
 			var lastVimeoPlayerID = FrameTrail.getState('lastVimeoPlayerID');
-			
+
 			if (muted) {
 				window.player_vimeo[lastVimeoPlayerID].setVolume(0);
 			} else {

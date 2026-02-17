@@ -41,9 +41,7 @@ FrameTrail.defineType(
                 )
 
 
-                if (    (this.data.type === 'video' || this.data.type === 'audio')
-                     && this.data.attributes.autoPlay) {
-                    // Note: Currently, the only synced media types are 'video' and 'audio', so we shortcut it
+                if ( (this.data.type == 'video' || this.data.type == 'audio') && this.data.attributes.autoPlay ) {
 
                     this.syncedMedia = true;
 
@@ -367,7 +365,7 @@ FrameTrail.defineType(
                         } else {
                             this.mediaElement = this.overlayElement.find('.resourceDetail video')[0]
                         }
-                        
+
                         this.mediaElement.removeAttribute('controls');
                     } else {
                         this.mediaElement.setAttribute('controls', 'controls');

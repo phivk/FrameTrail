@@ -321,7 +321,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                 FrameTrail.module('ResourceManager').renderList(videoResourceList, true,
                     'type',
                     'contains',
-                    'video'
+                    ['video', 'youtube', 'vimeo']
                 );
 
             }, true);

@@ -666,7 +666,7 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     filter: grayscale(90%) brightness(0.2);
 }
 
-.hypervideoContainer .videoContainer .hypervideo .player_youtube, 
+.hypervideoContainer .videoContainer .hypervideo .player_youtube,
 .hypervideoContainer .videoContainer .hypervideo .player_vimeo {
     position: absolute;
     top: 0px;
