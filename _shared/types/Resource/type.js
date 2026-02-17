@@ -173,14 +173,44 @@ FrameTrail.defineType(
                                             + '        <div id="OverlayOptions"></div>'
                                             + '        <div id="OverlayAppearance">'
                                             + '            <div class="layoutRow">'
-                                            + '                <div class="column-6">'
-                                            + '                    <div style="clear: both;">'+ this.labels['SettingsOpacity'] +'</div>'
-                                            + '                    <div class="opacitySlider"></div>'
-                                            //+ '                  <div>Arrange</div>'
-                                            //+ '                  <button class="arrangeTop">Move to top</button>'
-                                            //+ '                  <button class="arrangeBottom">Move to bottom</button>'
+                                            + '                <div class="column-4">'
+                                            + '                    <label>'+ this.labels['SettingsOpacity'] +'</label>'
+                                            + '                    <input type="range" class="opacityRange" min="0" max="1" step="0.01" value="'+ (overlay.data.attributes.opacity || 1) +'">'
                                             + '                </div>'
-                                            + '                <div class="column-6">'
+                                            + '            </div>'
+                                            + '            <hr>'
+                                            + '            <div class="layoutRow">'
+                                            + '                <div class="column-4">'
+                                            + '                    <label>'+ this.labels['SettingsAnimationIn'] +'</label>'
+                                            + '                    <div class="custom-select">'
+                                            + '                    <select class="animationInSelect">'
+                                            + '                        <option value="none">'+ this.labels['AnimationNone'] +'</option>'
+                                            + '                        <option value="fade">'+ this.labels['AnimationFade'] +'</option>'
+                                            + '                        <option value="slideLeft">'+ this.labels['AnimationSlideLeft'] +'</option>'
+                                            + '                        <option value="slideRight">'+ this.labels['AnimationSlideRight'] +'</option>'
+                                            + '                        <option value="slideUp">'+ this.labels['AnimationSlideUp'] +'</option>'
+                                            + '                        <option value="slideDown">'+ this.labels['AnimationSlideDown'] +'</option>'
+                                            + '                        <option value="zoom">'+ this.labels['AnimationZoom'] +'</option>'
+                                            + '                    </select>'
+                                            + '                    </div>'
+                                            + '                </div>'
+                                            + '                <div class="column-4">'
+                                            + '                    <label>'+ this.labels['SettingsAnimationOut'] +'</label>'
+                                            + '                    <div class="custom-select">'
+                                            + '                    <select class="animationOutSelect">'
+                                            + '                        <option value="none">'+ this.labels['AnimationNone'] +'</option>'
+                                            + '                        <option value="fade">'+ this.labels['AnimationFade'] +'</option>'
+                                            + '                        <option value="slideLeft">'+ this.labels['AnimationSlideLeft'] +'</option>'
+                                            + '                        <option value="slideRight">'+ this.labels['AnimationSlideRight'] +'</option>'
+                                            + '                        <option value="slideUp">'+ this.labels['AnimationSlideUp'] +'</option>'
+                                            + '                        <option value="slideDown">'+ this.labels['AnimationSlideDown'] +'</option>'
+                                            + '                        <option value="zoom">'+ this.labels['AnimationZoom'] +'</option>'
+                                            + '                    </select>'
+                                            + '                    </div>'
+                                            + '                </div>'
+                                            + '                <div class="column-4">'
+                                            + '                    <label>'+ this.labels['SettingsAnimationDuration'] +'</label>'
+                                            + '                    <input type="range" class="animationDurationRange" min="100" max="1000" step="50" value="'+ (overlay.data.attributes.animationDuration || 300) +'">'
                                             + '                </div>'
                                             + '            </div>'
                                             + '        </div>'
@@ -656,65 +686,200 @@ FrameTrail.defineType(
                         }
                     });
 
-                    var opacityBeforeSlide;
-                    controlsContainer.find('.opacitySlider').slider({
-                        value: (overlay.data.attributes.opacity || 1),
-                        step: 0.01,
-                        orientation: "horizontal",
-                        range: "min",
-                        min: 0,
-                        max: 1,
-                        animate: false,
-                        create: function() {
-                            if ($.isArray(overlay.data.attributes) && overlay.data.attributes.length < 1) {
-                                overlay.data.attributes = {};
-                            }
-                        },
-                        start: function(evt, ui) {
-                            opacityBeforeSlide = overlay.data.attributes.opacity || 1;
-                        },
-                        slide:  function(evt, ui) {
+                    if ($.isArray(overlay.data.attributes) && overlay.data.attributes.length < 1) {
+                        overlay.data.attributes = {};
+                    }
 
-                            overlay.data.attributes.opacity = ui.value;
+                    // Helper to sync appearance UI controls from current data
+                    var syncAppearanceUI = function(a) {
+                        var c = $('#OverlayAppearance');
+                        if (!c.length) return;
+                        c.find('.opacityRange').val(a.opacity || 1);
+                        c.find('.animationInSelect').val(a.animationIn || 'none');
+                        c.find('.animationOutSelect').val(a.animationOut || 'none');
+                        c.find('.animationDurationRange').val(a.animationDuration || 300);
+                    };
 
-                            overlay.updateOverlayElement();
-
-                            FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-
-                        },
-                        stop: function(evt, ui) {
-                            if (opacityBeforeSlide !== ui.value) {
-                                (function(overlayId, oldOpacity, newOpacity, labels) {
-                                    var findOverlay = function() {
-                                        var overlays = FrameTrail.module('HypervideoModel').overlays;
-                                        for (var i = 0; i < overlays.length; i++) {
-                                            if (overlays[i].data.created === overlayId) {
-                                                return overlays[i];
-                                            }
-                                        }
-                                        return null;
-                                    };
-                                    FrameTrail.module('UndoManager').register({
-                                        category: 'overlays',
-                                        description: labels['SidebarOverlays'] + ' ' + labels['SettingsOpacity'],
-                                        undo: function() {
-                                            var o = findOverlay();
-                                            if (!o) return;
-                                            o.data.attributes.opacity = oldOpacity;
-                                            o.updateOverlayElement();
-                                            FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-                                        },
-                                        redo: function() {
-                                            var o = findOverlay();
-                                            if (!o) return;
-                                            o.data.attributes.opacity = newOpacity;
-                                            o.updateOverlayElement();
-                                            FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-                                        }
-                                    });
-                                })(overlay.data.created, opacityBeforeSlide, ui.value, self.labels);
-                            }
+                    // --- Opacity Range ---
+                    var opacityBeforeChange = overlay.data.attributes.opacity || 1;
+                    controlsContainer.find('.opacityRange').on('focus', function() {
+                        opacityBeforeChange = overlay.data.attributes.opacity || 1;
+                    });
+                    controlsContainer.find('.opacityRange').on('input', function() {
+                        overlay.data.attributes.opacity = parseFloat(this.value);
+                        overlay.updateOverlayElement();
+                        FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+                    });
+                    controlsContainer.find('.opacityRange').on('change', function() {
+                        var newOpacity = parseFloat(this.value);
+                        if (opacityBeforeChange !== newOpacity) {
+                            (function(overlayId, oldOpacity, newOp, labels) {
+                                var findOverlay = function() {
+                                    var overlays = FrameTrail.module('HypervideoModel').overlays;
+                                    for (var i = 0; i < overlays.length; i++) {
+                                        if (overlays[i].data.created === overlayId) return overlays[i];
+                                    }
+                                    return null;
+                                };
+                                FrameTrail.module('UndoManager').register({
+                                    category: 'overlays',
+                                    description: labels['SidebarOverlays'] + ' ' + labels['SettingsOpacity'],
+                                    undo: function() {
+                                        var o = findOverlay();
+                                        if (!o) return;
+                                        o.data.attributes.opacity = oldOpacity;
+                                        o.updateOverlayElement();
+                                        syncAppearanceUI(o.data.attributes);
+                                        FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+                                    },
+                                    redo: function() {
+                                        var o = findOverlay();
+                                        if (!o) return;
+                                        o.data.attributes.opacity = newOp;
+                                        o.updateOverlayElement();
+                                        syncAppearanceUI(o.data.attributes);
+                                        FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+                                    }
+                                });
+                            })(overlay.data.created, opacityBeforeChange, newOpacity, self.labels);
                         }
+                        opacityBeforeChange = newOpacity;
+                    });
+
+                    // ==========================================
+                    // ANIMATION CONTROLS
+                    // ==========================================
+
+                    controlsContainer.find('.animationInSelect').val(overlay.data.attributes.animationIn || 'none');
+                    controlsContainer.find('.animationOutSelect').val(overlay.data.attributes.animationOut || 'none');
+
+                    // --- Animation In Select ---
+                    var animInBeforeChange = overlay.data.attributes.animationIn || 'none';
+                    controlsContainer.find('.animationInSelect').on('focus', function() {
+                        animInBeforeChange = overlay.data.attributes.animationIn || 'none';
+                    });
+                    controlsContainer.find('.animationInSelect').on('change', function() {
+                        var newValue = $(this).val();
+                        var oldValue = animInBeforeChange;
+                        overlay.data.attributes.animationIn = newValue;
+                        FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+
+                        if (oldValue !== newValue) {
+                            (function(overlayId, oldVal, newVal, labels) {
+                                var findOverlay = function() {
+                                    var overlays = FrameTrail.module('HypervideoModel').overlays;
+                                    for (var i = 0; i < overlays.length; i++) {
+                                        if (overlays[i].data.created === overlayId) return overlays[i];
+                                    }
+                                    return null;
+                                };
+                                FrameTrail.module('UndoManager').register({
+                                    category: 'overlays',
+                                    description: labels['SidebarOverlays'] + ' ' + labels['SettingsAnimationIn'],
+                                    undo: function() {
+                                        var o = findOverlay();
+                                        if (!o) return;
+                                        o.data.attributes.animationIn = oldVal;
+                                        syncAppearanceUI(o.data.attributes);
+                                        FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+                                    },
+                                    redo: function() {
+                                        var o = findOverlay();
+                                        if (!o) return;
+                                        o.data.attributes.animationIn = newVal;
+                                        syncAppearanceUI(o.data.attributes);
+                                        FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+                                    }
+                                });
+                            })(overlay.data.created, oldValue, newValue, self.labels);
+                        }
+                        animInBeforeChange = newValue;
+                    });
+
+                    // --- Animation Out Select ---
+                    var animOutBeforeChange = overlay.data.attributes.animationOut || 'none';
+                    controlsContainer.find('.animationOutSelect').on('focus', function() {
+                        animOutBeforeChange = overlay.data.attributes.animationOut || 'none';
+                    });
+                    controlsContainer.find('.animationOutSelect').on('change', function() {
+                        var newValue = $(this).val();
+                        var oldValue = animOutBeforeChange;
+                        overlay.data.attributes.animationOut = newValue;
+                        FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+
+                        if (oldValue !== newValue) {
+                            (function(overlayId, oldVal, newVal, labels) {
+                                var findOverlay = function() {
+                                    var overlays = FrameTrail.module('HypervideoModel').overlays;
+                                    for (var i = 0; i < overlays.length; i++) {
+                                        if (overlays[i].data.created === overlayId) return overlays[i];
+                                    }
+                                    return null;
+                                };
+                                FrameTrail.module('UndoManager').register({
+                                    category: 'overlays',
+                                    description: labels['SidebarOverlays'] + ' ' + labels['SettingsAnimationOut'],
+                                    undo: function() {
+                                        var o = findOverlay();
+                                        if (!o) return;
+                                        o.data.attributes.animationOut = oldVal;
+                                        syncAppearanceUI(o.data.attributes);
+                                        FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+                                    },
+                                    redo: function() {
+                                        var o = findOverlay();
+                                        if (!o) return;
+                                        o.data.attributes.animationOut = newVal;
+                                        syncAppearanceUI(o.data.attributes);
+                                        FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+                                    }
+                                });
+                            })(overlay.data.created, oldValue, newValue, self.labels);
+                        }
+                        animOutBeforeChange = newValue;
+                    });
+
+                    // --- Animation Duration Range ---
+                    var durationBeforeChange = overlay.data.attributes.animationDuration || 300;
+                    controlsContainer.find('.animationDurationRange').on('focus', function() {
+                        durationBeforeChange = overlay.data.attributes.animationDuration || 300;
+                    });
+                    controlsContainer.find('.animationDurationRange').on('input', function() {
+                        overlay.data.attributes.animationDuration = parseInt(this.value, 10);
+                        FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+                    });
+                    controlsContainer.find('.animationDurationRange').on('change', function() {
+                        var newDuration = parseInt(this.value, 10);
+                        if (durationBeforeChange !== newDuration) {
+                            (function(overlayId, oldDuration, newDur, labels) {
+                                var findOverlay = function() {
+                                    var overlays = FrameTrail.module('HypervideoModel').overlays;
+                                    for (var i = 0; i < overlays.length; i++) {
+                                        if (overlays[i].data.created === overlayId) return overlays[i];
+                                    }
+                                    return null;
+                                };
+                                FrameTrail.module('UndoManager').register({
+                                    category: 'overlays',
+                                    description: labels['SidebarOverlays'] + ' ' + labels['SettingsAnimationDuration'],
+                                    undo: function() {
+                                        var o = findOverlay();
+                                        if (!o) return;
+                                        o.data.attributes.animationDuration = oldDuration;
+                                        syncAppearanceUI(o.data.attributes);
+                                        FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+                                    },
+                                    redo: function() {
+                                        var o = findOverlay();
+                                        if (!o) return;
+                                        o.data.attributes.animationDuration = newDur;
+                                        syncAppearanceUI(o.data.attributes);
+                                        FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+                                    }
+                                });
+                            })(overlay.data.created, durationBeforeChange, newDuration, self.labels);
+                        }
+                        durationBeforeChange = newDuration;
                     });
 
                     controlsContainer.find('.arrangeTop').click( function() {

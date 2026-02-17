@@ -377,6 +377,39 @@ FrameTrail.defineType(
                 },
 
                 /**
+                 * I return the CSS class name for the entrance animation.
+                 * @method getAnimationInClass
+                 * @return {String}
+                 */
+                getAnimationInClass: function() {
+                    var anim = this.data.attributes.animationIn || 'none';
+                    return 'anim-in-' + anim;
+                },
+
+                /**
+                 * I return the CSS class name for the exit animation.
+                 * @method getAnimationOutClass
+                 * @return {String}
+                 */
+                getAnimationOutClass: function() {
+                    var anim = this.data.attributes.animationOut || 'none';
+                    return 'anim-out-' + anim;
+                },
+
+                /**
+                 * I remove all animation classes from the overlay element.
+                 * @method clearAnimationClasses
+                 */
+                clearAnimationClasses: function() {
+                    this.overlayElement.removeClass(
+                        'anim-in-none anim-in-fade anim-in-slideLeft anim-in-slideRight '
+                        + 'anim-in-slideUp anim-in-slideDown anim-in-zoom '
+                        + 'anim-out-fade anim-out-slideLeft anim-out-slideRight '
+                        + 'anim-out-slideUp anim-out-slideDown anim-out-zoom animating-out'
+                    );
+                },
+
+                /**
                  * When I am scheduled to be displayed, this is the method to be called.
                  * @method setActive
                  * @param {Boolean} onlyTimelineElement (optional)
@@ -384,6 +417,30 @@ FrameTrail.defineType(
                 setActive: function (onlyTimelineElement) {
 
                     if (!onlyTimelineElement) {
+                        if (!this.overlayElement.hasClass('active')) {
+                            var self = this;
+                            var animIn = this.data.attributes.animationIn || 'none';
+                            var duration = this.data.attributes.animationDuration || 300;
+
+                            this.clearAnimationClasses();
+
+                            if (animIn !== 'none') {
+                                this.overlayElement[0].style.setProperty('--overlay-anim-duration', duration + 'ms');
+                                this.overlayElement.addClass('anim-in-' + animIn);
+
+                                // After entrance animation completes, clean up so it can't replay
+                                var onEntranceEnd = function(e) {
+                                    if (e.target === self.overlayElement[0]) {
+                                        self.overlayElement.off('animationend', onEntranceEnd);
+                                        self.clearAnimationClasses();
+                                        self.overlayElement[0].style.opacity = '1';
+                                    }
+                                };
+                                this.overlayElement.on('animationend', onEntranceEnd);
+                            } else {
+                                this.overlayElement[0].style.opacity = '1';
+                            }
+                        }
                         this.overlayElement.addClass('active');
 
                         if (this.overlayElement.find('.resourceDetail').data().map) {
@@ -420,8 +477,16 @@ FrameTrail.defineType(
                  */
                 setInactive: function () {
 
-                    this.overlayElement.removeClass('active');
                     this.timelineElement.removeClass('active');
+
+                    if (!this.activeState) {
+                        this.overlayElement.removeClass('active');
+                        return;
+                    }
+
+                    var self = this;
+                    var animOut = this.data.attributes.animationOut || 'none';
+                    var duration = this.data.attributes.animationDuration || 300;
 
                     if (this.syncedMedia) {
 
@@ -437,6 +502,43 @@ FrameTrail.defineType(
                             // could not parse and compile JS code!
                             console.warn(this.labels['MessageEventHandlerContainsErrors'] +': '+ exception.message);
                         }
+                    }
+
+                    // Only play exit animation if the overlay element is visually active.
+                    // When only timeline-activated via setActive(true), the overlay element
+                    // never got 'active' class, so skip the animation to avoid flicker.
+                    var isVisuallyActive = this.overlayElement.hasClass('active');
+
+                    if (animOut === 'none' || !isVisuallyActive) {
+                        this.clearAnimationClasses();
+                        this.overlayElement[0].style.opacity = '';
+                        this.overlayElement.removeClass('active');
+                    } else {
+                        this.overlayElement.addClass('animating-out');
+                        this.clearAnimationClasses();
+                        this.overlayElement[0].style.opacity = '';
+                        this.overlayElement[0].style.setProperty('--overlay-anim-duration', duration + 'ms');
+                        this.overlayElement.addClass('anim-out-' + animOut);
+                        this.overlayElement.addClass('animating-out');
+
+                        var onAnimEnd = function(e) {
+                            if (e.target === self.overlayElement[0]) {
+                                self.overlayElement.off('animationend', onAnimEnd);
+                                self.clearAnimationClasses();
+                                self.overlayElement.removeClass('active');
+                            }
+                        };
+
+                        this.overlayElement.on('animationend', onAnimEnd);
+
+                        // Fallback timeout in case animationend doesn't fire
+                        setTimeout(function() {
+                            self.overlayElement.off('animationend', onAnimEnd);
+                            if (self.overlayElement.hasClass('animating-out')) {
+                                self.clearAnimationClasses();
+                                self.overlayElement.removeClass('active');
+                            }
+                        }, duration + 50);
                     }
 
                     this.activeState = false;

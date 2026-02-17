@@ -91,10 +91,123 @@
 	position: absolute;
 	background: transparent;
 	visibility: hidden;
+	opacity: 0;
+	pointer-events: none;
 }
 
 .overlayContainer .overlayElement.active {
 	visibility: visible;
+	pointer-events: auto;
+}
+
+/* Keep visible during exit animation */
+.overlayContainer .overlayElement.animating-out {
+	visibility: visible;
+	pointer-events: none;
+}
+
+/* ============================================
+   ENTRANCE ANIMATIONS
+   ============================================ */
+
+@keyframes overlayFadeIn {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+.overlayContainer .overlayElement.active.anim-in-fade {
+	animation: overlayFadeIn var(--overlay-anim-duration, 300ms) ease-out forwards;
+}
+
+@keyframes overlaySlideInLeft {
+	from { opacity: 0; transform: translate3d(-30px, 0, 0); }
+	to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+.overlayContainer .overlayElement.active.anim-in-slideLeft {
+	animation: overlaySlideInLeft var(--overlay-anim-duration, 300ms) ease-out forwards;
+}
+
+@keyframes overlaySlideInRight {
+	from { opacity: 0; transform: translate3d(30px, 0, 0); }
+	to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+.overlayContainer .overlayElement.active.anim-in-slideRight {
+	animation: overlaySlideInRight var(--overlay-anim-duration, 300ms) ease-out forwards;
+}
+
+@keyframes overlaySlideInUp {
+	from { opacity: 0; transform: translate3d(0, 30px, 0); }
+	to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+.overlayContainer .overlayElement.active.anim-in-slideUp {
+	animation: overlaySlideInUp var(--overlay-anim-duration, 300ms) ease-out forwards;
+}
+
+@keyframes overlaySlideInDown {
+	from { opacity: 0; transform: translate3d(0, -30px, 0); }
+	to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+.overlayContainer .overlayElement.active.anim-in-slideDown {
+	animation: overlaySlideInDown var(--overlay-anim-duration, 300ms) ease-out forwards;
+}
+
+@keyframes overlayZoomIn {
+	from { opacity: 0; transform: translate3d(0, 0, 0) scale(0.8); }
+	to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+.overlayContainer .overlayElement.active.anim-in-zoom {
+	animation: overlayZoomIn var(--overlay-anim-duration, 300ms) ease-out forwards;
+}
+
+/* ============================================
+   EXIT ANIMATIONS
+   ============================================ */
+
+@keyframes overlayFadeOut {
+	from { opacity: 1; }
+	to { opacity: 0; }
+}
+.overlayContainer .overlayElement.anim-out-fade {
+	animation: overlayFadeOut var(--overlay-anim-duration, 300ms) ease-in forwards;
+}
+
+@keyframes overlaySlideOutLeft {
+	from { opacity: 1; transform: translate3d(0, 0, 0); }
+	to { opacity: 0; transform: translate3d(-30px, 0, 0); }
+}
+.overlayContainer .overlayElement.anim-out-slideLeft {
+	animation: overlaySlideOutLeft var(--overlay-anim-duration, 300ms) ease-in forwards;
+}
+
+@keyframes overlaySlideOutRight {
+	from { opacity: 1; transform: translate3d(0, 0, 0); }
+	to { opacity: 0; transform: translate3d(30px, 0, 0); }
+}
+.overlayContainer .overlayElement.anim-out-slideRight {
+	animation: overlaySlideOutRight var(--overlay-anim-duration, 300ms) ease-in forwards;
+}
+
+@keyframes overlaySlideOutDown {
+	from { opacity: 1; transform: translate3d(0, 0, 0); }
+	to { opacity: 0; transform: translate3d(0, 30px, 0); }
+}
+.overlayContainer .overlayElement.anim-out-slideDown {
+	animation: overlaySlideOutDown var(--overlay-anim-duration, 300ms) ease-in forwards;
+}
+
+@keyframes overlaySlideOutUp {
+	from { opacity: 1; transform: translate3d(0, 0, 0); }
+	to { opacity: 0; transform: translate3d(0, -30px, 0); }
+}
+.overlayContainer .overlayElement.anim-out-slideUp {
+	animation: overlaySlideOutUp var(--overlay-anim-duration, 300ms) ease-in forwards;
+}
+
+@keyframes overlayZoomOut {
+	from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+	to { opacity: 0; transform: translate3d(0, 0, 0) scale(0.8); }
+}
+.overlayContainer .overlayElement.anim-out-zoom {
+	animation: overlayZoomOut var(--overlay-anim-duration, 300ms) ease-in forwards;
 }
 
 .overlayContainer .overlayElement.highlighted {
