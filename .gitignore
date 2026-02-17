@@ -30,3 +30,5 @@ _data/
 projectmanager/
 #prevent commit of evaluation folder
 evaluation/
+#prevent commit of plans folder
+plans/
