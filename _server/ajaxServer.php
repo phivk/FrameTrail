@@ -337,6 +337,56 @@ switch($_REQUEST["a"]) {
 			$return["string"] = "Installation successful";
 		}
 		break;
+	/*#########################################
+	 ############ oEmbed Proxy
+	 #########################################*/
+
+	case "oembedProxy":
+		// Proxy oEmbed requests for endpoints that don't support CORS (e.g. Bluesky)
+		$allowedHosts = array("embed.bsky.app");
+		$oembedUrl = isset($_REQUEST["url"]) ? $_REQUEST["url"] : "";
+		$parsedHost = parse_url($oembedUrl, PHP_URL_HOST);
+		if (!$oembedUrl || !$parsedHost || !in_array($parsedHost, $allowedHosts)) {
+			$return["status"] = "error";
+			$return["code"] = 403;
+			$return["string"] = "URL not allowed";
+		} else {
+			$result = false;
+			if (function_exists('curl_init')) {
+				$ch = curl_init($oembedUrl);
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+				curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+				curl_setopt($ch, CURLOPT_USERAGENT, 'FrameTrail/1.0');
+				curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+				$result = curl_exec($ch);
+				if (curl_errno($ch)) { $result = false; }
+				curl_close($ch);
+			}
+			if ($result === false) {
+				$context = stream_context_create(array("http" => array(
+					"timeout" => 5,
+					"header" => "User-Agent: FrameTrail/1.0\r\n"
+				)));
+				$result = @file_get_contents($oembedUrl, false, $context);
+			}
+			if ($result !== false) {
+				$decoded = json_decode($result, true);
+				if ($decoded) {
+					$return = $decoded;
+					$return["status"] = "success";
+				} else {
+					$return["status"] = "error";
+					$return["code"] = 500;
+					$return["string"] = "Invalid JSON from oEmbed endpoint";
+				}
+			} else {
+				$return["status"] = "error";
+				$return["code"] = 502;
+				$return["string"] = "Failed to fetch oEmbed URL";
+			}
+		}
+		break;
+
 	default:
 		$return["status"] = "success";
 		$return["code"] = 0;
