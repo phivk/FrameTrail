@@ -31,11 +31,11 @@ FrameTrail.defineType(
                     if (this.resourceData.attributes.html) {
                         container.html(this.resourceData.attributes.html);
                     } else {
-                        // Fallback: embed via iframe
-                        var embedUrl = this.resourceData.src + '/embed';
+                        // Use resolved canonical embed URL for cross-instance posts, or append /embed to src
+                        var embedUrl = this.resourceData.attributes.embedUrl || (this.resourceData.src + '/embed');
                         container.html(
                             '<iframe src="' + embedUrl + '" class="mastodon-embed" '
-                            + 'style="width: 100%; height: 100%; border: none;" allowfullscreen></iframe>'
+                            + 'frameborder="0" allowfullscreen></iframe>'
                         );
                     }
 

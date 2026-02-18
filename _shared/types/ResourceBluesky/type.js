@@ -31,10 +31,11 @@ FrameTrail.defineType(
                     if (this.resourceData.attributes.html) {
                         container.html(this.resourceData.attributes.html);
                     } else {
+                        // Fallback: link card (no reliable direct iframe URL for Bluesky)
                         container.html(
-                            '<iframe frameborder="0" width="100%" height="100%" src="'
-                            + 'https://embed.bsky.app/post/' + encodeURIComponent(this.resourceData.src)
-                            + '"></iframe>'
+                            '<div style="padding:16px;font-family:sans-serif;">'
+                            + '<a href="' + this.resourceData.src + '" target="_blank" rel="noopener">'
+                            + this.resourceData.src + '</a></div>'
                         );
                     }
 
