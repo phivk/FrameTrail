@@ -1114,15 +1114,6 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                     return null;
                 },
                 function (src, name) {
-                    // Dailymotion
-                    var res = /dailymotion\.com\/video\/([a-zA-Z0-9]+)/.exec(src);
-                    if (!res) res = /dai\.ly\/([a-zA-Z0-9]+)/.exec(src);
-                    if (res !== null) {
-                        return createResource("https://www.dailymotion.com/embed/video/" + res[1], "dailymotion", name);
-                    }
-                    return null;
-                },
-                function (src, name) {
                     // Wistia
                     var res = /(?:fast\.)?wistia\.(?:com|net)\/medias\/([a-zA-Z0-9]+)/.exec(src);
                     if (!res) res = /wi\.st\/medias\/([a-zA-Z0-9]+)/.exec(src);
@@ -1155,7 +1146,23 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                     // Bluesky
                     var res = /bsky\.app\/profile\/([\w.:-]+)\/post\/([\w]+)/.exec(src);
                     if (res !== null) {
-                        return createResource(res[1] + "/post/" + res[2], "bluesky", name);
+                        var fullUrl = "https://bsky.app/profile/" + res[1] + "/post/" + res[2];
+                        var r = createResource(fullUrl, "bluesky", name);
+                        $.ajax({
+                            url: "_server/ajaxServer.php",
+                            data: { a: "oembedProxy", url: "https://embed.bsky.app/oembed?url=" + encodeURIComponent(fullUrl) },
+                            async: false,
+                            timeout: 5000,
+                            success: function(data) {
+                                if (data.html) {
+                                    r.attributes.html = data.html;
+                                }
+                                if (data.author_name && (!r.name || r.name.length < 3)) {
+                                    r.name = data.author_name + "'s post";
+                                }
+                            }
+                        });
+                        return r;
                     }
                     return null;
                 },
@@ -1228,28 +1235,27 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                     return null;
                 },
                 function (src, name) {
-                    // Mastodon (/@user/id pattern with oEmbed probe)
+                    // Mastodon (/@user/id or /users/user/statuses/id pattern)
+                    // For cross-instance URLs (username contains @), resolve the canonical
+                    // home-instance URL via the public Mastodon API (CORS: allow *).
                     var res = /^https?:\/\/([^\/]+)\/@([a-zA-Z0-9_.@]+)\/(\d+)/.exec(src);
                     if (!res) res = /^https?:\/\/([^\/]+)\/users\/([a-zA-Z0-9_.@]+)\/statuses\/(\d+)/.exec(src);
                     if (res !== null) {
-                        var instance = res[1];
                         var r = createResource(src, "mastodon", name);
-                        r.attributes.instance = instance;
-                        var oembedSuccess = false;
-                        $.ajax({
-                            url: "https://" + instance + "/api/oembed?url=" + encodeURIComponent(src),
-                            async: false,
-                            timeout: 3000,
-                            success: function(data) {
-                                if (data.html) {
-                                    r.attributes.html = data.html;
-                                    oembedSuccess = true;
+                        r.attributes.instance = res[1];
+                        // Cross-instance: username contains a second @
+                        if (res[2].indexOf('@') !== -1) {
+                            var apiUrl = 'https://' + res[1] + '/api/v1/statuses/' + res[3];
+                            $.ajax({
+                                url: apiUrl,
+                                async: false,
+                                timeout: 5000,
+                                success: function(data) {
+                                    if (data.url) {
+                                        r.attributes.embedUrl = data.url + '/embed';
+                                    }
                                 }
-                                if (data.author_name && (!r.name || r.name.length < 3)) r.name = data.author_name + "'s post";
-                            }
-                        });
-                        if (!oembedSuccess) {
-                            return null;
+                            });
                         }
                         return r;
                     }

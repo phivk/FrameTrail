@@ -40,7 +40,7 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
                         +  '            <option value="wikipedia">'+ labels['ResourceTypeWikipedia'] +'</option>'
                         +  '            <option value="youtube">'+ labels['ResourceTypeYoutube'] +'</option>'
                         +  '            <option value="vimeo">'+ labels['ResourceTypeVimeo'] +'</option>'
-                        +  '            <option value="dailymotion">'+ labels['ResourceTypeDailymotion'] +'</option>'
+
                         +  '            <option value="wistia">'+ labels['ResourceTypeWistia'] +'</option>'
                         +  '            <option value="soundcloud">'+ labels['ResourceTypeSoundcloud'] +'</option>'
                         +  '            <option value="twitch">'+ labels['ResourceTypeTwitch'] +'</option>'

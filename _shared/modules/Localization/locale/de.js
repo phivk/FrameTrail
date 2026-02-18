@@ -212,7 +212,7 @@ window.FrameTrail_L10n['de'] = {
 	"ResourceTypeWebpage": "Webseite",
 	"ResourceTypeWikipedia": "Wikipedia",
 	"ResourceTypeYoutube": "Youtube",
-	"ResourceTypeDailymotion": "Dailymotion",
+
 	"ResourceTypeWistia": "Wistia",
 	"ResourceTypeSoundcloud": "SoundCloud",
 	"ResourceTypeTwitch": "Twitch",

@@ -1255,7 +1255,7 @@
                                         'vimeo':     'Video',
                                         'webpage':   'Text',
                                         'youtube':   'Video',
-                                        'dailymotion': 'Video',
+
                                         'wistia':    'Video',
                                         'soundcloud': 'Sound',
                                         'twitch':    'Video',
@@ -1291,7 +1291,7 @@
                                 'vimeo': 'text/html',
                                 'webpage': 'text/html',
                                 'youtube': 'text/html',
-                                'dailymotion': 'text/html',
+
                                 'wistia': 'text/html',
                                 'soundcloud': 'text/html',
                                 'twitch': 'text/html',
