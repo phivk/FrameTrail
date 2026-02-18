@@ -38,6 +38,19 @@
 
         }
 
+        if (FrameTrail.getState('storageMode') === 'local') {
+            var adapter = FrameTrail.module('StorageManager').getAdapter();
+            adapter.readJSON('tagdefinitions.json').then(function(data) {
+                tags = data;
+                success();
+            }).catch(function() {
+                // No tag definitions file — start with empty tags
+                tags = {};
+                success();
+            });
+            return;
+        }
+
         $.ajax({
             type:     "GET",
             url:      typeof tagInitOptions === 'string'
@@ -75,6 +88,18 @@
 
     function setTag (tagname, language, label, description, success, fail) {
 
+        if (FrameTrail.getState('storageMode') === 'local') {
+            var adapter = FrameTrail.module('StorageManager').getAdapter();
+            adapter.readJSON('tagdefinitions.json').catch(function() { return {}; }).then(function(data) {
+                if (!data[tagname]) { data[tagname] = {}; }
+                data[tagname][language] = { label: label, description: description };
+                return adapter.writeJSON('tagdefinitions.json', data);
+            }).then(function() {
+                updateTagModel(success, fail);
+            }).catch(fail);
+            return;
+        }
+
         $.ajax({
             type:   'POST',
             url:    '_server/ajaxServer.php',
@@ -95,6 +120,20 @@
 
     function deleteLang (tagname, language, success, fail) {
 
+        if (FrameTrail.getState('storageMode') === 'local') {
+            var adapter = FrameTrail.module('StorageManager').getAdapter();
+            adapter.readJSON('tagdefinitions.json').catch(function() { return {}; }).then(function(data) {
+                if (data[tagname]) {
+                    delete data[tagname][language];
+                    if (Object.keys(data[tagname]).length === 0) { delete data[tagname]; }
+                }
+                return adapter.writeJSON('tagdefinitions.json', data);
+            }).then(function() {
+                updateTagModel(success, fail);
+            }).catch(fail);
+            return;
+        }
+
         $.ajax({
             type:   'POST',
             url:    '_server/ajaxServer.php',
@@ -112,6 +151,19 @@
     }
 
     function deleteTag (tagname, success, fail) {
+
+        if (FrameTrail.getState('storageMode') === 'local') {
+            var adapter = FrameTrail.module('StorageManager').getAdapter();
+            adapter.readJSON('tagdefinitions.json').catch(function() { return {}; }).then(function(data) {
+                delete data[tagname];
+                return adapter.writeJSON('tagdefinitions.json', data);
+            }).then(function() {
+                updateTagModel(function() {
+                    success({ code: 0, string: 'Tag deleted' });
+                }, fail);
+            }).catch(fail);
+            return;
+        }
 
         $.ajax({
             type:   'POST',

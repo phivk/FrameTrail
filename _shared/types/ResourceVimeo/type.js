@@ -44,7 +44,7 @@ FrameTrail.defineType(
 
                     var resourceDetail = $(
                             '<iframe class="resourceDetail" data-type="'+ this.resourceData.type +'" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen src="'
-                        +   this.resourceData.src
+                        +   this.resourceData.src.replace(/^\/\//, 'https://')
                         +   '?color=ffffff&portrait=0&byline=0&title=0&badge=0">'
                         +   '</iframe>'
                     ).bind('error', function() {

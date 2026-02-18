@@ -29,7 +29,7 @@ FrameTrail.defineType(
                     var resourceDetail = $(
                             '<iframe class="resourceDetail" data-type="'+ this.resourceData.type +'" '
                         +   'frameborder="0" allowfullscreen src="'
-                        +   'https://www.figma.com/embed?embed_host=frametrail&url=' + encodeURIComponent(this.resourceData.src)
+                        +   'https://www.figma.com/embed?embed_host=frametrail&url=' + encodeURIComponent(this.resourceData.src.replace(/^\/\//, 'https://'))
                         +   '">'
                         +   '</iframe>'
                     ).bind('error', function() {

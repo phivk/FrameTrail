@@ -37,21 +37,67 @@
     
     // Set up the various data models
     FrameTrail.initModule('RouteNavigation');
+    FrameTrail.initModule('StorageManager');
     FrameTrail.initModule('Database');
     FrameTrail.initModule('UserManagement');
     FrameTrail.initModule('ResourceManager');
     FrameTrail.initModule('ViewResources');
 
 
-	FrameTrail.module('Database').loadConfigData(function() {
-        if (FrameTrail.module('Database').config.alwaysForceLogin) {
-            FrameTrail.module('UserManagement').ensureAuthenticated(function() {
-                initResourceManager();
-            }, function() {}, true);
-        } else {
-            initResourceManager();
+	FrameTrail.module('StorageManager').init().then(function() {
+
+        var storageMode = FrameTrail.getState('storageMode');
+
+        if (storageMode === 'needsFolder') {
+            var folderDialog = $('<div class="folderPromptDialog" title="' + labels['SelectDataFolder'] + '">'
+                + '<p>' + labels['SelectDataFolderDescription'] + '</p>'
+                + '</div>');
+
+            folderDialog.dialog({
+                modal: true,
+                width: 450,
+                closeOnEscape: false,
+                open: function() { $(this).closest('.ui-dialog').find('.ui-dialog-titlebar-close').hide(); },
+                buttons: [
+                    {
+                        text: labels['SelectFolder'],
+                        click: function() {
+                            FrameTrail.module('StorageManager').switchToLocal().then(function() {
+                                folderDialog.dialog('close');
+                                folderDialog.remove();
+                                continueLoadingRM();
+                            }).catch(function(err) {
+                                alert(labels['ErrorCouldNotAccessFolder'] + ' ' + err.message);
+                            });
+                        }
+                    }
+                ]
+            });
+            return;
         }
-    });
+
+        if (storageMode === 'noStorage') {
+            alert(labels['ErrorNoStorageAvailable']);
+            return;
+        }
+
+        continueLoadingRM();
+
+    }); // StorageManager.init()
+
+    function continueLoadingRM() {
+
+        FrameTrail.module('Database').loadConfigData(function() {
+            if (FrameTrail.module('Database').config.alwaysForceLogin) {
+                FrameTrail.module('UserManagement').ensureAuthenticated(function() {
+                    initResourceManager();
+                }, function() {}, true);
+            } else {
+                initResourceManager();
+            }
+        });
+
+    }
 
     function initResourceManager() {
 

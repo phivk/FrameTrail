@@ -43,7 +43,7 @@ FrameTrail.defineType(
                 renderContent: function() {
 
                     var timecode = 0;
-                    var uri = this.resourceData.src;
+                    var uri = this.resourceData.src.replace(/^\/\//, 'https://');
 
                     if ( uri.indexOf('#t=') != -1 ) {
                         var uriParts = uri.split('#t=');

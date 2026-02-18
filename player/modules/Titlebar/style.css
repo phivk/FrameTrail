@@ -139,6 +139,23 @@
 	display: inline-block;
 }
 
+.titlebar .titlebarTitle .localFolderIndicator {
+	font-size: 12px;
+	opacity: 0.6;
+	white-space: nowrap;
+	cursor: pointer;
+	margin-right: 8px;
+	display: none;
+}
+
+.titlebar.editActive .titlebarTitle .localFolderIndicator {
+	display: inline;
+}
+
+.titlebar.editActive .titlebarTitle .localFolderIndicator:hover {
+	opacity: 1;
+}
+
 .titlebar .titlebarActionButtonContainer, .titlebar .sharingWidget {
 	float: right;
 }

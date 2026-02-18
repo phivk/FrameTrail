@@ -1014,6 +1014,80 @@
 
 
 	/**
+	 * I show a "Save As" dialog letting the user choose where to save:
+	 * server, local folder, or download as JSON file.
+	 *
+	 * @method saveAs
+	 */
+	function saveAs() {
+
+		var saveAsDialog = $('<div class="saveAsDialog" title="'+ labels['GenericSaveAs'] +'">'
+			+ '<p>'+ labels['GenericSaveAs'] +'</p>'
+			+ '<div class="saveOptions"></div>'
+			+ '</div>');
+
+		var options = saveAsDialog.find('.saveOptions');
+
+		// Server option (if available and logged in)
+		if (FrameTrail.module('StorageManager').canSaveToServer()) {
+			options.append(
+				'<button class="saveToServer" style="display:block; width:100%; margin:5px 0; padding:10px;">'
+				+ '<span class="icon-cloud-upload"></span> '+ labels['SaveToServer']
+				+ '</button>'
+			);
+		}
+
+		// Local folder option (if File System Access API supported)
+		if (FrameTrail.module('StorageManager').canSaveToLocal()) {
+			options.append(
+				'<button class="saveToLocal" style="display:block; width:100%; margin:5px 0; padding:10px;">'
+				+ '<span class="icon-folder"></span> '+ labels['SaveToLocalFolder']
+				+ '</button>'
+			);
+		}
+
+		// Download option (always available)
+		options.append(
+			'<button class="saveToDownload" style="display:block; width:100%; margin:5px 0; padding:10px;">'
+			+ '<span class="icon-download"></span> '+ labels['SaveAsDownload']
+			+ '</button>'
+		);
+
+		saveAsDialog.find('.saveToServer').click(function() {
+			FrameTrail.module('StorageManager').switchToServer().then(function() {
+				saveAsDialog.dialog('close');
+				save();
+			});
+		});
+
+		saveAsDialog.find('.saveToLocal').click(function() {
+			FrameTrail.module('StorageManager').switchToLocal().then(function() {
+				saveAsDialog.dialog('close');
+				save();
+			}).catch(function(err) {
+				FrameTrail.module('InterfaceModal').showErrorMessage('Could not access folder: ' + err.message);
+			});
+		});
+
+		saveAsDialog.find('.saveToDownload').click(function() {
+			var downloadAdapter = FrameTrail.module('StorageManager').getDownloadAdapter();
+			var hvID = FrameTrail.module('RouteNavigation').hypervideoID;
+			downloadAdapter.showDownloadDialog(hvID, FrameTrail);
+			saveAsDialog.dialog('close');
+		});
+
+		saveAsDialog.dialog({
+			modal: true,
+			width: 400,
+			close: function() {
+				$(this).remove();
+			}
+		});
+
+	}
+
+
+	/**
 	 * The global state "editMode" can be set to false, to trigger all modules to leave their edit mode.
 	 *
 	 * __However__, this global state should only be altered by me, because I check first if there were any unsaved changes,
@@ -1504,6 +1578,7 @@
 		newUnsavedChange:       newUnsavedChange,
 
 		save:                   save,
+		saveAs:                 saveAs,
 		leaveEditMode:          leaveEditMode,
 		updateHypervideo:       updateHypervideo,
 		exportIt:               exportIt

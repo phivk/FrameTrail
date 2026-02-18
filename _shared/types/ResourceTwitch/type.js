@@ -29,7 +29,7 @@ FrameTrail.defineType(
                     var resourceDetail = $(
                             '<iframe class="resourceDetail" data-type="'+ this.resourceData.type +'" '
                         +   'frameborder="0" allowfullscreen src="'
-                        +   this.resourceData.src
+                        +   this.resourceData.src.replace(/^\/\//, 'https://')
                         +   '&autoplay=false">'
                         +   '</iframe>'
                     ).bind('error', function() {

@@ -71,6 +71,25 @@
 
         }
 
+        function applyConfig(data) {
+            config = data;
+            FrameTrail.changeState('config', config);
+            if (config.theme) {
+                $(FrameTrail.getState('target')).attr('data-frametrail-theme', config.theme);
+            } else {
+                $(FrameTrail.getState('target')).attr('data-frametrail-theme', '');
+            }
+            success.call(this);
+        }
+
+        if (FrameTrail.getState('storageMode') === 'local') {
+            var adapter = FrameTrail.module('StorageManager').getAdapter();
+            adapter.readJSON('config.json')
+                .then(applyConfig)
+                .catch(function() { fail(labels['ErrorNoConfigFile']); });
+            return;
+        }
+
         $.ajax({
             type:   "GET",
             url:    configInitOptions || ('_data/config.json'),
@@ -78,19 +97,7 @@
             dataType: "json",
             mimeType: "application/json"
         }).done(function(data){
-
-            config = data;
-            FrameTrail.changeState('config', config);
-
-            // TODO: Check if this makes sense here
-            if (config.theme) {
-                $(FrameTrail.getState('target')).attr('data-frametrail-theme', config.theme);
-            } else {
-                $(FrameTrail.getState('target')).attr('data-frametrail-theme', '');
-            }
-
-            success.call(this);
-
+            applyConfig(data);
         }).fail(function(){
 
             fail(labels['ErrorNoConfigFile']);
@@ -113,6 +120,25 @@
 
         //clear previous resources to allow deletion as we use object assign
         resources = {};
+
+        if (FrameTrail.getState('storageMode') === 'local') {
+            var adapter = FrameTrail.module('StorageManager').getAdapter();
+            adapter.readJSON('resources/_index.json')
+                .then(function(data) {
+                    resources = data.resources || {};
+                    // Pre-load blob URLs for local resource files so getResourceURL() works synchronously
+                    return adapter.preloadResourceURLs(resources);
+                })
+                .then(function() {
+                    success.call(this);
+                })
+                .catch(function() {
+                    // No resources file — start with empty
+                    resources = {};
+                    success.call(this);
+                });
+            return;
+        }
 
         var initOptionsResources = FrameTrail.getState('resources'),
             countdown = initOptionsResources.length;
@@ -143,8 +169,8 @@
                     ready();
 
                 }
-                
-                
+
+
 
             } else if (initOptionsResources[i].type === 'iiif') {
 
@@ -177,11 +203,24 @@
      * @param {Function} fail
      */
     function loadUserData(success, fail) {
-        
+
         if (FrameTrail.getState('users')) {
-            
+
             users = FrameTrail.getState('users');
             success.call(this);
+
+        } else if (FrameTrail.getState('storageMode') === 'local') {
+
+            var adapter = FrameTrail.module('StorageManager').getAdapter();
+            adapter.readJSON('users.json')
+                .then(function(data) {
+                    users = data.user || {};
+                    success.call(this);
+                })
+                .catch(function() {
+                    users = {};
+                    success.call(this);
+                });
 
         } else if (!FrameTrail.module('RouteNavigation').environment.server) {
 
@@ -253,6 +292,11 @@
      * @private
      */
     function loadHypervideoData(success, fail) {
+
+        if (FrameTrail.getState('storageMode') === 'local') {
+            loadHypervideoData_LocalAdapter(success, fail);
+            return;
+        }
 
         var initOptionsHypervideoData = FrameTrail.getState('contents');
 
@@ -473,6 +517,75 @@
     }
 
 
+    /**
+     * I load hypervideo data from the local filesystem adapter.
+     * Mirrors loadHypervideoData_FrametrailServer but reads via adapter.
+     *
+     * @method loadHypervideoData_LocalAdapter
+     * @param {Function} success
+     * @param {Function} fail
+     * @private
+     */
+    function loadHypervideoData_LocalAdapter(success, fail) {
+
+        var adapter = FrameTrail.module('StorageManager').getAdapter();
+
+        adapter.readJSON('hypervideos/_index.json').then(function(data) {
+
+            var keys = Object.keys(data.hypervideos || {}),
+                countdown = keys.length,
+                bufferedData = {};
+
+            if (Array.isArray(data.hypervideos) || countdown === 0) {
+                success.call(this);
+                return;
+            }
+
+            keys.forEach(function(hvID) {
+                var hvDir = 'hypervideos/' + data.hypervideos[hvID];
+
+                adapter.readJSON(hvDir + '/hypervideo.json').then(function(hypervideoData) {
+
+                    return adapter.readJSON(hvDir + '/annotations/_index.json')
+                        .catch(function() { return { mainAnnotation: null, annotationfiles: null }; })
+                        .then(function(annotationsIndex) {
+
+                            bufferedData[hvID] = {
+                                "name": hypervideoData.meta.name,
+                                "description": hypervideoData.meta.description,
+                                "thumb": hypervideoData.meta.thumb,
+                                "creator": hypervideoData.meta.creator,
+                                "creatorId": hypervideoData.meta.creatorId,
+                                "created": hypervideoData.meta.created,
+                                "lastchanged": hypervideoData.meta.lastchanged,
+                                "hidden": hypervideoData.config.hidden,
+                                "config": hypervideoData.config,
+                                "mainAnnotation": annotationsIndex.mainAnnotation || null,
+                                "annotationfiles": annotationsIndex.annotationfiles || null,
+                                "subtitles": hypervideoData.subtitles,
+                                "clips": hypervideoData.clips,
+                                "hypervideoData": hypervideoData
+                            };
+                            delete bufferedData[hvID].config.hidden;
+
+                            if (!--countdown) {
+                                hypervideos = bufferedData;
+                                success.call(this);
+                            }
+                        });
+
+                }).catch(function(err) {
+                    console.error('Failed to load ' + hvDir + '/hypervideo.json:', err);
+                    fail(labels['ErrorNoHypervideoJSONFile'] + ' (' + hvDir + ')');
+                });
+            });
+
+        }).catch(function() {
+            fail(labels['ErrorNoHypervideoIndexFile']);
+        });
+
+    }
+
 
     /**
      * I load the hypervideo sequence data (_data/hypervideos/
@@ -599,6 +712,11 @@
      * @private
      */
     function loadAnnotationData(success, fail) {
+
+        if (FrameTrail.getState('storageMode') === 'local') {
+            loadAnnotationData_LocalAdapter(success, fail);
+            return;
+        }
 
         var initOptionsHypervideoData = FrameTrail.getState('contents');
 
@@ -927,6 +1045,90 @@
     };
 
 
+    /**
+     * I load annotation data from the local filesystem adapter.
+     * Mirrors loadAnnotationData_FrametrailServer but reads via adapter.
+     *
+     * @method loadAnnotationData_LocalAdapter
+     * @param {Function} success
+     * @param {Function} fail
+     * @private
+     */
+    function loadAnnotationData_LocalAdapter(success, fail) {
+
+        var adapter = FrameTrail.module('StorageManager').getAdapter();
+        var annotationfiles = hypervideo.annotationfiles || {};
+        var ids = Object.keys(annotationfiles);
+        var annotationsCount = ids.length;
+
+        annotations = [];
+
+        if (annotationsCount === 0) {
+            success.call(this);
+            return;
+        }
+
+        ids.forEach(function(id) {
+            adapter.readJSON('hypervideos/' + hypervideoID + '/annotations/' + id + '.json')
+                .then(function(data) {
+                    for (var i in data) {
+                        annotations.push({
+                            "name": data[i].body['frametrail:name'],
+                            "creator": data[i].creator.nickname,
+                            "creatorId": data[i].creator.id,
+                            "created": (new Date(data[i].created)).getTime(),
+                            "type": data[i].body['frametrail:type'],
+                            "uri": (function () {
+                                        if (data[i]["frametrail:uri"]) { return data[i]["frametrail:uri"]; }
+                                        else if (data[i].body["frametrail:type"] == 'entity') { return data[i].body.source; }
+                                        else { return null; }
+                                    })(),
+                            "src": (function () {
+                                        if (data[i].body["frametrail:type"] === 'location') { return null; }
+                                        return (['codesnippet', 'text', 'quiz', 'entity', 'webpage', 'wikipedia'].indexOf(data[i].body["frametrail:type"]) >= 0)
+                                                ? data[i].body.value
+                                                : data[i].body.source;
+                                    })(),
+                            "thumb": data[i].body['frametrail:thumb'],
+                            "start": parseFloat(/t=(\d+\.?\d*)/g.exec(data[i].target.selector.value)[1]),
+                            "end": parseFloat(/t=(\d+\.?\d*),(\d+\.?\d*)/g.exec(data[i].target.selector.value)[2]),
+                            "resourceId": data[i].body["frametrail:resourceId"],
+                            "attributes": data[i].body['frametrail:attributes'] || {},
+                            "tags": data[i]['frametrail:tags'],
+                            "source": {
+                                frametrail: true,
+                                url: 'local'
+                            },
+                            "graphData": data[i]['frametrail:graphdata'] || null,
+                            "graphDataType": data[i]['frametrail:graphdatatype'] || null
+                        });
+
+                        if (annotations[annotations.length-1].type === 'location') {
+                            var locationAttributes = annotations[annotations.length-1].attributes;
+                            locationAttributes.lat = parseFloat(data[i].body['frametrail:attributes'].lat);
+                            locationAttributes.lon = parseFloat(data[i].body['frametrail:attributes'].lon);
+                            locationAttributes.boundingBox = data[i].body['frametrail:attributes'].boundingBox;
+                        }
+
+                        if (annotations[annotations.length-1].type === 'video') {
+                            var annotationItem = annotations[annotations.length-1];
+                            annotationItem.startOffset = (data[i].body.selector && data[i].body.selector.value)
+                                                         ? parseFloat(/t=(\d+)/g.exec(data[i].body.selector.value)[1]) : 0;
+                            annotationItem.endOffset = (data[i].body.selector && data[i].body.selector.value)
+                                                        ? parseFloat(/t=(\d+\.?\d*)/g.exec(data[i].body.selector.value)[2]) : 0;
+                        }
+                    }
+
+                    annotationsCount--;
+                    if (annotationsCount === 0) {
+                        success.call(this);
+                    }
+                })
+                .catch(function() {
+                    fail(labels['ErrorMissingAnnotationFile']);
+                });
+        });
+    }
 
 
 
@@ -957,6 +1159,46 @@
                 subtitleCount ++;
             }
 
+            // Helper to parse VTT data once loaded
+            function parseSubtitleData(data, currentSubtitles) {
+                var parsedCues = [];
+                var parser = new WebVTT.Parser(window, WebVTT.StringDecoder());
+                parser.onregion = function(region) {};
+                parser.oncue = function(cue) { parsedCues.push(cue); };
+                parser.onparsingerror = function(e) { console.log(e); };
+                parser.parse(data);
+                parser.flush();
+
+                var langLabel = subtitlesLangMapping[currentSubtitles.srclang] || currentSubtitles.srclang;
+                subtitles[currentSubtitles.srclang] = {};
+                subtitles[currentSubtitles.srclang]['label'] = langLabel;
+                subtitles[currentSubtitles.srclang]['cues'] = parsedCues;
+
+                subtitleCount--;
+                if (subtitleCount === 0) {
+                    success.call(this);
+                }
+            }
+
+            if (FrameTrail.getState('storageMode') === 'local') {
+                var adapter = FrameTrail.module('StorageManager').getAdapter();
+                for (var j = 0; j < hypervideo.subtitles.length; j++) {
+                    (function(j) {
+                        var currentSubtitles = hypervideo.subtitles[j];
+                        adapter.readText('hypervideos/' + hypervideoID + '/subtitles/' + currentSubtitles.src)
+                            .then(function(data) {
+                                parseSubtitleData(data, currentSubtitles);
+                            })
+                            .catch(function() {
+                                console.warn(labels['ErrorMissingSubtitleFile']);
+                                subtitleCount--;
+                                if (subtitleCount === 0) { success.call(this); }
+                            });
+                    })(j);
+                }
+                return;
+            }
+
             for (var i = 0; i < hypervideo.subtitles.length; i++) {
 
                 (function(i){
@@ -971,40 +1213,7 @@
 
                     }).done(function(data){
 
-                        var parsedCues = [];
-
-                        // parse webvtt contents
-                        var parser = new WebVTT.Parser(window, WebVTT.StringDecoder());
-                        parser.onregion = function(region) {};
-                        parser.oncue = function(cue) {
-                            parsedCues.push(cue);
-                        };
-                        parser.onparsingerror = function(e) {
-                            console.log(e);
-                        };
-                        parser.parse(data);
-                        parser.flush();
-
-                        var langLabel;
-                        if (subtitlesLangMapping[currentSubtitles.srclang]) {
-                            langLabel = subtitlesLangMapping[currentSubtitles.srclang];
-                        } else {
-                            langLabel = currentSubtitles.srclang;
-                        }
-
-                        // write parsed contents in subtitles var
-                        subtitles[currentSubtitles.srclang] = {};
-                        subtitles[currentSubtitles.srclang]['label'] = langLabel;
-                        subtitles[currentSubtitles.srclang]['cues'] = parsedCues;
-
-                        subtitleCount--;
-                        if(subtitleCount === 0){
-
-                            // all subtitle data loaded from server
-                            success.call(this);
-
-                        }
-
+                        parseSubtitleData(data, currentSubtitles);
 
                     }).fail(function() {
 
@@ -1410,6 +1619,16 @@
      */
     function saveConfig(callback) {
 
+        var storageMode = FrameTrail.getState('storageMode');
+
+        if (storageMode !== 'server') {
+            var adapter = FrameTrail.module('StorageManager').getAdapter();
+            adapter.writeJSON('config.json', config)
+                .then(function() { callback.call(window, { success: true }); })
+                .catch(function(error) { callback.call(window, { failed: 'config', error: error.message }); });
+            return;
+        }
+
         $.ajax({
             type:   'POST',
             url:    '_server/ajaxServer.php',
@@ -1463,6 +1682,21 @@
     function saveGlobalCSS(callback) {
 
         var styles = $('head > style.FrameTrailGlobalCustomCSS').html();
+
+        var storageMode = FrameTrail.getState('storageMode');
+
+        if (storageMode !== 'server') {
+            var adapter = FrameTrail.module('StorageManager').getAdapter();
+            if (adapter.writeText) {
+                adapter.writeText('custom.css', styles || '')
+                    .then(function() { callback.call(window, { success: true }); })
+                    .catch(function(error) { callback.call(window, { failed: 'globalcss', error: error.message }); });
+            } else {
+                // Download adapter doesn't support text files
+                callback.call(window, { success: true });
+            }
+            return;
+        }
 
         $.ajax({
             type:   'POST',
@@ -1520,6 +1754,17 @@
 
         var saveData = convertToDatabaseFormat(thisHypervideoID);
         //console.log(saveData);
+
+        var storageMode = FrameTrail.getState('storageMode');
+
+        if (storageMode !== 'server') {
+            var adapter = FrameTrail.module('StorageManager').getAdapter();
+            var path = 'hypervideos/' + thisHypervideoID + '/hypervideo.json';
+            adapter.writeJSON(path, saveData)
+                .then(function() { callback.call(window, { success: true }); })
+                .catch(function(error) { callback.call(window, { failed: 'hypervideo', error: error.message }); });
+            return;
+        }
 
         $.ajax({
             type:   'POST',
@@ -1696,6 +1941,39 @@
         }
 
         //console.log(annotationsToSave);
+
+        var storageMode = FrameTrail.getState('storageMode');
+
+        if (storageMode !== 'server') {
+            // Local / download adapter — write annotation file + update index
+            var adapter = FrameTrail.module('StorageManager').getAdapter();
+            var annPath = 'hypervideos/' + hypervideoID + '/annotations/' + userID + '.json';
+            var indexPath = 'hypervideos/' + hypervideoID + '/annotations/_index.json';
+
+            adapter.createDirectory('hypervideos/' + hypervideoID + '/annotations')
+                .then(function() {
+                    return adapter.writeJSON(annPath, annotationsToSave);
+                })
+                .then(function() {
+                    return adapter.readJSON(indexPath).catch(function() { return {}; });
+                })
+                .then(function(index) {
+                    index[userID] = {
+                        name: name,
+                        description: description,
+                        hidden: hidden,
+                        src: userID + '.json'
+                    };
+                    return adapter.writeJSON(indexPath, index);
+                })
+                .then(function() {
+                    callback.call(window, { success: true });
+                })
+                .catch(function(error) {
+                    callback.call(window, { failed: 'annotations', error: error.message });
+                });
+            return;
+        }
 
         $.ajax({
             type:   'POST',

@@ -34,6 +34,221 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
         };
 
 
+	/**
+	 * Add a resource entry to the local _index.json and optionally store a file.
+	 * @method addResourceLocally
+	 * @param {Object} resourceObj - The resource data object (src, type, name, thumb, attributes, etc.)
+	 * @param {File|Blob} [fileBlob] - Optional file to store in resources/
+	 * @param {String} [thumbDataUrl] - Optional base64 data URL for thumbnail
+	 * @return {Promise<Object>} The response with resId and resource
+	 * @private
+	 */
+	function addResourceLocally(resourceObj, fileBlob, thumbDataUrl) {
+		var adapter = FrameTrail.module('StorageManager').getAdapter();
+		var userInfo = adapter.userInfo;
+
+		// Fill in creator info
+		resourceObj.creator = userInfo.name || 'Local User';
+		resourceObj.creatorId = userInfo.id || 'local';
+		resourceObj.created = Math.floor(Date.now() / 1000);
+
+		return adapter.readJSON('resources/_index.json').catch(function() {
+			return { 'resources-increment': 0, 'resources': {} };
+		}).then(function(indexData) {
+			if (!indexData['resources-increment']) {
+				indexData['resources-increment'] = 0;
+			}
+			indexData['resources-increment']++;
+			var newId = indexData['resources-increment'];
+			indexData['resources'][newId] = resourceObj;
+
+			var tasks = [adapter.writeJSON('resources/_index.json', indexData)];
+
+			// Store file if provided
+			if (fileBlob && resourceObj.src && resourceObj.type !== 'url') {
+				tasks.push(adapter.writeFile('resources/' + resourceObj.src, fileBlob));
+			}
+
+			// Store thumbnail if provided as data URL
+			if (thumbDataUrl && resourceObj.thumb) {
+				tasks.push(adapter.writeDataUrl('resources/' + resourceObj.thumb, thumbDataUrl));
+			}
+
+			return Promise.all(tasks).then(function() {
+				return { resId: newId, resource: resourceObj };
+			});
+		});
+	}
+
+	/**
+	 * Upload a single file locally via File System Access API.
+	 * @method uploadSingleFileLocally
+	 * @param {File} file
+	 * @param {String} type
+	 * @param {Function} callback - callback(success, errorMessage)
+	 * @private
+	 */
+	function uploadSingleFileLocally(file, type, callback) {
+		var fileName = file.name.replace(/\.[^/.]+$/, ''); // Remove extension
+		var fileExt = file.name.split('.').pop().toLowerCase();
+		var timestamp = Date.now();
+		var adapter = FrameTrail.module('StorageManager').getAdapter();
+		var userInfo = adapter.userInfo;
+		var userId = userInfo.id || 'local';
+		var storedName = (userId + '_' + timestamp + '_' + sanitizeFilename(fileName)).substring(0, 90) + '.' + fileExt;
+
+		var resourceObj = {
+			name: fileName,
+			src: storedName,
+			type: type,
+			attributes: {}
+		};
+
+		// For video, force .mp4 extension in stored name
+		if (type === 'video') {
+			storedName = (userId + '_' + timestamp + '_' + sanitizeFilename(fileName)).substring(0, 90) + '.mp4';
+			resourceObj.src = storedName;
+		}
+
+		// For audio, force .mp3 extension
+		if (type === 'audio') {
+			storedName = (userId + '_' + timestamp + '_' + sanitizeFilename(fileName)).substring(0, 90) + '.mp3';
+			resourceObj.src = storedName;
+		}
+
+		addResourceLocally(resourceObj, file).then(function() {
+			callback(true);
+		}).catch(function(err) {
+			callback(false, 'Local save failed: ' + err.message);
+		});
+	}
+
+	/**
+	 * Sanitize a filename for local storage.
+	 * @method sanitizeFilename
+	 * @param {String} name
+	 * @return {String}
+	 * @private
+	 */
+	function sanitizeFilename(name) {
+		return name.replace(/[^a-zA-Z0-9_\-]/g, '_');
+	}
+
+	/**
+	 * Handle the traditional single-file upload form submission in local mode.
+	 * Reads form fields and saves the resource locally.
+	 * @method submitFormLocally
+	 * @param {jQuery} uploadDialog
+	 * @param {Function} successCallback
+	 * @private
+	 */
+	function submitFormLocally(uploadDialog, successCallback) {
+		var tmpType = uploadDialog.find('.nameInputContainer input[name="type"]').val();
+		var resourceName = uploadDialog.find('.nameInputContainer input[name="name"]').val();
+
+		if (!resourceName || resourceName.length < 1) {
+			$('.uploadDialog').append('<div class="message active error">'+ labels['ErrorEmptyName'] +'</div>');
+			return;
+		}
+
+		uploadDialog.find('.progress').show();
+		uploadDialog.find('.bar').width('50%');
+		uploadDialog.find('.percent').html('50%');
+		uploadDialog.find('.uploadStatus').html('Saving...');
+		$('.newResourceConfirm').prop('disabled', true);
+
+		if (tmpType === 'url') {
+			// URL resource — no file to store
+			var tmpObj = checkResourceInput(
+				uploadDialog.find('.resourceInput').val(),
+				uploadDialog.find('.resourceNameInput').val(),
+				uploadDialog.find('.resourceInput[name="thumbnail"]').val()
+			);
+			if (!tmpObj || !tmpObj.src) {
+				uploadDialog.find('.progress').hide();
+				$('.newResourceConfirm').prop('disabled', false);
+				$('.uploadDialog').append('<div class="message active error">'+ labels['ErrorEmptyURL'] +'</div>');
+				return;
+			}
+			tmpObj.name = resourceName;
+			addResourceLocally(tmpObj).then(function() {
+				uploadDialog.find('.bar').width('100%');
+				uploadDialog.find('.percent').html('100%');
+				FrameTrail.module('Database').loadResourceData(function() {
+					uploadDialog.dialog('close');
+					successCallback && successCallback.call();
+				});
+			}).catch(function(err) {
+				uploadDialog.find('.progress').hide();
+				$('.newResourceConfirm').prop('disabled', false);
+				$('.uploadDialog').append('<div class="message active error">Save failed: ' + err.message + '</div>');
+			});
+
+		} else if (tmpType === 'map') {
+			// Map resource — no file, just coordinates
+			var lat = uploadDialog.find('input[name="lat"]').val();
+			var lon = uploadDialog.find('input[name="lon"]').val();
+			if (!lat || !lon) {
+				uploadDialog.find('.progress').hide();
+				$('.newResourceConfirm').prop('disabled', false);
+				$('.uploadDialog').append('<div class="message active error">'+ labels['ErrorMapNoCoordinates'] +'</div>');
+				return;
+			}
+			var mapResource = {
+				name: resourceName,
+				src: '',
+				type: 'location',
+				attributes: {
+					lat: lat,
+					lon: lon,
+					boundingBox: [
+						uploadDialog.find('input.BB1').val(),
+						uploadDialog.find('input.BB2').val(),
+						uploadDialog.find('input.BB3').val(),
+						uploadDialog.find('input.BB4').val()
+					]
+				}
+			};
+			addResourceLocally(mapResource).then(function() {
+				uploadDialog.find('.bar').width('100%');
+				uploadDialog.find('.percent').html('100%');
+				FrameTrail.module('Database').loadResourceData(function() {
+					uploadDialog.dialog('close');
+					successCallback && successCallback.call();
+				});
+			}).catch(function(err) {
+				uploadDialog.find('.progress').hide();
+				$('.newResourceConfirm').prop('disabled', false);
+				$('.uploadDialog').append('<div class="message active error">Save failed: ' + err.message + '</div>');
+			});
+
+		} else {
+			// File upload (image, video, audio, pdf)
+			var fileInput = uploadDialog.find('#resourceInputTab' + tmpType.charAt(0).toUpperCase() + tmpType.slice(1) + ' input[type="file"]');
+			var file = fileInput[0] && fileInput[0].files[0];
+			if (!file) {
+				uploadDialog.find('.progress').hide();
+				$('.newResourceConfirm').prop('disabled', false);
+				$('.uploadDialog').append('<div class="message active error">No file selected.</div>');
+				return;
+			}
+
+			uploadSingleFileLocally(file, tmpType, function(success, error) {
+				if (success) {
+					uploadDialog.find('.bar').width('100%');
+					uploadDialog.find('.percent').html('100%');
+					FrameTrail.module('Database').loadResourceData(function() {
+						uploadDialog.dialog('close');
+						successCallback && successCallback.call();
+					});
+				} else {
+					uploadDialog.find('.progress').hide();
+					$('.newResourceConfirm').prop('disabled', false);
+					$('.uploadDialog').append('<div class="message active error">' + (error || 'Upload failed') + '</div>');
+				}
+			});
+		}
+	}
 
 	/**
 	 * I tell the {{#crossLink "Database/loadResourceData:method"}}Database{{/crossLink}} to reload the index data.
@@ -165,8 +380,9 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 		queueItem.status = 'uploading';
 		updateQueueUI();
 
-		// Upload the file
-		uploadSingleFile(queueItem.file, queueItem.type, function(success, error) {
+		// Upload the file (use local adapter when in local storage mode)
+		var uploadFn = (FrameTrail.getState('storageMode') === 'local') ? uploadSingleFileLocally : uploadSingleFile;
+		uploadFn(queueItem.file, queueItem.type, function(success, error) {
 			// Update status
 			if (success) {
 				queueItem.status = 'completed';
@@ -319,26 +535,9 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 	function uploadResource(successCallback, onlyVideo) {
         FrameTrail.module('UserManagement').ensureAuthenticated(function(){
 
-            // Fetch both max upload size and media optimization config
-            $.when(
-                $.ajax({
-                    type: 'GET',
-                    url: '_server/ajaxServer.php',
-                    data: {'a':'fileGetMaxUploadSize'}
-                }),
-                $.ajax({
-                    type: 'GET',
-                    url: '_server/ajaxServer.php',
-                    data: {'a':'fileGetMediaOptimizationConfig'}
-                })
-            ).done(function(maxSizeResponse, mediaConfigResponse) {
+            var isLocalMode = (FrameTrail.getState('storageMode') === 'local');
 
-                maxUploadBytes = maxSizeResponse[0].maxuploadbytes;
-
-                // Update media optimization config
-                if (mediaConfigResponse[0] && mediaConfigResponse[0].config) {
-                    mediaOptimizationConfig = mediaConfigResponse[0].config;
-                }
+            function showUploadDialog() {
 
                     var uploadDialog =  $('<div class="uploadDialog" title="'+ labels['ResourceAddNew'] +'">'
                                         + '    <div class="dropZoneContainer">'
@@ -930,7 +1129,11 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                                         processUploadQueue();
                                     } else {
                                         // Traditional single file upload
-                                        $('.uploadForm').submit();
+                                        if (isLocalMode) {
+                                            submitFormLocally(uploadDialog, successCallback);
+                                        } else {
+                                            $('.uploadForm').submit();
+                                        }
                                     }
                                 }
                             },
@@ -952,7 +1155,34 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                         }
                     });
 
-            }); // End of $.when().done()
+            } // End of showUploadDialog
+
+            if (isLocalMode) {
+                // Local mode: use generous defaults, no server config needed
+                maxUploadBytes = 500 * 1024 * 1024; // 500 MB
+                mediaOptimizationConfig = { enabled: false, ffmpegEnabled: false, ffmpegAvailable: false };
+                showUploadDialog();
+            } else {
+                // Server mode: fetch config from server
+                $.when(
+                    $.ajax({
+                        type: 'GET',
+                        url: '_server/ajaxServer.php',
+                        data: {'a':'fileGetMaxUploadSize'}
+                    }),
+                    $.ajax({
+                        type: 'GET',
+                        url: '_server/ajaxServer.php',
+                        data: {'a':'fileGetMediaOptimizationConfig'}
+                    })
+                ).done(function(maxSizeResponse, mediaConfigResponse) {
+                    maxUploadBytes = maxSizeResponse[0].maxuploadbytes;
+                    if (mediaConfigResponse[0] && mediaConfigResponse[0].config) {
+                        mediaOptimizationConfig = mediaConfigResponse[0].config;
+                    }
+                    showUploadDialog();
+                });
+            }
 
         });
     }
@@ -1010,8 +1240,8 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                         if (res !== null) {
                             var timeCode = /t=([0-9]*)/.exec(src),
                                 tcString = (timeCode) ? '?start=' + timeCode[1] : '';
-                            return createResource("//www.youtube.com/embed/" + res[1] + tcString,
-                                                   "youtube", name, "http://img.youtube.com/vi/" + res[1] + "/2.jpg");
+                            return createResource("https://www.youtube.com/embed/" + res[1] + tcString,
+                                                   "youtube", name, "https://img.youtube.com/vi/" + res[1] + "/2.jpg");
                         }
                     }
                     return null;
@@ -1021,9 +1251,9 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                     var res = /^(http\:\/\/|https\:\/\/)?(www\.)?(vimeo\.com\/)([0-9]+)$/.exec(src);
                     if (res !== null) {
                         // Create the resource beforehand, so that we can update its thumb property asynchronously
-                        var r = createResource("//player.vimeo.com/video/" + res[4], "vimeo", name);
+                        var r = createResource("https://player.vimeo.com/video/" + res[4], "vimeo", name);
                         $.ajax({
-                            url: "http://vimeo.com/api/v2/video/" + res[4] + ".json",
+                            url: "https://vimeo.com/api/v2/video/" + res[4] + ".json",
                             async: false,
                             success: function (data) {
                                 r.thumb = data[0].thumbnail_large;
@@ -1444,7 +1674,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 
             if (previewXHR) { previewXHR.abort(); }
 
-            if (resourceType == 'webpage' || resourceType == 'wikipedia') {
+            if ((resourceType == 'webpage' || resourceType == 'wikipedia') && FrameTrail.getState('storageMode') !== 'local') {
                 previewXHR = $.ajax({
                     type:   'POST',
                     url:    '_server/ajaxServer.php',
@@ -1564,6 +1794,36 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 	 * @param {Function} cancelCallback
 	 */
 	function deleteResource(resourceID, successCallback, cancelCallback) {
+
+		if (FrameTrail.getState('storageMode') === 'local') {
+			var adapter = FrameTrail.module('StorageManager').getAdapter();
+			adapter.readJSON('resources/_index.json').then(function(indexData) {
+				if (!indexData.resources[resourceID]) {
+					cancelCallback({ code: 3, string: 'Resource not found' });
+					return;
+				}
+				var res = indexData.resources[resourceID];
+				var deleteTasks = [];
+
+				// Delete the source file if it's a local file (not an external URL)
+				if (res.src && !/^(https?:|\/\/|file:|blob:)/.test(res.src)) {
+					deleteTasks.push(adapter.deleteFile('resources/' + res.src).catch(function() {}));
+				}
+				// Delete the thumbnail file if it's a local file
+				if (res.thumb && !/^(https?:|\/\/|file:|blob:)/.test(res.thumb)) {
+					deleteTasks.push(adapter.deleteFile('resources/' + res.thumb).catch(function() {}));
+				}
+
+				delete indexData.resources[resourceID];
+				deleteTasks.push(adapter.writeJSON('resources/_index.json', indexData));
+				return Promise.all(deleteTasks);
+			}).then(function() {
+				successCallback();
+			}).catch(function(err) {
+				cancelCallback({ code: 1, string: err.message });
+			});
+			return;
+		}
 
 		$.ajax({
 			type:   'POST',
@@ -1710,6 +1970,26 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 	 * @private
 	 */
 	function getFilteredList(targetElement, key, condition, values) {
+
+		if (FrameTrail.getState('storageMode') === 'local') {
+			// Client-side filtering using the already-loaded Database resources
+			var allResources = FrameTrail.module('Database').resources;
+			var result = {};
+			if (typeof values === 'string') { values = [values]; }
+			for (var k in allResources) {
+				if (!allResources.hasOwnProperty(k)) continue;
+				var v = allResources[k];
+				var match = false;
+				if (condition === '==' || condition === 'contains') match = (values.indexOf(v[key]) !== -1);
+				else if (condition === '!=') match = (values.indexOf(v[key]) === -1);
+				else if (condition === '<=') match = (v[key] <= values[0]);
+				else if (condition === '>=') match = (v[key] >= values[0]);
+				if (match) result[k] = v;
+			}
+			renderResult(targetElement, result);
+			targetElement.find('.loadingScreen').fadeOut(600, function() { $(this).remove(); });
+			return;
+		}
 
 		$.ajax({
 

@@ -239,15 +239,28 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
         codeEditor.setSize(null, '100%');
 
         // this is necessary to be able to manipulate the css live
-        if ( $('head > style.FrameTrailGlobalCustomCSS').length == 0 && $('head link[href$="custom.css"]').length != 0 ) {
-            $.get($('head link[href$="custom.css"]').attr('href'))
-                .done(function (cssString) {
+        if ( $('head > style.FrameTrailGlobalCustomCSS').length == 0 ) {
+            if (FrameTrail.getState('storageMode') === 'local') {
+                var adapter = FrameTrail.module('StorageManager').getAdapter();
+                adapter.readText('custom.css').then(function(cssString) {
                     codeEditor.setValue(cssString);
                     $('head').append('<style class="FrameTrailGlobalCustomCSS" type="text/css">'+ cssString +'</style>');
                     $('head link[href$="custom.css"]').remove();
-                }).fail(function() {
-                    console.log(labels['ErrorCouldNotRetrieveCustomCSS']);
+                }).catch(function() {
+                    // No custom.css yet — create empty style tag so edits can be applied
+                    $('head').append('<style class="FrameTrailGlobalCustomCSS" type="text/css"></style>');
+                    $('head link[href$="custom.css"]').remove();
                 });
+            } else if ( $('head link[href$="custom.css"]').length != 0 ) {
+                $.get($('head link[href$="custom.css"]').attr('href'))
+                    .done(function (cssString) {
+                        codeEditor.setValue(cssString);
+                        $('head').append('<style class="FrameTrailGlobalCustomCSS" type="text/css">'+ cssString +'</style>');
+                        $('head link[href$="custom.css"]').remove();
+                    }).fail(function() {
+                        console.log(labels['ErrorCouldNotRetrieveCustomCSS']);
+                    });
+            }
         }
 
         /* Tag Definitions UI */
@@ -575,9 +588,11 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                             var saveTotal = (configChanged ? 1 : 0) + (globalCSSChanged ? 1 : 0);
                             var saveError = null;
                             
+                            var saveClosed = false;
                             function checkSaveComplete() {
                                 saveCount++;
-                                if (saveCount >= saveTotal) {
+                                if (saveCount >= saveTotal && !saveClosed) {
+                                    saveClosed = true;
                                     FrameTrail.module('InterfaceModal').hideMessage(500);
                                     if (saveError) {
                                         FrameTrail.module('InterfaceModal').showErrorMessage(labels['ErrorSavingSettings'] || 'Error saving settings');

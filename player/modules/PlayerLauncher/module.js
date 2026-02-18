@@ -38,6 +38,7 @@
 
     // Set up the various data models
     FrameTrail.initModule('RouteNavigation');
+    FrameTrail.initModule('StorageManager');
     FrameTrail.initModule('UserManagement');
     FrameTrail.initModule('Database');
     FrameTrail.initModule('TagModel');
@@ -60,132 +61,205 @@
     FrameTrail.initModule('UndoManager');
 
 
-    // start the actual init process
+    // Initialize storage, then start the actual init process
 
-    if (FrameTrail.module('RouteNavigation').hypervideoID) {
+    FrameTrail.module('StorageManager').init().then(function() {
 
-        FrameTrail.module('Database').loadData(
+        var storageMode = FrameTrail.getState('storageMode');
 
-            function () {
+        if (storageMode === 'needsFolder') {
+            // File System Access API available but no folder selected — prompt user
+            showFolderPrompt();
+            return;
+        }
 
-                FrameTrail.module('UserTraces').initTraces();
+        if (storageMode === 'noStorage') {
+            FrameTrail.module('InterfaceModal').showErrorMessage(labels['ErrorNoStorageAvailable']);
+            return;
+        }
 
-                if (FrameTrail.module('Database').config.alwaysForceLogin) {
-                    FrameTrail.module('InterfaceModal').hideMessage();
-                    FrameTrail.module('UserManagement').ensureAuthenticated(function() {
+        continueLoading();
+
+    });
+
+    function continueLoading() {
+
+        if (FrameTrail.module('RouteNavigation').hypervideoID) {
+
+            FrameTrail.module('Database').loadData(
+
+                function () {
+
+                    FrameTrail.module('UserTraces').initTraces();
+
+                    if (FrameTrail.module('Database').config.alwaysForceLogin) {
+                        FrameTrail.module('InterfaceModal').hideMessage();
+                        FrameTrail.module('UserManagement').ensureAuthenticated(function() {
+                            initHypervideo();
+                        }, function() {}, true);
+                    } else {
                         initHypervideo();
-                    }, function() {}, true);
-                } else {
-                    initHypervideo();
-                }
+                    }
 
-                function initHypervideo() {
+                    function initHypervideo() {
 
-                    FrameTrail.module('TagModel').initTagModel(
+                        FrameTrail.module('TagModel').initTagModel(
 
-                        function () {
+                            function () {
 
-                            FrameTrail.module('InterfaceModal').setLoadingTitle(FrameTrail.module('Database').hypervideo.name);
+                                FrameTrail.module('InterfaceModal').setLoadingTitle(FrameTrail.module('Database').hypervideo.name);
 
-                            FrameTrail.module('HypervideoModel').initModel(function(){
+                                FrameTrail.module('HypervideoModel').initModel(function(){
 
-                                FrameTrail.module('Interface').create(function(){
+                                    FrameTrail.module('Interface').create(function(){
 
-                                    FrameTrail.module('InterfaceModal').hideLoadingScreen();
+                                        FrameTrail.module('InterfaceModal').hideLoadingScreen();
 
-                                    FrameTrail.module('HypervideoController').initController(
+                                        FrameTrail.module('HypervideoController').initController(
 
-                                        function(){
+                                            function(){
 
-                                            // Finished
-                                            FrameTrail.module('InterfaceModal').hideMessage();
+                                                // Finished
+                                                FrameTrail.module('InterfaceModal').hideMessage();
 
-                                            $(FrameTrail.getState('target')).find('.hypervideo video.video').removeClass('nocolor dark');
+                                                $(FrameTrail.getState('target')).find('.hypervideo video.video').removeClass('nocolor dark');
 
-                                        },
+                                            },
 
-                                        function(errorMsg){
+                                            function(errorMsg){
 
-                                            // Fail: Init thread was aborted with:
-                                            FrameTrail.module('InterfaceModal').showErrorMessage(errorMsg);
+                                                // Fail: Init thread was aborted with:
+                                                FrameTrail.module('InterfaceModal').showErrorMessage(errorMsg);
 
-                                        }
+                                            }
 
-                                    );
+                                        );
+
+                                    });
+
 
                                 });
 
 
-                            });
+                            },
 
+                            function () {
+                                FrameTrail.module('InterfaceModal').showErrorMessage(labels['ErrorCouldNotInitTagModel']);
+                            }
 
-                        },
+                        );
 
-                        function () {
-                            FrameTrail.module('InterfaceModal').showErrorMessage(labels['ErrorCouldNotInitTagModel']);
-                        }
+                    }
 
-                    );
+                },
+
+                function(errorMsg){
+
+                    // Fail: Init was aborted with:
+                    FrameTrail.module('InterfaceModal').showErrorMessage(errorMsg);
+                    if (FrameTrail.getState('storageMode') === 'local') {
+                        showFolderPrompt();
+                    }
 
                 }
 
-            },
+            );
 
-            function(errorMsg){
+        } else {
 
-                // Fail: Init was aborted with:
-                FrameTrail.module('InterfaceModal').showErrorMessage(errorMsg);
+            FrameTrail.changeState('viewMode', 'overview');
 
-            }
+            FrameTrail.module('Database').loadData(
 
-        );
+                function(){
 
-    } else {
+                    FrameTrail.module('UserTraces').initTraces();
 
-        FrameTrail.changeState('viewMode', 'overview');
-
-        FrameTrail.module('Database').loadData(
-
-            function(){
-
-                FrameTrail.module('UserTraces').initTraces();
-
-                if (FrameTrail.module('Database').config.alwaysForceLogin) {
-                    FrameTrail.module('InterfaceModal').hideMessage();
-                    FrameTrail.module('UserManagement').ensureAuthenticated(function() {
-                        initOverview();
-                    }, function() {}, true);
-                } else {
-                    initOverview();
-                }
-
-                function initOverview() {
-
-                    FrameTrail.module('InterfaceModal').setLoadingTitle('Overview');
-
-                    FrameTrail.module('Interface').create(function(){
-
-                        // Finished
+                    if (FrameTrail.module('Database').config.alwaysForceLogin) {
                         FrameTrail.module('InterfaceModal').hideMessage();
-                        FrameTrail.module('InterfaceModal').hideLoadingScreen();
+                        FrameTrail.module('UserManagement').ensureAuthenticated(function() {
+                            initOverview();
+                        }, function() {}, true);
+                    } else {
+                        initOverview();
+                    }
 
-                    });
+                    function initOverview() {
+
+                        FrameTrail.module('InterfaceModal').setLoadingTitle('Overview');
+
+                        FrameTrail.module('Interface').create(function(){
+
+                            // Finished
+                            FrameTrail.module('InterfaceModal').hideMessage();
+                            FrameTrail.module('InterfaceModal').hideLoadingScreen();
+
+                        });
+
+                    }
+
+                },
+
+                function(errorMsg){
+
+                    // Fail: Init was aborted with:
+                    FrameTrail.module('InterfaceModal').showErrorMessage(errorMsg);
+                    if (FrameTrail.getState('storageMode') === 'local') {
+                        showFolderPrompt();
+                    }
 
                 }
 
-            },
+            );
 
-            function(errorMsg){
-
-                // Fail: Init was aborted with:
-                FrameTrail.module('InterfaceModal').showErrorMessage(errorMsg);
-
-            }
-
-        );
+        }
 
     }
 
+
+    function showFolderPrompt() {
+        FrameTrail.module('InterfaceModal').hideLoadingScreen();
+        FrameTrail.module('InterfaceModal').hideMessage();
+
+        var currentFolder = FrameTrail.module('StorageManager').getFolderName();
+        var folderInfo = currentFolder
+            ? '<p style="margin-top:8px; color:#666;">' + labels['CurrentFolder'] + ': <strong>' + currentFolder + '</strong></p>'
+            : '';
+
+        var folderDialog = $('<div class="folderPromptDialog" title="' + labels['SelectDataFolder'] + '">'
+            + '<p>' + labels['SelectDataFolderDescription'] + '</p>'
+            + folderInfo
+            + '</div>');
+
+        folderDialog.dialog({
+            modal: true,
+            width: 450,
+            closeOnEscape: false,
+            open: function() { $(this).closest('.ui-dialog').find('.ui-dialog-titlebar-close').hide(); },
+            buttons: [
+                {
+                    text: labels['SelectFolder'],
+                    click: function() {
+                        FrameTrail.module('StorageManager').switchToLocal().then(function() {
+                            folderDialog.dialog('close');
+                            folderDialog.remove();
+                            // Clear hypervideo hash — old ID likely doesn't exist in new folder
+                            if (window.location.hash) {
+                                window.location.hash = '';
+                                window.location.reload();
+                                return;
+                            }
+                            FrameTrail.module('InterfaceModal').showStatusMessage(labels['MessageStateLoadingData']);
+                            FrameTrail.module('InterfaceModal').showLoadingScreen();
+                            continueLoading();
+                        }).catch(function(err) {
+                            FrameTrail.module('InterfaceModal').showErrorMessage(labels['ErrorCouldNotAccessFolder'] + ' ' + err.message);
+                        });
+                    }
+                }
+            ]
+        });
+    }
 
 
     return null;

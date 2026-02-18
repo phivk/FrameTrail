@@ -32,7 +32,7 @@ FrameTrail.defineType(
                         container.html(this.resourceData.attributes.html);
                     } else {
                         // Use resolved canonical embed URL for cross-instance posts, or append /embed to src
-                        var embedUrl = this.resourceData.attributes.embedUrl || (this.resourceData.src + '/embed');
+                        var embedUrl = this.resourceData.attributes.embedUrl || (this.resourceData.src.replace(/^\/\//, 'https://') + '/embed');
                         container.html(
                             '<iframe src="' + embedUrl + '" class="mastodon-embed" '
                             + 'frameborder="0" allowfullscreen></iframe>'

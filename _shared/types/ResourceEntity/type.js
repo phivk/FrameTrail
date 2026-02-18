@@ -44,11 +44,11 @@ FrameTrail.defineType(
                     var self = this;
 
                     var resourceDetail = $('<div class="resourceDetail" data-type="'+ this.resourceData.type +'"></div>'),
-                        iFrameSource = (this.resourceData.src.indexOf('//') != -1) ? this.resourceData.uri/*.replace('http:', '')*/ : FrameTrail.module('RouteNavigation').getResourceURL(this.resourceData.uri),
+                        iFrameSource = (this.resourceData.src.indexOf('//') != -1) ? this.resourceData.uri.replace(/^\/\//, 'https://') : FrameTrail.module('RouteNavigation').getResourceURL(this.resourceData.uri),
                         downloadButton = '<a class="button" href="'+ iFrameSource +'" target="_blank">'+ this.labels['ResourceOpenInNewTab'] +'</a>';
                     if (this.resourceData.attributes.embed && this.resourceData.attributes.embed == 'forbidden') {
 
-                        var thumbSource = (this.resourceData.thumb) ? this.resourceData.thumb : '';
+                        var thumbSource = (this.resourceData.thumb) ? this.resourceData.thumb.replace(/^\/\//, 'https://') : '';
                         
                         var embedFallback = $(
                                 '<div class="embedFallback">'

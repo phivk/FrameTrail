@@ -38,11 +38,26 @@ FrameTrail.defineModule('RouteNavigation', function(FrameTrail){
 	function getResourceURL(src) {
 
 		//if (/^https?:/.exec(src)) {
-		if (/^https?:/.exec(src) || /^\/\//.exec(src) || /^file:/.exec(src)) {
+		if (/^https?:/.exec(src) || /^\/\//.exec(src) || /^file:/.exec(src) || /^blob:/.exec(src)) {
 
+	        // Normalize protocol-relative URLs to https (needed for file:// contexts)
+	        if (/^\/\//.exec(src)) {
+	            return 'https:' + src;
+	        }
 	        return src;
 
 	    } else {
+
+	    	// In local mode, check the blob URL cache for local files
+	    	if (FrameTrail.getState('storageMode') === 'local') {
+	    	    var adapter = FrameTrail.module('StorageManager').getAdapter();
+	    	    if (adapter) {
+	    	        var blobURL = adapter.getBlobURL('resources/' + src);
+	    	        if (blobURL) {
+	    	            return blobURL;
+	    	        }
+	    	    }
+	    	}
 
 	    	return '_data/resources/' + src;
 

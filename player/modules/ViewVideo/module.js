@@ -680,10 +680,11 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
             });
         }
 
+        var videoWidth = (_video[0].videoWidth) ? _video[0].videoWidth : 1920;
+        var videoHeight = (_video[0].videoHeight) ? _video[0].videoHeight : 1080;
+
         if (videoFit == 'cover') {
-            
-            var videoWidth = (_video[0].videoWidth) ? _video[0].videoWidth : 1920;
-            var videoHeight = (_video[0].videoHeight) ? _video[0].videoHeight : 1080;
+
             var ratio = Math.max(VideoContainer.width() / videoWidth, VideoContainer.height() /videoHeight);
             var scaledWidth = videoWidth * ratio;
             var scaledHeight = videoHeight * ratio;
@@ -695,19 +696,16 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
 
         } else {
 
-            if (_video.height() >= VideoContainer.height()) {
-                _video.css({
-                    height: VideoContainer.height() + 'px',
-                    width: 'auto'
-                });
-            }
+            // Use explicit aspect-ratio-aware calculations to avoid
+            // browser issues when video metadata is not yet loaded
+            var ratio = Math.min(videoContainerWidth / videoWidth, VideoContainer.height() / videoHeight);
+            var scaledWidth = videoWidth * ratio;
+            var scaledHeight = videoHeight * ratio;
 
-            if (_video.width() >= videoContainerWidth) {
-                _video.css({
-                    height: 'auto',
-                    width: videoContainerWidth + 'px'
-                });
-            }
+            _video.css({
+                height: scaledHeight + 'px',
+                width: scaledWidth + 'px'
+            });
 
         }
 

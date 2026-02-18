@@ -29,12 +29,13 @@ FrameTrail.defineType(
                 renderContent: function() {
 
                     var data = this.resourceData;
+                    var src = data.src.replace(/^\/\//, 'https://');
 
                     var domain = '';
                     try {
-                        domain = new URL(data.src).hostname.replace('www.', '');
+                        domain = new URL(src).hostname.replace('www.', '');
                     } catch(e) {
-                        domain = data.src;
+                        domain = src;
                     }
 
                     var platformIcons = {
@@ -49,7 +50,7 @@ FrameTrail.defineType(
                     };
                     var iconClass = platformIcons[data.attributes.originalType] || platformIcons['default'];
 
-                    var thumbStyle = data.thumb ? 'background-image: url(' + data.thumb + ')' : '';
+                    var thumbStyle = data.thumb ? 'background-image: url(' + data.thumb.replace(/^\/\//, 'https://') + ')' : '';
 
                     var resourceDetail = $(
                             '<div class="resourceDetail resourceUrlPreview" data-type="'+ data.type +'">'
@@ -63,7 +64,7 @@ FrameTrail.defineType(
                         +   '            <div class="urlPreviewMeta">'
                         +   '                <span class="urlPreviewDomain">' + domain + '</span>'
                         +   '            </div>'
-                        +   '            <a href="' + data.src + '" target="_blank" rel="noopener" class="urlPreviewLink">'
+                        +   '            <a href="' + src + '" target="_blank" rel="noopener" class="urlPreviewLink">'
                         +   '                <span class="icon-link-ext"></span> Open Link'
                         +   '            </a>'
                         +   '        </div>'

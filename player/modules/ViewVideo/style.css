@@ -638,6 +638,7 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     will-change: filter;
     width: 1920px;
     height: 1080px;
+    aspect-ratio: 16 / 9;
     background: #101010;
     filter: none;
     transition-property: filter;

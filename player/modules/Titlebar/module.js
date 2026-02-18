@@ -75,8 +75,60 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
     });
 
     UserSettingsButton.click(function(){
-        FrameTrail.module('UserManagement').showAdministrationBox();
+        if (FrameTrail.getState('storageMode') === 'local') {
+            showLocalUserDialog();
+        } else {
+            FrameTrail.module('UserManagement').showAdministrationBox();
+        }
     });
+
+    function showLocalUserDialog() {
+        var adapter = FrameTrail.module('StorageManager').getAdapter();
+        var userInfo = adapter.userInfo;
+
+        var colorValue = userInfo.color || '#FF9800';
+        var dialog = $('<div title="'+ labels['UserManagement'] +'">'
+            + '<div style="margin-bottom:12px;">'
+            + '  <label style="display:block; margin-bottom:4px;"><strong>'+ (labels['GenericName'] || 'Name') +'</strong></label>'
+            + '  <input type="text" class="localUserName" value="'+ (userInfo.name || '') +'" style="width:100%; box-sizing:border-box;">'
+            + '</div>'
+            + '<div>'
+            + '  <label style="display:block; margin-bottom:4px;"><strong>'+ (labels['UserColor'] || 'Color') +'</strong></label>'
+            + '  <input type="color" class="localUserColor" value="'+ colorValue +'">'
+            + '</div>'
+            + '</div>');
+
+        dialog.dialog({
+            modal: true,
+            resizable: false,
+            width: 350,
+            close: function() { $(this).remove(); },
+            buttons: [
+                { text: labels['GenericSaveChanges'] || 'Save',
+                    click: function() {
+                        var newName = dialog.find('.localUserName').val().trim();
+                        var newColor = dialog.find('.localUserColor').val();
+                        if (newName) {
+                            userInfo.name = newName;
+                            userInfo.color = newColor;
+                            localStorage.setItem('frametrail_local_user', JSON.stringify(userInfo));
+                            // Update users.json in the local folder
+                            adapter.readJSON('users.json').catch(function() {
+                                return { 'user-increment': 1, 'user': {} };
+                            }).then(function(users) {
+                                users.user[userInfo.id] = userInfo;
+                                return adapter.writeJSON('users.json', users);
+                            }).catch(function() {});
+                        }
+                        $(this).dialog('close');
+                    }
+                },
+                { text: labels['GenericCancel'],
+                    click: function() { $(this).dialog('close'); }
+                }
+            ]
+        });
+    }
 
     domElement.find('.sidebarToggleButton').click(function(){
 
@@ -99,7 +151,7 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
         var RouteNavigation = FrameTrail.module('RouteNavigation'),
             baseUrl = window.location.href.split('?')[0].split('#'),
             url = baseUrl[0] + '#',
-            secUrl = '//'+ window.location.host + window.location.pathname,
+            secUrl = window.location.protocol + '//' + window.location.host + window.location.pathname,
             iframeUrl = secUrl + '#';
 
         if ( FrameTrail.getState('viewMode') == 'video' && RouteNavigation.hypervideoID ) {
@@ -311,7 +363,13 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
                 // Show user settings and logout buttons if logged in
                 if (FrameTrail.getState('loggedIn')) {
                     UserSettingsButton.show();
-                    domElement.find('.logoutButton').show();
+                    if (FrameTrail.getState('storageMode') !== 'local') {
+                        domElement.find('.logoutButton').show();
+                    }
+                }
+                // In local mode, always show user settings (for name/color change)
+                if (FrameTrail.getState('storageMode') === 'local') {
+                    UserSettingsButton.show();
                 }
 
             }
@@ -322,8 +380,8 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
 
             StartEditButton.show();
 
-            // Hide Edit Button when not in a server environment
-            if (!FrameTrail.module('RouteNavigation').environment.server) {
+            // Hide Edit Button when no storage backend is available
+            if (!FrameTrail.module('RouteNavigation').environment.server && FrameTrail.getState('storageMode') !== 'local') {
                 StartEditButton.hide();
             }
 
@@ -353,7 +411,9 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
 
             // Only show user settings and logout buttons if in edit mode
             if (FrameTrail.getState('editMode')) {
-                domElement.find('.logoutButton').show();
+                if (FrameTrail.getState('storageMode') !== 'local') {
+                    domElement.find('.logoutButton').show();
+                }
                 UserSettingsButton.show();
             }
 
@@ -418,7 +478,28 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
         set title(aString) {
             var titleText = aString;
             var editButton = TitlebarTitle.find('.hypervideoEditButton');
-            TitlebarTitle.html(titleText);
+            TitlebarTitle.empty();
+
+            // Show folder name before title when in local storage mode
+            if (FrameTrail.getState('storageMode') === 'local') {
+                var adapter = FrameTrail.module('StorageManager').getAdapter();
+                if (adapter && adapter.folderName) {
+                    var folderIndicator = $('<span class="localFolderIndicator" title="Click to change folder">\ud83d\udcc2 '+ adapter.folderName +'</span>');
+                    folderIndicator.click(function() {
+                        FrameTrail.module('StorageManager').switchToLocal().then(function() {
+                            // Clear hash so we reload to overview, not a hypervideo ID from the old folder
+                            window.location.hash = '';
+                            window.location.reload();
+                        }).catch(function() {
+                            // User cancelled the folder picker
+                        });
+                    });
+                    TitlebarTitle.append(folderIndicator);
+                }
+            }
+
+            TitlebarTitle.append('<span>' + titleText + '</span>');
+
             if (editButton.length > 0) {
                 TitlebarTitle.append(editButton);
             }

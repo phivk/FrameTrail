@@ -498,6 +498,30 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 	 */
 	function ensureAuthenticated(callback, callbackCancel, disallowCancel){
 
+		var storageMode = FrameTrail.getState('storageMode');
+
+		if (storageMode === 'local') {
+			// Local mode — if we have user info, we're authenticated
+			var localUser = FrameTrail.module('StorageManager').getCurrentUserInfo();
+			if (localUser) {
+				// Ensure isLoggedIn state is set
+				isLoggedIn(function(loginStatus) {
+					callback.call();
+				});
+			} else {
+				// Need to pick a folder and init local user
+				FrameTrail.module('StorageManager').switchToLocal().then(function() {
+					isLoggedIn(function(loginStatus) {
+						callback.call();
+					});
+				}).catch(function(err) {
+					console.warn('Local storage init cancelled or failed:', err);
+					if (callbackCancel) callbackCancel.call();
+				});
+			}
+			return;
+		}
+
 		isLoggedIn(function(loginStatus) {
 
 			if (loginStatus){
@@ -531,6 +555,37 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 	 * @param {Function} callback
 	 */
 	function isLoggedIn(callback) {
+
+		var storageMode = FrameTrail.getState('storageMode');
+
+		if (storageMode === 'local') {
+			// Local mode — use local user info from StorageManager
+			var localUser = FrameTrail.module('StorageManager').getCurrentUserInfo();
+			if (localUser) {
+				userID = localUser.id;
+				userRole = localUser.role;
+				userMail = localUser.mail || '';
+				userRegistrationDate = localUser.registrationDate;
+				FrameTrail.changeState('username', localUser.name);
+				FrameTrail.changeState('userColor', localUser.color || '#FF9800');
+				FrameTrail.changeState('loggedIn', true);
+				$(FrameTrail.getState('target')).addClass('loggedIn');
+				window.setTimeout(function() {
+					callback.call(window, true);
+				}, 2);
+			} else {
+				window.setTimeout(function() {
+					FrameTrail.changeState({
+						editMode: false,
+						loggedIn: false,
+						username: '',
+						userColor: ''
+					});
+					callback.call(window, false);
+				}, 2);
+			}
+			return;
+		}
 
 		if (!FrameTrail.module('RouteNavigation').environment.server || FrameTrail.getState('users')) {
             window.setTimeout(function() {

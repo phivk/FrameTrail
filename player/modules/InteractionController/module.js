@@ -57,7 +57,11 @@ FrameTrail.defineModule('InteractionController', function(FrameTrail){
 
     		// Save when ctrl+s or command+s
             if ((evt.metaKey || evt.ctrlKey) && evt.keyCode == 83) {
-                FrameTrail.module('HypervideoModel').save();
+                if (FrameTrail.module('StorageManager').canSave()) {
+                    FrameTrail.module('HypervideoModel').save();
+                } else {
+                    FrameTrail.module('HypervideoModel').saveAs();
+                }
                 evt.preventDefault();
                 return false;
             }

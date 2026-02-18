@@ -32,7 +32,7 @@ FrameTrail.defineType(
                         container.html(this.resourceData.attributes.html);
                     } else {
                         // Fallback: build embed iframe from URL
-                        var embedUrl = this.resourceData.src.replace('open.spotify.com/', 'open.spotify.com/embed/');
+                        var embedUrl = this.resourceData.src.replace(/^\/\//, 'https://').replace('open.spotify.com/', 'open.spotify.com/embed/');
                         container.html(
                             '<iframe src="' + embedUrl + '" '
                             + 'style="width: 100%; height: 100%; border: none; border-radius: 12px;" '

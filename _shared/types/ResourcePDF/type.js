@@ -45,7 +45,7 @@ FrameTrail.defineType(
 
                 	var resourceDetail = $('<div class="resourceDetail" data-type="'+ this.resourceData.type +'"></div>');
 
-                    var documentSource = (this.resourceData.src.indexOf('//') != -1) ? this.resourceData.src.replace('http:', '') : FrameTrail.module('RouteNavigation').getResourceURL(this.resourceData.src);
+                    var documentSource = (this.resourceData.src.indexOf('//') != -1) ? this.resourceData.src.replace('http:', 'https:') : FrameTrail.module('RouteNavigation').getResourceURL(this.resourceData.src);
 
                     var licenseType = (this.resourceData.licenseType && this.resourceData.licenseType == 'CC-BY-SA-3.0') ? '<a href="https://creativecommons.org/licenses/by-sa/3.0/" title="License: '+ this.resourceData.licenseType +'" target="_blank"><span class="cc-by-sa-bg-image"></span></a>' : this.resourceData.licenseType;
                     var licenseString = (licenseType) ? licenseType +' - '+ this.resourceData.licenseAttribution : '';

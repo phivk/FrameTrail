@@ -34,7 +34,7 @@ FrameTrail.defineType(
                         // Fallback: link card (no reliable direct iframe URL for Bluesky)
                         container.html(
                             '<div style="padding:16px;font-family:sans-serif;">'
-                            + '<a href="' + this.resourceData.src + '" target="_blank" rel="noopener">'
+                            + '<a href="' + this.resourceData.src.replace(/^\/\//, 'https://') + '" target="_blank" rel="noopener">'
                             + this.resourceData.src + '</a></div>'
                         );
                     }

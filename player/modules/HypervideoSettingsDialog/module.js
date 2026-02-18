@@ -683,6 +683,189 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
             }
         });
 
+        /**
+         * Save hypervideo settings locally via File System Access API.
+         * Mirrors the ajaxForm submit + success handler logic.
+         */
+        function saveHypervideoLocally() {
+            // Run the same beforeSerialize validation by triggering a fake submit check
+            EditHypervideoForm.find('.message.error').removeClass('active').html('');
+
+            // Video source change validation
+            if (isSourceChanging() && !sourceChangeConfirmed) {
+                var newSourceInfo = getNewSourceInfo();
+
+                if (newSourceInfo.type === 'empty' && newSourceInfo.duration < 4) {
+                    EditHypervideoForm.find('.message.error').addClass('active').html(labels['ErrorDurationMinimum4Seconds']);
+                    return;
+                }
+
+                var currentDuration = isCanvasVideo ? originalDuration : (FrameTrail.module('HypervideoModel').durationFull || 0);
+
+                if (newSourceInfo.duration > 0 && newSourceInfo.duration < currentDuration) {
+                    var outOfRangeItems = getOutOfRangeItems(newSourceInfo.duration);
+                    if (outOfRangeItems.hasAffectedItems) {
+                        showDurationChangeConfirmation(newSourceInfo.duration, outOfRangeItems, function() {
+                            pendingSourceChange = {
+                                resourceId: newSourceInfo.resourceId,
+                                src: newSourceInfo.src,
+                                duration: newSourceInfo.duration,
+                                thumb: newSourceInfo.thumb,
+                                outOfRangeItems: outOfRangeItems
+                            };
+                            sourceChangeConfirmed = true;
+                            saveHypervideoLocally();
+                        }, function() {
+                            EditHypervideoForm.find('.videoResourceList .resourceThumb').removeClass('selected');
+                            if (originalResourceId) {
+                                EditHypervideoForm.find('.videoResourceList .resourceThumb[data-resourceID="' + originalResourceId + '"]').addClass('selected');
+                                EditHypervideoForm.find('input[name="newResourceId"]').val(originalResourceId);
+                            } else {
+                                EditHypervideoForm.find('input[name="newResourceId"]').val('');
+                            }
+                            var tabs = EditHypervideoForm.find('.videoSourceTabs');
+                            tabs.tabs('option', 'active', isCanvasVideo ? 1 : 0);
+                        });
+                        return;
+                    }
+                }
+
+                pendingSourceChange = {
+                    resourceId: newSourceInfo.resourceId,
+                    src: newSourceInfo.src,
+                    duration: newSourceInfo.duration,
+                    thumb: newSourceInfo.thumb,
+                    outOfRangeItems: null
+                };
+                sourceChangeConfirmed = true;
+            }
+
+            // Canvas video duration validation
+            if (isCanvasVideo && !pendingSourceChange) {
+                var newDuration = getDurationFromForm();
+                if (newDuration < 4) {
+                    EditHypervideoForm.find('.message.error').addClass('active').html(labels['ErrorDurationMinimum4Seconds']);
+                    return;
+                }
+                if (newDuration < originalDuration) {
+                    var outOfRangeItems = getOutOfRangeItems(newDuration);
+                    if (outOfRangeItems.hasAffectedItems && !pendingDurationChange) {
+                        showDurationChangeConfirmation(newDuration, outOfRangeItems, function() {
+                            pendingDurationChange = { newDuration: newDuration, outOfRangeItems: outOfRangeItems };
+                            saveHypervideoLocally();
+                        }, function() {
+                            EditHypervideoForm.find('input[name="duration"]').val(formBuilder.secondsToTimeString(originalDuration));
+                        });
+                        return;
+                    }
+                }
+            }
+
+            // Subtitles validation
+            var err = 0;
+            EditHypervideoForm.find('.subtitlesItem').each(function() {
+                $(this).css({'outline': ''});
+                if (($(this).find('input[type="file"]:first').attr('name') == 'subtitles[]') || ($(this).find('.subtitlesTmpKeySetter').first().val() == '')
+                        || ($(this).find('input[type="file"]:first').val().length == 0)) {
+                    $(this).css({'outline': '1px solid #cd0a0a'});
+                    EditHypervideoForm.find('.message.error').addClass('active').html(labels['ErrorSubtitlesEmptyFields']);
+                    err++;
+                } else if ( !(new RegExp('(' + ['.vtt'].join('|').replace(/\./g, '\\.') + ')$')).test($(this).find('input[type="file"]:first').val()) ) {
+                    $(this).css({'outline': '1px solid #cd0a0a'});
+                    EditHypervideoForm.find('.message.error').addClass('active').html(labels['ErrorSubtitlesWrongFormat']);
+                    err++;
+                }
+                if (EditHypervideoForm.find('.subtitlesItem input[type="file"][name="subtitles['+ $(this).find('.subtitlesTmpKeySetter:first').val() +']"]').length > 1
+                        || (EditHypervideoForm.find('.existingSubtitlesItem .subtitlesDelete[data-lang="'+ $(this).find('.subtitlesTmpKeySetter:first').val() +'"]').length > 0 ) ) {
+                    EditHypervideoForm.find('.message.error').addClass('active').html(labels['ErrorSubtitlesLanguageDuplicate']);
+                    err++;
+                    return false;
+                }
+            });
+            if (err > 0) { return; }
+
+            // Update the database entry from form
+            updateDatabaseFromForm();
+            var hypervideoData = FrameTrail.module('Database').convertToDatabaseFormat(thisID);
+
+            var adapter = FrameTrail.module('StorageManager').getAdapter();
+            var basePath = 'hypervideos/' + thisID;
+
+            var sourceWasChanged = sourceChangeConfirmed;
+            var newSourcePath = null;
+            if (sourceWasChanged) {
+                var srcInfo = getNewSourceInfo();
+                newSourcePath = srcInfo.src;
+            }
+
+            // Collect subtitle deletions and additions
+            var subtitlesToDelete = [];
+            EditHypervideoForm.find('.existingSubtitlesItem.markedForDeletion').each(function() {
+                var lang = $(this).find('.subtitlesDelete').attr('data-lang');
+                if (lang) { subtitlesToDelete.push(lang); }
+            });
+
+            var writeTasks = [adapter.writeJSON(basePath + '/hypervideo.json', hypervideoData)];
+
+            // Delete subtitle files
+            for (var d = 0; d < subtitlesToDelete.length; d++) {
+                writeTasks.push(adapter.deleteFile(basePath + '/subtitles/' + subtitlesToDelete[d] + '.vtt').catch(function() {}));
+            }
+
+            // Write new subtitle files
+            EditHypervideoForm.find('.newSubtitlesContainer input[type=file]').each(function() {
+                var match = /subtitles\[(.+)\]/g.exec($(this).attr('name'));
+                if (match && this.files && this.files[0]) {
+                    writeTasks.push(
+                        adapter.createDirectory(basePath + '/subtitles').then(function() {
+                            return adapter.writeFile(basePath + '/subtitles/' + match[1] + '.vtt', this.files[0]);
+                        }.bind(this))
+                    );
+                }
+            });
+
+            Promise.all(writeTasks).then(function() {
+                // Update annotation sources if video source changed
+                if (sourceWasChanged && newSourcePath !== null) {
+                    return updateAnnotationSourcesLocally(adapter, thisID, newSourcePath);
+                }
+            }).then(function() {
+                completeUpdate();
+            }).catch(function(err) {
+                EditHypervideoForm.find('.message.error').addClass('active').html('Local save failed: ' + (err ? err.message : ''));
+            });
+        }
+
+        /**
+         * Update the target.source in all annotation files for a hypervideo.
+         */
+        function updateAnnotationSourcesLocally(adapter, hvID, newSourcePath) {
+            var basePath = 'hypervideos/' + hvID + '/annotations';
+            return adapter.listDirectory(basePath).then(function(files) {
+                var tasks = [];
+                for (var i = 0; i < files.length; i++) {
+                    if (files[i] === '_index.json') continue;
+                    if (!/\.json$/.test(files[i])) continue;
+                    tasks.push((function(filename) {
+                        return adapter.readJSON(basePath + '/' + filename).then(function(content) {
+                            if (!Array.isArray(content)) return;
+                            var modified = false;
+                            for (var j = 0; j < content.length; j++) {
+                                if (content[j].target && content[j].target.source) {
+                                    content[j].target.source = newSourcePath;
+                                    modified = true;
+                                }
+                            }
+                            if (modified) {
+                                return adapter.writeJSON(basePath + '/' + filename, content);
+                            }
+                        });
+                    })(files[i]));
+                }
+                return Promise.all(tasks);
+            }).catch(function() {});
+        }
+
         var hypervideoDialog = $('<div class="hypervideoSettingsDialog" title="'+ labels['SettingsHypervideoSettings'] +'"></div>');
         hypervideoDialog.append(EditHypervideoForm);
 
@@ -699,7 +882,11 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
             buttons: [
                 { text: labels['GenericSaveChanges'] || labels['GenericApply'] || 'Save',
                     click: function() {
-                        EditHypervideoForm.submit();
+                        if (FrameTrail.getState('storageMode') === 'local') {
+                            saveHypervideoLocally();
+                        } else {
+                            EditHypervideoForm.submit();
+                        }
                     }
                 },
                 { text: labels['GenericCancel'],
