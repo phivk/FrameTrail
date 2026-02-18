@@ -637,7 +637,7 @@ FrameTrail.defineType(
                         self.permanentFocusState = true;
                         OverlaysController.overlayInFocus = self;
 
-                        FrameTrail.module('HypervideoController').currentTime = self.data.start;
+                        FrameTrail.module('HypervideoController').currentTime = self.data.start + 0.01;
 
                     }
 
