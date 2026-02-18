@@ -54,6 +54,9 @@
         FrameTrail.initModule('HypervideoController');
     }
 
+    // Set up Timeline Controller
+    FrameTrail.initModule('TimelineController');
+
     // Set up User Traces
     FrameTrail.initModule('UserTraces');
 

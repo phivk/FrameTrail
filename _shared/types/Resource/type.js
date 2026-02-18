@@ -1432,6 +1432,24 @@ FrameTrail.defineType(
 
                     return PropertiesControlsInterface;
 
+                },
+
+                /**
+                 * I hold the icon class for this resource type.
+                 * Subtypes should override this.
+                 * @attribute iconClass
+                 * @type String
+                 */
+                iconClass: 'icon-doc',
+
+                /**
+                 * I return a display label for timeline elements.
+                 * Subtypes can override for custom behavior.
+                 * @method getDisplayLabel
+                 * @return String
+                 */
+                getDisplayLabel: function() {
+                    return this.resourceData.name || this.resourceData.type || '';
                 }
 
 

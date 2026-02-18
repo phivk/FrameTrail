@@ -31,6 +31,7 @@ FrameTrail.defineType(
                  * @type {}
                  */
                 resourceData:   {},
+                iconClass:      'icon-tag-1',
 
 
                 /**
@@ -165,6 +166,14 @@ FrameTrail.defineType(
 
                     return this.renderBasicTimeControls(annotation);
 
+                },
+
+                getDisplayLabel: function() {
+                    if (this.resourceData.attributes && this.resourceData.attributes.text) {
+                        var decoded = $("<div/>").html(this.resourceData.attributes.text).text();
+                        return decoded.substring(0, 50) || this.resourceData.name || 'Entity';
+                    }
+                    return this.resourceData.name || 'Entity';
                 }
 
 

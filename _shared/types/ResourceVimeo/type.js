@@ -32,6 +32,7 @@ FrameTrail.defineType(
                  * @type {}
                  */
                 resourceData:   {},
+                iconClass:      'icon-vimeo-squared',
 
 
                 /**

@@ -30,6 +30,7 @@ FrameTrail.defineType(
                  * @type {}
                  */
                 resourceData:   {},
+                iconClass:      'icon-volume-up',
 
 
                 /**

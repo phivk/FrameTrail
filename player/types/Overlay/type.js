@@ -48,7 +48,7 @@ FrameTrail.defineType(
                 }
 
 
-                this.timelineElement = $('<div class="timelineElement"></div>');
+                this.timelineElement = $('<div class="timelineElement" data-type="'+ this.data.type +'"><div class="timelineElementIcon"></div><div class="timelineElementLabel"></div></div>');
                 this.overlayElement  = $('<div class="overlayElement"></div>');
 
 
@@ -124,8 +124,26 @@ FrameTrail.defineType(
 
                     var ViewVideo = FrameTrail.module('ViewVideo');
 
-                    ViewVideo.OverlayTimeline.append(this.timelineElement);
+                    var timelineTarget = ViewVideo.OverlayTimeline.find('.timelineScroller');
+                    (timelineTarget.length ? timelineTarget : ViewVideo.OverlayTimeline).append(this.timelineElement);
                     ViewVideo.OverlayContainer.append(this.overlayElement);
+
+                    // Set icon from resourceItem
+                    this.timelineElement.find('.timelineElementIcon').html(
+                        '<span class="' + this.resourceItem.iconClass + '"></span>'
+                    );
+
+                    // Set label from resourceItem
+                    this.timelineElement.find('.timelineElementLabel').text(
+                        this.resourceItem.getDisplayLabel()
+                    );
+
+                    // Add thumbnail background for image types
+                    if (this.data.type === 'image' && this.data.src) {
+                        var thumbUrl = FrameTrail.module('RouteNavigation').getResourceURL(this.data.src);
+                        this.timelineElement.css('background-image', 'url(' + thumbUrl + ')');
+                        this.timelineElement.addClass('hasThumbnail');
+                    }
 
                     var newOverlayContent = this.resourceItem.renderContent()
                     this.overlayElement.append(newOverlayContent);

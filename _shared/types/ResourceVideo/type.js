@@ -34,6 +34,7 @@ FrameTrail.defineType(
                  * @type {}
                  */
                 resourceData:   {},
+                iconClass:      'icon-play-1',
 
 
                 /**

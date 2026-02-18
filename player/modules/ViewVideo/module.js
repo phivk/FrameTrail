@@ -591,10 +591,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         }
 
         PlayerProgress.css({
-            height:
-                Controls.height()
-            +   ((editMode == 'codesnippets') ? CodeSnippetTimeline.height() : OverlayTimeline.height())
-            +   ((editMode == 'annotations') ? AnnotationTimeline.height() : 0)
+            height: Controls.height()
         });
 
         slideArea.children('svg').css({
@@ -864,6 +861,9 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
 
         Controls.find('.rightControlPanel').hide();
 
+        // Initialize timeline controls (shared across all edit modes)
+        FrameTrail.module('TimelineController').initEditTimelines();
+
     }
 
     /**
@@ -871,6 +871,9 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      * @method leaveEditMode
      */
     function leaveEditMode() {
+        // Clean up timeline controls
+        FrameTrail.module('TimelineController').destroyEditTimelines();
+
         EditingOptions.removeClass('active');
         HypervideoLayoutContainer.empty().removeClass('active');
         EditPropertiesContainer.removeAttr('data-editmode').hide();

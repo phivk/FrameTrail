@@ -339,7 +339,16 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
      */
     function stackTimelineView() {
 
-        ViewVideo.OverlayTimeline.CollisionDetection({spacing:0, includeVerticalMargins: true});
+        var scroller = ViewVideo.OverlayTimeline.find('.timelineScroller');
+        if (scroller.length) {
+            scroller.CollisionDetection({spacing:0, includeVerticalMargins: true, exclude: '.timelinePlayhead'});
+            ViewVideo.OverlayTimeline.css({
+                height: scroller.css('height'),
+                'flex-basis': scroller.css('flex-basis')
+            });
+        } else {
+            ViewVideo.OverlayTimeline.CollisionDetection({spacing:0, includeVerticalMargins: true});
+        }
         ViewVideo.adjustLayout();
         ViewVideo.adjustHypervideo();
 
@@ -354,7 +363,11 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
     function resetTimelineView() {
 
         ViewVideo.OverlayTimeline.css('height', '');
-        ViewVideo.OverlayTimeline.children('.timelineElement').css({
+        var target = ViewVideo.OverlayTimeline.find('.timelineScroller');
+        if (target.length) {
+            target.css({ height: '', 'flex-basis': '' });
+        }
+        (target.length ? target : ViewVideo.OverlayTimeline).children('.timelineElement').css({
             top:    '',
             right:  '',
             bottom: '',
@@ -517,6 +530,7 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
                     updateStatesOfOverlays(FrameTrail.module('HypervideoController').currentTime);
 
                     stackTimelineView();
+                    FrameTrail.module('TimelineController').refreshMinimap();
 
                     // Register undo command for adding overlay
                     (function(overlayData) {
@@ -544,6 +558,7 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
                                 restoredOverlay.startEditing();
                                 updateStatesOfOverlays(FrameTrail.module('HypervideoController').currentTime);
                                 stackTimelineView();
+                                FrameTrail.module('TimelineController').refreshMinimap();
                             }
                         });
                     })(JSON.parse(JSON.stringify(newOverlay.data)));
@@ -658,6 +673,7 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
         overlay.removeFromDOM();
         FrameTrail.module('HypervideoModel').removeOverlay(overlay);
         stackTimelineView();
+        FrameTrail.module('TimelineController').refreshMinimap();
 
         // Register undo command
         if (!skipUndo) {
@@ -671,6 +687,7 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
                     newOverlay.startEditing();
                     updateStatesOfOverlays(FrameTrail.module('HypervideoController').currentTime);
                     stackTimelineView();
+                    FrameTrail.module('TimelineController').refreshMinimap();
                 },
                 redo: function() {
                     // Find the overlay by matching data and delete it again

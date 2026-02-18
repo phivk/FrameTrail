@@ -33,6 +33,7 @@ FrameTrail.defineType(
                  * @type {}
                  */
                 resourceData:   {},
+                iconClass:      'icon-window',
 
 
                 /**

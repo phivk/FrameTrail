@@ -121,7 +121,16 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
      */
     function stackTimelineView() {
 
-        ViewVideo.CodeSnippetTimeline.CollisionDetection({spacing:0, includeVerticalMargins:true});
+        var scroller = ViewVideo.CodeSnippetTimeline.find('.timelineScroller');
+        if (scroller.length) {
+            scroller.CollisionDetection({spacing:0, includeVerticalMargins: true, exclude: '.timelinePlayhead'});
+            ViewVideo.CodeSnippetTimeline.css({
+                height: scroller.css('height'),
+                'flex-basis': scroller.css('flex-basis')
+            });
+        } else {
+            ViewVideo.CodeSnippetTimeline.CollisionDetection({spacing:0, includeVerticalMargins: true});
+        }
         ViewVideo.adjustLayout();
         ViewVideo.adjustHypervideo();
 
@@ -139,7 +148,11 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
     function resetTimelineView() {
 
         ViewVideo.CodeSnippetTimeline.css('height', '');
-        ViewVideo.CodeSnippetTimeline.children('.timelineElement').css({
+        var target = ViewVideo.CodeSnippetTimeline.find('.timelineScroller');
+        if (target.length) {
+            target.css({ height: '', 'flex-basis': '' });
+        }
+        (target.length ? target : ViewVideo.CodeSnippetTimeline).children('.timelineElement').css({
             top:    '',
             right:  '',
             bottom: '',
@@ -371,6 +384,7 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
                     setCodeSnippetInFocus(newCodeSnippet);
 
                     stackTimelineView();
+                    FrameTrail.module('TimelineController').refreshMinimap();
 
                     // Register undo command for adding code snippet
                     (function(codeSnippetData) {
@@ -398,6 +412,7 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
                                 restoredCodeSnippet.startEditing();
                                 updateStatesOfCodeSnippets(FrameTrail.module('HypervideoController').currentTime);
                                 stackTimelineView();
+                                FrameTrail.module('TimelineController').refreshMinimap();
                             }
                         });
                     })(JSON.parse(JSON.stringify(newCodeSnippet.data)));
@@ -605,6 +620,7 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
         codeSnippet.removeFromDOM();
         FrameTrail.module('HypervideoModel').removeCodeSnippet(codeSnippet);
         stackTimelineView();
+        FrameTrail.module('TimelineController').refreshMinimap();
 
         // Register undo command
         if (!skipUndo) {
@@ -618,6 +634,7 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
                     newCodeSnippet.startEditing();
                     updateStatesOfCodeSnippets(FrameTrail.module('HypervideoController').currentTime);
                     stackTimelineView();
+                    FrameTrail.module('TimelineController').refreshMinimap();
                 },
                 redo: function() {
                     // Find the code snippet by matching data and delete it again

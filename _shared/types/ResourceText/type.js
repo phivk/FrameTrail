@@ -35,6 +35,7 @@ FrameTrail.defineType(
                  * @type {}
                  */
                 resourceData:   {},
+                iconClass:      'icon-doc-text',
 
 
                 /**
@@ -831,6 +832,14 @@ FrameTrail.defineType(
 
                     return textContentEditorContainer;
 
+                },
+
+                getDisplayLabel: function() {
+                    if (this.resourceData.attributes && this.resourceData.attributes.text) {
+                        var decoded = $("<div/>").html(this.resourceData.attributes.text).text();
+                        return decoded.substring(0, 50) || this.resourceData.name || 'Text';
+                    }
+                    return this.resourceData.name || 'Text';
                 }
 
 

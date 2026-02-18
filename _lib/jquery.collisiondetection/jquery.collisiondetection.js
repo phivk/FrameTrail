@@ -13,13 +13,18 @@
     "use strict";
     function CollisionDetection(el, opts) {
         this.container =    $(el);
-        this.colliders =    this.container.children().removeData('level');
         this.defaults = {
             levelMemory : { level: [], levelObjects : [] },
             spacing : 1,
-            includeVerticalMargins: false
+            includeVerticalMargins: false,
+            exclude: null
         };
         this.opts       =   $.extend(this.defaults, opts);
+        var children = this.container.children();
+        if (this.opts.exclude) {
+            children = children.not(this.opts.exclude);
+        }
+        this.colliders = children.removeData('level');
         this.init();
     }
     CollisionDetection.prototype.init = function () {
@@ -58,7 +63,7 @@
         var o = this.opts, t = this;
         els.each(function (i) {
             var this_ele = $(this),
-                next_ele = this_ele.next();
+                next_ele = t.opts.exclude ? this_ele.nextAll().not(t.opts.exclude).first() : this_ele.next();
             var this_props = {
                 'height'    : this_ele.outerHeight( (t.opts.includeVerticalMargins ? true : false) ),
                 'left'      : this_ele.position().left,

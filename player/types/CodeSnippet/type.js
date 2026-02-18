@@ -28,7 +28,7 @@ FrameTrail.defineType(
 
                 this.data = data;
 
-                this.timelineElement  = $('<div class="timelineElement"></div>');
+                this.timelineElement  = $('<div class="timelineElement" data-type="codesnippet"><div class="timelineElementIcon"><span class="icon-code"></span></div><div class="timelineElementLabel"></div></div>');
                 this.codeSnippetFunction = new Function('');
 
 
@@ -94,11 +94,16 @@ FrameTrail.defineType(
 
                     var ViewVideo = FrameTrail.module('ViewVideo');
 
+                    // Set label from snippet name
+                    var label = this.data.name || 'Code Snippet';
+                    this.timelineElement.find('.timelineElementLabel').text(label);
+
                     this.timelineElement.unbind('hover');
                     this.timelineElement.hover(this.brushIn.bind(this), this.brushOut.bind(this));
                     this.timelineElement.attr('title', this.data.snippet);
 
-                    ViewVideo.CodeSnippetTimeline.append(this.timelineElement);
+                    var timelineTarget = ViewVideo.CodeSnippetTimeline.find('.timelineScroller');
+                    (timelineTarget.length ? timelineTarget : ViewVideo.CodeSnippetTimeline).append(this.timelineElement);
                     this.updateTimelineElement();
 
 

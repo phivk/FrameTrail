@@ -137,7 +137,16 @@
      */
     function stackTimelineView() {
 
-        ViewVideo.AnnotationTimeline.CollisionDetection({spacing:0, includeVerticalMargins:true});
+        var scroller = ViewVideo.AnnotationTimeline.find('.timelineScroller');
+        if (scroller.length) {
+            scroller.CollisionDetection({spacing:0, includeVerticalMargins: true, exclude: '.timelinePlayhead'});
+            ViewVideo.AnnotationTimeline.css({
+                height: scroller.css('height'),
+                'flex-basis': scroller.css('flex-basis')
+            });
+        } else {
+            ViewVideo.AnnotationTimeline.CollisionDetection({spacing:0, includeVerticalMargins: true});
+        }
         ViewVideo.adjustLayout();
         ViewVideo.adjustHypervideo();
 
@@ -155,7 +164,11 @@
     function resetTimelineView() {
 
         ViewVideo.AnnotationTimeline.css('height', '');
-        ViewVideo.AnnotationTimeline.children('.timelineElement').css({
+        var target = ViewVideo.AnnotationTimeline.find('.timelineScroller');
+        if (target.length) {
+            target.css({ height: '', 'flex-basis': '' });
+        }
+        (target.length ? target : ViewVideo.AnnotationTimeline).children('.timelineElement').css({
             top:    '',
             right:  '',
             bottom: '',
@@ -645,6 +658,7 @@
                     updateStatesOfAnnotations(FrameTrail.module('HypervideoController').currentTime);
 
                     stackTimelineView();
+                    FrameTrail.module('TimelineController').refreshMinimap();
 
                     // Register undo command for adding annotation
                     (function(annotationData) {
@@ -672,6 +686,7 @@
                                 restoredAnnotation.startEditing();
                                 updateStatesOfAnnotations(FrameTrail.module('HypervideoController').currentTime);
                                 stackTimelineView();
+                                FrameTrail.module('TimelineController').refreshMinimap();
                             }
                         });
                     })(JSON.parse(JSON.stringify(newAnnotation.data)));
@@ -710,6 +725,7 @@
         FrameTrail.module('HypervideoModel').removeAnnotation(annotation);
 
         stackTimelineView();
+        FrameTrail.module('TimelineController').refreshMinimap();
 
         // Register undo command
         if (!skipUndo) {
@@ -723,6 +739,7 @@
                     newAnnotation.startEditing();
                     updateStatesOfAnnotations(FrameTrail.module('HypervideoController').currentTime);
                     stackTimelineView();
+                    FrameTrail.module('TimelineController').refreshMinimap();
                 },
                 redo: function() {
                     // Find the annotation by matching data and delete it again
