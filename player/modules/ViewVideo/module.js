@@ -61,7 +61,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
                         + '                <div class="infoAreaRight">'
                         + '                    <div class="infoAreaRightTabBar">'
                         + '                        <div class="infoAreaRightTab active" data-tab="add"><span class="icon-plus"></span> '+ labels['GenericAdd'] +'</div>'
-                        + '                        <div class="infoAreaRightTab" data-tab="properties"><span class="icon-cog"></span> '+ labels['GenericProperties'] +'</div>'
+                        + '                        <div class="infoAreaRightTab" data-tab="properties"><span class="icon-list"></span> '+ labels['GenericProperties'] +'</div>'
                         + '                    </div>'
                         + '                    <div class="infoAreaRightTabContent active" data-tab="add">'
                         + '                        <div class="editingOptions"></div>'
@@ -194,6 +194,14 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         InfoAreaRight.find('.infoAreaRightTabContent').removeClass('active');
         InfoAreaRight.find('.infoAreaRightTabContent[data-tab="'+ tabName +'"]').addClass('active');
         EditingOptions.find('.ui-tabs').tabs('refresh');
+
+        // Show/hide properties tab button based on whether properties content is active
+        var propertiesTab = InfoAreaRight.find('.infoAreaRightTab[data-tab="properties"]');
+        if (tabName === 'properties') {
+            propertiesTab.css('visibility', '');
+        } else if (!EditPropertiesContainer.hasClass('active')) {
+            propertiesTab.css('visibility', 'hidden');
+        }
     }
 
     Controls.find('.captionsButton').click(function() {
@@ -879,6 +887,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
 
         InfoAreaRight.addClass('active');
         EditPropertiesContainer.show();
+        InfoAreaRight.find('.infoAreaRightTab[data-tab="properties"]').css('visibility', 'hidden');
         switchInfoTab('add');
 
         Controls.find('.rightControlPanel').hide();
@@ -947,9 +956,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         OverlayTimeline.addClass('editable');
         toggleConfig_overlaysVisible(true);
 
-        EditPropertiesContainer
-            .html('<span class="icon-object-ungroup"></span><div class="message active">'+ labels['MessageHintDragOverlays'] +'</div>')
-            .attr('data-editmode', 'overlays');
+        EditPropertiesContainer.attr('data-editmode', 'overlays');
     }
 
     /**
@@ -968,9 +975,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         initEditMode();
         CodeSnippetTimeline.addClass('editable');
 
-        EditPropertiesContainer
-            .html('<span class="icon-code"></span><div class="message active">'+ labels['MessageHintDragCodeSnippets'] +'</div>')
-            .attr('data-editmode', 'codesnippets');
+        EditPropertiesContainer.attr('data-editmode', 'codesnippets');
     }
 
     /**
@@ -981,9 +986,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         initEditMode();
         AnnotationTimeline.show().addClass('editable');
 
-        EditPropertiesContainer
-            .html('<span class="icon-annotations"></span><div class="message active">'+ labels['MessageHintDragAnnotations'] +'</div>')
-            .attr('data-editmode', 'annotations');
+        EditPropertiesContainer.attr('data-editmode', 'annotations');
     }
 
     /**

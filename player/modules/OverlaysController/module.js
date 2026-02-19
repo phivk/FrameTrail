@@ -352,6 +352,10 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
         ViewVideo.adjustLayout();
         ViewVideo.adjustHypervideo();
 
+        if (FrameTrail.module('TimelineController').initialized) {
+            FrameTrail.module('TimelineController').refreshMinimap();
+        }
+
     };
 
 
@@ -718,6 +722,10 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
     function initEditOptions(){
 
         ViewVideo.EditingOptions.empty();
+
+        ViewVideo.EditingOptions.append(
+            '<div class="message active"><span class="icon-object-ungroup"></span> '+ labels['MessageHintDragOverlays'] +'</div>'
+        );
 
         var overlayEditingOptions = $('<div class="overlayEditingTabs">'
                                   +   '    <ul>'

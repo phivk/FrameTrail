@@ -674,6 +674,16 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
                 width: widthPercent + '%'
             }).appendTo(track);
         });
+
+        // Use CollisionDetection to stack items (same mechanism as timelines)
+        track.CollisionDetection({ spacing: 0, includeVerticalMargins: true, containerPadding: 5 });
+
+        // CollisionDetection counts margin-bottom in height, which adds extra space
+        // below the bottom row. Subtract it so top and bottom padding are equal.
+        var firstItem = track.children('.timelineMinimapItem').first();
+        var itemMargin = firstItem.length ? (firstItem.outerHeight(true) - firstItem.outerHeight()) : 0;
+        var trackHeight = Math.max(track.height() - itemMargin, 12);
+        minimapElement.css('height', trackHeight + 'px');
     }
 
 

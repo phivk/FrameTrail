@@ -134,6 +134,10 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
         ViewVideo.adjustLayout();
         ViewVideo.adjustHypervideo();
 
+        if (FrameTrail.module('TimelineController').initialized) {
+            FrameTrail.module('TimelineController').refreshMinimap();
+        }
+
     };
 
 
@@ -176,6 +180,9 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
 
         ViewVideo.EditingOptions.empty();
 
+        ViewVideo.EditingOptions.append(
+            '<div class="message active"><span class="icon-code"></span> '+ labels['MessageHintDragCodeSnippets'] +'</div>'
+        );
 
         var hypervideos = FrameTrail.module('Database').hypervideos,
             thumb,

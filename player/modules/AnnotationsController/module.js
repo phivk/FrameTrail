@@ -156,6 +156,10 @@
         ViewVideo.adjustLayout();
         ViewVideo.adjustHypervideo();
 
+        if (FrameTrail.module('TimelineController').initialized) {
+            FrameTrail.module('TimelineController').refreshMinimap();
+        }
+
     }
 
 
@@ -491,6 +495,10 @@
     function initEditOptions() {
 
         ViewVideo.EditingOptions.empty();
+
+        ViewVideo.EditingOptions.append(
+            '<div class="message active"><span class="icon-annotations"></span> '+ labels['MessageHintDragAnnotations'] +'</div>'
+        );
 
         var annotationsEditingOptions = $('<div class="overlayEditingTabs">'
                                   +   '    <ul>'
