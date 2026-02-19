@@ -420,6 +420,7 @@ FrameTrail.defineType(
                     });
 
                     EditPropertiesContainer.addClass('active').append(propertiesControls);
+                    FrameTrail.module('ViewVideo').switchInfoTab('properties');
 
 
                     var snippetElement = propertiesControls.find('.codeSnippetCode'),
@@ -511,6 +512,7 @@ FrameTrail.defineType(
                     this._snippetChanged = false;
 
                     FrameTrail.module('ViewVideo').EditPropertiesContainer.removeClass('active').empty();
+                    FrameTrail.module('ViewVideo').switchInfoTab('add');
 
                     this.codeEditorInstance = null;
                     this.timelineElement.removeClass('highlighted');

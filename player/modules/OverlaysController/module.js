@@ -626,6 +626,7 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
         updateControlsEnd          = propertiesControlsInterface.changeEnd;
         updateControlsDimensions   = propertiesControlsInterface.changeDimensions;
 
+        ViewVideo.switchInfoTab('properties');
         ViewVideo.EditPropertiesContainer.find('.overlayOptionsTabs').tabs('refresh');
 
         if ( ViewVideo.EditPropertiesContainer.find('.CodeMirror').length != 0 ) {
@@ -651,6 +652,7 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
         updateControlsDimensions = function(){};
 
         ViewVideo.EditPropertiesContainer.removeClass('active').empty();
+        ViewVideo.switchInfoTab('add');
 
     }
 

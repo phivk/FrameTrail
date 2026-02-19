@@ -109,6 +109,7 @@ window.FrameTrail_L10n['en-US'] = {
 	"GenericOptions": "Options",
 	"GenericOverview": "Overview",
 	"GenericOwner": "Owner",
+	"GenericProperties": "Properties",
 	"GenericRefresh": "Refresh",
 	"GenericRequired": "required",
 	"GenericOK": "OK",

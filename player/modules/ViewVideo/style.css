@@ -535,22 +535,85 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     min-width: 400px;
     align-self: stretch;
     display: none;
+    flex-direction: column;
+}
+
+.hypervideoContainer .infoAreaRight.active {
+    display: flex;
 }
 
 .editActive[data-edit-mode="overlays"] .hypervideoContainer .infoAreaRight, .editActive[data-edit-mode="codesnippets"] .hypervideoContainer .infoAreaRight, .editActive[data-edit-mode="annotations"] .hypervideoContainer .infoAreaRight {
     flex: 0 0 600px;
 }
 
-.hypervideoContainer .infoAreaRight .editPropertiesContainer {
+/* InfoAreaRight Tab Bar */
+
+.infoAreaRightTabBar {
+    display: flex;
+    flex: 0 0 auto;
+    background: var(--primary-bg-color);
+    border-bottom: 1px solid var(--secondary-bg-color);
+}
+
+.infoAreaRightTab {
+    flex: 1 1 0;
+    padding: 8px 12px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--secondary-fg-color);
+    background: var(--secondary-bg-color);
+    cursor: pointer;
+    border-right: 1px solid var(--primary-bg-color);
+    user-select: none;
+}
+
+.infoAreaRightTab:last-child {
+    border-right: none;
+}
+
+.infoAreaRightTab:hover {
+    color: var(--primary-fg-color);
+}
+
+.infoAreaRightTab.active {
+    color: var(--primary-bg-color);
+    background: var(--primary-fg-color);
+}
+
+.infoAreaRightTabContent {
+    display: none;
+    flex: 1 1 auto;
+    overflow: hidden;
+    position: relative;
+}
+
+.infoAreaRightTabContent.active {
+    display: flex;
+    flex-direction: column;
+}
+
+/* EditingOptions (inside infoAreaRight tab) */
+
+.editingOptions {
+    position: relative;
+    flex: 1 1 auto;
+    overflow: hidden;
+    color: var(--primary-bg-color);
+    background: var(--primary-fg-color);
+}
+
+.editingOptions .executeEventCode {
     position: absolute;
-    top: 0;
-    right: 0;
-    width: 100%;
-    height: 100%;
+    right: 12px;
+    bottom: 18px;
+    background-color: #eaeaef;
+}
+
+/* Edit Properties Container */
+
+.hypervideoContainer .infoAreaRight .editPropertiesContainer {
+    flex: 1 1 auto;
     padding: 10px;
-    -moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    -o-box-sizing: border-box;
     box-sizing: border-box;
     overflow-x: hidden;
     overflow-y: auto;
@@ -560,6 +623,7 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     color: var(--primary-bg-color);
     border-right: 1px solid var(--primary-bg-color);
     display: none;
+    position: relative;
 }
 
 .hypervideoContainer .infoAreaRight .editPropertiesContainer.active {
@@ -570,7 +634,7 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     bottom: 14px;
     left: 20px;
     position: absolute;
-    width: 550px;
+    width: calc(100% - 40px);
 }
 
 .editPropertiesContainer > [class^="icon-"]::before, .editPropertiesContainer > [class*=" icon-"]::before {
@@ -815,7 +879,7 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     box-sizing: border-box;
     background-size: cover;
     background-position: center;
-    height: 14px;
+    height: 20px;
     margin-top: 4px;
     margin-bottom: 4px;
 }
@@ -843,7 +907,7 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
 
 .playerContainer .editable .timelineElement .timelineElementIcon [class^="icon-"]::before,
 .playerContainer .editable .timelineElement .timelineElementIcon [class*=" icon-"]::before {
-    font-size: 12px;
+    font-size: 13px;
     margin: 0;
 }
 
@@ -851,7 +915,7 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     flex: 1 1 auto;
     min-width: 0;
     padding: 0 4px;
-    font-size: 11px;
+    font-size: 12px;
     line-height: 1.2;
     white-space: nowrap;
     overflow: hidden;
@@ -1071,39 +1135,6 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     background-color: rgba(255, 255, 255, 0.15);
 }
 
-.editingOptions {
-    order: 1;
-    flex: 0 1 200px;
-    align-self: auto;
-    position: relative;
-    width: 100%;
-    overflow: hidden;
-    color: var(--primary-bg-color);
-    background: var(--primary-fg-color);
-    box-shadow: 0 0 1px 2px var(--primary-bg-color);
-    z-index: 1;
-    display: none;
-}
-
-.editingOptions.active {
-    display: block;
-}
-
-.mainContainer.editActive[data-edit-mode="settings"] .editingOptions {
-    flex-basis: 160px;
-}
-
-.mainContainer.editActive[data-edit-mode="settings"] .editingOptions .message.error {
-    margin-top: 10px;
-}
-
-.editingOptions .executeEventCode {
-    position: absolute;
-    right: 12px;
-    bottom: 18px;
-    background-color: #eaeaef;
-}
-
 /* Subtitles Settings */
 
 .subtitlesSettingsWrapper {
@@ -1173,10 +1204,6 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     .areaBottomDetails .collectionElement, .areaTopDetails .collectionElement, .areaTopContainer[data-size="large"] .collectionElement, .areaBottomContainer[data-size="large"] .collectionElement {
         width: 700px;
     }
-
-    .editingOptions {
-        flex-basis: 400px;
-    }
 }
 
 @media (min-height: 1300px) and (max-height: 1500px) {
@@ -1186,10 +1213,6 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
 
     .areaBottomDetails .collectionElement, .areaTopDetails .collectionElement, .areaTopContainer[data-size="large"] .collectionElement, .areaBottomContainer[data-size="large"] .collectionElement {
         width: 700px;
-    }
-
-    .editingOptions {
-        flex-basis: 400px;
     }
 }
 
@@ -1201,10 +1224,6 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     .areaBottomDetails .collectionElement, .areaTopDetails .collectionElement, .areaTopContainer[data-size="large"] .collectionElement, .areaBottomContainer[data-size="large"] .collectionElement {
         width: 700px;
     }
-
-    .editingOptions {
-        flex-basis: 400px;
-    }
 }
 
 @media (min-height: 920px) and (max-height: 1100px) {
@@ -1214,10 +1233,6 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
 
     .areaBottomDetails .collectionElement, .areaTopDetails .collectionElement, .areaTopContainer[data-size="large"] .collectionElement, .areaBottomContainer[data-size="large"] .collectionElement {
         width: 700px;
-    }
-
-    .editingOptions {
-        flex-basis: 400px;
     }
 }
 
@@ -1229,10 +1244,6 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     .areaBottomDetails .collectionElement, .areaTopDetails .collectionElement, .areaTopContainer[data-size="large"] .collectionElement, .areaBottomContainer[data-size="large"] .collectionElement {
         width: 520px;
     }
-
-    .editingOptions {
-        flex-basis: 300px;
-    }
 }
 
 @media (min-height: 680px) and (max-height: 820px) {
@@ -1242,10 +1253,6 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
 
     .areaBottomDetails .collectionElement, .areaTopDetails .collectionElement, .areaTopContainer[data-size="large"] .collectionElement, .areaBottomContainer[data-size="large"] .collectionElement {
         width: 380px;
-    }
-
-    .editingOptions {
-        flex-basis: 200px;
     }
 }
 
@@ -1257,10 +1264,6 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     .areaBottomDetails .collectionElement, .areaTopDetails .collectionElement, .areaTopContainer[data-size="large"] .collectionElement, .areaBottomContainer[data-size="large"] .collectionElement {
         width: 350px;
     }
-
-    .editingOptions {
-        flex-basis: 160px;
-    }
 }
 
 @media (min-height: 400px) and (max-height: 540px) {
@@ -1271,10 +1274,6 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     .areaBottomDetails .collectionElement, .areaTopDetails .collectionElement, .areaTopContainer[data-size="large"] .collectionElement, .areaBottomContainer[data-size="large"] .collectionElement {
         width: 320px;
     }
-
-    .editingOptions {
-        flex-basis: 120px;
-    }
 }
 
 @media (max-height: 400px) {
@@ -1284,9 +1283,5 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
 
     .areaBottomDetails .collectionElement, .areaTopDetails .collectionElement, .areaTopContainer[data-size="large"] .collectionElement, .areaBottomContainer[data-size="large"] .collectionElement {
         width: 300px;
-    }
-
-    .editingOptions {
-        flex-basis: 100px;
     }
 }

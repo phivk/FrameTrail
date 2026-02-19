@@ -602,11 +602,22 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
      */
     function getAllItems() {
         var HypervideoModel = FrameTrail.module('HypervideoModel');
-        return [].concat(
-            HypervideoModel.overlays || [],
-            HypervideoModel.annotations || [],
-            HypervideoModel.codeSnippets || []
-        );
+        var editMode = FrameTrail.getState('editMode');
+
+        switch (editMode) {
+            case 'overlays':
+                return HypervideoModel.overlays || [];
+            case 'annotations':
+                return HypervideoModel.annotations || [];
+            case 'codesnippets':
+                return HypervideoModel.codeSnippets || [];
+            default:
+                return [].concat(
+                    HypervideoModel.overlays || [],
+                    HypervideoModel.annotations || [],
+                    HypervideoModel.codeSnippets || []
+                );
+        }
     }
 
 
@@ -671,7 +682,10 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
         // and ViewVideo.leaveEditMode(). No onChange.editMode handler needed
         // (would cause double-destruction).
         onChange: {
-            viewSizeChanged: onViewSizeChanged
+            viewSizeChanged: onViewSizeChanged,
+            editMode: function() {
+                if (initialized) refreshMinimap();
+            }
         },
 
         initEditTimelines:      initEditTimelines,

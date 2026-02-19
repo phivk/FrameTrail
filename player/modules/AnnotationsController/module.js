@@ -373,6 +373,7 @@
         updateControlsStart        = propertiesControlsInterface.changeStart;
         updateControlsEnd          = propertiesControlsInterface.changeEnd;
 
+        ViewVideo.switchInfoTab('properties');
         ViewVideo.EditPropertiesContainer.find('.annotationOptionsTabs').tabs('refresh');
 
         if ( ViewVideo.EditPropertiesContainer.find('.CodeMirror').length != 0 ) {
@@ -394,6 +395,7 @@
         updateControlsEnd        = function(){};
 
         ViewVideo.EditPropertiesContainer.removeClass('active').empty();
+        ViewVideo.switchInfoTab('add');
 
     }
 

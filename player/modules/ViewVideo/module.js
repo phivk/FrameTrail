@@ -59,7 +59,16 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
                         + '                    <div class="layoutAreaToggleCloseButton"></div>'
                         + '                </div>'
                         + '                <div class="infoAreaRight">'
-                        + '                    <div class="editPropertiesContainer"></div>'
+                        + '                    <div class="infoAreaRightTabBar">'
+                        + '                        <div class="infoAreaRightTab active" data-tab="add">'+ labels['GenericAdd'] +'</div>'
+                        + '                        <div class="infoAreaRightTab" data-tab="properties">'+ labels['GenericProperties'] +'</div>'
+                        + '                    </div>'
+                        + '                    <div class="infoAreaRightTabContent active" data-tab="add">'
+                        + '                        <div class="editingOptions"></div>'
+                        + '                    </div>'
+                        + '                    <div class="infoAreaRightTabContent" data-tab="properties">'
+                        + '                        <div class="editPropertiesContainer"></div>'
+                        + '                    </div>'
                         + '                </div>'
                         + '            </div>'
                         + '            <div class="codeSnippetTimeline timeline"></div>'
@@ -104,7 +113,6 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
                         + '        <div class="areaBottomDetails layoutAreaDetails" data-area="areaBottom"></div>'
                         + '    </div>'
                         + '    <div class="areaRightDetails layoutAreaDetails" data-area="areaRight"></div>'
-                        + '    <div class="editingOptions"></div>'
                         + '    <div class="hypervideoLayoutContainer"></div>'
                         + '</div>'),
 
@@ -138,6 +146,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
 
         Controls                    = domElement.find('.controls'),
         AnnotationSearchButton      = domElement.find('.annotationSearchButton'),
+        InfoAreaRight               = domElement.find('.infoAreaRight'),
         EditingOptions              = domElement.find('.editingOptions'),
         HypervideoLayoutContainer   = domElement.find('.hypervideoLayoutContainer'),
 
@@ -168,6 +177,24 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
     ExpandButton.click(function() {
         showDetails(false);
     });
+
+    InfoAreaRight.on('click', '.infoAreaRightTab', function() {
+        var tabName = $(this).data('tab');
+        switchInfoTab(tabName);
+    });
+
+    /**
+     * I switch the active tab in the infoAreaRight panel.
+     * @method switchInfoTab
+     * @param {String} tabName - Either 'properties' or 'add'
+     */
+    function switchInfoTab(tabName) {
+        InfoAreaRight.find('.infoAreaRightTab').removeClass('active');
+        InfoAreaRight.find('.infoAreaRightTab[data-tab="'+ tabName +'"]').addClass('active');
+        InfoAreaRight.find('.infoAreaRightTabContent').removeClass('active');
+        InfoAreaRight.find('.infoAreaRightTabContent[data-tab="'+ tabName +'"]').addClass('active');
+        EditingOptions.find('.ui-tabs').tabs('refresh');
+    }
 
     Controls.find('.captionsButton').click(function() {
 
@@ -660,7 +687,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         var videoContainerWidth;
 
         if ( ( FrameTrail.getState('editMode') != false && FrameTrail.getState('editMode') != 'preview' && FrameTrail.getState('editMode') != 'layout' ) ) {
-            videoContainerWidth = mainContainerWidth - domElement.find('.infoAreaRight').outerWidth();
+            videoContainerWidth = mainContainerWidth - InfoAreaRight.outerWidth();
         } else {
             videoContainerWidth = mainContainerWidth
             - ((FrameTrail.getState('hv_config_areaLeftVisible') && !isMobileWidth) ? AreaLeftContainer.outerWidth() : 0)
@@ -825,7 +852,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
     function resetEditMode() {
         domElement.find('.timeline').removeClass('editable').css('flex-basis', '');
         AnnotationTimeline.hide();
-        domElement.find('.infoAreaRight').hide();
+        InfoAreaRight.removeClass('active');
         HypervideoLayoutContainer.empty().removeClass('active');
     }
 
@@ -841,7 +868,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
             opacity: 1
         });
 
-        domElement.find('.infoAreaRight').css({
+        InfoAreaRight.css({
             opacity: 1
         });
 
@@ -854,10 +881,9 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
 
         domElement.find('.timeline').not('.codeSnippetTimeline, .annotationTimeline').show();
 
-        EditingOptions.addClass('active');
-
-        domElement.find('.infoAreaRight').show();
+        InfoAreaRight.addClass('active');
         EditPropertiesContainer.show();
+        switchInfoTab('add');
 
         Controls.find('.rightControlPanel').hide();
 
@@ -874,7 +900,6 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         // Clean up timeline controls
         FrameTrail.module('TimelineController').destroyEditTimelines();
 
-        EditingOptions.removeClass('active');
         HypervideoLayoutContainer.empty().removeClass('active');
         EditPropertiesContainer.removeAttr('data-editmode').hide();
 
@@ -1522,6 +1547,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         adjustHypervideo:               adjustHypervideo,
         toggleFullscreenState:          toggleFullscreenState,
         toggleNativeFullscreenState:    toggleNativeFullscreenState,
+        switchInfoTab:                  switchInfoTab,
 
         slidePositionUp:         slidePositionUp,
         slidePositionDown:       slidePositionDown,
