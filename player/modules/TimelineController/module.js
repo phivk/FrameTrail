@@ -210,11 +210,14 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
             FrameTrail.module('HypervideoController').currentTime = Math.max(0, Math.min(time, duration));
         });
 
-        // Preview popup: move to body on hover to escape overflow clipping
+        // Preview popup: move to body on hover to escape overflow clipping.
+        // We wrap in a .timelineElement div so existing CSS selectors
+        // (body > .timelineElement .previewWrapper) in Annotation/style.css apply.
         function returnPreviewToElement(el) {
             if (el.data('previewDetached')) {
-                var preview = $('body > .previewWrapper');
-                if (preview.length) {
+                var wrapper = $('body > .timelineElement.previewPopupWrapper');
+                if (wrapper.length) {
+                    var preview = wrapper.find('.previewWrapper');
                     preview.css({
                         position: '',
                         top: '',
@@ -223,6 +226,7 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
                         display: '',
                         zIndex: ''
                     }).appendTo(el);
+                    wrapper.remove();
                 }
                 el.removeData('previewDetached');
             }
@@ -249,14 +253,29 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
                 top = rect.bottom + 8;
             }
 
-            preview.css({
+            // Create wrapper with .timelineElement class so body > .timelineElement .previewWrapper CSS applies
+            var wrapper = $('<div class="timelineElement previewPopupWrapper"></div>').css({
                 position: 'fixed',
                 top: top + 'px',
                 left: left + 'px',
-                marginLeft: '0',
+                width: previewWidth + 'px',
+                height: previewHeight + 'px',
+                zIndex: 200000,
+                pointerEvents: 'none'
+            });
+
+            preview.css({
                 display: 'block',
-                zIndex: 200000
-            }).appendTo('body');
+                position: 'static',
+                width: '100%',
+                height: '100%',
+                left: 'auto',
+                top: 'auto',
+                marginLeft: '0'
+            });
+
+            wrapper.append(preview);
+            $('body').append(wrapper);
 
             el.data('previewDetached', true);
         });
@@ -365,6 +384,9 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
         updateTimeRuler();
         updateMinimapViewport();
         updateZoomControlsActive();
+
+        // Reposition playheads for new scroller width
+        onTimeUpdate();
     }
 
 

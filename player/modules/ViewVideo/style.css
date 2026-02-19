@@ -545,33 +545,44 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
 .infoAreaRightTabBar {
     display: flex;
     flex: 0 0 auto;
-    background: var(--primary-bg-color);
-    border-bottom: 1px solid var(--secondary-bg-color);
+    background: var(--primary-fg-color);
 }
 
 .infoAreaRightTab {
     flex: 1 1 0;
     padding: 8px 12px;
     text-align: center;
-    font-size: 12px;
-    color: var(--secondary-fg-color);
-    background: var(--secondary-bg-color);
+    color: var(--primary-bg-color);
     cursor: pointer;
-    border-right: 1px solid var(--primary-bg-color);
     user-select: none;
-}
-
-.infoAreaRightTab:last-child {
-    border-right: none;
+    border-top: 1px solid transparent;
+    border-left: 1px solid transparent;
+    border-right: 1px solid transparent;
+    border-radius: 3px 3px 0 0;
+    margin: 0 10px;
+    position: relative;
 }
 
 .infoAreaRightTab:hover {
-    color: var(--primary-fg-color);
+    color: var(--primary-bg-color);
 }
 
 .infoAreaRightTab.active {
+    border-color: var(--secondary-bg-color);
     color: var(--primary-bg-color);
-    background: var(--primary-fg-color);
+    background: var(--secondary-fg-color);
+}
+
+.infoAreaRightTab.active::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    height: 3px;
+    background: var(--secondary-fg-color);
+    width: 100%;
+    display: block;
+    left: 0px;
+    z-index: 4;
 }
 
 .infoAreaRightTabContent {
@@ -579,11 +590,19 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     flex: 1 1 auto;
     overflow: hidden;
     position: relative;
+    border-top: 1px solid var(--secondary-bg-color);
+    border-right: 1px solid var(--secondary-bg-color);
+    background: var(--secondary-fg-color);
 }
 
 .infoAreaRightTabContent.active {
     display: flex;
     flex-direction: column;
+}
+
+.infoAreaRightTabContent .ui-tabs .ui-tabs-nav {
+    padding-left: 10px;
+    padding-right: 10px;
 }
 
 /* EditingOptions (inside infoAreaRight tab) */
@@ -593,7 +612,6 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     flex: 1 1 auto;
     overflow: hidden;
     color: var(--primary-bg-color);
-    background: var(--primary-fg-color);
 }
 
 .editingOptions .executeEventCode {
@@ -611,36 +629,12 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     box-sizing: border-box;
     overflow-x: hidden;
     overflow-y: auto;
-    background-color: var(--secondary-fg-color);
     background-repeat: no-repeat;
     background-position: center center;
     color: var(--primary-bg-color);
-    border-right: 1px solid var(--primary-bg-color);
     display: none;
     position: relative;
 }
-
-.hypervideoContainer .infoAreaRight .editPropertiesContainer.active {
-    background-color: var(--primary-fg-color)
-}
-
-.hypervideoContainer .infoAreaRight .editPropertiesContainer > .message {
-    bottom: 14px;
-    left: 20px;
-    position: absolute;
-    width: calc(100% - 40px);
-}
-
-.editPropertiesContainer > [class^="icon-"]::before, .editPropertiesContainer > [class*=" icon-"]::before {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    font-size: 60px;
-    width: 100px;
-    color: var(--primary-fg-color);
-    margin: -30px 0 0 -40px;
-}
-
 
 /* Video Container */
 
@@ -892,71 +886,6 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
 }
 .playerContainer .timelineElement:hover .previewWrapper {
     display: none !important;
-}
-
-/* Preview popup when detached to body by TimelineController */
-body > .previewWrapper {
-    background: none repeat scroll 0 0 var(--primary-bg-color);
-    border: 2px solid var(--primary-bg-color);
-    height: 60px;
-    width: 80px;
-    box-sizing: border-box;
-    pointer-events: none;
-}
-
-body > .previewWrapper .resourceThumb {
-    position: relative;
-    width: 100% !important;
-    height: 100% !important;
-    overflow: hidden;
-    background: var(--primary-bg-color);
-    box-sizing: border-box;
-    text-align: left;
-}
-
-body > .previewWrapper .resourceThumb .resourceTitle {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    color: var(--primary-fg-color);
-    font-size: 9px;
-    padding: 1px 2px;
-    background: rgba(0,0,0,0.4);
-    z-index: 2;
-    box-sizing: border-box;
-}
-
-body > .previewWrapper .resourceThumb[data-type="text"] .resourceTitle {
-    display: none;
-}
-
-body > .previewWrapper .resourceThumb .resourceOverlay .resourceIcon {
-    position: absolute;
-    right: 6px;
-    bottom: 5px;
-    width: auto;
-    height: auto;
-}
-
-body > .previewWrapper:after {
-    position: absolute;
-    bottom: -8px;
-    left: 50%;
-    margin-left: -12px;
-    border-top: 8px solid var(--primary-bg-color);
-    border-left: 12px solid transparent;
-    border-right: 12px solid transparent;
-    content: '';
-}
-
-body > .previewWrapper:before {
-    position: absolute;
-    bottom: -8px;
-    height: 8px;
-    left: 0px;
-    width: 100%;
-    content: '';
 }
 
 .playerContainer .editable .timelineElement .timelineElementIcon {

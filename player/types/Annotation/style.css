@@ -310,7 +310,7 @@ body > .compareTimelineElement .previewWrapper,
 body > .timelineElement .previewWrapper {
 	background: none repeat scroll 0 0 var(--primary-bg-color);
 	border: 2px solid var(--primary-bg-color);
-	/*box-shadow: 0 0 2px 1px var(--primary-fg-color);*/
+	box-shadow: 0 0 1px 1px var(--primary-fg-color);
 	height: 60px;
 	left: 50%;
 	margin-left: -40px;
@@ -399,10 +399,12 @@ body > .timelineElement.previewPositionRight .previewWrapper:after {
 body > .compareTimelineElement .previewWrapper:before,
 body > .timelineElement .previewWrapper:before {
 	position: absolute;
-	bottom: -8px;
-	height: 8px;
-	left: 0px;
-	width: 100%;
+	bottom: -9px;
+	left: 50%;
+	margin-left: -12px;
+	border-top: 8px solid var(--primary-fg-color);
+	border-left: 12px solid transparent;
+	border-right: 12px solid transparent;
 	content: '';
 }
 
@@ -433,7 +435,6 @@ body > .timelineElement .previewWrapper .resourceThumb .resourceTitle {
 	left: 0;
 	width: 100%;
 	height: auto;
-	background-color: var(--primary-bg-color);
 	font-size: 11px;
 	padding: 0 3px 3px 3px;
 	color: var(--primary-fg-color);

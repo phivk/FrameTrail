@@ -8,7 +8,7 @@
 	position: absolute;
 	right: 0px;
 	bottom: 0px;
-	background: var(--primary-fg-color);
+	background: var(--secondary-fg-color);
 	padding: 10px 3px 3px 10px;
 	z-index: 1;
 }
