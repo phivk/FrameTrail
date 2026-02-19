@@ -60,11 +60,10 @@
             config = configInitOptions;
             FrameTrail.changeState('config', config);
 
-            // TODO: Check if this makes sense here
-            if (config.theme) {
-                $(FrameTrail.getState('target')).attr('data-frametrail-theme', config.theme);
-            } else {
-                $(FrameTrail.getState('target')).attr('data-frametrail-theme', '');
+            // Apply global theme only if no per-hypervideo theme is set
+            var hvTheme = hypervideo && hypervideo.config && hypervideo.config.theme;
+            if (!hvTheme) {
+                $(FrameTrail.getState('target')).attr('data-frametrail-theme', config.theme || '');
             }
 
             return success.call(this);
@@ -74,10 +73,10 @@
         function applyConfig(data) {
             config = data;
             FrameTrail.changeState('config', config);
-            if (config.theme) {
-                $(FrameTrail.getState('target')).attr('data-frametrail-theme', config.theme);
-            } else {
-                $(FrameTrail.getState('target')).attr('data-frametrail-theme', '');
+            // Apply global theme only if no per-hypervideo theme is set
+            var hvTheme = hypervideo && hypervideo.config && hypervideo.config.theme;
+            if (!hvTheme) {
+                $(FrameTrail.getState('target')).attr('data-frametrail-theme', config.theme || '');
             }
             success.call(this);
         }
@@ -1410,8 +1409,9 @@
         		"captionsVisible": hypervideos[thisHypervideoID].config.captionsVisible,
                 "clipTimeVisible": hypervideos[thisHypervideoID].config.clipTimeVisible,
         		"hidden": hypervideos[thisHypervideoID].hidden,
-                "layoutArea": (FrameTrail.module('ViewLayout') && FrameTrail.module('ViewLayout').getLayoutAreaData) 
-                    ? FrameTrail.module('ViewLayout').getLayoutAreaData() 
+                "theme": hypervideos[thisHypervideoID].config.theme || "",
+                "layoutArea": (FrameTrail.module('ViewLayout') && FrameTrail.module('ViewLayout').getLayoutAreaData)
+                    ? FrameTrail.module('ViewLayout').getLayoutAreaData()
                     : hypervideos[thisHypervideoID].config.layoutArea
         	},
         	"clips": hypervideos[thisHypervideoID].clips,

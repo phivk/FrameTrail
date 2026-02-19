@@ -92,6 +92,15 @@
 			FrameTrail.changeState('hv_config_' + key, hypervideo.config[key]);
 		}
 
+		// Apply per-hypervideo theme (falls back to global theme)
+		var hvTheme = hypervideo.config.theme;
+		if (hvTheme) {
+			$(FrameTrail.getState('target')).attr('data-frametrail-theme', hvTheme);
+		} else {
+			var globalTheme = database.config.theme || '';
+			$(FrameTrail.getState('target')).attr('data-frametrail-theme', globalTheme);
+		}
+
 		/**
 		* This state (as well as the "livestream" boolean) should 
 		* only be changed to true by the HypervideoController 

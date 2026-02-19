@@ -574,9 +574,13 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                                     }
                                 });
                                 
-                                // Apply theme change
+                                // Apply global default theme
                                 database.config.theme = selectedThemeValue;
-                                $(FrameTrail.getState('target')).attr('data-frametrail-theme', selectedThemeValue);
+                                // Only apply to current view if the hypervideo has no per-hypervideo theme
+                                var hvConfig = database.hypervideo && database.hypervideo.config;
+                                if (!hvConfig || !hvConfig.theme) {
+                                    $(FrameTrail.getState('target')).attr('data-frametrail-theme', selectedThemeValue);
+                                }
                             }
                             
                             // Apply CSS changes
@@ -600,7 +604,11 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                                         // Revert changes on error
                                         if (configChanged) {
                                             database.config = JSON.parse(JSON.stringify(initialConfig));
-                                            $(FrameTrail.getState('target')).attr('data-frametrail-theme', initialConfig.theme || 'default');
+                                            // Only revert theme on current view if hypervideo has no per-hypervideo theme
+                                            var hvCfg = database.hypervideo && database.hypervideo.config;
+                                            if (!hvCfg || !hvCfg.theme) {
+                                                $(FrameTrail.getState('target')).attr('data-frametrail-theme', initialConfig.theme || 'default');
+                                            }
                                         }
                                         if (globalCSSChanged) {
                                             $('head > style.FrameTrailGlobalCustomCSS').html(initialCSS);

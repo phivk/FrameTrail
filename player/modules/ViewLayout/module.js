@@ -325,6 +325,8 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
 			hypervideo = database.hypervideo,
 			thisID     = FrameTrail.module('RouteNavigation').hypervideoID;
 
+		var currentTheme = hypervideo.config.theme || database.config.theme || 'default';
+
 		var domElement = $('<div class="layoutManagerContainer">'
 						+  '    <div class="layoutManagerMain">'
 						+  '        <div class="layoutManager">'
@@ -348,6 +350,67 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
 						+  '            <div data-area="areaBottom" class="layoutArea">'
 						+  '                <div class="layoutAreaTabs"></div>'
 						+  '                <div class="layoutAreaContent"></div>'
+						+  '            </div>'
+						+  '        </div>'
+						+  '        <div class="layoutManagerThemePanel">'
+						+  '            <div class="themeContainer">'
+						+  '                <div class="message active">'+ labels['SettingsSelectColorTheme'] +'</div>'
+						+  '                <div class="themeItem" data-theme="default">'
+						+  '                    <div class="themeName">'+ labels['GenericDefault'] +'</div>'
+						+  '                    <div class="themeColorContainer">'
+						+  '                        <div class="primary-fg-color"></div>'
+						+  '                        <div class="secondary-bg-color"></div>'
+						+  '                        <div class="secondary-fg-color"></div>'
+						+  '                    </div>'
+						+  '                </div>'
+						+  '                <div class="themeItem" data-theme="dark">'
+						+  '                    <div class="themeName">Dark</div>'
+						+  '                    <div class="themeColorContainer">'
+						+  '                        <div class="primary-fg-color"></div>'
+						+  '                        <div class="secondary-bg-color"></div>'
+						+  '                        <div class="secondary-fg-color"></div>'
+						+  '                    </div>'
+						+  '                </div>'
+						+  '                <div class="themeItem" data-theme="bright">'
+						+  '                    <div class="themeName">Bright</div>'
+						+  '                    <div class="themeColorContainer">'
+						+  '                        <div class="primary-fg-color"></div>'
+						+  '                        <div class="secondary-bg-color"></div>'
+						+  '                        <div class="secondary-fg-color"></div>'
+						+  '                    </div>'
+						+  '                </div>'
+						+  '                <div class="themeItem" data-theme="blue">'
+						+  '                    <div class="themeName">Blue</div>'
+						+  '                    <div class="themeColorContainer">'
+						+  '                        <div class="primary-fg-color"></div>'
+						+  '                        <div class="secondary-bg-color"></div>'
+						+  '                        <div class="secondary-fg-color"></div>'
+						+  '                    </div>'
+						+  '                </div>'
+						+  '                <div class="themeItem" data-theme="green">'
+						+  '                    <div class="themeName">Green</div>'
+						+  '                    <div class="themeColorContainer">'
+						+  '                        <div class="primary-fg-color"></div>'
+						+  '                        <div class="secondary-bg-color"></div>'
+						+  '                        <div class="secondary-fg-color"></div>'
+						+  '                    </div>'
+						+  '                </div>'
+						+  '                <div class="themeItem" data-theme="orange">'
+						+  '                    <div class="themeName">Orange</div>'
+						+  '                    <div class="themeColorContainer">'
+						+  '                        <div class="primary-fg-color"></div>'
+						+  '                        <div class="secondary-bg-color"></div>'
+						+  '                        <div class="secondary-fg-color"></div>'
+						+  '                    </div>'
+						+  '                </div>'
+						+  '                <div class="themeItem" data-theme="grey">'
+						+  '                    <div class="themeName">Grey</div>'
+						+  '                    <div class="themeColorContainer">'
+						+  '                        <div class="primary-fg-color"></div>'
+						+  '                        <div class="secondary-bg-color"></div>'
+						+  '                        <div class="secondary-fg-color"></div>'
+						+  '                    </div>'
+						+  '                </div>'
 						+  '            </div>'
 						+  '        </div>'
 						+  '    </div>'
@@ -474,6 +537,55 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
 		initLayoutAreaPreview(contentViewsLeft);
 		initLayoutAreaPreview(contentViewsRight);
 
+
+		// Theme selector
+		var themePanel = domElement.find('.layoutManagerThemePanel');
+
+		themePanel.find('.themeItem').each(function() {
+			if (currentTheme == $(this).attr('data-theme')) {
+				$(this).addClass('active');
+			}
+		});
+
+		themePanel.find('.themeItem').click(function() {
+			var newTheme = $(this).attr('data-theme'),
+				oldTheme = hypervideo.config.theme || '';
+
+			if (newTheme === oldTheme || (!oldTheme && newTheme === (database.config.theme || 'default'))) {
+				return;
+			}
+
+			$(this).siblings('.themeItem').removeClass('active');
+			$(this).addClass('active');
+
+			// Apply theme immediately
+			hypervideo.config.theme = newTheme;
+			$(FrameTrail.getState('target')).attr('data-frametrail-theme', newTheme);
+
+			FrameTrail.module('HypervideoModel').newUnsavedChange('layout');
+
+			// Register undo/redo
+			(function(prevTheme, nextTheme) {
+				FrameTrail.module('UndoManager').register({
+					category: 'layout',
+					description: labels['SidebarLayout'] + ' Theme',
+					undo: function() {
+						hypervideo.config.theme = prevTheme;
+						$(FrameTrail.getState('target')).attr('data-frametrail-theme', prevTheme || database.config.theme || 'default');
+						themePanel.find('.themeItem').removeClass('active');
+						themePanel.find('.themeItem[data-theme="'+ (prevTheme || database.config.theme || 'default') +'"]').addClass('active');
+						FrameTrail.module('HypervideoModel').newUnsavedChange('layout');
+					},
+					redo: function() {
+						hypervideo.config.theme = nextTheme;
+						$(FrameTrail.getState('target')).attr('data-frametrail-theme', nextTheme);
+						themePanel.find('.themeItem').removeClass('active');
+						themePanel.find('.themeItem[data-theme="'+ nextTheme +'"]').addClass('active');
+						FrameTrail.module('HypervideoModel').newUnsavedChange('layout');
+					}
+				});
+			})(oldTheme, newTheme);
+		});
 
 
 	}
