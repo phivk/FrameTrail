@@ -699,7 +699,7 @@ FrameTrail.defineType(
 
                     self.contentViewPreviewElement.attr('data-type', self.contentViewData.type);
                     self.contentViewPreviewElement.attr('data-size', self.contentViewData.contentSize);
-                    self.contentViewPreviewElement.find('.contentViewPreviewDescription').html(''+ ((self.contentViewData.type == 'TimedContent') ? self.labels['GenericAnnotationCollection'] : self.contentViewData.type) +'<br>'+ self.labels['SettingsContentViewSize'] +': '+ self.contentViewData.contentSize +'');
+                    self.contentViewPreviewElement.find('.schematicPreview').replaceWith(self.generateSchematicPreview());
 
                     self.resizeLayoutAreaPreview();
 
@@ -884,6 +884,115 @@ FrameTrail.defineType(
                  * @method renderContentViewPreviewElement
                  * @return {HTMLElement} previewElement
                  */
+                generateSchematicPreview: function() {
+
+                    var self = this,
+                        type = self.contentViewData.type,
+                        size = self.contentViewData.contentSize,
+                        area = self.whichArea,
+                        isHorizontal = (area == 'top' || area == 'bottom'),
+                        schematic = $('<div class="schematicPreview"></div>');
+
+                    switch (type) {
+
+                        case 'TimedContent':
+                            if (isHorizontal) {
+                                var cardCount = (size == 'small') ? 5 : (size == 'medium') ? 4 : 3;
+                                for (var i = 0; i < cardCount; i++) {
+                                    var card = $('<div class="schematicCard" data-size="'+ size +'"></div>');
+                                    var thumb = $('<div class="schematicThumb"></div>');
+                                    card.append(thumb);
+                                    if (size == 'medium' || size == 'large') {
+                                        card.append('<div class="schematicTitle"></div>');
+                                    }
+                                    if (size == 'large') {
+                                        card.append('<div class="schematicBody"><div class="schematicLine"></div><div class="schematicLine short"></div></div>');
+                                    }
+                                    if (i === 1) card.addClass('active');
+                                    schematic.append(card);
+                                }
+                            } else {
+                                var cardCount = (size == 'small') ? 5 : (size == 'medium') ? 3 : 1;
+                                for (var i = 0; i < cardCount; i++) {
+                                    var card = $('<div class="schematicCard vertical" data-size="'+ size +'"></div>');
+                                    if (size == 'small') {
+                                        card.append('<div class="schematicThumb"></div>');
+                                    } else if (size == 'medium') {
+                                        card.append('<div class="schematicThumb"></div><div class="schematicMeta"><div class="schematicTitle"></div></div>');
+                                    } else {
+                                        card.append('<div class="schematicThumb large"></div><div class="schematicMeta"><div class="schematicTitle"></div><div class="schematicLine"></div><div class="schematicLine short"></div></div>');
+                                    }
+                                    if (i === 0) card.addClass('active');
+                                    schematic.append(card);
+                                }
+                            }
+                            break;
+
+                        case 'CustomHTML':
+                            var container = $('<div class="schematicCustomHTML">'
+                                + '<p>Custom HTML content area</p>'
+                                + '<p><span class="schematicHighlight">time-based element</span> with interactive text</p>'
+                                + '<p>Additional content goes here...</p>'
+                                + '</div>');
+                            schematic.append(container);
+                            break;
+
+                        case 'Transcript':
+                            var container = $('<div class="schematicTranscript">'
+                                + '<span>Welcome</span> '
+                                + '<span>to</span> '
+                                + '<span>this</span> '
+                                + '<span class="active">video.</span> '
+                                + '<span class="active">Here</span> '
+                                + '<span class="active">we</span> '
+                                + '<span>explore</span> '
+                                + '<span>the</span> '
+                                + '<span>topic</span> '
+                                + '<span>in</span> '
+                                + '<span>detail.</span> '
+                                + '<span>Each</span> '
+                                + '<span>word</span> '
+                                + '<span>syncs</span> '
+                                + '<span>with</span> '
+                                + '<span>the</span> '
+                                + '<span>video</span> '
+                                + '<span>timeline.</span>'
+                                + '</div>');
+                            schematic.append(container);
+                            break;
+
+                        case 'Timelines':
+                            var container = $('<div class="schematicTimelines"></div>');
+                            var rows = [
+                                { label: 'User 1', offset: '10%', width: '35%' },
+                                { label: 'User 1', offset: '55%', width: '20%' },
+                                { label: 'User 2', offset: '5%',  width: '25%' },
+                                { label: 'User 2', offset: '40%', width: '40%' },
+                                { label: 'User 3', offset: '20%', width: '50%' }
+                            ];
+                            var currentLabel = '';
+                            var row;
+                            for (var i = 0; i < rows.length; i++) {
+                                if (rows[i].label !== currentLabel) {
+                                    currentLabel = rows[i].label;
+                                    row = $('<div class="schematicTimelineRow"></div>');
+                                    row.append('<span class="schematicTimelineLabel">'+ rows[i].label +'</span>');
+                                    row.append('<div class="schematicTimelineTrack"></div>');
+                                    container.append(row);
+                                }
+                                row.find('.schematicTimelineTrack').append(
+                                    '<div class="schematicTimelineBar" style="left:'+ rows[i].offset +';width:'+ rows[i].width +'"></div>'
+                                );
+                            }
+                            schematic.append(container);
+                            break;
+                    }
+
+                    return schematic;
+
+                },
+
+
                 renderContentViewPreviewElement: function() {
 
                     var self = this,
@@ -894,8 +1003,9 @@ FrameTrail.defineType(
                                     +   '        <button class="editContentView"><span class="icon-pencil"></span></button>'
                                     +   '        <button class="deleteContentView"><span class="icon-trash"></span></button>'
                                     +   '    </div>'
-                                    +   '    <div class="contentViewPreviewDescription">'+ ((self.contentViewData.type == 'TimedContent') ? self.labels['GenericAnnotationCollection'] : self.contentViewData.type) +'<br>'+ self.labels['SettingsContentViewSize'] +': '+ self.contentViewData.contentSize +'</div>'
                                     +   '</div>');
+
+                    previewElement.append(self.generateSchematicPreview());
 
                     previewElement.find('.editContentView').click(function() {
                         self.editContentView();
