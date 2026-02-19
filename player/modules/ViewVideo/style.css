@@ -323,6 +323,7 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     background: var(--secondary-bg-color);
     z-index: 2;
     pointer-events: none;
+    display: none;
 }
 
 /* Code Snippets */
@@ -338,9 +339,26 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     display: none;
 }
 
+/* Show each timeline when it has the editable class (set by enter*Mode functions) */
+.playerContainer .annotationTimeline.editable,
+.playerContainer .overlayTimeline.editable,
 .playerContainer .codeSnippetTimeline.editable {
     display: block;
     overflow: visible;
+}
+
+/* Only show each timeline in its corresponding edit mode */
+.editActive[data-edit-mode="overlays"] .playerContainer .annotationTimeline,
+.editActive[data-edit-mode="overlays"] .playerContainer .codeSnippetTimeline,
+.editActive[data-edit-mode="codesnippets"] .playerContainer .annotationTimeline,
+.editActive[data-edit-mode="codesnippets"] .playerContainer .overlayTimeline,
+.editActive[data-edit-mode="annotations"] .playerContainer .overlayTimeline,
+.editActive[data-edit-mode="annotations"] .playerContainer .codeSnippetTimeline {
+    display: none !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    flex-basis: 0 !important;
+    overflow: hidden !important;
 }
 
 /* Controls */

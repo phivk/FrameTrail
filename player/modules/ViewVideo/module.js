@@ -854,8 +854,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      * @method resetEditMode
      */
     function resetEditMode() {
-        domElement.find('.timeline').removeClass('editable').css('flex-basis', '');
-        AnnotationTimeline.hide();
+        domElement.find('.timeline').removeClass('editable').css({'flex-basis': '', 'display': ''});
         InfoAreaRight.removeClass('active');
         HypervideoLayoutContainer.empty().removeClass('active');
     }
@@ -883,7 +882,8 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         AreaLeftContainer.hide();
         AreaRightContainer.hide();
 
-        domElement.find('.timeline').not('.codeSnippetTimeline, .annotationTimeline').show();
+        // Timeline visibility is handled by CSS rules based on .editActive[data-edit-mode]
+        // Don't use .show() here as it sets inline display:block that persists after leaving edit mode
 
         InfoAreaRight.addClass('active');
         EditPropertiesContainer.show();
@@ -904,6 +904,9 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
     function leaveEditMode() {
         // Clean up timeline controls
         FrameTrail.module('TimelineController').destroyEditTimelines();
+
+        // Remove editable class and clear inline display from all timelines
+        domElement.find('.timeline').removeClass('editable').css('display', '');
 
         HypervideoLayoutContainer.empty().removeClass('active');
         EditPropertiesContainer.removeAttr('data-editmode').hide();
@@ -984,7 +987,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      */
     function enterAnnotationMode() {
         initEditMode();
-        AnnotationTimeline.show().addClass('editable');
+        AnnotationTimeline.addClass('editable');
 
         EditPropertiesContainer.attr('data-editmode', 'annotations');
     }
