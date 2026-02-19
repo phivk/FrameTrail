@@ -271,8 +271,8 @@ FrameTrail.defineType(
 
                     /* Add Answer Text Fields */
 
-                    var layoutRow = $('<div class="layoutRow"></div>');
-                    var leftColumn = $('<div class="column-6"></div>');
+                    var answersRow = $('<div class="layoutRow"></div>');
+                    var leftColumn = $('<div class="column-12"></div>');
 
                     leftColumn.append('<label>'+ this.labels['SettingsQuizAnswersLabel'] +'</label>');
 
@@ -395,7 +395,8 @@ FrameTrail.defineType(
                         settingsJumpBackwardCheckedString = (overlayOrAnnotation.data.attributes.onWrongAnswer.jumpBackward) ? 'checked="checked"' : '',
                         settingsJumpBackwardDisabledString = (overlayOrAnnotation.data.attributes.onWrongAnswer.jumpBackward) ? '' : 'disabled="disabled"';
 
-                    var rightColumn = $('<div class="column-6">'
+                    var settingsRow = $('<div class="layoutRow"></div>');
+                    var rightColumn = $('<div class="column-12">'
                                     +   '    <div class="settingsActionsTabs">'
                                     +   '        <ul>'
                                     +   '            <li>'
@@ -590,8 +591,9 @@ FrameTrail.defineType(
                         }
                     });
 
-                    layoutRow.append(leftColumn, rightColumn);
-                    quizEditorContainer.append(layoutRow);
+                    answersRow.append(leftColumn);
+                    settingsRow.append(rightColumn);
+                    quizEditorContainer.append(answersRow, settingsRow);
 
                     // Helper function to update quiz DOM elements by re-rendering
                     var updateQuizVisuals = function(el) {
