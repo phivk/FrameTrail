@@ -695,18 +695,20 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
         	return;
         }
 
-        for (var i in contentViewsTop) {
-			contentViewsTop[i].updateLayout();
-		}
-		for (var i in contentViewsBottom) {
-			contentViewsBottom[i].updateLayout();
-		}
-		for (var i in contentViewsLeft) {
-			contentViewsLeft[i].updateLayout();
-		}
-		for (var i in contentViewsRight) {
-			contentViewsRight[i].updateLayout();
-		}
+        var allAreas = [contentViewsTop, contentViewsBottom, contentViewsLeft, contentViewsRight];
+
+        for (var a = 0; a < allAreas.length; a++) {
+            for (var i in allAreas[a]) {
+                allAreas[a][i].updateLayout();
+            }
+            // Sync the area container data-size with the active content view
+            for (var i in allAreas[a]) {
+                if (allAreas[a][i].contentViewContainer.hasClass('active')) {
+                    allAreas[a][i].resizeLayoutArea(false, true);
+                    break;
+                }
+            }
+        }
 
     }
 

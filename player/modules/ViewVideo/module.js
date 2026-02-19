@@ -113,6 +113,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
                         + '        <div class="areaBottomDetails layoutAreaDetails" data-area="areaBottom"></div>'
                         + '    </div>'
                         + '    <div class="areaRightDetails layoutAreaDetails" data-area="areaRight"></div>'
+                        + '    <div class="otherUsersContainer"></div>'
                         + '    <div class="hypervideoLayoutContainer"></div>'
                         + '</div>'),
 
@@ -148,6 +149,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         AnnotationSearchButton      = domElement.find('.annotationSearchButton'),
         InfoAreaRight               = domElement.find('.infoAreaRight'),
         EditingOptions              = domElement.find('.editingOptions'),
+        OtherUsersContainer         = domElement.find('.otherUsersContainer'),
         HypervideoLayoutContainer   = domElement.find('.hypervideoLayoutContainer'),
 
 
@@ -418,6 +420,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
 
         adjustLayout();
         adjustHypervideo();
+        FrameTrail.module('ViewLayout').adjustContentViewLayout();
 
         if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent) == false) {
             slideArea.css({
@@ -435,7 +438,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         });
 
         var editMode = FrameTrail.getState('editMode');
-        if ((editMode == 'overlays' || editMode == 'annotations' || editMode == 'codesnippets') 
+        if ((editMode == 'overlays' || editMode == 'annotations' || editMode == 'codesnippets')
             && EditPropertiesContainer.find('.ui-tabs').length != 0) {
             EditPropertiesContainer.find('.ui-tabs').tabs('refresh');
         }
@@ -856,6 +859,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
     function resetEditMode() {
         domElement.find('.timeline').removeClass('editable').css({'flex-basis': '', 'display': ''});
         InfoAreaRight.removeClass('active');
+        OtherUsersContainer.empty().removeClass('active');
         HypervideoLayoutContainer.empty().removeClass('active');
     }
 
@@ -988,6 +992,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
     function enterAnnotationMode() {
         initEditMode();
         AnnotationTimeline.addClass('editable');
+        OtherUsersContainer.addClass('active');
 
         EditPropertiesContainer.attr('data-editmode', 'annotations');
     }
@@ -1630,6 +1635,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
          * @type HTMLElement
          */
         get HypervideoLayoutContainer()    { return HypervideoLayoutContainer },
+        get OtherUsersContainer()          { return OtherUsersContainer },
         /**
          * I contain the OverlayContainer element.
          * @attribute OverlayContainer

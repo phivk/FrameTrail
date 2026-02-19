@@ -20,6 +20,7 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
         scrollPosition = 0,
         initialized = false,
         registeredTimelines = [],
+        followerTimelines = [],
         controlsContainer = null,
         timeRulerElement = null,
         minimapElement = null,
@@ -35,6 +36,22 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
     var ZOOM_PRESETS = [1, 2, 4, 8];
     var MIN_ZOOM = 1;
     var MAX_ZOOM = 16;
+
+
+    /**
+     * Get the width of the first visible registered timeline.
+     * Hidden timelines (display:none) report width 0, so we skip them.
+     * @method getVisibleContainerWidth
+     * @return {Number}
+     */
+    function getVisibleContainerWidth() {
+        for (var i = 0; i < registeredTimelines.length; i++) {
+            if (registeredTimelines[i].element.is(':visible')) {
+                return registeredTimelines[i].element.width();
+            }
+        }
+        return containerWidth;
+    }
 
 
     /**
@@ -68,7 +85,7 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
 
         // Set initial container width
         if (registeredTimelines.length > 0) {
-            containerWidth = registeredTimelines[0].element.width();
+            containerWidth = getVisibleContainerWidth();
         }
 
         // Register timeupdate listener for playhead sync
@@ -86,9 +103,12 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
     function destroyEditTimelines() {
         if (!initialized) return;
 
+        // Remove any detached preview popup still on body
+        $('body > .timelineElement.previewPopupWrapper').remove();
+
         // Clean up timelines: remove playheads, unwrap children from scroller back to timeline
         registeredTimelines.forEach(function(t) {
-            t.element.off('scroll.timelineSync');
+            t.element.off('scroll.timelineSync mouseenter.previewPopup mouseleave.previewPopup');
             if (t.playhead) {
                 t.playhead.remove();
             }
@@ -99,6 +119,13 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
             }
         });
         registeredTimelines = [];
+
+        // Clean up follower timelines
+        followerTimelines.forEach(function(f) {
+            f.wrapper.off('scroll.followerSync');
+            f.wrapper.off('mouseenter.previewPopup mouseleave.previewPopup');
+        });
+        followerTimelines = [];
 
         // Remove controls
         if (controlsContainer) {
@@ -135,30 +162,112 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
         if (!initialized || registeredTimelines.length === 0 || duration === 0) return;
 
         var currentTime = FrameTrail.module('HypervideoController').currentTime;
-        var scrollerWidth = containerWidth * zoomLevel;
-        var playheadPosition = (currentTime / duration) * scrollerWidth;
+        var playheadPercent = (currentTime / duration) * 100;
 
-        // Update playhead positions on all timelines
+        // Update playhead positions on all timelines (percentage of scroller width)
         playheadElements.forEach(function(playhead) {
-            playhead.css('left', playheadPosition + 'px');
+            playhead.css('left', playheadPercent + '%');
         });
 
         // Update ruler playhead
         if (rulerPlayhead) {
-            rulerPlayhead.css('left', playheadPosition + 'px');
+            rulerPlayhead.css('left', playheadPercent + '%');
         }
 
         // Auto-scroll to keep playhead visible when zoomed in
         if (zoomLevel > 1) {
+            var scrollerWidth = containerWidth * zoomLevel;
+            var playheadPixel = (playheadPercent / 100) * scrollerWidth;
             var visibleStart = scrollPosition;
             var visibleEnd = scrollPosition + containerWidth;
             var margin = containerWidth * 0.1;
 
-            if (playheadPosition < visibleStart + margin ||
-                playheadPosition > visibleEnd - margin) {
+            if (playheadPixel < visibleStart + margin ||
+                playheadPixel > visibleEnd - margin) {
                 scrollToTime(currentTime, false);
             }
         }
+    }
+
+
+    /**
+     * Set up preview popup behavior on a container: on hover, move .previewWrapper
+     * to body to escape overflow clipping, and return it on mouseleave.
+     * @method setupPreviewPopup
+     * @param {jQuery} container - The parent element to listen on
+     * @param {String} childSelector - CSS selector for the hoverable child elements
+     */
+    function setupPreviewPopup(container, childSelector) {
+        function returnPreviewToElement(el) {
+            if (el.data('previewDetached')) {
+                var wrapper = $('body > .timelineElement.previewPopupWrapper');
+                if (wrapper.length) {
+                    var preview = wrapper.find('.previewWrapper');
+                    preview.css({
+                        position: '',
+                        top: '',
+                        left: '',
+                        marginLeft: '',
+                        display: '',
+                        zIndex: ''
+                    }).appendTo(el);
+                    wrapper.remove();
+                }
+                el.removeData('previewDetached');
+            }
+        }
+
+        container.on('mouseenter.previewPopup', childSelector, function() {
+            var el = $(this);
+            var preview = el.find('.previewWrapper');
+            if (!preview.length || !preview.children().length) return;
+
+            // Don't show during drag
+            if (el.hasClass('ui-draggable-dragging')) return;
+
+            var rect = this.getBoundingClientRect();
+            var previewWidth = 80;
+            var previewHeight = 60;
+            var left = rect.left + (rect.width / 2) - (previewWidth / 2);
+            var top = rect.top - previewHeight - 8;
+
+            // Clamp to viewport
+            if (left < 4) left = 4;
+            if (left + previewWidth > window.innerWidth - 4) left = window.innerWidth - 4 - previewWidth;
+            if (top < 4) {
+                top = rect.bottom + 8;
+            }
+
+            // Create wrapper with .timelineElement class so body > .timelineElement .previewWrapper CSS applies
+            var wrapper = $('<div class="timelineElement previewPopupWrapper"></div>').css({
+                position: 'fixed',
+                top: top + 'px',
+                left: left + 'px',
+                width: previewWidth + 'px',
+                height: previewHeight + 'px',
+                zIndex: 200000,
+                pointerEvents: 'none'
+            });
+
+            preview.css({
+                display: 'block',
+                position: 'static',
+                width: '100%',
+                height: '100%',
+                left: 'auto',
+                top: 'auto',
+                marginLeft: '0'
+            });
+
+            wrapper.append(preview);
+            $('body').append(wrapper);
+
+            el.data('previewDetached', true);
+        });
+
+        container.on('mouseleave.previewPopup', childSelector, function() {
+            returnPreviewToElement($(this));
+        });
     }
 
 
@@ -210,79 +319,8 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
             FrameTrail.module('HypervideoController').currentTime = Math.max(0, Math.min(time, duration));
         });
 
-        // Preview popup: move to body on hover to escape overflow clipping.
-        // We wrap in a .timelineElement div so existing CSS selectors
-        // (body > .timelineElement .previewWrapper) in Annotation/style.css apply.
-        function returnPreviewToElement(el) {
-            if (el.data('previewDetached')) {
-                var wrapper = $('body > .timelineElement.previewPopupWrapper');
-                if (wrapper.length) {
-                    var preview = wrapper.find('.previewWrapper');
-                    preview.css({
-                        position: '',
-                        top: '',
-                        left: '',
-                        marginLeft: '',
-                        display: '',
-                        zIndex: ''
-                    }).appendTo(el);
-                    wrapper.remove();
-                }
-                el.removeData('previewDetached');
-            }
-        }
-
-        timelineElement.on('mouseenter.previewPopup', '.timelineElement', function() {
-            var el = $(this);
-            var preview = el.find('.previewWrapper');
-            if (!preview.length || !preview.children().length) return;
-
-            // Don't show during drag
-            if (el.hasClass('ui-draggable-dragging')) return;
-
-            var rect = this.getBoundingClientRect();
-            var previewWidth = 80;
-            var previewHeight = 60;
-            var left = rect.left + (rect.width / 2) - (previewWidth / 2);
-            var top = rect.top - previewHeight - 8;
-
-            // Clamp to viewport
-            if (left < 4) left = 4;
-            if (left + previewWidth > window.innerWidth - 4) left = window.innerWidth - 4 - previewWidth;
-            if (top < 4) {
-                top = rect.bottom + 8;
-            }
-
-            // Create wrapper with .timelineElement class so body > .timelineElement .previewWrapper CSS applies
-            var wrapper = $('<div class="timelineElement previewPopupWrapper"></div>').css({
-                position: 'fixed',
-                top: top + 'px',
-                left: left + 'px',
-                width: previewWidth + 'px',
-                height: previewHeight + 'px',
-                zIndex: 200000,
-                pointerEvents: 'none'
-            });
-
-            preview.css({
-                display: 'block',
-                position: 'static',
-                width: '100%',
-                height: '100%',
-                left: 'auto',
-                top: 'auto',
-                marginLeft: '0'
-            });
-
-            wrapper.append(preview);
-            $('body').append(wrapper);
-
-            el.data('previewDetached', true);
-        });
-
-        timelineElement.on('mouseleave.previewPopup', '.timelineElement', function() {
-            returnPreviewToElement($(this));
-        });
+        // Preview popup for main timeline elements
+        setupPreviewPopup(timelineElement, '.timelineElement');
 
         // Return preview when drag starts
         timelineElement.on('dragstart.previewPopup', '.timelineElement', function() {
@@ -291,6 +329,40 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
 
         // Apply current zoom
         applyZoomToTimeline(timelineData);
+    }
+
+
+    /**
+     * Register a follower timeline that syncs zoom and scroll with the main timelines,
+     * but without playhead, click-to-seek, or preview popups.
+     * The element should contain a child scroller that will be width-scaled.
+     * @method registerFollowerTimeline
+     * @param {jQuery} wrapperElement - The scrollable wrapper element
+     * @param {jQuery} scrollerElement - The inner element to scale width on
+     */
+    function registerFollowerTimeline(wrapperElement, scrollerElement) {
+        var followerData = {
+            wrapper: wrapperElement,
+            scroller: scrollerElement
+        };
+
+        followerTimelines.push(followerData);
+
+        // Sync scroll from follower to main timelines
+        wrapperElement.on('scroll.followerSync', function() {
+            if (!wrapperElement.data('programmaticScroll')) {
+                onTimelineScroll($(this).scrollLeft());
+            }
+        });
+
+        // Apply current zoom and scroll
+        scrollerElement.css('width', (zoomLevel * 100) + '%');
+        wrapperElement.data('programmaticScroll', true);
+        wrapperElement.scrollLeft(scrollPosition);
+        wrapperElement.data('programmaticScroll', false);
+
+        // Preview popup for compare timeline elements
+        setupPreviewPopup(wrapperElement, '.compareTimelineElement');
     }
 
 
@@ -308,6 +380,15 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
                 t.element.data('programmaticScroll', true);
                 t.element.scrollLeft(scrollPosition);
                 t.element.data('programmaticScroll', false);
+            }
+        });
+
+        // Sync follower timelines
+        followerTimelines.forEach(function(f) {
+            if (f.wrapper.scrollLeft() !== scrollPosition) {
+                f.wrapper.data('programmaticScroll', true);
+                f.wrapper.scrollLeft(scrollPosition);
+                f.wrapper.data('programmaticScroll', false);
             }
         });
 
@@ -330,6 +411,12 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
             t.element.data('programmaticScroll', true);
             t.element.scrollLeft(scrollPosition);
             t.element.data('programmaticScroll', false);
+        });
+
+        followerTimelines.forEach(function(f) {
+            f.wrapper.data('programmaticScroll', true);
+            f.wrapper.scrollLeft(scrollPosition);
+            f.wrapper.data('programmaticScroll', false);
         });
 
         if (timeRulerElement) {
@@ -358,7 +445,7 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
 
         // Update container width reference
         if (registeredTimelines.length > 0) {
-            containerWidth = registeredTimelines[0].element.width();
+            containerWidth = getVisibleContainerWidth();
         }
 
         // Calculate new scroll position to maintain focus point
@@ -374,6 +461,11 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
         // Apply to all timelines
         registeredTimelines.forEach(function(t) {
             applyZoomToTimeline(t);
+        });
+
+        // Apply to follower timelines
+        followerTimelines.forEach(function(f) {
+            f.scroller.css('width', (zoomLevel * 100) + '%');
         });
 
         // Update scroll
@@ -442,7 +534,7 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
     function scrollToTime(time, center) {
         if (registeredTimelines.length === 0) return;
 
-        containerWidth = registeredTimelines[0].element.width();
+        containerWidth = getVisibleContainerWidth();
         var scrollerWidth = containerWidth * zoomLevel;
         var timePixel = (time / duration) * scrollerWidth;
 
@@ -759,7 +851,7 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
         if (!initialized) return;
 
         if (registeredTimelines.length > 0) {
-            containerWidth = registeredTimelines[0].element.width();
+            containerWidth = getVisibleContainerWidth();
         }
 
         updateTimeRuler();
@@ -789,6 +881,7 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
 
         syncScroll:             syncScroll,
         scrollToTime:           scrollToTime,
+        registerFollowerTimeline: registerFollowerTimeline,
 
         refreshMinimap:         refreshMinimap,
 

@@ -504,20 +504,13 @@
                                   +   '    <ul>'
                                   +   '        <li><a href="#CustomAnnotation">'+ labels['ResourceAddCustomAnnotation'] +'</a></li>'
                                   +   '        <li><a href="#ResourceList">'+ labels['ResourceChoose'] +'</a></li>'
-                                  +   '        <li><a href="#OtherUsers">'+ labels['ResourceChooseAnnotationsOfOtherUsers'] +'</a></li>'
                                   +   '    </ul>'
                                   +   '    <div id="CustomAnnotation"></div>'
                                   +   '    <div id="ResourceList"></div>'
-                                  +   '    <div id="OtherUsers">'
-                                  +   '        <div class="message active">'+ labels['MessageDragAnnotationsIntoTimeline'] +'</div>'
-                                  +   '        <div class="timelineList" data-zoom-level="1"></div>'
-                                  +   '    </div>'
                                   +   '</div>')
                                   .tabs({
                                       heightStyle: "fill"
-                                  }),
-
-            timelineList        = annotationsEditingOptions.find('.timelineList');
+                                  });
 
 
 
@@ -563,9 +556,22 @@
 
         annotationsEditingOptions.find('#CustomAnnotation').append(textElement);
 
-        /* Choose Annotations of other users */
+        /* Render other users' annotation timelines in the main view container */
+        var otherUsersContainer = ViewVideo.OtherUsersContainer;
+        otherUsersContainer.empty();
+        otherUsersContainer.append(
+            '<div class="message active">'+ labels['MessageDragAnnotationsIntoTimeline'] +'</div>'
+        );
+        var timelineList = $('<div class="timelineList" data-zoom-level="1"></div>');
+        otherUsersContainer.append(timelineList);
+        renderAnnotationTimelines(annotations, timelineList, 'creatorId', 'label', false);
 
-        renderAnnotationTimelines(annotations, timelineList, 'creatorId', 'label', true);
+        // Register the timeline zoom wrapper as a follower to sync zoom/scroll with main timelines
+        var timelineZoomWrapper = timelineList.find('.timelineZoomWrapper');
+        var timelineZoomScroller = timelineList.find('.timelineZoomScroller');
+        if (timelineZoomWrapper.length && timelineZoomScroller.length) {
+            FrameTrail.module('TimelineController').registerFollowerTimeline(timelineZoomWrapper, timelineZoomScroller);
+        }
 
     }
 
@@ -955,13 +961,14 @@
             timelineZoomScroller = $('<div class="timelineZoomScroller"></div>');
 
         timelineZoomScroller.appendTo(timelineZoomWrapper);
-        
+
+        // Keep userLabels visible when scrolling horizontally
+        timelineZoomWrapper.on('scroll', function(evt) {
+            var scrollLeftVal = $(this).scrollLeft();
+            $(this).find('.userLabel').css('left', scrollLeftVal + 'px');
+        });
+
         if (zoomControls) {
-            
-            timelineZoomWrapper.on('scroll', function(evt) {
-                var scrollLeftVal = $(this).scrollLeft();
-                $(this).find('.userLabel').css('left', scrollLeftVal + 'px');
-            });
 
             var zoomControlsWrapper = $('<div class="zoomControlsWrapper"></div>'),
                 zoomMinus = $('<button class="button zoomMinus"><span class="icon-zoom-out"></span></button>'),
