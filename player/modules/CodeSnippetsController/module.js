@@ -123,7 +123,7 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
 
         var scroller = ViewVideo.CodeSnippetTimeline.find('.timelineScroller');
         if (scroller.length) {
-            scroller.CollisionDetection({spacing:0, includeVerticalMargins: true, exclude: '.timelinePlayhead'});
+            scroller.CollisionDetection({spacing:0, includeVerticalMargins: true, exclude: '.timelinePlayhead', containerPadding: 4});
             ViewVideo.CodeSnippetTimeline.css({
                 height: scroller.css('height'),
                 'flex-basis': scroller.css('flex-basis')

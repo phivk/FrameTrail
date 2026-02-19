@@ -17,7 +17,8 @@
             levelMemory : { level: [], levelObjects : [] },
             spacing : 1,
             includeVerticalMargins: false,
-            exclude: null
+            exclude: null,
+            containerPadding: 0
         };
         this.opts       =   $.extend(this.defaults, opts);
         var children = this.container.children();
@@ -109,15 +110,17 @@
         });
     };
     CollisionDetection.prototype.setDimensions = function () {
-        var o = this.opts, t = this, prevHeight = 0;
+        var o = this.opts, t = this, prevHeight = 0, pad = o.containerPadding || 0;
+        prevHeight += pad;
         //set each level to the correct css bottom value
         $(o.levelMemory.levelObjects).each(function (i) {
             prevHeight += o.spacing;
             var level = $(this).map(function () {return this.toArray(); }),
                 thisHeight = Math.max.apply(null, $(this).map(function () { return $(this).outerHeight( (t.opts.includeVerticalMargins ? true : false) ); }));
-            level.css('bottom', i === 0 ? 0 : prevHeight);
+            level.css('bottom', i === 0 ? pad : prevHeight);
             prevHeight += thisHeight;
         });
+        prevHeight += pad;
         //set container to match height of elements inside
         t.container.css({
             height: prevHeight,

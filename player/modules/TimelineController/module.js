@@ -210,6 +210,66 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
             FrameTrail.module('HypervideoController').currentTime = Math.max(0, Math.min(time, duration));
         });
 
+        // Preview popup: move to body on hover to escape overflow clipping
+        function returnPreviewToElement(el) {
+            if (el.data('previewDetached')) {
+                var preview = $('body > .previewWrapper');
+                if (preview.length) {
+                    preview.css({
+                        position: '',
+                        top: '',
+                        left: '',
+                        marginLeft: '',
+                        display: '',
+                        zIndex: ''
+                    }).appendTo(el);
+                }
+                el.removeData('previewDetached');
+            }
+        }
+
+        timelineElement.on('mouseenter.previewPopup', '.timelineElement', function() {
+            var el = $(this);
+            var preview = el.find('.previewWrapper');
+            if (!preview.length || !preview.children().length) return;
+
+            // Don't show during drag
+            if (el.hasClass('ui-draggable-dragging')) return;
+
+            var rect = this.getBoundingClientRect();
+            var previewWidth = 80;
+            var previewHeight = 60;
+            var left = rect.left + (rect.width / 2) - (previewWidth / 2);
+            var top = rect.top - previewHeight - 8;
+
+            // Clamp to viewport
+            if (left < 4) left = 4;
+            if (left + previewWidth > window.innerWidth - 4) left = window.innerWidth - 4 - previewWidth;
+            if (top < 4) {
+                top = rect.bottom + 8;
+            }
+
+            preview.css({
+                position: 'fixed',
+                top: top + 'px',
+                left: left + 'px',
+                marginLeft: '0',
+                display: 'block',
+                zIndex: 200000
+            }).appendTo('body');
+
+            el.data('previewDetached', true);
+        });
+
+        timelineElement.on('mouseleave.previewPopup', '.timelineElement', function() {
+            returnPreviewToElement($(this));
+        });
+
+        // Return preview when drag starts
+        timelineElement.on('dragstart.previewPopup', '.timelineElement', function() {
+            returnPreviewToElement($(this));
+        });
+
         // Apply current zoom
         applyZoomToTimeline(timelineData);
     }

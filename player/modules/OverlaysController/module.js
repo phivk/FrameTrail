@@ -341,7 +341,7 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
 
         var scroller = ViewVideo.OverlayTimeline.find('.timelineScroller');
         if (scroller.length) {
-            scroller.CollisionDetection({spacing:0, includeVerticalMargins: true, exclude: '.timelinePlayhead'});
+            scroller.CollisionDetection({spacing:0, includeVerticalMargins: true, exclude: '.timelinePlayhead', containerPadding: 4});
             ViewVideo.OverlayTimeline.css({
                 height: scroller.css('height'),
                 'flex-basis': scroller.css('flex-basis')

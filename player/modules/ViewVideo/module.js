@@ -617,10 +617,6 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
             });
         }
 
-        PlayerProgress.css({
-            height: Controls.height()
-        });
-
         slideArea.children('svg').css({
             width: $(document).width() + 'px',
             height: slideArea.height() + 'px'

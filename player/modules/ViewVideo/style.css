@@ -40,6 +40,7 @@
     align-items: flex-start;
     order: 0;
     flex: 1 1 auto;
+    min-height: 0;
     align-self: auto;
     position: relative;
     width: 100%;
@@ -67,6 +68,7 @@
     align-items: flex-start;
     order: 0;
     flex: 1 1 auto;
+    min-height: 0;
     align-self: auto;
     margin: 10px 0;
     z-index: 1;
@@ -102,14 +104,14 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
 /* Progress Bar */
 
 .playerContainer .playerProgress {
-    position: absolute;
-    left: 0;
-    bottom: 0;
+    position: relative;
     width: 100%;
-    height: 40px;
+    flex: 0 0 auto;
+    height: 6px;
     background: var(--secondary-bg-color);
-    z-index: 2;
+    z-index: 101;
     pointer-events: all;
+    overflow: visible;
 }
 
 .playerContainer.livestream .playerProgress {
@@ -141,17 +143,6 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     opacity: 1;
 }
 
-.playerContainer .playerProgress .ui-slider-handle:before {
-    content: "";
-    position: absolute;
-    left: -2px;
-    width: 6px;
-    height: 6px;
-    bottom: 0px;
-    background: var(--primary-fg-color);
-    z-index: 1;
-}
-
 .playerContainer .playerProgress .ui-slider-handle-circle {
     position: absolute;
     left: -6.5px;
@@ -167,7 +158,7 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     transition-duration: 300ms;
 }
 
-.playerContainer .playerProgress .ui-slider-handle:hover .ui-slider-handle-circle, .playerContainer .playerProgress .ui-slider-handle:hover, .playerContainer .playerProgress .ui-slider-handle:hover:after, .playerContainer .playerProgress .ui-slider-handle:before {
+.playerContainer .playerProgress .ui-slider-handle:hover .ui-slider-handle-circle, .playerContainer .playerProgress .ui-slider-handle:hover {
     background: var(--primary-fg-color);
 }
 
@@ -311,7 +302,9 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
 .playerContainer .annotationTimeline {
     position: relative;
     width: 100%;
-    height: 6px;
+    height: 3px;
+    min-height: 3px;
+    flex-basis: 3px;
     background: var(--secondary-bg-color);
     z-index: 2;
     pointer-events: none;
@@ -522,6 +515,7 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     flex-direction: row;
     order: 0;
     flex: 1 1 auto;
+    min-height: 0;
     width: 100%;
     align-self: auto;
     background: var(--primary-bg-color);
@@ -877,8 +871,6 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     flex-direction: row;
     align-items: center;
     box-sizing: border-box;
-    background-size: cover;
-    background-position: center;
     height: 20px;
     margin-top: 4px;
     margin-bottom: 4px;
@@ -892,6 +884,79 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
 .playerContainer .timelineElement .timelineElementIcon,
 .playerContainer .timelineElement .timelineElementLabel {
     display: none;
+}
+
+/* Hide preview inside timeline (JS moves it to body on hover to escape overflow clipping) */
+.playerContainer .timelineElement .previewWrapper {
+    display: none !important;
+}
+.playerContainer .timelineElement:hover .previewWrapper {
+    display: none !important;
+}
+
+/* Preview popup when detached to body by TimelineController */
+body > .previewWrapper {
+    background: none repeat scroll 0 0 var(--primary-bg-color);
+    border: 2px solid var(--primary-bg-color);
+    height: 60px;
+    width: 80px;
+    box-sizing: border-box;
+    pointer-events: none;
+}
+
+body > .previewWrapper .resourceThumb {
+    position: relative;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden;
+    background: var(--primary-bg-color);
+    box-sizing: border-box;
+    text-align: left;
+}
+
+body > .previewWrapper .resourceThumb .resourceTitle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    color: var(--primary-fg-color);
+    font-size: 9px;
+    padding: 1px 2px;
+    background: rgba(0,0,0,0.4);
+    z-index: 2;
+    box-sizing: border-box;
+}
+
+body > .previewWrapper .resourceThumb[data-type="text"] .resourceTitle {
+    display: none;
+}
+
+body > .previewWrapper .resourceThumb .resourceOverlay .resourceIcon {
+    position: absolute;
+    right: 6px;
+    bottom: 5px;
+    width: auto;
+    height: auto;
+}
+
+body > .previewWrapper:after {
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    margin-left: -12px;
+    border-top: 8px solid var(--primary-bg-color);
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    content: '';
+}
+
+body > .previewWrapper:before {
+    position: absolute;
+    bottom: -8px;
+    height: 8px;
+    left: 0px;
+    width: 100%;
+    content: '';
 }
 
 .playerContainer .editable .timelineElement .timelineElementIcon {
@@ -921,17 +986,6 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     overflow: hidden;
     text-overflow: ellipsis;
     display: block;
-}
-
-.playerContainer .editable .timelineElement.hasThumbnail .timelineElementIcon {
-    background-color: rgba(0, 0, 0, 0.6);
-}
-
-.playerContainer .editable .timelineElement.hasThumbnail .timelineElementLabel {
-    background-color: rgba(0, 0, 0, 0.6);
-    height: 100%;
-    display: flex;
-    align-items: center;
 }
 
 /* Code Snippet timeline element styles */

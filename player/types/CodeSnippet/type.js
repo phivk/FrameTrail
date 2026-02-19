@@ -28,7 +28,7 @@ FrameTrail.defineType(
 
                 this.data = data;
 
-                this.timelineElement  = $('<div class="timelineElement" data-type="codesnippet"><div class="timelineElementIcon"><span class="icon-code"></span></div><div class="timelineElementLabel"></div></div>');
+                this.timelineElement  = $('<div class="timelineElement" data-type="codesnippet"><div class="timelineElementIcon"><span class="icon-code"></span></div><div class="timelineElementLabel"></div><div class="previewWrapper"></div></div>');
                 this.codeSnippetFunction = new Function('');
 
 
@@ -100,7 +100,13 @@ FrameTrail.defineType(
 
                     this.timelineElement.unbind('hover');
                     this.timelineElement.hover(this.brushIn.bind(this), this.brushOut.bind(this));
-                    this.timelineElement.attr('title', this.data.snippet);
+
+                    // Preview wrapper with code snippet preview
+                    var snippetPreview = this.data.snippet ? this.data.snippet.substring(0, 100) : '';
+                    this.timelineElement.find('.previewWrapper').empty().append(
+                        $('<div class="resourceThumb" data-type="text">')
+                            .append('<div class="resourceTextPreview" style="padding:2px 4px;font-size:9px;font-family:monospace;overflow:hidden;width:100%;height:100%;box-sizing:border-box;">' + $('<span>').text(snippetPreview).html() + '</div>')
+                    );
 
                     var timelineTarget = ViewVideo.CodeSnippetTimeline.find('.timelineScroller');
                     (timelineTarget.length ? timelineTarget : ViewVideo.CodeSnippetTimeline).append(this.timelineElement);
@@ -156,6 +162,14 @@ FrameTrail.defineType(
                         left:  positionLeft + '%',
                         right: ''
                     });
+
+                    this.timelineElement.removeClass('previewPositionLeft previewPositionRight');
+
+                    if (positionLeft < 10) {
+                        this.timelineElement.addClass('previewPositionLeft');
+                    } else if (positionLeft > 90) {
+                        this.timelineElement.addClass('previewPositionRight');
+                    }
 
                 },
 

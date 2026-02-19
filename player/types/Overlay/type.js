@@ -48,7 +48,7 @@ FrameTrail.defineType(
                 }
 
 
-                this.timelineElement = $('<div class="timelineElement" data-type="'+ this.data.type +'"><div class="timelineElementIcon"></div><div class="timelineElementLabel"></div></div>');
+                this.timelineElement = $('<div class="timelineElement" data-type="'+ this.data.type +'"><div class="timelineElementIcon"></div><div class="timelineElementLabel"></div><div class="previewWrapper"></div></div>');
                 this.overlayElement  = $('<div class="overlayElement"></div>');
 
 
@@ -128,6 +128,10 @@ FrameTrail.defineType(
                     (timelineTarget.length ? timelineTarget : ViewVideo.OverlayTimeline).append(this.timelineElement);
                     ViewVideo.OverlayContainer.append(this.overlayElement);
 
+                    this.timelineElement.find('.previewWrapper').empty().append(
+                        this.resourceItem.renderThumb()
+                    );
+
                     // Set icon from resourceItem
                     this.timelineElement.find('.timelineElementIcon').html(
                         '<span class="' + this.resourceItem.iconClass + '"></span>'
@@ -137,13 +141,6 @@ FrameTrail.defineType(
                     this.timelineElement.find('.timelineElementLabel').text(
                         this.resourceItem.getDisplayLabel()
                     );
-
-                    // Add thumbnail background for image types
-                    if (this.data.type === 'image' && this.data.src) {
-                        var thumbUrl = FrameTrail.module('RouteNavigation').getResourceURL(this.data.src);
-                        this.timelineElement.css('background-image', 'url(' + thumbUrl + ')');
-                        this.timelineElement.addClass('hasThumbnail');
-                    }
 
                     var newOverlayContent = this.resourceItem.renderContent()
                     this.overlayElement.append(newOverlayContent);
@@ -288,6 +285,14 @@ FrameTrail.defineType(
                         right: '',
                         width: width + '%'
                     });
+
+                    this.timelineElement.removeClass('previewPositionLeft previewPositionRight');
+
+                    if (positionLeft < 10 && width < 10) {
+                        this.timelineElement.addClass('previewPositionLeft');
+                    } else if (positionLeft > 90) {
+                        this.timelineElement.addClass('previewPositionRight');
+                    }
 
                 },
 

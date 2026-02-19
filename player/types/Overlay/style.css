@@ -3,7 +3,7 @@
 .overlayTimeline .timelineElement {
 	position: absolute;
 	height: 100%;
-	background: rgba(160, 163, 163, .6);
+	background: var(--semi-transparent-fg-color);
 	pointer-events: none;
 	-moz-transition-duration: 0.2s;
     -moz-transition-property: bottom;
@@ -16,21 +16,25 @@
 }
 
 .overlayTimeline .timelineElement.active {
-	background: rgba(160, 163, 163, 1);
+	background: var(--primary-fg-color);
 }
 
 .overlayTimeline .timelineElement.highlighted {
-	background: #f8f8f8 !important;
+	background: var(--primary-fg-color) !important;
 	z-index: 100000;
 }
 
 .overlayTimeline.editable .timelineElement {
 	pointer-events: all;
-	background-color: rgba(160, 170, 175, 0.8);
+	background-color: var(--secondary-fg-color);
 }
 
 .overlayTimeline .timelineElement.brushed {
-	background: #cad4d9;
+	background: var(--semi-transparent-fg-highlight-color);
+}
+
+.overlayTimeline .timelineElement.brushed.active, .overlayTimeline.editable .timelineElement.brushed {
+	background-color: var(--primary-fg-color);
 }
 
 .overlayTimeline .timelineElement.ui-draggable:hover {
@@ -46,6 +50,10 @@
 	border: 2px solid #000;
 	border-radius: 3px;
 	display: none;
+}
+
+.overlayTimeline .timelineElement.ui-resizable:hover .ui-resizable-handle {
+	display: block;
 }
 
 .overlayTimeline .timelineElement.ui-resizable .ui-resizable-handle:hover {
@@ -74,10 +82,6 @@
 	bottom: -2px;
 	left: -2px;
 	cursor: sw-resize;
-}
-
-.overlayTimeline .timelineElement.ui-resizable:hover .ui-resizable-handle {
-	display: block;
 }
 
 /* Overlay Element */

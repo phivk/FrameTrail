@@ -109,13 +109,6 @@ FrameTrail.defineType(
                         this.resourceItem.getDisplayLabel()
                     );
 
-                    // Add thumbnail background for image types
-                    if (this.data.type === 'image' && this.data.src) {
-                        var thumbUrl = FrameTrail.module('RouteNavigation').getResourceURL(this.data.src);
-                        this.timelineElement.css('background-image', 'url(' + thumbUrl + ')');
-                        this.timelineElement.addClass('hasThumbnail');
-                    }
-
                     this.updateTimelineElement();
 
                     /*

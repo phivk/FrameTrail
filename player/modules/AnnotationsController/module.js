@@ -95,7 +95,13 @@
         
         ViewVideo = FrameTrail.module('ViewVideo');
 
-        ViewVideo.AnnotationTimeline.empty();
+        // Remove only timeline elements, preserving the scroller and playhead
+        var scrollerTarget = ViewVideo.AnnotationTimeline.find('.timelineScroller');
+        if (scrollerTarget.length) {
+            scrollerTarget.children('.timelineElement').remove();
+        } else {
+            ViewVideo.AnnotationTimeline.children('.timelineElement').remove();
+        }
 
         for (var i = 0; i < selectedAnnotations.length; i++) {
             selectedAnnotations[i].renderInDOM();
@@ -139,7 +145,7 @@
 
         var scroller = ViewVideo.AnnotationTimeline.find('.timelineScroller');
         if (scroller.length) {
-            scroller.CollisionDetection({spacing:0, includeVerticalMargins: true, exclude: '.timelinePlayhead'});
+            scroller.CollisionDetection({spacing:0, includeVerticalMargins: true, exclude: '.timelinePlayhead', containerPadding: 4});
             ViewVideo.AnnotationTimeline.css({
                 height: scroller.css('height'),
                 'flex-basis': scroller.css('flex-basis')
