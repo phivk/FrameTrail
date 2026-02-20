@@ -263,9 +263,7 @@
 	max-height: calc(100% - 8px);
 	box-sizing: border-box;
 	position: relative;
-	background: #fff;
-	padding: 7px;
-	color: #777;
+	padding: 10px;
 }
 
 .layoutArea .contentViewContainer .contentViewContents .transcriptContainer span {
@@ -386,19 +384,21 @@
 
 .layoutManager .layoutArea .contentViewPreview .contentViewOptions {
 	position: absolute;
-	top: 8px;
-	right: 8px;
+	top: 0px;
+	right: 0px;
 	opacity: 0;
 	pointer-events: none;
 	transition-property: all;
 	transition-duration: 300ms;
 	z-index: 2;
+	padding: 8px;
+	background: var(--secondary-bg-color);
 }
 
 .layoutManager .layoutArea[data-area="areaRight"] .contentViewPreview .contentViewOptions, 
 .layoutManager .layoutArea[data-area="areaLeft"] .contentViewPreview .contentViewOptions {
 	top: auto;
-	bottom: 8px;
+	bottom: 0px;
 }
 
 .layoutManager .layoutArea .contentViewPreview:hover .contentViewOptions {
@@ -647,11 +647,10 @@
 /* Transcript */
 
 .layoutManager .contentViewPreview .schematicTranscript {
-	background: #fff;
 	padding: 6px 8px;
 	font-size: 9px;
 	line-height: 1.6;
-	color: #999;
+	color: var(--primary-fg-color);
 	height: 100%;
 	overflow: hidden;
 }
@@ -663,7 +662,6 @@
 
 .layoutManager .contentViewPreview .schematicTranscript span.active {
 	opacity: 1;
-	color: #333;
 }
 
 /* Timelines */
