@@ -1061,6 +1061,11 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     font-size: 11px;
     min-width: 40px;
     text-align: center;
+    color: #acacb3;
+}
+
+.playerContainer .timelineZoomPreset.active {
+    color: var(--primary-fg-color);
 }
 
 /* ===========================================
