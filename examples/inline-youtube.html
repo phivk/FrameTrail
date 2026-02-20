@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<!--
+  EXAMPLE: Inline YouTube video — no server, no _data folder
+  ───────────────────────────────────────────────────────────
+  Requirements: None. Works in any modern browser, including Firefox and Safari,
+  opened from the filesystem (file://) or served from any static web server.
+
+  Demonstrates:
+  - All data (config, resources, hypervideo) passed inline via init options
+  - No _data folder, no PHP server needed
+  - storageMode is 'download': edits are stored in memory and can be exported
+    via Save As — nothing persists past a page reload unless you export the JSON
+
+  First time you click the Edit button, you'll be asked for your name (stored in
+  localStorage for future visits).
+
+  To use your own video: change 'src' in the resources object to your YouTube video ID.
+  The duration (in seconds) in the clips array should match the video length.
+-->
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>FrameTrail – Inline YouTube</title>
+    <link rel="stylesheet" href="../build/frametrail.min.css">
+    <script src="../build/frametrail.min.js"></script>
+    <style>
+        body { margin: 0; }
+    </style>
+</head>
+<body>
+    <script>
+    $(document).ready(function() {
+        window.ftInstance = FrameTrail.init({
+            target:  'body',
+            startID: '0',        // open the first (and only) hypervideo directly
+
+            // Minimal config — no server needed
+            config: {
+                theme:            '',
+                alwaysForceLogin: false,
+                allowCaching:     false
+            },
+
+            // No users file needed — download mode manages user identity via localStorage
+            users: {},
+
+            // The video resource, defined inline
+            resources: [{
+                label: 'Inline resources',
+                type:  'frametrail',
+                data: {
+                    'yt-bbb': {
+                        name:        'Big Buck Bunny (YouTube)',
+                        type:        'youtube',
+                        src:         'YE7VzlLtp-4',   // YouTube video ID
+                        thumb:       '',
+                        licenseType: 'cc-by',
+                        attributes:  {},
+                        tags:        []
+                    }
+                }
+            }],
+
+            // The hypervideo, defined inline
+            contents: [{
+                hypervideo: {
+                    meta: {
+                        name:        'Big Buck Bunny',
+                        description: 'Open-source animated short film — inline FrameTrail demo',
+                        thumb:       '',
+                        creator:     'Demo',
+                        creatorId:   'demo',
+                        created:     1700000000000,
+                        lastchanged: 1700000000000
+                    },
+                    config: {
+                        layoutArea:  { areaTop: [], areaBottom: [], areaLeft: [], areaRight: [] },
+                        hidden:      false,
+                        slidingMode: 'overlay',
+                        theme:       ''
+                    },
+                    clips: [{
+                        resourceId: 'yt-bbb',
+                        duration:   596,     // 9:56 — update this to match your video
+                        start:      0,
+                        end:        596
+                    }],
+                    contents:     [],        // overlays (W3C annotation format)
+                    subtitles:    {},
+                    globalEvents: { onReady: '', onPlay: '', onPause: '', onEnded: '' },
+                    customCSS:    ''
+                },
+                annotations: []
+            }],
+
+            language: 'en-US'
+        }, 'PlayerLauncher');
+    });
+    </script>
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<!--
+  EXAMPLE: Inline overview (gallery) — multiple hypervideos, no server
+  ────────────────────────────────────────────────────────────────────
+  Requirements: None. Works in any modern browser, opened from the filesystem
+  (file://) or served from any static web server.
+
+  Demonstrates:
+  - Passing multiple hypervideos as inline data
+  - Starting in overview (gallery) mode instead of a specific video
+  - FrameTrail launched via 'PlayerLauncher' with startID left empty so the
+    overview is shown first
+  - No _data directory, no PHP server — all data lives in this file
+  - Editing is possible (changes stay in memory; use Save As to export)
+-->
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>FrameTrail – Inline Overview</title>
+    <link rel="stylesheet" href="../build/frametrail.min.css">
+    <script src="../build/frametrail.min.js"></script>
+    <style>
+        body { margin: 0; }
+    </style>
+</head>
+<body>
+    <script>
+    $(document).ready(function() {
+
+        window.ftInstance = FrameTrail.init({
+            target:  'body',
+            startID: '',        // empty → show overview/gallery on launch
+
+            config: {
+                theme:            '',
+                alwaysForceLogin: false,
+                allowCaching:     false
+            },
+            users: {},
+
+            resources: [{
+                label: 'Inline resources',
+                type:  'frametrail',
+                data: {
+                    'video-bbb': {
+                        name:        'Big Buck Bunny (MP4)',
+                        type:        'video',
+                        src:         'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+                        thumb:       '',
+                        licenseType: 'cc-by',
+                        attributes:  {},
+                        tags:        []
+                    },
+                    'video-ep': {
+                        name:        'Elephant Dream (MP4)',
+                        type:        'video',
+                        src:         'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+                        thumb:       '',
+                        licenseType: 'cc-by',
+                        attributes:  {},
+                        tags:        []
+                    },
+                    'video-ted': {
+                        name:        'For Bigger Blazes (MP4)',
+                        type:        'video',
+                        src:         'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+                        thumb:       '',
+                        licenseType: 'cc-by',
+                        attributes:  {},
+                        tags:        []
+                    }
+                }
+            }],
+
+            contents: [
+                {
+                    hypervideo: {
+                        meta: {
+                            name:        'Big Buck Bunny',
+                            description: 'Open-source animated short by Blender Foundation',
+                            thumb:       '',
+                            creator:     'Demo',
+                            creatorId:   'demo',
+                            created:     1700000000000,
+                            lastchanged: 1700000000000
+                        },
+                        config: {
+                            layoutArea:  { areaTop: [], areaBottom: [], areaLeft: [], areaRight: [] },
+                            hidden:      false,
+                            slidingMode: 'overlay',
+                            theme:       ''
+                        },
+                        clips: [{
+                            resourceId: 'video-bbb',
+                            duration:   596,
+                            start:      0,
+                            end:        596
+                        }],
+                        contents:     [],
+                        subtitles:    {},
+                        globalEvents: { onReady: '', onPlay: '', onPause: '', onEnded: '' },
+                        customCSS:    ''
+                    },
+                    annotations: []
+                },
+                {
+                    hypervideo: {
+                        meta: {
+                            name:        'Elephants Dream',
+                            description: 'First open Blender movie — a surreal animated journey',
+                            thumb:       '',
+                            creator:     'Demo',
+                            creatorId:   'demo',
+                            created:     1700000001000,
+                            lastchanged: 1700000001000
+                        },
+                        config: {
+                            layoutArea:  { areaTop: [], areaBottom: [], areaLeft: [], areaRight: [] },
+                            hidden:      false,
+                            slidingMode: 'overlay',
+                            theme:       ''
+                        },
+                        clips: [{
+                            resourceId: 'video-ep',
+                            duration:   654,
+                            start:      0,
+                            end:        654
+                        }],
+                        contents:     [],
+                        subtitles:    {},
+                        globalEvents: { onReady: '', onPlay: '', onPause: '', onEnded: '' },
+                        customCSS:    ''
+                    },
+                    annotations: []
+                },
+                {
+                    hypervideo: {
+                        meta: {
+                            name:        'For Bigger Blazes',
+                            description: 'Google Chrome demo reel — extreme sports and adventure',
+                            thumb:       '',
+                            creator:     'Demo',
+                            creatorId:   'demo',
+                            created:     1700000002000,
+                            lastchanged: 1700000002000
+                        },
+                        config: {
+                            layoutArea:  { areaTop: [], areaBottom: [], areaLeft: [], areaRight: [] },
+                            hidden:      false,
+                            slidingMode: 'overlay',
+                            theme:       ''
+                        },
+                        clips: [{
+                            resourceId: 'video-ted',
+                            duration:   15,
+                            start:      0,
+                            end:        15
+                        }],
+                        contents:     [],
+                        subtitles:    {},
+                        globalEvents: { onReady: '', onPlay: '', onPause: '', onEnded: '' },
+                        customCSS:    ''
+                    },
+                    annotations: []
+                }
+            ],
+
+            language: 'en-US'
+        }, 'PlayerLauncher');
+    });
+    </script>
+</body>
+</html>

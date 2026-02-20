@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<!--
+  EXAMPLE: Multiple FrameTrail instances on one page (server mode)
+  ───────────────────────────────────────────────────────────────
+  Requirements: Apache + PHP (FrameTrail installed and set up at the parent directory).
+
+  Demonstrates:
+  - Two independent FrameTrail instances on the same page, each targeting their own div
+  - Each instance has its own state, event listeners, and playback — they don't interfere
+  - All active instances are accessible via FrameTrail.instances[]
+
+  Replace 'hypervideo-id-1' and 'hypervideo-id-2' with real IDs from your _data folder.
+-->
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>FrameTrail – Multiple Instances</title>
+    <base href="../">
+    <link rel="shortcut icon" href="favico.png">
+    <link rel="stylesheet" href="build/frametrail.min.css">
+    <script src="build/frametrail.min.js"></script>
+    <style>
+        body { margin: 0; background: #111; display: flex; }
+        .player-wrap { width: 50vw; height: 100vh; }
+    </style>
+</head>
+<body>
+    <div class="player-wrap" id="player-left"></div>
+    <div class="player-wrap" id="player-right"></div>
+
+    <script>
+    $(document).ready(function() {
+
+        // Instance A
+        window.ftLeft = FrameTrail.init({
+            target:  '#player-left',
+            startID: 'hypervideo-id-1',
+            resources: [{
+                label: 'Resources',
+                data:  '_data/resources/_index.json',
+                type:  'frametrail'
+            }],
+            language: 'en-US'
+        }, 'PlayerLauncher');
+
+        // Instance B — completely independent state and modules
+        window.ftRight = FrameTrail.init({
+            target:  '#player-right',
+            startID: 'hypervideo-id-2',
+            resources: [{
+                label: 'Resources',
+                data:  '_data/resources/_index.json',
+                type:  'frametrail'
+            }],
+            language: 'en-US'
+        }, 'PlayerLauncher');
+
+        // All instances are also accessible as an array:
+        // FrameTrail.instances[0] === ftLeft
+        // FrameTrail.instances[1] === ftRight
+
+    });
+    </script>
+</body>
+</html>

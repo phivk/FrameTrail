@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<!--
+  EXAMPLE: Embed FrameTrail in a page (server mode)
+  ─────────────────────────────────────────────────
+  Requirements: Apache + PHP (FrameTrail installed and set up at the parent directory).
+
+  Demonstrates:
+  - Mounting the player in a specific <div> instead of <body>
+  - Opening a specific hypervideo directly (skipping the overview)
+  - Overriding the config theme inline while loading everything else from the server
+
+  The <base href="../"> tag makes all relative paths (AJAX to _server/, reads from
+  _data/) resolve to the FrameTrail installation root, so this file can live in
+  examples/ without needing to copy the server files.
+
+  To run: serve the parent directory with Apache+PHP, open this file in a browser,
+  and replace 'your-hypervideo-id' below with a real ID from your _data/hypervideos/ folder.
+-->
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>FrameTrail – Embed in Page</title>
+    <base href="../">
+    <link rel="shortcut icon" href="favico.png">
+    <link rel="stylesheet" href="build/frametrail.min.css">
+    <script src="build/frametrail.min.js"></script>
+    <style>
+        body { margin: 0; background: #1a1a1a; }
+        #player-container { width: 100%; height: 100vh; }
+    </style>
+</head>
+<body>
+    <div id="player-container"></div>
+
+    <script>
+    $(document).ready(function() {
+        window.ftInstance = FrameTrail.init({
+            // Mount in a specific element instead of <body>
+            target:   '#player-container',
+
+            // Open this hypervideo directly — skip the overview grid.
+            // Remove startID (or set it to null) to show the overview instead.
+            startID:  'your-hypervideo-id',
+
+            // Override just the theme; all other config comes from the server's _data/config.json.
+            // Set config: null to use the server config entirely.
+            config:   { theme: 'bright' },
+
+            // Load resources from the standard server location
+            resources: [{
+                label: 'Resources',
+                data:  '_data/resources/_index.json',
+                type:  'frametrail'
+            }],
+
+            language: 'en-US'
+        }, 'PlayerLauncher');
+    });
+    </script>
+</body>
+</html>

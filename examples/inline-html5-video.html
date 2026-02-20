@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<!--
+  EXAMPLE: Inline HTML5 video — no server, no _data folder
+  ──────────────────────────────────────────────────────────
+  Requirements: None. Works in any modern browser, opened from the filesystem
+  (file://) or served from any static web server.
+
+  Demonstrates:
+  - Using a remote HTTPS video URL directly as a resource (no upload needed)
+  - The video is referenced by URL — FrameTrail streams it via the browser's
+    native <video> element, so any URL the browser can play works here
+  - Works the same as inline-youtube.html but for direct video files
+
+  Replace VIDEO_URL with any publicly accessible .mp4 / .webm / .m3u8 URL.
+  Replace VIDEO_DURATION_SECONDS with the actual duration of the video.
+-->
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>FrameTrail – Inline HTML5 Video</title>
+    <link rel="stylesheet" href="../build/frametrail.min.css">
+    <script src="../build/frametrail.min.js"></script>
+    <style>
+        body { margin: 0; }
+    </style>
+</head>
+<body>
+    <script>
+    $(document).ready(function() {
+
+        var VIDEO_URL              = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+        var VIDEO_DURATION_SECONDS = 596;
+
+        window.ftInstance = FrameTrail.init({
+            target:  'body',
+            startID: '0',
+
+            config: {
+                theme:            '',
+                alwaysForceLogin: false,
+                allowCaching:     false
+            },
+            users: {},
+
+            resources: [{
+                label: 'Inline resources',
+                type:  'frametrail',
+                data: {
+                    'mp4-video': {
+                        name:        'Big Buck Bunny (MP4)',
+                        type:        'video',
+                        src:         VIDEO_URL,
+                        thumb:       '',
+                        licenseType: 'cc-by',
+                        attributes:  {},
+                        tags:        []
+                    }
+                }
+            }],
+
+            contents: [{
+                hypervideo: {
+                    meta: {
+                        name:        'Big Buck Bunny',
+                        description: 'Open-source animated short — streamed from HTTPS URL',
+                        thumb:       '',
+                        creator:     'Demo',
+                        creatorId:   'demo',
+                        created:     1700000000000,
+                        lastchanged: 1700000000000
+                    },
+                    config: {
+                        layoutArea:  { areaTop: [], areaBottom: [], areaLeft: [], areaRight: [] },
+                        hidden:      false,
+                        slidingMode: 'overlay',
+                        theme:       ''
+                    },
+                    clips: [{
+                        resourceId: 'mp4-video',
+                        duration:   VIDEO_DURATION_SECONDS,
+                        start:      0,
+                        end:        VIDEO_DURATION_SECONDS
+                    }],
+                    contents:     [],
+                    subtitles:    {},
+                    globalEvents: { onReady: '', onPlay: '', onPause: '', onEnded: '' },
+                    customCSS:    ''
+                },
+                annotations: []
+            }],
+
+            language: 'en-US'
+        }, 'PlayerLauncher');
+    });
+    </script>
+</body>
+</html>
