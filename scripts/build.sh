@@ -257,6 +257,49 @@ for f in "${JS_FILES[@]}"; do
 done
 
 # ──────────────────────────────────────────────
+#  Inline woff2 font files into CSS as base64
+# ──────────────────────────────────────────────
+#  The source CSS references fonts via relative url()
+#  paths (../fonts/...). We inline only woff2 format
+#  (universal modern browser support).
+#
+#  This must happen BEFORE minification so the
+#  inlined data URIs end up in both frametrail.css
+#  and frametrail.min.css.
+
+echo "Inlining woff2 font files into CSS..."
+FONTS_DIR="$SRC_DIR/_shared/fonts"
+
+inline_font() {
+    local css_file="$1"
+    local url_path="$2"
+    local font_file="$3"
+    local b64=$(base64 -w0 "$font_file" 2>/dev/null || base64 -i "$font_file")
+    # Escape the url path for use in sed
+    local escaped_path=$(printf '%s\n' "$url_path" | sed 's/[.[\/*^$()+?{|]/\\&/g')
+    sed -i.bak "s|url('${escaped_path}')|url('data:font/woff2;base64,${b64}')|g" "$css_file"
+    sed -i.bak "s|url(\"${escaped_path}\")|url(\"data:font/woff2;base64,${b64}\")|g" "$css_file"
+}
+
+# FrameTrail icon webfont
+inline_font "$BUILD_DIR/frametrail.css" \
+    "../fonts/FrameTrail_Web/frametrail-webfont.woff2" \
+    "$FONTS_DIR/FrameTrail_Web/frametrail-webfont.woff2"
+
+# Titillium Web text font (3 weights)
+inline_font "$BUILD_DIR/frametrail.css" \
+    "../fonts/Titillium_Web/TitilliumWeb-Regular.woff2" \
+    "$FONTS_DIR/Titillium_Web/TitilliumWeb-Regular.woff2"
+inline_font "$BUILD_DIR/frametrail.css" \
+    "../fonts/Titillium_Web/TitilliumWeb-Bold.woff2" \
+    "$FONTS_DIR/Titillium_Web/TitilliumWeb-Bold.woff2"
+inline_font "$BUILD_DIR/frametrail.css" \
+    "../fonts/Titillium_Web/TitilliumWeb-Light.woff2" \
+    "$FONTS_DIR/Titillium_Web/TitilliumWeb-Light.woff2"
+
+rm -f "$BUILD_DIR/frametrail.css.bak"
+
+# ──────────────────────────────────────────────
 #  Minify
 # ──────────────────────────────────────────────
 
@@ -446,50 +489,6 @@ SETUP_HTML
 echo "Copying static files..."
 cp "$SRC_DIR/favico.png" "$BUILD_DIR/"
 cp -r "$SRC_DIR/_server" "$BUILD_DIR/_server"
-
-# ──────────────────────────────────────────────
-#  Inline woff2 font files into CSS as base64
-# ──────────────────────────────────────────────
-#  The source CSS references fonts via relative url()
-#  paths (../fonts/...). We inline only woff2 format
-#  (universal modern browser support) and strip the
-#  legacy format references (eot, svg, ttf, woff).
-#
-#  Prerequisites: The source @font-face rules must
-#  already be simplified to woff2-only. See Phase 1.5
-#  in the migration strategy for the one-time conversion.
-
-echo "Inlining woff2 font files into CSS..."
-FONTS_DIR="$SRC_DIR/_shared/fonts"
-
-inline_font() {
-    local css_file="$1"
-    local url_path="$2"
-    local font_file="$3"
-    local b64=$(base64 -w0 "$font_file" 2>/dev/null || base64 "$font_file")
-    # Escape the url path for use in sed
-    local escaped_path=$(printf '%s\n' "$url_path" | sed 's/[.[\/*^$()+?{|]/\\&/g')
-    sed -i.bak "s|url('${escaped_path}')|url('data:font/woff2;base64,${b64}')|g" "$css_file"
-    sed -i.bak "s|url(\"${escaped_path}\")|url(\"data:font/woff2;base64,${b64}\")|g" "$css_file"
-}
-
-# FrameTrail icon webfont
-inline_font "$BUILD_DIR/frametrail.css" \
-    "../fonts/FrameTrail_Web/frametrail-webfont.woff2" \
-    "$FONTS_DIR/FrameTrail_Web/frametrail-webfont.woff2"
-
-# Titillium Web text font (3 weights)
-inline_font "$BUILD_DIR/frametrail.css" \
-    "../fonts/Titillium_Web/TitilliumWeb-Regular.woff2" \
-    "$FONTS_DIR/Titillium_Web/TitilliumWeb-Regular.woff2"
-inline_font "$BUILD_DIR/frametrail.css" \
-    "../fonts/Titillium_Web/TitilliumWeb-Bold.woff2" \
-    "$FONTS_DIR/Titillium_Web/TitilliumWeb-Bold.woff2"
-inline_font "$BUILD_DIR/frametrail.css" \
-    "../fonts/Titillium_Web/TitilliumWeb-Light.woff2" \
-    "$FONTS_DIR/Titillium_Web/TitilliumWeb-Light.woff2"
-
-rm -f "$BUILD_DIR/frametrail.css.bak"
 
 # ──────────────────────────────────────────────
 #  Add release README and LICENSE
