@@ -1,0 +1,54 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'    # Triggers on v2.0.0, v2.1.0-beta, etc.
+
+permissions:
+  contents: write    # Required to create releases
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install build tools
+        run: npm install -g terser csso-cli
+
+      - name: Build
+        run: |
+          chmod +x scripts/build.sh
+          bash scripts/build.sh "${{ github.ref_name }}"
+
+      - name: Package release zip
+        run: |
+          cd build
+          zip -r ../frametrail-${{ github.ref_name }}.zip .
+          cd ..
+          echo "Package size: $(du -sh frametrail-${{ github.ref_name }}.zip | cut -f1)"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: frametrail-${{ github.ref_name }}.zip
+          generate_release_notes: true
+          body: |
+            ## Installation
+
+            1. Download `frametrail-${{ github.ref_name }}.zip`
+            2. Extract to your Apache web server directory
+            3. Open in your browser and follow the setup wizard
+
+            ### Requirements
+            - Apache 2.2.29+ with PHP 5.6.2+
+
+            For documentation and source code, see the [repository](https://github.com/OpenHypervideo/FrameTrail).

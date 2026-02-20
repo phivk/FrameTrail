@@ -32,3 +32,6 @@ projectmanager/
 evaluation/
 #prevent commit of plans folder
 plans/
+
+# Build output
+/build

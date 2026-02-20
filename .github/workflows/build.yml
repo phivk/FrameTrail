@@ -1,0 +1,47 @@
+name: Build
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install build tools
+        run: npm install -g terser csso-cli
+
+      - name: Build
+        run: |
+          chmod +x scripts/build.sh
+          bash scripts/build.sh
+
+      - name: Verify build output
+        run: |
+          test -f build/frametrail.min.js  || { echo "ERROR: JS bundle missing"; exit 1; }
+          test -f build/frametrail.min.css || { echo "ERROR: CSS bundle missing"; exit 1; }
+          test -f build/index.html         || { echo "ERROR: index.html missing"; exit 1; }
+          test -f build/resources.html     || { echo "ERROR: resources.html missing"; exit 1; }
+          test -f build/setup.html         || { echo "ERROR: setup.html missing"; exit 1; }
+          test -d build/_server            || { echo "ERROR: _server missing"; exit 1; }
+          echo "Build output:"
+          du -sh build/*
+
+      # Downloadable from the Actions tab for 7 days
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frametrail-build
+          path: build/
+          retention-days: 7
