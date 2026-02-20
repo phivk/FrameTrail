@@ -105,7 +105,7 @@ FrameTrail.defineType(
                     var snippetPreview = this.data.snippet ? this.data.snippet.substring(0, 100) : '';
                     this.timelineElement.find('.previewWrapper').empty().append(
                         $('<div class="resourceThumb" data-type="text">')
-                            .append('<div class="resourceTextPreview" style="padding:2px 4px;font-size:9px;font-family:monospace;overflow:hidden;width:100%;height:100%;box-sizing:border-box;">' + $('<span>').text(snippetPreview).html() + '</div>')
+                            .append('<div class="resourceTextPreview">' + $('<span>').text(snippetPreview).html() + '</div>')
                     );
 
                     var timelineTarget = ViewVideo.CodeSnippetTimeline.find('.timelineScroller');
