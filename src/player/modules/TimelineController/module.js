@@ -764,13 +764,14 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
 
         items.forEach(function(item) {
             var start = item.data.start;
-            var end = item.data.end || (start + 2);
             var leftPercent = (start / duration) * 100;
-            var widthPercent = Math.max(((end - start) / duration) * 100, 0.3);
+            var cssWidth = item.data.end
+                ? Math.max(((item.data.end - start) / duration) * 100, 0.3) + '%'
+                : '10px';
 
             $('<div class="timelineMinimapItem"></div>').css({
                 left: leftPercent + '%',
-                width: widthPercent + '%'
+                width: cssWidth
             }).appendTo(track);
         });
 

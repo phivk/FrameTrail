@@ -366,11 +366,13 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
 .otherUsersContainer {
     display: none;
     width: 100%;
-    height: 200px;
-    overflow: hidden;
+    max-height: 180px;
+    padding-top: 10px;
     background: var(--primary-fg-color);
     border-top: 1px solid var(--secondary-bg-color);
     flex-direction: column;
+    height: auto;
+    overflow: auto;
 }
 
 .otherUsersContainer > .timelineList {
@@ -1161,7 +1163,7 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     top: 0;
     height: 100%;
     background-color: rgba(255, 255, 255, 0.1);
-    border: 1px solid var(--primary-fg-color);
+    border: 1px solid var(--secondary-fg-color);
     border-radius: 2px;
     box-sizing: border-box;
     cursor: ew-resize;
