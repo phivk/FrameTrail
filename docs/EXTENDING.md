@@ -1,14 +1,14 @@
 # Extending FrameTrail
 
-This guide explains how to extend FrameTrail with new resource types, modules, and features.
+This guide explains how to extend FrameTrail with new resource types, modules, localization, themes, and backend actions.
 
 ## Adding a New Resource Type
 
-Resource types define how different media (images, videos, maps, etc.) are displayed and edited. To add a new type:
+Resource types define how different media (images, videos, social embeds, etc.) are displayed and edited in FrameTrail. All resource types inherit from the base `Resource` type.
 
 ### 1. Create the Type Definition
 
-Create `_shared/types/ResourceMyType/type.js`:
+Create `src/_shared/types/ResourceMyType/type.js`:
 
 ```javascript
 /**
@@ -25,56 +25,52 @@ Create `_shared/types/ResourceMyType/type.js`:
 
 FrameTrail.defineType(
     'ResourceMyType',
-    
+
     function(FrameTrail) {
         return {
-            // Inherit from base Resource type
             parent: 'Resource',
-            
+
             constructor: function(resourceData) {
-                // Store the resource data
                 this.resourceData = resourceData;
             },
-            
+
             prototype: {
-                
+
                 /**
-                 * Render the resource content for display
+                 * I render the resource content for display in the player.
                  * @method renderContent
                  * @return {HTMLElement}
                  */
                 renderContent: function() {
                     var self = this;
-                    
-                    // Create your content element
+
                     var element = $('<div class="resourceDetail" data-type="mytype">'
                         + '    <div class="myTypeContent">'
                         + '        <!-- Your content here -->'
                         + '    </div>'
                         + '</div>');
-                    
-                    // Initialize any plugins, load data, etc.
+
                     this.initializeContent(element);
-                    
+
                     return element;
                 },
-                
+
                 /**
-                 * Render a thumbnail for the resource manager
+                 * I render a thumbnail for the resource manager.
                  * @method renderThumb
-                 * @param {String} id - Optional resource ID
+                 * @param {String} id
                  * @return {HTMLElement}
                  */
                 renderThumb: function(id) {
                     var self = this;
                     var trueID = id || FrameTrail.module('Database').getIdOfResource(this.resourceData);
-                    
-                    var thumbBackground = this.resourceData.thumb 
+
+                    var thumbBackground = this.resourceData.thumb
                         ? 'background-image: url(' + FrameTrail.module('RouteNavigation').getResourceURL(this.resourceData.thumb) + ');'
                         : '';
-                    
+
                     var tagList = (this.resourceData.tags ? this.resourceData.tags.join(' ') : '');
-                    
+
                     var thumbElement = $('<div class="resourceThumb ' + tagList + '" '
                         + 'data-license-type="' + this.resourceData.licenseType + '" '
                         + 'data-resourceID="' + trueID + '" '
@@ -85,8 +81,7 @@ FrameTrail.defineType(
                         + '    </div>'
                         + '    <div class="resourceTitle">' + this.resourceData.name + '</div>'
                         + '</div>');
-                    
-                    // Add preview button
+
                     var previewButton = $('<div class="resourcePreviewButton"><span class="icon-eye"></span></div>');
                     previewButton.click(function(evt) {
                         self.openPreview($(this).parent());
@@ -94,49 +89,47 @@ FrameTrail.defineType(
                         evt.preventDefault();
                     });
                     thumbElement.append(previewButton);
-                    
+
                     return thumbElement;
                 },
-                
+
                 /**
-                 * Render property controls for overlay editing
+                 * I render property controls for overlay editing.
                  * @method renderPropertiesControls
                  * @param {Overlay} overlay
-                 * @return {Object} { controlsContainer, changeStart, changeEnd, changeDimensions }
+                 * @return {Object}
                  */
                 renderPropertiesControls: function(overlay) {
-                    // Use basic controls from parent, or extend with custom controls
                     var basicControls = this.renderBasicPropertiesControls(overlay);
-                    
+
                     // Add custom controls if needed
                     var customControl = $('<div class="customControl">'
                         + '    <label>Custom Setting</label>'
                         + '    <input type="text" value="' + (overlay.data.attributes.customSetting || '') + '">'
                         + '</div>');
-                    
+
                     customControl.find('input').on('change', function() {
                         overlay.data.attributes.customSetting = $(this).val();
                         FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
                     });
-                    
+
                     basicControls.controlsContainer.find('#OverlayOptions').append(customControl);
-                    
+
                     return basicControls;
                 },
-                
+
                 /**
-                 * Render time controls for annotation editing
+                 * I render time controls for annotation editing.
                  * @method renderTimeControls
                  * @param {Annotation} annotation
-                 * @return {Object} { controlsContainer, changeStart, changeEnd }
+                 * @return {Object}
                  */
                 renderTimeControls: function(annotation) {
                     return this.renderBasicTimeControls(annotation);
                 },
-                
-                // Custom methods for your type
+
                 initializeContent: function(element) {
-                    // Load external scripts, init plugins, etc.
+                    // Load external scripts, initialize plugins, etc.
                 }
             }
         };
@@ -146,10 +139,10 @@ FrameTrail.defineType(
 
 ### 2. Create the Stylesheet
 
-Create `_shared/types/ResourceMyType/style.css`:
+Create `src/_shared/types/ResourceMyType/style.css`:
 
 ```css
-/* Resource detail (when displayed in player) */
+/* Resource detail (displayed in player) */
 .resourceDetail[data-type="mytype"] {
     width: 100%;
     height: 100%;
@@ -164,7 +157,7 @@ Create `_shared/types/ResourceMyType/style.css`:
     background: rgba(0, 0, 0, 0.3);
 }
 
-/* Annotation tile */
+/* Annotation tile icon */
 .tileElement[data-type="mytype"] [class^="icon-"]::before {
     content: '\e800';  /* Your icon code */
 }
@@ -175,29 +168,37 @@ Create `_shared/types/ResourceMyType/style.css`:
 }
 ```
 
-### 3. Add Icon (Optional)
+### 3. Register in HTML Files
 
-If you need a custom icon, add it to `_shared/styles/frametrail-webfont.css` or use an existing icon class.
-
-### 4. Register in HTML Files
-
-Add the CSS and JS files to `index.html` and `resources.html`:
+Add the CSS and JS to `src/index.html` and `src/resources.html`:
 
 ```html
-<!-- In the CSS section -->
+<!-- In the CSS section (after other type styles) -->
 <link rel="stylesheet" type="text/css" href="_shared/types/ResourceMyType/style.css">
 
-<!-- In the JS section -->
+<!-- In the JS section (after Resource/type.js, with other resource types) -->
 <script type="text/javascript" src="_shared/types/ResourceMyType/type.js"></script>
+```
+
+### 4. Add to Build Script
+
+Add entries to `scripts/build.sh` in the appropriate arrays:
+
+```bash
+# In CSS_FILES (after other resource type styles)
+"_shared/types/ResourceMyType/style.css"
+
+# In JS_FILES (after _shared/types/Resource/type.js, with other resource types)
+"_shared/types/ResourceMyType/type.js"
 ```
 
 ### 5. Add to Resource Manager (Optional)
 
-If your resource type should be creatable via the Resource Manager, update `_shared/modules/ResourceManager/module.js` to include your type in the add resource dialog.
+If your resource type should be creatable via the Resource Manager, update `src/_shared/modules/ResourceManager/module.js` to include your type in the add resource dialog.
 
 ### 6. Update Backend (For Uploads)
 
-If your resource type involves file uploads, update `_server/files.php` to handle the new file type.
+If your resource type involves file uploads, update `src/_server/files.php` to handle the new file type.
 
 ## Creating a Custom Module
 
@@ -216,79 +217,51 @@ If your resource type involves file uploads, update `_server/files.php` to handl
  */
 
 FrameTrail.defineModule('MyCustomModule', function(FrameTrail) {
-    
-    // Get localized strings
+
     var labels = FrameTrail.module('Localization').labels;
-    
+
     // Private variables
     var domElement = null;
     var isActive = false;
-    
+
     // Private methods
     function create() {
         domElement = $('<div class="myCustomModule"></div>');
         // Build UI...
     }
-    
+
     function destroy() {
         if (domElement) {
             domElement.remove();
             domElement = null;
         }
     }
-    
-    function activate() {
-        isActive = true;
-        domElement.addClass('active');
-    }
-    
-    function deactivate() {
-        isActive = false;
-        domElement.removeClass('active');
-    }
-    
+
     // State change handlers
     function onEditModeChange(newValue, oldValue) {
         if (newValue) {
-            activate();
+            domElement.addClass('active');
         } else {
-            deactivate();
+            domElement.removeClass('active');
         }
     }
-    
-    function onViewModeChange(newValue, oldValue) {
-        if (newValue === 'video') {
-            domElement.show();
-        } else {
-            domElement.hide();
-        }
-    }
-    
-    // Cleanup
+
     function onUnload() {
         destroy();
     }
-    
+
     // Initialize on module load
     create();
-    
+
     // Public interface
     return {
-        // Exposed methods
-        activate: activate,
-        deactivate: deactivate,
-        
-        // Exposed properties
         get element() { return domElement; },
         get isActive() { return isActive; },
-        
-        // State change listeners
+
         onChange: {
-            'editMode': onEditModeChange,
-            'viewMode': onViewModeChange
+            'editMode': onEditModeChange
         },
-        
-        // Cleanup handler
+
         onUnload: onUnload
     };
 });
@@ -296,56 +269,47 @@ FrameTrail.defineModule('MyCustomModule', function(FrameTrail) {
 
 ### Integrating Your Module
 
-1. **Add to a Launcher**: Initialize in `PlayerLauncher` or another launcher module:
+1. **Create files**: `src/player/modules/MyCustomModule/module.js` and optionally `style.css`
 
-```javascript
-// In PlayerLauncher
-FrameTrail.initModule('MyCustomModule');
-```
+2. **Register in HTML**: Add `<script>` and `<link>` tags to `src/index.html`
 
-2. **Add to Interface** (if it has UI): Initialize in the `Interface` module:
+3. **Add to build script**: Add to `JS_FILES` and `CSS_FILES` in `scripts/build.sh`
 
-```javascript
-// In Interface module
-FrameTrail.initModule('MyCustomModule');
-FrameTrail.module('MyCustomModule').element.appendTo(mainContainer);
-```
+4. **Initialize**: In the appropriate launcher or parent module:
+   ```javascript
+   FrameTrail.initModule('MyCustomModule');
+   ```
 
-3. **Use from other modules**:
-
-```javascript
-// In any other module
-var myModule = FrameTrail.module('MyCustomModule');
-myModule.activate();
-```
+5. **Use from other modules**:
+   ```javascript
+   var myModule = FrameTrail.module('MyCustomModule');
+   ```
 
 ## Adding Localization Strings
 
 ### 1. Add to English Locale
 
-Edit `_shared/modules/Localization/locale/en-US.js`:
+Edit `src/_shared/modules/Localization/locale/en-US.js`:
 
 ```javascript
 window.FrameTrail_L10n['en-US'] = {
     // ... existing strings ...
-    
+
     "MyModuleTitle": "My Module",
-    "MyModuleDescription": "Description of my module",
-    "MyModuleButtonLabel": "Click Me"
+    "MyModuleDescription": "Description of my module"
 };
 ```
 
 ### 2. Add to Other Locales
 
-Edit `_shared/modules/Localization/locale/de.js` (and others):
+Edit `src/_shared/modules/Localization/locale/de.js` (and others):
 
 ```javascript
 window.FrameTrail_L10n['de'] = {
     // ... existing strings ...
-    
+
     "MyModuleTitle": "Mein Modul",
-    "MyModuleDescription": "Beschreibung meines Moduls",
-    "MyModuleButtonLabel": "Klick Mich"
+    "MyModuleDescription": "Beschreibung meines Moduls"
 };
 ```
 
@@ -356,44 +320,34 @@ var labels = FrameTrail.module('Localization').labels;
 var title = labels['MyModuleTitle'];
 ```
 
-## Adding Custom Events
+## Adding a Custom Theme
 
-### Define Event Handlers in Hypervideos
+### Define Theme Variables
 
-Users can add JavaScript that runs at specific times:
+Edit `src/_shared/styles/variables.css`:
 
-```javascript
-// In hypervideo.json globalEvents
-{
-    "globalEvents": {
-        "onReady": "console.log('Hypervideo ready');",
-        "onPlay": "console.log('Playing');",
-        "onPause": "console.log('Paused');",
-        "onEnded": "console.log('Ended');"
-    }
+```css
+.frametrail-body[data-frametrail-theme="mytheme"] .mainContainer,
+.frametrail-body[data-frametrail-theme="mytheme"] .loadingScreen,
+.frametrail-body[data-frametrail-theme="mytheme"] .userLoginOverlay,
+.frametrail-body[data-frametrail-theme="mytheme"] .titlebar:not(.editActive),
+.themeItem[data-theme="mytheme"],
+.frametrail-body[data-frametrail-theme="mytheme"] .layoutManager {
+    --primary-bg-color: #your-color;
+    --secondary-bg-color: rgba(r, g, b, 0.6);
+    --primary-fg-color: #your-text-color;
+    --highlight-color: #your-highlight;
+    /* ... see existing themes for full list of variables */
 }
 ```
 
-### Fire Custom Events from Modules
-
-```javascript
-// Fire event
-FrameTrail.triggerEvent('myCustomEvent', {
-    timestamp: Date.now(),
-    data: 'some value'
-});
-
-// Listen in another module
-FrameTrail.addEventListener('myCustomEvent', function(event) {
-    console.log('Received:', event.detail);
-});
-```
+The theme selector in `HypervideoSettingsDialog` automatically picks up themes defined in CSS.
 
 ## Extending the Backend
 
 ### Adding a New API Action
 
-Edit `_server/ajaxServer.php`:
+Edit `src/_server/ajaxServer.php`:
 
 ```php
 case "myCustomAction":
@@ -402,7 +356,7 @@ case "myCustomAction":
     break;
 ```
 
-Create `_server/myCustomModule.php`:
+Create `src/_server/myCustomModule.php`:
 
 ```php
 <?php
@@ -412,8 +366,7 @@ require_once("./user.php");
 
 function myCustomFunction($param1, $param2) {
     global $conf;
-    
-    // Check authentication if needed
+
     $login = userCheckLogin("user");
     if ($login["code"] != 1) {
         return array(
@@ -422,9 +375,9 @@ function myCustomFunction($param1, $param2) {
             "string" => "Not logged in"
         );
     }
-    
-    // Do your thing...
-    
+
+    // Your logic here...
+
     return array(
         "status" => "success",
         "code" => 0,
@@ -447,92 +400,83 @@ $.ajax({
 }).done(function(response) {
     if (response.status === 'success') {
         console.log(response.response);
-    } else {
-        console.error(response.string);
     }
 });
 ```
 
-## Adding a Custom Theme
+## Adding Custom Events
 
-### 1. Define Theme Variables
+### Fire Custom Events from Modules
 
-Edit `_shared/styles/variables.css`:
-
-```css
-.frametrail-body[data-frametrail-theme="mytheme"] .mainContainer,
-.frametrail-body[data-frametrail-theme="mytheme"] .loadingScreen,
-.frametrail-body[data-frametrail-theme="mytheme"] .userLoginOverlay,
-.frametrail-body[data-frametrail-theme="mytheme"] .titlebar:not(.editActive),
-.themeItem[data-theme="mytheme"],
-.frametrail-body[data-frametrail-theme="mytheme"] .layoutManager {
-    --primary-bg-color: #your-color;
-    --secondary-bg-color: rgba(r, g, b, 0.6);
-    --semi-transparent-bg-color: rgba(r, g, b, 0.8);
-    --primary-fg-color: #your-text-color;
-    --secondary-fg-color: #your-secondary-text;
-    --semi-transparent-fg-color: rgba(r, g, b, 0.3);
-    --semi-transparent-fg-highlight-color: rgba(r, g, b, 0.4);
-    --semi-transparent-fg-active-color: var(--secondary-fg-color);
-    --annotation-preview-bg-color: rgba(r, g, b, 0.2);
-    --highlight-color: #your-highlight;
-    --tooltip-bg-color: #your-tooltip;
-    --video-background-color: #000;
-}
+```javascript
+FrameTrail.triggerEvent('myCustomEvent', {
+    timestamp: Date.now(),
+    data: 'some value'
+});
 ```
 
-### 2. Add Theme Selector
+### Listen in Another Module
 
-The theme selector in `HypervideoSettingsDialog` automatically picks up themes defined in CSS. Just ensure your theme follows the naming pattern.
+```javascript
+FrameTrail.addEventListener('myCustomEvent', function(event) {
+    console.log('Received:', event.detail);
+});
+```
+
+### Hypervideo Global Events
+
+Users can add JavaScript that runs at specific lifecycle points via the `globalEvents` field in `hypervideo.json`:
+
+```json
+{
+    "globalEvents": {
+        "onReady": "console.log('Hypervideo ready');",
+        "onPlay": "console.log('Playing');",
+        "onPause": "console.log('Paused');",
+        "onEnded": "console.log('Ended');"
+    }
+}
+```
 
 ## Undo/Redo Support
 
 When making changes that should be undoable:
 
 ```javascript
-// Register an undoable action
 FrameTrail.module('UndoManager').register({
-    category: 'overlays',  // or 'annotations'
+    category: 'overlays',
     description: 'Change overlay position',
-    
+
     undo: function() {
-        // Restore previous state
         overlay.data.position = previousPosition;
         overlay.updatePosition();
     },
-    
+
     redo: function() {
-        // Re-apply the change
         overlay.data.position = newPosition;
         overlay.updatePosition();
     }
 });
 
-// Mark changes as unsaved
 FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
 ```
 
-## Testing Your Extensions
+## Checklist for New Extensions
 
-1. **Clear cache**: Delete browser cache or use incognito mode
-2. **Reset data**: Delete `_data/` folder for fresh start
-3. **Console debugging**:
-   ```javascript
-   // Access your module
-   FrameTrail.instances[0].module('MyCustomModule')
-   
-   // Check state
-   FrameTrail.instances[0].getState()
-   ```
-4. **Test in multiple browsers**: At minimum Chrome and Firefox
-5. **Test edit mode**: Ensure your extension works in both view and edit modes
+When adding a new resource type or module, make sure to:
+
+1. Create `type.js` (or `module.js`) and `style.css` in the appropriate directory under `src/`
+2. Add `<script>` and `<link>` tags to `src/index.html` (and `src/resources.html` if applicable)
+3. Add entries to `scripts/build.sh` in `JS_FILES` and `CSS_FILES` arrays (in correct order)
+4. Add localization strings to `src/_shared/modules/Localization/locale/en-US.js` and `de.js`
+5. Test in both development mode (`src/`) and build mode (`build/`)
+6. Test in Chrome and Firefox
+7. Test with edit mode enabled and disabled
 
 ## Best Practices
 
-1. **Follow existing patterns**: Look at similar modules/types for guidance
-2. **Use localization**: Never hardcode user-facing strings
-3. **Handle errors gracefully**: Always provide feedback for failures
-4. **Clean up on unload**: Remove event listeners, DOM elements
-5. **Use CSS custom properties**: For theme compatibility
-6. **Document your code**: Use JSDoc-style comments
-7. **Test edge cases**: Empty data, missing resources, network errors
+1. **Follow existing patterns** — Look at similar modules/types for guidance
+2. **Use localization** — Never hardcode user-facing strings
+3. **Clean up on unload** — Remove event listeners and DOM elements in `onUnload`
+4. **Use CSS custom properties** — For theme compatibility
+5. **Test edge cases** — Empty data, missing resources, network errors

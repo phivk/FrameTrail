@@ -6,7 +6,7 @@ This document describes the internal architecture of FrameTrail for developers w
 
 ### The FrameTrail Object
 
-The global `FrameTrail` object is defined in `_shared/frametrail-core/frametrail-core.js` and provides the foundation for the entire application:
+The global `FrameTrail` object is defined in `src/_shared/frametrail-core/frametrail-core.js` and provides the foundation for the entire application:
 
 ```javascript
 window.FrameTrail = {
@@ -23,19 +23,27 @@ When `FrameTrail.init()` is called, it returns an instance with:
 
 ```javascript
 {
-    start:           // Start the application
-    initModule:      // Initialize a module
-    unloadModule:    // Unload a module
-    module:          // Get a module's public interface
-    modules:         // Get all loaded modules
-    getState:        // Read global state
-    changeState:     // Update global state (triggers listeners)
-    type:            // Get a type constructor
-    newObject:       // Create instance of a type
-    triggerEvent:    // Fire custom events
+    start:            // Start the application
+    initModule:       // Initialize a module
+    unloadModule:     // Unload a module
+    module:           // Get a module's public interface
+    modules:          // Get all loaded modules
+    getState:         // Read global state
+    changeState:      // Update global state (triggers listeners)
+    type:             // Get a type constructor
+    newObject:        // Create instance of a type
+    triggerEvent:     // Fire custom events
     addEventListener: // Listen to custom events
 }
 ```
+
+### Instance vs Global
+
+The global `FrameTrail` object is the factory/registry. Instance methods like `module()`, `changeState()`, `getState()` are only available on initialized instances — the `FrameTrail` parameter passed into `defineModule` callbacks.
+
+- Modules defined via `FrameTrail.defineModule()` receive the instance as their closure argument and can freely call `FrameTrail.module('X')`.
+- Plain classes (e.g. `StorageAdapter` subclasses in `src/_shared/frametrail-core/storage/`) are **not** FrameTrail modules and do not have access to any instance. If they need to call module APIs, the caller must pass the FrameTrail instance explicitly.
+- Every module must be initialized with `FrameTrail.initModule('ModuleName')` before it can be accessed via `FrameTrail.module('ModuleName')`.
 
 ## Module System
 
@@ -45,30 +53,29 @@ Modules encapsulate related functionality. They're defined with `FrameTrail.defi
 
 ```javascript
 FrameTrail.defineModule('ModuleName', function(FrameTrail) {
-    
-    // Private scope - variables and functions here are not accessible outside
+
+    // Private scope — variables and functions here are not accessible outside
     var privateVar = 'hidden';
-    
+
     function privateFunction() {
         // Can access other modules
         var db = FrameTrail.module('Database');
-        
+
         // Can read/write global state
         var editMode = FrameTrail.getState('editMode');
         FrameTrail.changeState('editMode', true);
     }
-    
+
     // Return public interface
     return {
-        // Exposed methods/properties
         publicMethod: privateFunction,
-        
+
         // State change listeners (called automatically)
         onChange: {
             'editMode': function(newVal, oldVal) { /* react */ },
             'viewMode': function(newVal, oldVal) { /* react */ }
         },
-        
+
         // Called when module is unloaded
         onUnload: function() { /* cleanup */ }
     };
@@ -83,24 +90,53 @@ FrameTrail.defineModule('ModuleName', function(FrameTrail) {
 4. **State reactions**: `onChange` handlers are called automatically when state changes
 5. **Unload**: `FrameTrail.unloadModule('Name')` calls `onUnload` and removes the module
 
-### Key Modules
+### Module Inventory
 
-| Module | Location | Purpose |
-|--------|----------|---------|
-| `Database` | `_shared/modules/` | Loads/saves all JSON data |
-| `RouteNavigation` | `_shared/modules/` | URL parsing, environment detection |
-| `UserManagement` | `_shared/modules/` | Login, registration, user settings |
-| `Localization` | `_shared/modules/` | Multi-language string management |
-| `ResourceManager` | `_shared/modules/` | Resource CRUD operations |
-| `HypervideoModel` | `player/modules/` | Current hypervideo data model |
-| `HypervideoController` | `player/modules/` | Playback control, timing |
-| `OverlaysController` | `player/modules/` | Overlay lifecycle management |
-| `AnnotationsController` | `player/modules/` | Annotation lifecycle management |
-| `Interface` | `player/modules/` | Main UI coordinator |
-| `ViewVideo` | `player/modules/` | Video player view |
-| `ViewOverview` | `player/modules/` | Hypervideo selection grid |
-| `UndoManager` | `player/modules/` | Undo/redo for editing |
-| `InterfaceModal` | `player/modules/` | Dialogs, loading screens |
+#### Shared Modules (`src/_shared/modules/`)
+
+| Module | Purpose |
+|--------|---------|
+| `Database` | Loads/saves all JSON data via the active storage adapter |
+| `StorageManager` | Selects and initializes the appropriate storage adapter |
+| `RouteNavigation` | URL parsing, hash parameters, environment detection |
+| `UserManagement` | Login, registration, user settings |
+| `Localization` | Multi-language string management (en-US, de) |
+| `ResourceManager` | Resource CRUD operations |
+| `ViewResources` | Resource gallery/grid view |
+| `TagModel` | Tag definitions and filtering |
+| `HypervideoPicker` | Hypervideo selection dialog |
+| `HypervideoFormBuilder` | Hypervideo creation/edit forms |
+| `UserTraces` | User activity tracking |
+| `UndoManager` | Undo/redo for editing operations |
+
+#### Player Modules (`src/player/modules/`)
+
+| Module | Purpose |
+|--------|---------|
+| `PlayerLauncher` | Bootstrap and initialization orchestration |
+| `HypervideoModel` | Current hypervideo data model |
+| `HypervideoController` | Playback control, timing |
+| `AnnotationsController` | Annotation lifecycle management |
+| `OverlaysController` | Overlay lifecycle management |
+| `SubtitlesController` | Subtitle loading and display |
+| `CodeSnippetsController` | Code snippet execution at timestamps |
+| `InteractionController` | Drag/drop, resize for editing |
+| `TimelineController` | Timeline UI and scrubbing |
+| `Interface` | Main UI coordinator |
+| `InterfaceModal` | Dialogs, loading screens |
+| `Sidebar` | Sidebar panel management |
+| `Titlebar` | Top bar with controls |
+| `ViewVideo` | Video player view |
+| `ViewOverview` | Hypervideo selection grid |
+| `ViewLayout` | Content view layout areas |
+| `HypervideoSettingsDialog` | Hypervideo configuration |
+| `AdminSettingsDialog` | Admin settings panel |
+
+#### Resource Manager Module (`src/resourcemanager/modules/`)
+
+| Module | Purpose |
+|--------|---------|
+| `ResourceManagerLauncher` | Bootstrap for standalone resource manager |
 
 ### Module Initialization Order
 
@@ -110,16 +146,17 @@ The `PlayerLauncher` module orchestrates initialization:
 1. Localization
 2. InterfaceModal (shows loading screen)
 3. RouteNavigation
-4. UserManagement
-5. Database
-6. TagModel
-7. ResourceManager
-8. HypervideoFormBuilder
-9. HypervideoModel
-10. Interface (which initializes sub-modules)
-11. HypervideoController (if viewing a hypervideo)
-12. UserTraces
-13. UndoManager
+4. StorageManager (detects storage mode)
+5. UserManagement
+6. Database (loads data via storage adapter)
+7. TagModel
+8. ResourceManager
+9. HypervideoFormBuilder
+10. HypervideoModel
+11. Interface (initializes sub-modules)
+12. HypervideoController (if viewing a hypervideo)
+13. UserTraces
+14. UndoManager
 ```
 
 ## Type System
@@ -132,17 +169,13 @@ Types define data structures with inheritance support:
 FrameTrail.defineType('TypeName', function(FrameTrail) {
     return {
         parent: 'ParentType',  // Optional inheritance
-        
+
         constructor: function(data) {
-            // Called when creating instances
             this.data = data;
         },
-        
+
         prototype: {
-            // Instance methods
             render: function() { /* ... */ },
-            
-            // Instance properties (via getters/setters)
             get name() { return this.data.name; }
         }
     };
@@ -159,33 +192,50 @@ overlay.render();
 ### Type Hierarchy
 
 ```
-Resource (abstract)
-├── ResourceImage
+Resource (abstract base)
 ├── ResourceVideo
+├── ResourceImage
 ├── ResourceAudio
 ├── ResourceYoutube
 ├── ResourceVimeo
+├── ResourceWistia
+├── ResourceLoom
+├── ResourceTwitch
+├── ResourceSoundcloud
+├── ResourceSpotify
 ├── ResourceWebpage
 ├── ResourceWikipedia
-├── ResourceLocation
 ├── ResourcePDF
 ├── ResourceText
+├── ResourceLocation
 ├── ResourceQuiz
 ├── ResourceHotspot
-└── ResourceEntity
+├── ResourceEntity
+├── ResourceXTwitter
+├── ResourceBluesky
+├── ResourceMastodon
+├── ResourceTiktok
+├── ResourceReddit
+├── ResourceFlickr
+├── ResourceCodepen
+├── ResourceFigma
+├── ResourceSlideshare
+├── ResourceUrlPreview
+└── ResourceFlickr
 
-Overlay
-Annotation
-CodeSnippet
-Hypervideo
-Subtitle
+Overlay          (video overlay with position + time range)
+Annotation       (sidebar annotation with time range)
+Hypervideo       (hypervideo data wrapper)
+Subtitle         (VTT subtitle cue)
+CodeSnippet      (timed JavaScript execution)
+ContentView      (layout area content)
 ```
 
 Each Resource type implements:
-- `renderContent()` - Display the resource
-- `renderThumb()` - Thumbnail for resource manager
-- `renderPropertiesControls()` - Editing UI for overlays
-- `renderTimeControls()` - Editing UI for annotations
+- `renderContent()` — Display the resource in the player
+- `renderThumb()` — Thumbnail for the resource manager
+- `renderPropertiesControls()` — Editing UI for overlays
+- `renderTimeControls()` — Editing UI for annotations
 
 ## State Management
 
@@ -200,12 +250,6 @@ var allState = FrameTrail.getState(); // Returns full state object
 
 // Update state (triggers onChange handlers in all modules)
 FrameTrail.changeState('editMode', true);
-
-// Batch update
-FrameTrail.changeState({
-    editMode: true,
-    viewMode: 'video'
-});
 ```
 
 ### Core State Properties
@@ -215,6 +259,7 @@ FrameTrail.changeState({
 | `target` | String | CSS selector for mount point |
 | `editMode` | Boolean/String | `false`, `'overlays'`, `'annotations'`, etc. |
 | `viewMode` | String | `'video'`, `'overview'`, `'resources'` |
+| `storageMode` | String | `'server'`, `'local'`, `'needsFolder'`, `'noStorage'` |
 | `loggedIn` | Boolean | User authentication status |
 | `username` | String | Current user's name |
 | `fullscreen` | Boolean | Fullscreen state |
@@ -240,6 +285,30 @@ onChange: {
 }
 ```
 
+## Storage Architecture
+
+### Storage Adapters
+
+FrameTrail uses a strategy pattern for data persistence. The `StorageManager` module detects the environment and initializes the appropriate adapter:
+
+| Adapter | Class | When Used |
+|---------|-------|-----------|
+| Server | `StorageAdapterServer` | Running on Apache+PHP (`document.location.host` exists) |
+| Local | `StorageAdapterLocal` | File System Access API available (Chrome/Edge, file://) |
+| Download | `StorageAdapterDownload` | Fallback — enables Save As/export |
+
+All adapters implement the same interface, so the rest of the application doesn't need to know which storage backend is active.
+
+### Storage Mode Detection
+
+The `PlayerLauncher` (or `ResourceManagerLauncher`) detects the environment:
+
+1. If `document.location.host` is set → `'server'` mode (PHP backend available)
+2. If File System Access API is supported → `'needsFolder'` (prompt user to select `_data` folder)
+3. Otherwise → `'noStorage'` (read-only fallback)
+
+Once a folder is selected in `'needsFolder'` mode, the state transitions to `'local'`.
+
 ## Data Model
 
 ### File-Based Storage
@@ -251,6 +320,7 @@ _data/
 ├── config.json           # Instance configuration
 ├── users.json            # User accounts
 ├── tagdefinitions.json   # Tag definitions
+├── custom.css            # Custom global CSS
 ├── resources/
 │   ├── _index.json       # Resource metadata
 │   └── [files...]        # Uploaded media
@@ -258,9 +328,10 @@ _data/
     ├── _index.json       # Hypervideo list
     └── [id]/
         ├── hypervideo.json    # Hypervideo data + content
-        └── annotations/
-            ├── _index.json    # Annotation file index
-            └── [userId].json  # Per-user annotations
+        ├── annotations/
+        │   ├── _index.json    # Annotation file index
+        │   └── [userId].json  # Per-user annotations
+        └── subtitles/         # VTT subtitle files
 ```
 
 ### Hypervideo Structure
@@ -277,28 +348,21 @@ _data/
     "lastchanged": 1234567890
   },
   "config": {
-    "layoutArea": { /* layout settings */ },
+    "layoutArea": { "areaTop": [], "areaBottom": [], "areaLeft": [], "areaRight": [] },
     "hidden": false,
-    "theme": "default"
+    "slidingMode": "overlay"
   },
   "clips": [
-    {
-      "resourceId": "resource-id",
-      "duration": 120,
-      "start": 0,
-      "end": 120
-    }
+    { "resourceId": "resource-id", "duration": 120, "start": 0, "end": 120 }
   ],
-  "contents": [
-    /* overlays and code snippets */
-  ],
-  "subtitles": {
-    "en": "subtitles/en.vtt"
-  },
-  "globalEvents": { /* event handlers */ },
+  "contents": [ /* overlays and code snippets (W3C Web Annotation format) */ ],
+  "subtitles": { "en": "subtitles/en.vtt" },
+  "globalEvents": { "onReady": "", "onPlay": "", "onPause": "", "onEnded": "" },
   "customCSS": ""
 }
 ```
+
+Overlays and annotations use the **W3C Web Annotation** data model with `frametrail:` extensions for position, type, and attributes.
 
 ### Resource Structure
 
@@ -313,28 +377,6 @@ _data/
     "attributes": {},
     "tags": ["nature", "landscape"]
   }
-}
-```
-
-### Overlay/Annotation Structure
-
-```json
-{
-  "name": "Info Box",
-  "type": "text",
-  "src": "<p>HTML content</p>",
-  "start": 10.5,
-  "end": 25.0,
-  "position": {
-    "top": 10,
-    "left": 20,
-    "width": 30,
-    "height": 20
-  },
-  "attributes": {
-    "text": "<p>Content</p>"
-  },
-  "events": {}
 }
 ```
 
@@ -356,14 +398,7 @@ FrameTrail.addEventListener('myCustomEvent', function(event) {
 
 ### DOM Events
 
-UI components use standard jQuery event handling:
-
-```javascript
-$('.myButton').on('click', function(evt) {
-    evt.preventDefault();
-    // handle click
-});
-```
+UI components use standard jQuery event handling.
 
 ## Environment Detection
 
@@ -375,15 +410,6 @@ var env = FrameTrail.module('RouteNavigation').environment;
 env.server    // Boolean: true if running on HTTP server
 env.hostname  // String: current hostname
 env.iframe    // Boolean: true if embedded in iframe
-```
-
-Use this to conditionally enable features:
-
-```javascript
-if (!FrameTrail.module('RouteNavigation').environment.server) {
-    // Hide editing features when running locally
-    StartEditButton.hide();
-}
 ```
 
 ## URL Routing
@@ -400,26 +426,12 @@ index.html#hypervideo=abc123&t=30.5
 |-----------|-------------|
 | `hypervideo` | Hypervideo ID to load |
 | `t` | Start time in seconds |
-| `annotations` | Annotation ID (reserved) |
-
-### Programmatic Navigation
-
-```javascript
-// Get current hypervideo
-var id = FrameTrail.module('RouteNavigation').hypervideoID;
-
-// Change hypervideo (updates URL and loads new data)
-FrameTrail.module('HypervideoModel').updateHypervideo(newId);
-
-// Set playback time
-FrameTrail.module('RouteNavigation').hashTime = 45.5;
-```
 
 ## CSS Architecture
 
 ### CSS Custom Properties (Theming)
 
-Themes are defined in `_shared/styles/variables.css`:
+Themes are defined in `src/_shared/styles/variables.css`:
 
 ```css
 .frametrail-body {
@@ -441,19 +453,24 @@ Themes are applied via `data-frametrail-theme` attribute:
 
 ### CSS Organization
 
-- `_shared/styles/generic.css` - Common styles
-- `_shared/styles/variables.css` - Theme definitions
-- `player/types/[Type]/style.css` - Type-specific styles
-- `_shared/types/[Type]/style.css` - Shared type styles
+- `src/_shared/styles/variables.css` — Theme definitions (CSS custom properties)
+- `src/_shared/styles/generic.css` — Common styles, custom select dropdowns
+- `src/_shared/styles/frametrail-webfont.css` — FrameTrail icon font
+- `src/player/types/[Type]/style.css` — Player type styles
+- `src/_shared/types/[Type]/style.css` — Resource type styles
+- `src/player/modules/[Module]/style.css` — Player module styles
+- `src/_shared/modules/[Module]/style.css` — Shared module styles
 
 ## Backend (PHP)
 
 ### API Endpoints
 
-All AJAX requests go through `_server/ajaxServer.php`:
+All AJAX requests go through `src/_server/ajaxServer.php`:
 
 | Action | Description |
 |--------|-------------|
+| `setupCheck` | Check if initial setup has been completed |
+| `setupInit` | Run first-time setup |
 | `userRegister` | Create new user |
 | `userLogin` | Authenticate user |
 | `userLogout` | End session |
@@ -465,37 +482,47 @@ All AJAX requests go through `_server/ajaxServer.php`:
 | `resourcesAdd` | Upload resource |
 | `resourcesDelete` | Remove resource |
 | `configChange` | Update config |
-
-### File Handling
-
-- `_server/files.php` - File upload, transcoding
-- `_server/user.php` - User management
-- `_server/hypervideo.php` - Hypervideo CRUD
-- `_server/config.php` - Configuration
+| `annotationfileSave` | Save user annotations |
 
 ### Sessions
 
 PHP sessions are used for authentication. Session data is stored in `$_SESSION['ohv']`.
 
-## Performance Considerations
+## Initialization Options
 
-1. **Lazy Loading**: Modules are only initialized when needed
-2. **State Batching**: Multiple `changeState()` calls in the same thread are batched
-3. **DOM Caching**: jQuery elements are cached in module scope
-4. **JSON Caching**: `config.allowCaching` controls AJAX caching
+FrameTrail supports multiple initialization patterns:
 
-## Debugging Tips
+```javascript
+FrameTrail.init({
+    target: '#container',           // Mount point (CSS selector)
+    startID: 'hypervideo-id',       // Hypervideo to load (skips overview)
+    config: { /* ... */ },          // Pre-loaded config (skips _data/config.json)
+    resources: [{ /* ... */ }],     // Resource sources
+    contents: null,                 // Pre-loaded content (inline or URL)
+    language: 'en-US',              // UI language
+    tagdefinitions: null,           // Tag definitions
+    contentTargets: {}              // Custom content rendering targets
+}, 'PlayerLauncher');               // Launcher module name
+```
 
-1. Access modules in browser console:
-   ```javascript
-   FrameTrail.instances[0].module('Database').hypervideos
-   ```
+Multiple instances can coexist on one page. Access all instances via `FrameTrail.instances`.
 
-2. Inspect state:
-   ```javascript
-   FrameTrail.instances[0].getState()
-   ```
+## Debugging
 
-3. Watch state changes by adding temporary `onChange` handlers
+Access modules in the browser console:
 
-4. Check `_data/` folder for actual saved data
+```javascript
+// Get first instance
+var ft = FrameTrail.instances[0];
+
+// Inspect modules
+ft.modules();
+ft.module('Database').hypervideos;
+
+// Check state
+ft.getState();
+
+// Control playback
+ft.module('HypervideoController').play();
+ft.module('HypervideoController').setCurrentTime(30);
+```

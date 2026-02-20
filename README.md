@@ -1,112 +1,164 @@
 # FrameTrail
+
 ## Open Hypervideo Environment
 
-### Create, Annotate & Remix Interactive Videos
+Create, annotate, and remix interactive videos on the web.
 
-## Overview
+FrameTrail is an open-source platform for building non-linear, interactive video experiences. Add overlays, annotations, video links, and code snippets to any video — or create time-based presentations without video at all. All data is stored as portable JSON files with no database required.
 
-FrameTrail let's you experience, manage & edit non-linear interactive video in a simple and extendable online environment. FrameTrail can be easily customized for different purposes and view modes. Our aim is to allow authors the creation of open timebased media formats, which make full use of current web technology and support the remix culture that the web is built on.
+**No server required for viewing or editing.** FrameTrail runs entirely in the browser using the [File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API) for local file editing, or with an Apache+PHP backend for multi-user collaboration.
 
------------------
+---
 
 ## Features
 
+### Three Ways to Run
+
+1. **Server mode** (Apache + PHP) — Full multi-user editing, file uploads, user management
+2. **Local folder mode** (Chrome/Edge) — Full editing without a server, using the File System Access API to read/write a local `_data` folder
+3. **Read-only mode** — Open `index.html` directly in any browser to view existing hypervideos
+
 ### Editing
-* Use any **HTML5 Video** or even an empty **Time Container** with a custom length as source
-* Add any resource as timebased **Overlay** or **Annotation**
-* Configure Overlay-Display (Opacity, etc.)
-* **Synchronize** Video Overlays with the main Video / Time Container (optional)
-* Add timebased **Videolinks** to other (internal or external) Hypervideo Documents
-* View, compare and re-use Annotations of other users
 
-### Managing
-* Manage **users** (Access Rights, Activation)
-* Manage **resources** (Add / Upload, Edit, Delete)
-  * Videos
-  * Images
-  * Wikipedia
-  * Location (Open Streetmap)
-  * Youtube Video
-  * Vimeo Video
-  * Any other Webpage URL
-* Manage any number of **Hypervideo Documents**
+- Use any **HTML5 video**, **YouTube**, **Vimeo**, or an empty **time container** as source
+- Add time-based **overlays** positioned on the video
+- Add **annotations** displayed alongside the video
+- Insert **code snippets** (JavaScript) triggered at specific timestamps
+- Create **video links** to other hypervideos (internal or external)
+- Add and sync **subtitles** (VTT format)
+- View, compare, and reuse annotations from other users
 
-### Data Policy
-All data is kept in files using a structured JSON format, there is no database. Yes, that means you can just copy and paste your entire FrameTrail instance (including all user data etc.) to another server and it will instantly work.
+### Resource Types
+
+FrameTrail supports a wide range of embeddable content:
+
+| Category | Types |
+|----------|-------|
+| Media | Video (HTML5/HLS), Image, Audio, PDF |
+| Video platforms | YouTube, Vimeo, Wistia, Loom, Twitch |
+| Social/Web | X/Twitter, Bluesky, Mastodon, TikTok, Reddit, Flickr |
+| Audio/Music | Soundcloud, Spotify |
+| Presentations | Slideshare, Figma, Codepen |
+| Content | Text (rich HTML), Wikipedia, Webpage (iframe), URL Preview |
+| Interactive | Quiz, Hotspot, Location (OpenStreetMap), Entity (linked data) |
+
+### Data & Portability
+
+- All data stored as **JSON files** in a `_data` directory — no database
+- Copy the entire `_data` folder to move your instance between servers
+- Export/download data with the built-in **Save As** feature (works without server or File System Access API)
+- Annotations follow the **W3C Web Annotation** data model
 
 ### Browser Support
 
-#### Desktop:
-* Latest Versions of Chrome and Firefox
-* Safari, Opera and Microsoft Edge if you're lucky (not tested)
-* Internet Explorer is not and won't be supported
+- **Desktop:** Chrome, Firefox, Edge (latest versions)
+- **Local folder mode:** Chrome/Edge (requires File System Access API)
+- **Mobile:** Player works, editing disabled
 
-#### Mobile:
-* Editing Features are disabled on mobile platforms
+---
 
--------------
 ## Installation
 
-### Prerequisites
+### Option 1: Server Deployment (Apache + PHP)
 
-* **Apache** Web Server (2.2.29 +) with **PHP** (5.6.2 +)
+1. Download the [latest release](https://github.com/OpenHypervideo/FrameTrail/releases) or build from source
+2. Extract to your web server directory
+3. Open in your browser and follow the setup wizard
+4. Create an admin account — you're ready to go
 
-(any other configuration might also be fine, but this one has been tested)
+**Requirements:** Apache 2.2.29+ with PHP 5.6.2+. The web server needs write permissions to the installation directory.
 
-Please note that you can use FrameTrail "read-only" locally without any server, as long as your browser supports local Ajax requests (there are known issues with Chrome, but Firefox should work in most cases). Of course you won't be able to use the editing features.
+### Option 2: Local Folder Mode (No Server)
 
-### Setup
+1. Download and extract FrameTrail
+2. Open `index.html` in Chrome or Edge
+3. When prompted, select or create a `_data` folder on your computer
+4. Full editing — all changes saved directly to your local files
 
-1. `git clone https://github.com/OpenHypervideo/FrameTrail` or **Download ZIP** to your **server directory** (i.e. `http://example.com/DIRECTORY-NAME` or `http://localhost/DIRECTORY-NAME` if you're using XAMMP, MAMP etc. for a local setup).
-2. Open your **server directory** in your favourite browser.
-3. Follow the instructions to define an administrator account and configure your FrameTrail instance.
+### Option 3: Read-Only Viewing
 
-### Getting Started
+1. Open `index.html` in any modern browser
+2. If a `_data` folder with hypervideo data exists alongside the HTML files, it will be loaded for viewing
 
-#### Adding your first hypervideo
+---
 
-1. Click the Edit Button on the top right and login with your administrator account details.
-2. In the titlebar, click "New Hypervideo" and follow the instructions
+## Getting Started
 
-#### Adding resources
+1. **Login** — Click the Edit button (top right) and log in with your admin account
+2. **Create a hypervideo** — In the titlebar, click "New Hypervideo" and choose a video source
+3. **Add resources** — Click "Manage Resources" to upload or link media
+4. **Edit** — Drag resources onto the video timeline as overlays or annotations
+5. **Share** — Copy the URL or use iframe embedding
 
-1. Click the Edit Button on the top right and login with your administrator account details.
-2. In the titlebar, click "Manage Resources" to open the **Resource Manager**
-3. Click "Add Resource" and follow the instructions
-4. When your resource has been added, you and other users can use it as basis for new Hypervideos or for Overlays & Annotations
+---
 
------------------
+## Development
 
-## FAQ
+### Quick Start
 
-Check out [frametrail.org/faq.html](http://frametrail.org/faq.html)
+```bash
+git clone https://github.com/OpenHypervideo/FrameTrail.git
+cd FrameTrail
+```
 
------------------
+Point your web server at the `src/` directory. Open in your browser, complete the setup wizard, and start editing. Changes to source files take effect on reload — no build step needed for development.
 
-## Future Plans
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full development guide.
 
-Check out [frametrail.org/roadmap.html](http://frametrail.org/roadmap.html)
+### Building for Production
 
------------------
+```bash
+# Install build tools (one-time)
+npm install -g terser csso-cli
 
-## Developers
+# Build
+bash scripts/build.sh
+```
 
-### Getting involved
+This creates a `build/` directory with concatenated and minified JS/CSS bundles. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for details.
 
-Are you a developer and want to remix / improve / extend this software? Please head over to the [Contributors Guide](http://frametrail.org/contributing.html) and the [API Documentation](http://frametrail.org/docs.html).
+### Documentation
 
-If you find bugs or have questions, please file an issue here or if you can fix it yourself send us a pull request.
+- [CONTRIBUTING.md](CONTRIBUTING.md) — Development setup, code style, branching, CI/CD
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — Module system, state management, storage modes, data model
+- [docs/EXTENDING.md](docs/EXTENDING.md) — Adding resource types, modules, localization
+- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) — Server deployment, local usage, building, releasing
 
-### Contributors
+---
 
-Joscha Jäger, Michael J. Zeder, Michael Morgenstern, Olivier Aubert 
+## Project Structure
 
------------------
+```
+FrameTrail/
+├── src/                    # Source code (runnable as-is for development)
+│   ├── index.html          # Player/editor entry point
+│   ├── resources.html      # Resource manager
+│   ├── setup.html          # Setup wizard
+│   ├── _lib/               # Vendored third-party libraries
+│   ├── _shared/            # Core framework, shared modules, types, styles
+│   ├── player/             # Player-specific modules and types
+│   ├── resourcemanager/    # Resource manager launcher
+│   └── _server/            # PHP backend
+├── scripts/
+│   └── build.sh            # Production build script
+├── .github/workflows/      # CI/CD (build verification + release packaging)
+├── docs/                   # Developer documentation
+├── CLAUDE.md               # AI assistant project guide
+├── CONTRIBUTING.md         # Contributor guide
+├── LICENSE.md              # MIT + GPL v3 dual license
+└── README.md               # This file
+```
+
+---
+
+## Contributors
+
+Joscha Jager, Michael J. Zeder, Michael Morgenstern, Olivier Aubert
+
+---
 
 ## License
 
-**FrameTrail** is dual licensed under [MIT](http://www.opensource.org/licenses/mit-license.php) and [GPL v3](http://www.gnu.org/licenses/gpl-3.0.html) Licenses. 
+FrameTrail is dual licensed under [MIT](http://www.opensource.org/licenses/mit-license.php) and [GPL v3](http://www.gnu.org/licenses/gpl-3.0.html).
 
-For more info check out the [License Details](LICENSE.md).
-
------------------
+See [LICENSE.md](LICENSE.md) for details.
