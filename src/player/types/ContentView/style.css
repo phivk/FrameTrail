@@ -395,7 +395,8 @@
 	z-index: 2;
 }
 
-.layoutManager .layoutArea[data-area="areaRight"] .contentViewPreview .contentViewOptions {
+.layoutManager .layoutArea[data-area="areaRight"] .contentViewPreview .contentViewOptions, 
+.layoutManager .layoutArea[data-area="areaLeft"] .contentViewPreview .contentViewOptions {
 	top: auto;
 	bottom: 8px;
 }
