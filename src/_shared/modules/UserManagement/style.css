@@ -6,6 +6,11 @@
 	margin-left: 10px;
 }
 
+.userLoginOverlay .loginBoxTabButton {
+	transition-property: font-size;
+	transition-duration: 0.2s;
+}
+
 .userLoginOverlay .loginBoxTabButton.inactive {
 	font-size: 17px;
 	text-decoration: underline;
