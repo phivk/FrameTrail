@@ -1,11 +1,6 @@
 @font-face {
   font-family: 'frametrail-webfont';
-  src: url('../fonts/FrameTrail_Web/frametrail-webfont.eot?23258754');
-  src: url('../fonts/FrameTrail_Web/frametrail-webfont.eot?23258754#iefix') format('embedded-opentype'),
-       url('../fonts/FrameTrail_Web/frametrail-webfont.woff2?23258754') format('woff2'),
-       url('../fonts/FrameTrail_Web/frametrail-webfont.woff?23258754') format('woff'),
-       url('../fonts/FrameTrail_Web/frametrail-webfont.ttf?23258754') format('truetype'),
-       url('../fonts/FrameTrail_Web/frametrail-webfont.svg?23258754#frametrail-webfont') format('svg');
+  src: url('../fonts/FrameTrail_Web/frametrail-webfont.woff2') format('woff2');
   font-weight: normal;
   font-style: normal;
 }

@@ -1,19 +1,19 @@
 /* Generic Application CSS */
 
 @font-face {
-    font-family: TitilliumWeb;
-    font-weight: 400;
-    src: url("../fonts/Titillium_Web/TitilliumWeb-Regular.ttf") format("truetype");
+    font-family: 'TitilliumWeb';
+    src: url("../fonts/Titillium_Web/TitilliumWeb-Regular.woff2") format("woff2");
+    font-weight: normal;
 }
 @font-face {
-    font-family: TitilliumWeb;
-    font-weight: 600;
-    src: url("../fonts/Titillium_Web/TitilliumWeb-Bold.ttf") format("truetype");
+    font-family: 'TitilliumWeb';
+    src: url("../fonts/Titillium_Web/TitilliumWeb-Bold.woff2") format("woff2");
+    font-weight: bold;
 }
 @font-face {
-    font-family: TitilliumWeb;
-    font-weight: 100;
-    src: url("../fonts/Titillium_Web/TitilliumWeb-Light.ttf") format("truetype");
+    font-family: 'TitilliumWeb';
+    src: url("../fonts/Titillium_Web/TitilliumWeb-Light.woff2") format("woff2");
+    font-weight: 300;
 }
 
 .frametrail-body {
