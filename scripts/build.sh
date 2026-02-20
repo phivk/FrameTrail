@@ -488,6 +488,7 @@ SETUP_HTML
 
 echo "Copying static files..."
 cp "$SRC_DIR/favico.png" "$BUILD_DIR/"
+cp "$SRC_DIR/.htaccess" "$BUILD_DIR/"
 cp -r "$SRC_DIR/_server" "$BUILD_DIR/_server"
 
 # ──────────────────────────────────────────────
