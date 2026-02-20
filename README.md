@@ -153,7 +153,7 @@ FrameTrail/
 
 ## Contributors
 
-Joscha Jager, Michael J. Zeder, Michael Morgenstern, Olivier Aubert
+Joscha Jäger, Michael J. Zeder, Michael Morgenstern, Olivier Aubert
 
 ---
 
