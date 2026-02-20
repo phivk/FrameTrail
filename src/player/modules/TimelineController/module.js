@@ -191,6 +191,31 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
 
 
     /**
+     * Return a detached preview popup to its original element.
+     * @method returnPreviewToElement
+     * @param {jQuery} el - The element that should receive the preview
+     */
+    function returnPreviewToElement(el) {
+        if (el.data('previewDetached')) {
+            var wrapper = $('body > .timelineElement.previewPopupWrapper');
+            if (wrapper.length) {
+                var preview = wrapper.find('.previewWrapper');
+                preview.css({
+                    position: '',
+                    top: '',
+                    left: '',
+                    marginLeft: '',
+                    display: '',
+                    zIndex: ''
+                }).appendTo(el);
+                wrapper.remove();
+            }
+            el.removeData('previewDetached');
+        }
+    }
+
+
+    /**
      * Set up preview popup behavior on a container: on hover, move .previewWrapper
      * to body to escape overflow clipping, and return it on mouseleave.
      * @method setupPreviewPopup
@@ -198,24 +223,6 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
      * @param {String} childSelector - CSS selector for the hoverable child elements
      */
     function setupPreviewPopup(container, childSelector) {
-        function returnPreviewToElement(el) {
-            if (el.data('previewDetached')) {
-                var wrapper = $('body > .timelineElement.previewPopupWrapper');
-                if (wrapper.length) {
-                    var preview = wrapper.find('.previewWrapper');
-                    preview.css({
-                        position: '',
-                        top: '',
-                        left: '',
-                        marginLeft: '',
-                        display: '',
-                        zIndex: ''
-                    }).appendTo(el);
-                    wrapper.remove();
-                }
-                el.removeData('previewDetached');
-            }
-        }
 
         container.on('mouseenter.previewPopup', childSelector, function() {
             var el = $(this);
