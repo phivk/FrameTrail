@@ -295,7 +295,7 @@ FrameTrail uses a strategy pattern for data persistence. The `StorageManager` mo
 |---------|-------|-----------|
 | Server | `StorageAdapterServer` | HTTP/HTTPS with PHP backend responding at `_server/ajaxServer.php` |
 | Local | `StorageAdapterLocal` | File System Access API available (Chrome/Edge) and folder selected |
-| Download | `StorageAdapterDownload` | Supplemental — provides Save As/export in either mode |
+| Download | `StorageAdapterDownload` | Primary adapter when no server and no File System Access API (Firefox/Safari, or `file://` protocol). Stores data in memory; exports via Save As. Also available as a supplemental export tool in server and local modes. |
 
 All adapters implement the same interface, so the rest of the application doesn't need to know which storage backend is active.
 

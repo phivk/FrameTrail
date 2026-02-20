@@ -6,16 +6,17 @@ Create, annotate, and remix interactive videos on the web.
 
 FrameTrail is an open-source platform for building non-linear, interactive video experiences. Add overlays, annotations, video links, and code snippets to any video — or create time-based presentations without video at all. All data is stored as portable JSON files with no database required.
 
-**No server required for viewing or editing.** FrameTrail runs entirely in the browser using the [File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API) for local file editing, or with an Apache+PHP backend for multi-user collaboration.
+**No server required for viewing or editing.** FrameTrail runs entirely in the browser using the [File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API) for local file editing, or with an Apache+PHP backend for multi-user collaboration. It also works in any browser — including Firefox and Safari — via an in-memory mode where edits can be exported as JSON.
 
 ---
 
 ## Features
 
-### Two Ways to Run
+### Three Ways to Run
 
 1. **Server mode** (Apache + PHP) — Full multi-user editing, file uploads, user management
 2. **Local folder mode** (Chrome/Edge) — Full editing without a server, using the File System Access API to read/write a local `_data` folder
+3. **In-memory mode** (all browsers) — Pass hypervideo data via init options; view and edit in-browser; export changes as JSON via Save As. Nothing persists past a page reload unless exported. Works in Firefox, Safari, and everywhere else.
 
 ### Editing
 
@@ -50,8 +51,9 @@ FrameTrail supports a wide range of embeddable content:
 
 ### Browser Support
 
-- **Desktop:** Chrome, Firefox, Edge (latest versions)
+- **Desktop:** Chrome, Firefox, Edge, Safari (latest versions)
 - **Local folder mode:** Chrome/Edge only (requires File System Access API)
+- **In-memory/download mode:** All browsers — Firefox and Safari get full view + edit + export
 - **Mobile:** Player works in server mode; editing is disabled
 
 ---

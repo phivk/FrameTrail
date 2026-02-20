@@ -1,6 +1,6 @@
 # Deploying FrameTrail
 
-This guide covers the three ways to run FrameTrail, how to build from source, and the release process.
+This guide covers the three ways to run FrameTrail (server, local folder, and in-memory), how to build from source, and the release process.
 
 ## Deployment Options
 
@@ -58,9 +58,23 @@ The `StorageAdapterLocal` class uses the File System Access API (`showDirectoryP
 - No PHP-based file processing (image optimization, video transcoding)
 - Browser must support File System Access API (Chrome/Edge only)
 
-### Save As / Export
+### Option 3: In-Memory Mode (All Browsers)
 
-The `StorageAdapterDownload` is used as the fallback storage backend when no PHP server and no local folder are available (`storageMode: 'download'`). It stores all data in memory and exposes a Save As dialog that downloads a JSON snapshot of the current state.
+No server, no file system access required. FrameTrail automatically falls back to this mode when running in Firefox, Safari, or any browser without the File System Access API and no PHP backend.
+
+**Requirements:**
+- Any modern browser (Chrome, Firefox, Edge, Safari)
+
+**How it works:**
+
+The `StorageAdapterDownload` holds all data in memory. Hypervideo data is passed via init options at startup (see [Inline on a Page](#inline-on-a-page) below). Viewing and editing are fully functional. The Save button is disabled (since there is nowhere to persist); use **Save As** to export a JSON snapshot that can be reloaded later.
+
+**Limitations:**
+- No persistence — changes are lost on page reload unless exported via Save As
+- No file uploads (media must be referenced by URL)
+- No multi-user collaboration
+
+### Save As / Export
 
 In server and local modes, Save As is also available as a supplemental export tool — useful for archiving or migrating content between instances.
 
@@ -97,7 +111,7 @@ $(document).ready(function() {
 
 ### With Inline Data
 
-When running in server mode, you can pass all hypervideo and resource data directly via init options, bypassing the `_data/` directory entirely. This is useful for embedding a specific hypervideo on a page without managing the data folder.
+You can pass all hypervideo and resource data directly via init options, bypassing the `_data/` directory entirely. This works in all three storage modes and is the primary approach for in-memory mode (Option 3) — embed FrameTrail on any page without any backend or data folder.
 
 ```javascript
 FrameTrail.init({
