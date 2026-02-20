@@ -54,7 +54,7 @@ Full editing without a server. Uses the [File System Access API](https://develop
 The `StorageAdapterLocal` class uses the File System Access API (`showDirectoryPicker`, `FileSystemDirectoryHandle`, etc.) to read and write JSON files and uploaded media. The browser asks for permission the first time you access a folder, then remembers it for the session.
 
 **Limitations:**
-- No user management (everyone is effectively admin)
+- Identity is name-only (a login dialog prompts for a display name before entering edit mode; no account or password required)
 - No PHP-based file processing (image optimization, video transcoding)
 - Browser must support File System Access API (Chrome/Edge only)
 
@@ -67,7 +67,7 @@ No server, no file system access required. FrameTrail automatically falls back t
 
 **How it works:**
 
-The `StorageAdapterDownload` holds all data in memory. Hypervideo data is passed via init options at startup (see [Inline on a Page](#inline-on-a-page) below). Viewing and editing are fully functional. The Save button is disabled (since there is nowhere to persist); use **Save As** to export a JSON snapshot that can be reloaded later.
+The `StorageAdapterDownload` holds all data in memory. Hypervideo data is passed via init options at startup (see [Inline on a Page](#inline-on-a-page) below). Viewing is always available. For editing, a login dialog prompts for a display name (guest mode — no account needed). The Save button is disabled (no persistent target); use **Save As** to export a JSON snapshot that can be reloaded later.
 
 **Limitations:**
 - No persistence — changes are lost on page reload unless exported via Save As

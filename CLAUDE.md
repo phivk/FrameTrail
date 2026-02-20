@@ -136,7 +136,7 @@ Note: Some libraries have custom/patched versions (raphael-connections.js, rapha
 - `'server'` — PHP backend available, data loaded/saved via AJAX to `src/_server/ajaxServer.php`
 - `'local'` — File System Access API active, data read/written via `StorageAdapterLocal` to a user-selected folder
 - `'needsFolder'` — File System Access API supported but no folder selected yet; launcher prompts user to pick a `_data` directory
-- `'download'` — No persistent storage available (Firefox/Safari, or any browser without File System Access API and no PHP); `StorageAdapterDownload` is used, which stores data in memory and lets users export/download it. Viewing and editing work; saves persist only until page reload.
+- `'download'` — No persistent storage available (Firefox/Safari, or any browser without File System Access API and no PHP); `StorageAdapterDownload` is used, which stores data in memory and lets users export/download it. Viewing and editing work; `canSave` is `false` (no persistent target); changes are exported via Save As. Data persists only until page reload.
 
 ### Application Modes
 
@@ -162,6 +162,7 @@ Note: Some libraries have custom/patched versions (raphael-connections.js, rapha
 4. **File-Based Persistence**: All data stored as JSON files (no database)
 5. **Event-Driven**: Timeline events, user actions broadcast to listeners
 6. **W3C Web Annotations**: Uses standardized annotation format with FrameTrail extensions
+7. **Guest Mode is orthogonal to storage mode**: `UserManagement.isGuestMode()` is an identity-layer flag — it means "editing without a server account", not "in download mode". A user can be in guest mode in any storage mode (local, download, or server). `StorageManager.canSave()` is the authoritative gate for save UI: it returns `false` for server mode when in guest mode, and delegates to `adapter.canSave` otherwise (`StorageAdapterDownload.canSave` is always `false`; `StorageAdapterLocal.canSave` is `true`). Always use `canSave()` rather than checking `isGuestMode()` or `storageMode` directly in save-related UI.
 
 **Important: FrameTrail instance vs global:**
 - The global `FrameTrail` object is the factory/registry. `FrameTrail.module()`, `FrameTrail.changeState()`, etc. are only available on **initialized instances** (the `FrameTrail` parameter passed into `defineModule` callbacks).

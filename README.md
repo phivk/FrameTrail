@@ -80,11 +80,12 @@ FrameTrail supports a wide range of embeddable content:
 
 ## Getting Started
 
-1. **Login** — Click the Edit button (top right) and log in with your admin account
+1. **Enter edit mode** — Click the Edit button (top right). In server mode, log in with your account or continue as a guest (name only). In local folder and in-memory modes, only the guest option is shown.
 2. **Create a hypervideo** — In the titlebar, click "New Hypervideo" and choose a video source
 3. **Add resources** — Click "Manage Resources" to upload or link media
 4. **Edit** — Drag resources onto the video timeline as overlays or annotations
-5. **Share** — Copy the URL or use iframe embedding
+5. **Save** — In server/local mode, Ctrl+S saves directly. As a guest, use Save As to export your changes as JSON.
+6. **Share** — Copy the URL or use iframe embedding
 
 ---
 
