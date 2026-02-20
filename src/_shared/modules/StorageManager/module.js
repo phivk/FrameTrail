@@ -84,9 +84,13 @@ FrameTrail.defineModule('StorageManager', function(FrameTrail) {
                 return _currentAdapter;
             });
         } else {
-            FrameTrail.changeState('storageMode', 'noStorage');
+            // No File System Access API — use Download adapter so inline-data
+            // init options work (view + edit + download-to-save), instead of
+            // hard-failing.
+            _currentAdapter = _downloadAdapter;
+            FrameTrail.changeState('storageMode', 'download');
             _initialized = true;
-            return Promise.resolve(null);
+            return Promise.resolve(_currentAdapter);
         }
     }
 

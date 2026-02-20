@@ -76,11 +76,6 @@
             return;
         }
 
-        if (storageMode === 'noStorage') {
-            FrameTrail.module('InterfaceModal').showErrorMessage(labels['ErrorNoStorageAvailable']);
-            return;
-        }
-
         continueLoading();
 
     });
