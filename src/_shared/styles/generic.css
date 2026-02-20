@@ -927,6 +927,7 @@ input:checked + .slider:before {
     color: var(--primary-fg-color);
     padding: 6px 12px;
     vertical-align: middle;
+    margin-top: 10px;
 }
 
 .ui-blocking-overlay .ui-overlay-box input[type="text"], .ui-blocking-overlay .ui-overlay-box input[type="password"] {
