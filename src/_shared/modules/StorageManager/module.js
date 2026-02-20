@@ -207,6 +207,25 @@ FrameTrail.defineModule('StorageManager', function(FrameTrail) {
 
 
     /**
+     * Lazily initialize the Download adapter's user identity.
+     * Called on first edit attempt in download mode.
+     * Checks localStorage; if no user is stored, prompts for a name.
+     *
+     * @method ensureDownloadUser
+     * @return {Promise<Object>} Resolves with the user info object
+     */
+    function ensureDownloadUser() {
+        var info = _downloadAdapter.userInfo;
+        if (info && info.id) {
+            return Promise.resolve(info);
+        }
+        return _downloadAdapter.init().then(function() {
+            return _downloadAdapter.userInfo;
+        });
+    }
+
+
+    /**
      * Get current user info from the active adapter.
      * @method getCurrentUserInfo
      * @return {Object|null}
@@ -239,12 +258,13 @@ FrameTrail.defineModule('StorageManager', function(FrameTrail) {
         getLocalAdapter:    getLocalAdapter,
         getDownloadAdapter: getDownloadAdapter,
         switchToLocal:      switchToLocal,
-        switchToServer:     switchToServer,
-        canSave:            canSave,
-        canSaveToServer:    canSaveToServer,
-        canSaveToLocal:     canSaveToLocal,
-        getCurrentUserInfo: getCurrentUserInfo,
-        getFolderName:      getFolderName
+        switchToServer:      switchToServer,
+        canSave:             canSave,
+        canSaveToServer:     canSaveToServer,
+        canSaveToLocal:      canSaveToLocal,
+        getCurrentUserInfo:  getCurrentUserInfo,
+        getFolderName:       getFolderName,
+        ensureDownloadUser:  ensureDownloadUser
     };
 
 });

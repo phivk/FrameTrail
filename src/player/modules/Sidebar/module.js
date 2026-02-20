@@ -992,13 +992,20 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
      */
     function toogleUnsavedChanges(aBoolean) {
 
+        var isDownload = FrameTrail.getState('storageMode') === 'download';
+
         if (aBoolean) {
-            domElement.find('button[data-viewmode="video"]').addClass('unsavedChanges')
-            SaveButton.addClass('unsavedChanges')
+            domElement.find('button[data-viewmode="video"]').addClass('unsavedChanges');
+            if (isDownload) {
+                SaveAsButton.addClass('unsavedChanges');
+            } else {
+                SaveButton.addClass('unsavedChanges');
+            }
         } else {
-            domElement.find('button[data-viewmode="video"]').removeClass('unsavedChanges')
-            domElement.find('button.editMode').removeClass('unsavedChanges')
-            SaveButton.removeClass('unsavedChanges')
+            domElement.find('button[data-viewmode="video"]').removeClass('unsavedChanges');
+            domElement.find('button.editMode').removeClass('unsavedChanges');
+            SaveButton.removeClass('unsavedChanges');
+            SaveAsButton.removeClass('unsavedChanges');
         }
 
     };
@@ -1062,7 +1069,12 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
 
                 NewHypervideoButton.show();
                 ExportButton.hide();
-                SaveButton.show();
+                // In download mode Save writes to memory only — disable it; Save As is the real action
+                if (FrameTrail.getState('storageMode') === 'download') {
+                    SaveButton.show().prop('disabled', true);
+                } else {
+                    SaveButton.show().prop('disabled', false);
+                }
                 SaveAsButton.show();
                 UndoButton.show();
                 RedoButton.show();

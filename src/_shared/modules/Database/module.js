@@ -221,6 +221,12 @@
                     success.call(this);
                 });
 
+        } else if (FrameTrail.getState('storageMode') === 'download') {
+
+            // Download mode: no users file — start empty
+            users = {};
+            success.call(this);
+
         } else if (!FrameTrail.module('RouteNavigation').environment.server) {
 
             $.ajax({
@@ -872,8 +878,8 @@
         // clear previous data
         annotations = [];
 
-        if (!initAnnotations) {
-            success();
+        if (!initAnnotations || initAnnotations.length === 0) {
+            return success();
         }
 
         var countdown = initAnnotations.length;

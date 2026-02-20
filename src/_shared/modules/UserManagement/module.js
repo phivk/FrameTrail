@@ -522,6 +522,26 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 			return;
 		}
 
+		if (storageMode === 'download') {
+			// Download mode — lazily init user identity (localStorage or prompt)
+			var downloadUser = FrameTrail.module('StorageManager').getCurrentUserInfo();
+			if (downloadUser && downloadUser.id) {
+				isLoggedIn(function(loginStatus) {
+					callback.call();
+				});
+			} else {
+				FrameTrail.module('StorageManager').ensureDownloadUser().then(function() {
+					isLoggedIn(function(loginStatus) {
+						callback.call();
+					});
+				}).catch(function(err) {
+					console.warn('Download user init failed:', err);
+					if (callbackCancel) callbackCancel.call();
+				});
+			}
+			return;
+		}
+
 		isLoggedIn(function(loginStatus) {
 
 			if (loginStatus){
@@ -558,12 +578,12 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 
 		var storageMode = FrameTrail.getState('storageMode');
 
-		if (storageMode === 'local') {
-			// Local mode — use local user info from StorageManager
+		if (storageMode === 'local' || storageMode === 'download') {
+			// Local / download mode — use user info from the active storage adapter
 			var localUser = FrameTrail.module('StorageManager').getCurrentUserInfo();
-			if (localUser) {
+			if (localUser && localUser.id) {
 				userID = localUser.id;
-				userRole = localUser.role;
+				userRole = localUser.role || 'admin';
 				userMail = localUser.mail || '';
 				userRegistrationDate = localUser.registrationDate;
 				FrameTrail.changeState('username', localUser.name);

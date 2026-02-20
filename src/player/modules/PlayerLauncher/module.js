@@ -76,7 +76,12 @@
             return;
         }
 
-        continueLoading();
+        // Sync login state now that storageMode is known.
+        // UserManagement.isLoggedIn() ran at module-init time before storageMode
+        // was set, so loggedIn may be stale (false) for local/download modes.
+        FrameTrail.module('UserManagement').isLoggedIn(function() {
+            continueLoading();
+        });
 
     });
 

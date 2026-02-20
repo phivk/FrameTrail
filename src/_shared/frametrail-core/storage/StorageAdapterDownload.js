@@ -16,12 +16,22 @@ class StorageAdapterDownload extends StorageAdapter {
     constructor() {
         super();
         this._data = {};  // In-memory cache
+
+        // Pre-load user identity so isLoggedIn() works before init() is called.
+        // If a returning user is stored in localStorage, use it immediately.
+        // Otherwise set a default so the edit button is visible; init() will
+        // prompt for a real name on the first save attempt.
+        var storedUser = null;
+        try { storedUser = JSON.parse(localStorage.getItem('frametrail_local_user')); } catch (e) {}
+        this._userInfo = (storedUser && storedUser.id)
+            ? storedUser
+            : { id: 'localuser', name: 'Local User', role: 'admin', mail: '', color: '#FF9800' };
     }
 
     get type() { return 'download'; }
     get displayName() { return 'Download'; }
     get canSave() { return true; }
-    get userInfo() { return this._userInfo || {}; }
+    get userInfo() { return this._userInfo; }
 
     async init() {
         var localUser = localStorage.getItem('frametrail_local_user');

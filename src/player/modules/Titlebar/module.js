@@ -75,7 +75,8 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
     });
 
     UserSettingsButton.click(function(){
-        if (FrameTrail.getState('storageMode') === 'local') {
+        var _smBtn = FrameTrail.getState('storageMode');
+        if (_smBtn === 'local' || _smBtn === 'download') {
             showLocalUserDialog();
         } else {
             FrameTrail.module('UserManagement').showAdministrationBox();
@@ -363,12 +364,13 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
                 // Show user settings and logout buttons if logged in
                 if (FrameTrail.getState('loggedIn')) {
                     UserSettingsButton.show();
-                    if (FrameTrail.getState('storageMode') !== 'local') {
+                    var _smLogin = FrameTrail.getState('storageMode');
+                    if (_smLogin !== 'local' && _smLogin !== 'download') {
                         domElement.find('.logoutButton').show();
                     }
                 }
-                // In local mode, always show user settings (for name/color change)
-                if (FrameTrail.getState('storageMode') === 'local') {
+                // In local/download mode, always show user settings (for name/color change)
+                if (FrameTrail.getState('storageMode') === 'local' || FrameTrail.getState('storageMode') === 'download') {
                     UserSettingsButton.show();
                 }
 
@@ -381,7 +383,8 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
             StartEditButton.show();
 
             // Hide Edit Button when no storage backend is available
-            if (!FrameTrail.module('RouteNavigation').environment.server && FrameTrail.getState('storageMode') !== 'local') {
+            var _sm = FrameTrail.getState('storageMode');
+            if (!FrameTrail.module('RouteNavigation').environment.server && _sm !== 'local' && _sm !== 'download') {
                 StartEditButton.hide();
             }
 
@@ -411,7 +414,8 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
 
             // Only show user settings and logout buttons if in edit mode
             if (FrameTrail.getState('editMode')) {
-                if (FrameTrail.getState('storageMode') !== 'local') {
+                var _smCul = FrameTrail.getState('storageMode');
+                if (_smCul !== 'local' && _smCul !== 'download') {
                     domElement.find('.logoutButton').show();
                 }
                 UserSettingsButton.show();
