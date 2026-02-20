@@ -992,11 +992,12 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
      */
     function toogleUnsavedChanges(aBoolean) {
 
-        var isDownload = FrameTrail.getState('storageMode') === 'download';
+        var noDirectSave = FrameTrail.getState('storageMode') === 'download' ||
+                           FrameTrail.module('UserManagement').isGuestMode();
 
         if (aBoolean) {
             domElement.find('button[data-viewmode="video"]').addClass('unsavedChanges');
-            if (isDownload) {
+            if (noDirectSave) {
                 SaveAsButton.addClass('unsavedChanges');
             } else {
                 SaveButton.addClass('unsavedChanges');
@@ -1067,14 +1068,12 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
 
             if (oldEditMode === false) {
 
-                NewHypervideoButton.show();
+                var _canSave = FrameTrail.module('StorageManager').canSave();
+                var _isGuest = FrameTrail.module('UserManagement').isGuestMode();
+                NewHypervideoButton.show().prop('disabled', _isGuest);
+                ForkButton.prop('disabled', _isGuest);
                 ExportButton.hide();
-                // In download mode Save writes to memory only — disable it; Save As is the real action
-                if (FrameTrail.getState('storageMode') === 'download') {
-                    SaveButton.show().prop('disabled', true);
-                } else {
-                    SaveButton.show().prop('disabled', false);
-                }
+                SaveButton.show().prop('disabled', !_canSave);
                 SaveAsButton.show();
                 UndoButton.show();
                 RedoButton.show();

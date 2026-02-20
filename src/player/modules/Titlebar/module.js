@@ -75,61 +75,8 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
     });
 
     UserSettingsButton.click(function(){
-        var _smBtn = FrameTrail.getState('storageMode');
-        if (_smBtn === 'local' || _smBtn === 'download') {
-            showLocalUserDialog();
-        } else {
-            FrameTrail.module('UserManagement').showAdministrationBox();
-        }
+        FrameTrail.module('UserManagement').showAdministrationBox();
     });
-
-    function showLocalUserDialog() {
-        var adapter = FrameTrail.module('StorageManager').getAdapter();
-        var userInfo = adapter.userInfo;
-
-        var colorValue = userInfo.color || '#FF9800';
-        var dialog = $('<div title="'+ labels['UserManagement'] +'">'
-            + '<div style="margin-bottom:12px;">'
-            + '  <label style="display:block; margin-bottom:4px;"><strong>'+ (labels['GenericName'] || 'Name') +'</strong></label>'
-            + '  <input type="text" class="localUserName" value="'+ (userInfo.name || '') +'" style="width:100%; box-sizing:border-box;">'
-            + '</div>'
-            + '<div>'
-            + '  <label style="display:block; margin-bottom:4px;"><strong>'+ (labels['UserColor'] || 'Color') +'</strong></label>'
-            + '  <input type="color" class="localUserColor" value="'+ colorValue +'">'
-            + '</div>'
-            + '</div>');
-
-        dialog.dialog({
-            modal: true,
-            resizable: false,
-            width: 350,
-            close: function() { $(this).remove(); },
-            buttons: [
-                { text: labels['GenericSaveChanges'] || 'Save',
-                    click: function() {
-                        var newName = dialog.find('.localUserName').val().trim();
-                        var newColor = dialog.find('.localUserColor').val();
-                        if (newName) {
-                            userInfo.name = newName;
-                            userInfo.color = newColor;
-                            localStorage.setItem('frametrail_local_user', JSON.stringify(userInfo));
-                            // Update users.json in the local folder
-                            adapter.readJSON('users.json').catch(function() {
-                                return { 'user-increment': 1, 'user': {} };
-                            }).then(function(users) {
-                                users.user[userInfo.id] = userInfo;
-                                return adapter.writeJSON('users.json', users);
-                            }).catch(function() {});
-                        }
-                        $(this).dialog('close');
-                    }
-                },
-                { text: labels['GenericCancel'],
-                    click: function() { $(this).dialog('close'); }
-                }
-            ]
-        });
-    }
 
     domElement.find('.sidebarToggleButton').click(function(){
 
@@ -226,7 +173,12 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
         var userRole = FrameTrail.module('UserManagement').userRole;
         var userID = FrameTrail.module('UserManagement').userID;
         var creatorId = FrameTrail.module('HypervideoModel').creatorId;
-        
+
+        // Guest gets full admin-level editing (changes only exportable, not saved to server)
+        if (FrameTrail.module('UserManagement').isGuestMode()) {
+            return true;
+        }
+
         return userRole === 'admin' || String(creatorId) === String(userID);
     }
 
@@ -356,21 +308,19 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
                     HypervideoEditButton.addClass('active');
                 }
 
-                // Show admin settings button if admin
-                if (FrameTrail.module('UserManagement').userRole === 'admin') {
+                // Show admin settings button if server-authenticated admin (not guest)
+                if (FrameTrail.module('UserManagement').userRole === 'admin' &&
+                    !FrameTrail.module('UserManagement').isGuestMode()) {
                     AdminSettingsButton.show();
                 }
 
-                // Show user settings and logout buttons if logged in
+                // Show logout button for all logged-in users (including guest)
                 if (FrameTrail.getState('loggedIn')) {
-                    UserSettingsButton.show();
-                    var _smLogin = FrameTrail.getState('storageMode');
-                    if (_smLogin !== 'local' && _smLogin !== 'download') {
-                        domElement.find('.logoutButton').show();
-                    }
+                    domElement.find('.logoutButton').show();
                 }
-                // In local/download mode, always show user settings (for name/color change)
-                if (FrameTrail.getState('storageMode') === 'local' || FrameTrail.getState('storageMode') === 'download') {
+
+                // Show user settings only for server-authenticated (non-guest) users
+                if (FrameTrail.getState('loggedIn') && !FrameTrail.module('UserManagement').isGuestMode()) {
                     UserSettingsButton.show();
                 }
 
@@ -380,13 +330,8 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
 
             domElement.removeClass('editActive');
 
+            // Edit is always available — guest mode allows editing in all storage modes
             StartEditButton.show();
-
-            // Hide Edit Button when no storage backend is available
-            var _sm = FrameTrail.getState('storageMode');
-            if (!FrameTrail.module('RouteNavigation').environment.server && _sm !== 'local' && _sm !== 'download') {
-                StartEditButton.hide();
-            }
 
             LeaveEditModeButton.hide();
             ManageResourcesButton.hide();
@@ -412,17 +357,21 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
 
         if (loggedIn) {
 
-            // Only show user settings and logout buttons if in edit mode
+            // Only show buttons if in edit mode
             if (FrameTrail.getState('editMode')) {
-                var _smCul = FrameTrail.getState('storageMode');
-                if (_smCul !== 'local' && _smCul !== 'download') {
-                    domElement.find('.logoutButton').show();
+                // Logout for all logged-in users
+                domElement.find('.logoutButton').show();
+
+                // User settings only for server-authenticated (non-guest) users
+                if (!FrameTrail.module('UserManagement').isGuestMode()) {
+                    UserSettingsButton.show();
                 }
-                UserSettingsButton.show();
             }
 
-            // Show admin settings button if admin and in edit mode
-            if (FrameTrail.module('UserManagement').userRole === 'admin' && FrameTrail.getState('editMode')) {
+            // Show admin settings button if server-authenticated admin and in edit mode
+            if (FrameTrail.module('UserManagement').userRole === 'admin' &&
+                !FrameTrail.module('UserManagement').isGuestMode() &&
+                FrameTrail.getState('editMode')) {
                 AdminSettingsButton.show();
             }
 

@@ -16,39 +16,23 @@ class StorageAdapterDownload extends StorageAdapter {
     constructor() {
         super();
         this._data = {};  // In-memory cache
-
-        // Pre-load user identity so isLoggedIn() works before init() is called.
-        // If a returning user is stored in localStorage, use it immediately.
-        // Otherwise set a default so the edit button is visible; init() will
-        // prompt for a real name on the first save attempt.
-        var storedUser = null;
-        try { storedUser = JSON.parse(localStorage.getItem('frametrail_local_user')); } catch (e) {}
-        this._userInfo = (storedUser && storedUser.id)
-            ? storedUser
-            : { id: 'localuser', name: 'Local User', role: 'admin', mail: '', color: '#FF9800' };
+        this._userInfo = {};  // Set by UserManagement after guest login
     }
 
     get type() { return 'download'; }
     get displayName() { return 'Download'; }
-    get canSave() { return true; }
+    get canSave() { return false; }  // In-memory only — no persistent save target; use Save As / download
     get userInfo() { return this._userInfo; }
 
+    /**
+     * Update the stored user info (called from UserManagement after guest login).
+     * @param {Object} info - User info object {id, name, role, color}
+     */
+    setUserInfo(info) {
+        this._userInfo = info;
+    }
+
     async init() {
-        var localUser = localStorage.getItem('frametrail_local_user');
-        if (localUser) {
-            this._userInfo = JSON.parse(localUser);
-        } else {
-            var name = prompt('Enter your name for annotations:', 'Local User');
-            this._userInfo = {
-                id: 'local-' + Date.now(),
-                name: name || 'Local User',
-                role: 'admin',
-                mail: '',
-                registrationDate: Date.now(),
-                color: '#FF9800'
-            };
-            localStorage.setItem('frametrail_local_user', JSON.stringify(this._userInfo));
-        }
         return true;
     }
 

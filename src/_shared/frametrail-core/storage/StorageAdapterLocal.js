@@ -63,10 +63,15 @@ class StorageAdapterLocal extends StorageAdapter {
             await this._scaffoldEmptyProject();
         }
 
-        // Set up local user
-        await this._initLocalUser();
-
         return true;
+    }
+
+    /**
+     * Update the stored user info (called from UserManagement after guest login).
+     * @param {Object} info - User info object {id, name, role, color}
+     */
+    setUserInfo(info) {
+        this._userInfo = info;
     }
 
     /**
@@ -92,49 +97,6 @@ class StorageAdapterLocal extends StorageAdapter {
         await this.writeJSON('hypervideos/_index.json', { 'hypervideo-increment': 0, 'hypervideos': {} });
         await this.createDirectory('resources');
         await this.writeJSON('resources/_index.json', { 'resources': {} });
-    }
-
-    /**
-     * Set up local user identity. Prompts for name on first use,
-     * stores in localStorage for subsequent sessions.
-     * @private
-     */
-    async _initLocalUser() {
-        var localUser = localStorage.getItem('frametrail_local_user');
-        if (localUser) {
-            this._userInfo = JSON.parse(localUser);
-        } else {
-            var name = prompt('Enter your name for annotations:', 'Local User');
-            this._userInfo = {
-                id: 'local-' + Date.now(),
-                name: name || 'Local User',
-                role: 'admin',
-                mail: '',
-                registrationDate: Date.now(),
-                color: '#FF9800'
-            };
-            localStorage.setItem('frametrail_local_user', JSON.stringify(this._userInfo));
-        }
-
-        await this._ensureUserInUsersFile();
-    }
-
-    /**
-     * Ensure the local user exists in the local users.json file.
-     * @private
-     */
-    async _ensureUserInUsersFile() {
-        var users;
-        try {
-            users = await this.readJSON('users.json');
-        } catch (e) {
-            users = { 'user-increment': 0, 'user': {} };
-        }
-
-        if (!users.user[this._userInfo.id]) {
-            users.user[this._userInfo.id] = this._userInfo;
-            await this.writeJSON('users.json', users);
-        }
     }
 
     async readJSON(path) {

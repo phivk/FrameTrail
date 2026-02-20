@@ -25,6 +25,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 		userColorCollection		= [],
 		userSessionLifetime		= 0,
 		userSessionTimeout		= null,
+		isGuestMode				= false,
 
 		userBoxCallback 		= null,
 		userBoxCallbackCancel 	= null,
@@ -101,8 +102,10 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 					+   '    <div class="loginBox ui-overlay-box">'
 					+   '        <div class="boxTitle">'
 					+   '            <span class="loginTabButton loginBoxTabButton">'+ labels['UserLogin'] +'</span>'
-					+   '            <span style="color: #888; font-size: 17px;">'+ labels['UserDividerOr'] +'</span>'
+					+   '            <span class="loginBoxOrDivider" style="color: #888; font-size: 17px;">'+ labels['UserDividerOr'] +'</span>'
 					+   '            <span class="createAccountTabButton loginBoxTabButton inactive">'+ labels['UserCreateAccount'] +'</span>'
+					+   '            <span class="loginBoxOrDivider" style="color: #888; font-size: 17px;">'+ labels['UserDividerOr'] +'</span>'
+					+   '            <span class="editAsGuestTabButton loginBoxTabButton inactive">'+ labels['UserEditAsGuest'] +'</span>'
 					+   '        </div>'
 					+	'        <div class="userTabLogin">'
 					+	'             <form class="loginForm" method="post">'
@@ -124,6 +127,12 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 					+	'             	<input type="submit" value="'+ labels['UserCreateAccount'] +'">'
 					+	'             	<button type="button" class="loginBoxCancelButton">'+ labels['GenericCancel'] +'</button>'
 					+	'             </form>'
+					+	'        </div>'
+					+	'        <div class="userTabGuest">'
+					+	'             <div class="guestEditHint">'+ labels['UserGuestEditNote'] +'</div>'
+					+	'             <input type="text" class="guestNameInput" placeholder="'+ labels['UserGuestName'] +'">'
+					+	'             <button type="button" class="guestContinueButton">'+ labels['UserEditAsGuest'] +'</button>'
+					+	'             <button type="button" class="loginBoxCancelButton">'+ labels['GenericCancel'] +'</button>'
 					+	'        </div>'
 	                +   '    </div>'
 					+	'</div>');
@@ -365,6 +374,19 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 
 	/* Login Box */
 
+    loginBox.find('.guestContinueButton').click(function() {
+    	var name = loginBox.find('.guestNameInput').val().trim();
+    	if (!name) {
+    		loginBox.find('.guestNameInput').focus();
+    		return;
+    	}
+    	loginAsGuest(name);
+    });
+
+    loginBox.find('.guestNameInput').on('keypress', function(e) {
+    	if (e.which === 13) { loginBox.find('.guestContinueButton').click(); }
+    });
+
     loginBox.find('.loginBoxCancelButton').click(function() {
     	if(typeof userBoxCallbackCancel === 'function'){
 			userBoxCallbackCancel.call();
@@ -379,14 +401,27 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
     	if ( $(this).hasClass('loginTabButton') ) {
 
     		loginBox.find('.createAccountTabButton').addClass('inactive');
+    		loginBox.find('.editAsGuestTabButton').addClass('inactive');
     		loginBox.find('.userTabRegister').hide();
+    		loginBox.find('.userTabGuest').hide();
     		loginBox.find('.userTabLogin').show();
+
+    	} else if ( $(this).hasClass('createAccountTabButton') ) {
+
+    		loginBox.find('.loginTabButton').addClass('inactive');
+    		loginBox.find('.editAsGuestTabButton').addClass('inactive');
+    		loginBox.find('.userTabLogin').hide();
+    		loginBox.find('.userTabGuest').hide();
+    		loginBox.find('.userTabRegister').show();
 
     	} else {
 
+    		// editAsGuestTabButton
     		loginBox.find('.loginTabButton').addClass('inactive');
+    		loginBox.find('.createAccountTabButton').addClass('inactive');
     		loginBox.find('.userTabLogin').hide();
-    		loginBox.find('.userTabRegister').show();
+    		loginBox.find('.userTabRegister').hide();
+    		loginBox.find('.userTabGuest').show();
 
     	}
 
@@ -498,72 +533,21 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 	 */
 	function ensureAuthenticated(callback, callbackCancel, disallowCancel){
 
-		var storageMode = FrameTrail.getState('storageMode');
-
-		if (storageMode === 'local') {
-			// Local mode — if we have user info, we're authenticated
-			var localUser = FrameTrail.module('StorageManager').getCurrentUserInfo();
-			if (localUser) {
-				// Ensure isLoggedIn state is set
-				isLoggedIn(function(loginStatus) {
-					callback.call();
-				});
-			} else {
-				// Need to pick a folder and init local user
-				FrameTrail.module('StorageManager').switchToLocal().then(function() {
-					isLoggedIn(function(loginStatus) {
-						callback.call();
-					});
-				}).catch(function(err) {
-					console.warn('Local storage init cancelled or failed:', err);
-					if (callbackCancel) callbackCancel.call();
-				});
-			}
-			return;
-		}
-
-		if (storageMode === 'download') {
-			// Download mode — lazily init user identity (localStorage or prompt)
-			var downloadUser = FrameTrail.module('StorageManager').getCurrentUserInfo();
-			if (downloadUser && downloadUser.id) {
-				isLoggedIn(function(loginStatus) {
-					callback.call();
-				});
-			} else {
-				FrameTrail.module('StorageManager').ensureDownloadUser().then(function() {
-					isLoggedIn(function(loginStatus) {
-						callback.call();
-					});
-				}).catch(function(err) {
-					console.warn('Download user init failed:', err);
-					if (callbackCancel) callbackCancel.call();
-				});
-			}
-			return;
-		}
-
 		isLoggedIn(function(loginStatus) {
 
-			if (loginStatus){
+			if (loginStatus) {
 
-				callback.call()
+				callback.call();
 
 			} else {
 
 				userBoxCallback = callback;
 				userBoxCallbackCancel = callbackCancel;
-
-				if (disallowCancel) {
-					showLoginBox(true);
-				} else {
-					showLoginBox();
-				}
-
+				showLoginBox(disallowCancel);
 
 			}
 
 		});
-
 
 	}
 
@@ -578,32 +562,20 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 
 		var storageMode = FrameTrail.getState('storageMode');
 
+		// Guest mode is set explicitly via loginAsGuest() — session-only, cleared on reload.
+		// Works for local, download, AND server mode (when editing as guest on a server instance).
+		if (isGuestMode) {
+			window.setTimeout(function() {
+				callback.call(window, true);
+			}, 2);
+			return;
+		}
+
+		// In local/download mode without guest mode active, user is not yet identified.
 		if (storageMode === 'local' || storageMode === 'download') {
-			// Local / download mode — use user info from the active storage adapter
-			var localUser = FrameTrail.module('StorageManager').getCurrentUserInfo();
-			if (localUser && localUser.id) {
-				userID = localUser.id;
-				userRole = localUser.role || 'admin';
-				userMail = localUser.mail || '';
-				userRegistrationDate = localUser.registrationDate;
-				FrameTrail.changeState('username', localUser.name);
-				FrameTrail.changeState('userColor', localUser.color || '#FF9800');
-				FrameTrail.changeState('loggedIn', true);
-				$(FrameTrail.getState('target')).addClass('loggedIn');
-				window.setTimeout(function() {
-					callback.call(window, true);
-				}, 2);
-			} else {
-				window.setTimeout(function() {
-					FrameTrail.changeState({
-						editMode: false,
-						loggedIn: false,
-						username: '',
-						userColor: ''
-					});
-					callback.call(window, false);
-				}, 2);
-			}
+			window.setTimeout(function() {
+				callback.call(window, false);
+			}, 2);
 			return;
 		}
 
@@ -706,11 +678,71 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 
 
 	/**
+	 * I log in as a guest (name only, no server session).
+	 * Sets isGuestMode and stores the name in localStorage for pre-fill convenience.
+	 *
+	 * @method loginAsGuest
+	 * @param {String} name
+	 * @private
+	 */
+	function loginAsGuest(name) {
+
+		isGuestMode = true;
+		userID   = 'guest_' + Date.now();
+		userRole = 'admin';
+		userMail = '';
+		userRegistrationDate = '';
+
+		localStorage.setItem('frametrail_guest_user', JSON.stringify({ name: name }));
+
+		FrameTrail.changeState('username', name);
+		FrameTrail.changeState('userColor', '#666666');
+		FrameTrail.changeState('loggedIn', true);
+
+		$(FrameTrail.getState('target')).addClass('loggedIn');
+
+		// Push user info into the active adapter so adapter.userInfo-dependent code works
+		var _adapter = FrameTrail.module('StorageManager').getAdapter();
+		if (_adapter && _adapter.setUserInfo) {
+			_adapter.setUserInfo({ id: userID, name: name, role: 'admin', color: '#666666', mail: '' });
+		}
+
+		updateView(true);
+
+		var _callback = userBoxCallback;
+		closeLoginBox();
+
+		if (typeof _callback === 'function') {
+			_callback.call();
+		}
+
+	}
+
+
+	/**
 	 * I am called to close the login session and update my local and global state.
 	 *
 	 * @method logout
 	 */
 	function logout() {
+
+		// Guest / local / download logout: clear in-memory state, no server call needed.
+		if (isGuestMode || FrameTrail.getState('storageMode') !== 'server') {
+			isGuestMode = false;
+			userID = '';
+			userRole = '';
+			userMail = '';
+			userRegistrationDate = '';
+			FrameTrail.changeState({
+				editMode: false,
+				loggedIn: false,
+				username: '',
+				userColor: ''
+			});
+			$(FrameTrail.getState('target')).removeClass('loggedIn');
+			updateView(false);
+			return;
+		}
 
 		$.ajax({
 			method: 	"POST",
@@ -862,6 +894,32 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 		loginBox.find('.loginForm').resetForm();
 		loginBox.find('.userRegistrationForm').resetForm();
 
+		// Pre-fill guest name from localStorage if available
+		var savedGuest = localStorage.getItem('frametrail_guest_user');
+		if (savedGuest) {
+			try {
+				var guestData = JSON.parse(savedGuest);
+				if (guestData && guestData.name) {
+					loginBox.find('.guestNameInput').val(guestData.name);
+				}
+			} catch(e) {}
+		}
+
+		// In non-server mode, show only the Edit as Guest tab
+		var storageMode = FrameTrail.getState('storageMode');
+		if (storageMode !== 'server') {
+			loginBox.find('.loginTabButton').hide();
+			loginBox.find('.createAccountTabButton').hide();
+			loginBox.find('.loginBoxOrDivider').hide();
+			loginBox.find('.editAsGuestTabButton').click();
+		} else {
+			loginBox.find('.loginTabButton').show();
+			loginBox.find('.createAccountTabButton').show();
+			loginBox.find('.loginBoxOrDivider').show();
+			// Reset to login tab when showing in server mode
+			loginBox.find('.loginTabButton').click();
+		}
+
 		loginBox.fadeIn();
 
 	}
@@ -974,6 +1032,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 		isLoggedIn: 			isLoggedIn,
 		ensureAuthenticated: 	ensureAuthenticated,
 		logout: 				logout,
+		isGuestMode: 			function() { return isGuestMode; },
 
 		/**
 		 * The current userID or an empty String.

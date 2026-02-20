@@ -12,8 +12,21 @@
 	cursor: pointer;
 }
 
-.userLoginOverlay .userTabRegister {
+.userLoginOverlay .userTabRegister,
+.userLoginOverlay .userTabGuest {
 	display: none;
+}
+
+.userLoginOverlay .guestEditHint {
+	height: auto;
+	line-height: 20px;
+	background-color: #FCFAF1;
+	border: 1px solid #FFC414;
+	color: #333;
+	padding: 1px 4px;
+	margin-bottom: 10px;
+	clear: both;
+	border-radius: 3px;
 }
 
 .userLoginOverlay input[type="text"], .userLoginOverlay input[type="password"], .userLoginOverlay textarea {
