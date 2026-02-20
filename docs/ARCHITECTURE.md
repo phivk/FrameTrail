@@ -259,7 +259,7 @@ FrameTrail.changeState('editMode', true);
 | `target` | String | CSS selector for mount point |
 | `editMode` | Boolean/String | `false`, `'overlays'`, `'annotations'`, etc. |
 | `viewMode` | String | `'video'`, `'overview'`, `'resources'` |
-| `storageMode` | String | `'server'`, `'local'`, `'needsFolder'`, `'noStorage'` |
+| `storageMode` | String | `'server'`, `'local'`, `'needsFolder'`, `'download'` |
 | `loggedIn` | Boolean | User authentication status |
 | `username` | String | Current user's name |
 | `fullscreen` | Boolean | Fullscreen state |
@@ -293,21 +293,24 @@ FrameTrail uses a strategy pattern for data persistence. The `StorageManager` mo
 
 | Adapter | Class | When Used |
 |---------|-------|-----------|
-| Server | `StorageAdapterServer` | Running on Apache+PHP (`document.location.host` exists) |
-| Local | `StorageAdapterLocal` | File System Access API available (Chrome/Edge, file://) |
-| Download | `StorageAdapterDownload` | Fallback — enables Save As/export |
+| Server | `StorageAdapterServer` | HTTP/HTTPS with PHP backend responding at `_server/ajaxServer.php` |
+| Local | `StorageAdapterLocal` | File System Access API available (Chrome/Edge) and folder selected |
+| Download | `StorageAdapterDownload` | Supplemental — provides Save As/export in either mode |
 
 All adapters implement the same interface, so the rest of the application doesn't need to know which storage backend is active.
 
 ### Storage Mode Detection
 
-The `PlayerLauncher` (or `ResourceManagerLauncher`) detects the environment:
+`StorageManager.init()` determines the storage mode at startup:
 
-1. If `document.location.host` is set → `'server'` mode (PHP backend available)
-2. If File System Access API is supported → `'needsFolder'` (prompt user to select `_data` folder)
-3. Otherwise → `'noStorage'` (read-only fallback)
+1. If on HTTP/HTTPS **and** PHP backend responds at `_server/ajaxServer.php` → `'server'`
+2. If on HTTP/HTTPS **but** PHP is unreachable, or on `file://` protocol:
+   - If File System Access API is supported (Chrome/Edge) → try to restore a previously saved folder handle
+     - Handle restored → `'local'`
+     - No handle saved → `'needsFolder'` (folder picker dialog is shown)
+   - File System Access API not supported (Firefox/Safari) → `'download'`
 
-Once a folder is selected in `'needsFolder'` mode, the state transitions to `'local'`.
+In `'download'` mode the `StorageAdapterDownload` is used: data is stored in memory, and users can export their work as JSON via the Save As dialog. Viewing and editing both work. Once a folder is selected in `'needsFolder'` mode, the state transitions to `'local'`.
 
 ## Data Model
 

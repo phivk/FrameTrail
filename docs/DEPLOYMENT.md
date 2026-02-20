@@ -58,21 +58,11 @@ The `StorageAdapterLocal` class uses the File System Access API (`showDirectoryP
 - No PHP-based file processing (image optimization, video transcoding)
 - Browser must support File System Access API (Chrome/Edge only)
 
-### Option 3: Read-Only Viewing
+### Save As / Export
 
-View existing hypervideos without any editing capability.
+The `StorageAdapterDownload` is used as the fallback storage backend when no PHP server and no local folder are available (`storageMode: 'download'`). It stores all data in memory and exposes a Save As dialog that downloads a JSON snapshot of the current state.
 
-**Steps:**
-
-1. Open `index.html` in any modern browser
-2. If a `_data` folder with hypervideo data exists alongside the HTML files, FrameTrail loads it for viewing
-3. No editing, no saving — purely a viewer
-
-**Note:** Firefox supports loading local files via AJAX when opening `index.html` from the filesystem. Chrome blocks this by default.
-
-### Option 4: Save As / Download Mode
-
-When neither a server nor the File System Access API is available, FrameTrail falls back to the `StorageAdapterDownload`. Users can still create and edit hypervideos, then export the data as downloadable files via the browser's download mechanism. This is useful for one-off editing or as a fallback on unsupported browsers.
+In server and local modes, Save As is also available as a supplemental export tool — useful for archiving or migrating content between instances.
 
 ## Embedding FrameTrail
 
@@ -105,12 +95,15 @@ $(document).ready(function() {
 </script>
 ```
 
-### With Inline Data (No Server)
+### With Inline Data
+
+When running in server mode, you can pass all hypervideo and resource data directly via init options, bypassing the `_data/` directory entirely. This is useful for embedding a specific hypervideo on a page without managing the data folder.
 
 ```javascript
 FrameTrail.init({
     target: '#container',
     startID: '0',
+    config: { theme: 'dark' },
     contents: [{
         hypervideo: {
             meta: { name: 'My Video', creator: 'Anonymous', creatorId: 'anon',
@@ -121,13 +114,20 @@ FrameTrail.init({
             subtitles: {},
             globalEvents: {},
             customCSS: ''
-        }
+        },
+        annotations: []
     }],
-    resources: {
-        'my-video': { name: 'Main Video', type: 'youtube', src: 'dQw4w9WgXcQ' }
-    }
+    resources: [{
+        label: 'Inline resources',
+        type: 'frametrail',
+        data: {
+            'my-video': { name: 'Main Video', type: 'youtube', src: 'dQw4w9WgXcQ' }
+        }
+    }]
 }, 'PlayerLauncher');
 ```
+
+**Note:** When no PHP server and no local folder are available, FrameTrail falls back to `storageMode: 'download'` — the `StorageAdapterDownload` holds data in memory. Inline data init options work fully in this mode: viewing and editing are both functional, and changes can be exported via the Save As dialog. Nothing persists past a page reload unless exported.
 
 See [docs/ARCHITECTURE.md](ARCHITECTURE.md) for the full initialization options reference.
 

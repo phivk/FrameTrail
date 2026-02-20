@@ -12,11 +12,10 @@ FrameTrail is an open-source platform for building non-linear, interactive video
 
 ## Features
 
-### Three Ways to Run
+### Two Ways to Run
 
 1. **Server mode** (Apache + PHP) — Full multi-user editing, file uploads, user management
 2. **Local folder mode** (Chrome/Edge) — Full editing without a server, using the File System Access API to read/write a local `_data` folder
-3. **Read-only mode** — Open `index.html` directly in any browser to view existing hypervideos
 
 ### Editing
 
@@ -52,8 +51,8 @@ FrameTrail supports a wide range of embeddable content:
 ### Browser Support
 
 - **Desktop:** Chrome, Firefox, Edge (latest versions)
-- **Local folder mode:** Chrome/Edge (requires File System Access API)
-- **Mobile:** Player works, editing disabled
+- **Local folder mode:** Chrome/Edge only (requires File System Access API)
+- **Mobile:** Player works in server mode; editing is disabled
 
 ---
 
@@ -74,11 +73,6 @@ FrameTrail supports a wide range of embeddable content:
 2. Open `index.html` in Chrome or Edge
 3. When prompted, select or create a `_data` folder on your computer
 4. Full editing — all changes saved directly to your local files
-
-### Option 3: Read-Only Viewing
-
-1. Open `index.html` in any modern browser
-2. If a `_data` folder with hypervideo data exists alongside the HTML files, it will be loaded for viewing
 
 ---
 

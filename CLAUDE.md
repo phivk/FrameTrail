@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 FrameTrail is an open hypervideo environment for creating, annotating, and remixing interactive videos. It's a client-side JavaScript application with an optional PHP backend that uses **JSON files instead of a database** for all data storage. The entire system is portable — copy the `_data` directory between servers and everything works.
 
-FrameTrail can run in three modes: with a PHP server (full multi-user), with the File System Access API for local editing (no server needed), or as a read-only viewer.
+FrameTrail can run in three modes: with a PHP server (full multi-user), with the File System Access API for local editing in Chrome/Edge (no server needed), or in-memory using the Download adapter (view + edit + export, no persistence — works everywhere but requires data to be passed via init options).
 
 ## Repository Structure
 
@@ -136,7 +136,7 @@ Note: Some libraries have custom/patched versions (raphael-connections.js, rapha
 - `'server'` — PHP backend available, data loaded/saved via AJAX to `src/_server/ajaxServer.php`
 - `'local'` — File System Access API active, data read/written via `StorageAdapterLocal` to a user-selected folder
 - `'needsFolder'` — File System Access API supported but no folder selected yet; launcher prompts user to pick a `_data` directory
-- `'noStorage'` — No storage backend available (Firefox/Safari on `file://`); app cannot load or save data
+- `'download'` — No persistent storage available (Firefox/Safari, or any browser without File System Access API and no PHP); `StorageAdapterDownload` is used, which stores data in memory and lets users export/download it. Viewing and editing work; saves persist only until page reload.
 
 ### Application Modes
 
