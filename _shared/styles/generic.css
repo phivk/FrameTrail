@@ -474,6 +474,7 @@ input:checked + .slider:before {
 
 .themeItem.active, .themeItem:hover {
     outline: 4px solid #F90;
+    border: 2px solid #fff;
 }
 
 .themeItem .themeColorContainer {

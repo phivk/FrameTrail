@@ -386,8 +386,8 @@
 
 .layoutManager .layoutArea .contentViewPreview .contentViewOptions {
 	position: absolute;
-	top: 10px;
-	right: 10px;
+	top: 8px;
+	right: 8px;
 	opacity: 0;
 	pointer-events: none;
 	transition-property: all;
@@ -397,7 +397,7 @@
 
 .layoutManager .layoutArea[data-area="areaRight"] .contentViewPreview .contentViewOptions {
 	top: auto;
-	bottom: 10px;
+	bottom: 8px;
 }
 
 .layoutManager .layoutArea .contentViewPreview:hover .contentViewOptions {
@@ -483,6 +483,7 @@
 	height: 100%;
 	overflow: hidden;
 	pointer-events: none;
+	padding: 8px;
 }
 
 /* TimedContent - Horizontal Cards (top/bottom) */
@@ -492,7 +493,7 @@
 	box-sizing: border-box;
 	background: var(--primary-fg-color);
 	border: 1px solid rgba(127,127,127,0.25);
-	margin-right: 3px;
+	margin-right: 7px;
 	opacity: 0.5;
 	overflow: hidden;
 }
@@ -542,7 +543,7 @@
 }
 
 .layoutManager .contentViewPreview .schematicCard[data-size="medium"] {
-	width: 56px;
+	width: 100px;
 	height: calc(100% - 4px);
 	margin-top: 2px;
 }
@@ -552,7 +553,7 @@
 }
 
 .layoutManager .contentViewPreview .schematicCard[data-size="large"] {
-	width: 90px;
+	width: 230px;
 	height: calc(100% - 8px);
 	margin-top: 4px;
 }
@@ -566,23 +567,23 @@
 .layoutManager .contentViewPreview .schematicCard.vertical {
 	float: none;
 	width: calc(100% - 4px);
-	margin: 0 2px 3px 2px;
+	margin: 0 2px 7px 2px;
 	display: flex;
 	flex-direction: row;
 }
 
 .layoutManager .contentViewPreview .schematicCard.vertical[data-size="small"] {
-	height: 18px;
+	height: 30px;
 }
 
 .layoutManager .contentViewPreview .schematicCard.vertical[data-size="small"] .schematicThumb {
-	width: 24px;
-	min-width: 24px;
+	width: 30px;
+	min-width: 30px;
 	height: 100%;
 }
 
 .layoutManager .contentViewPreview .schematicCard.vertical[data-size="medium"] {
-	height: 36px;
+	height: 70px;
 }
 
 .layoutManager .contentViewPreview .schematicCard.vertical[data-size="medium"] .schematicThumb {
