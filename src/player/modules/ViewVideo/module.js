@@ -894,8 +894,6 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         InfoAreaRight.find('.infoAreaRightTab[data-tab="properties"]').css('visibility', 'hidden');
         switchInfoTab('add');
 
-        Controls.find('.rightControlPanel').hide();
-
         // Initialize timeline controls (shared across all edit modes)
         FrameTrail.module('TimelineController').initEditTimelines();
 
