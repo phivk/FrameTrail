@@ -411,7 +411,7 @@ cat > "$BUILD_DIR/resources.html" << 'RESOURCES_HTML'
 RESOURCES_HTML
 
 # Copy setup.html from source, replacing dev CSS links with the minified bundle
-sed '/<!-- BUILD:CSS -->/,/<!-- \/BUILD:CSS -->/c\    <link rel="stylesheet" href="frametrail.min.css">' \
+awk '/<!-- BUILD:CSS -->/{print "    <link rel=\"stylesheet\" href=\"frametrail.min.css\">"; skip=1; next} /<!-- \/BUILD:CSS -->/{skip=0; next} !skip{print}' \
     "$SRC_DIR/setup.html" > "$BUILD_DIR/setup.html"
 
 # ──────────────────────────────────────────────
@@ -431,8 +431,8 @@ cp -r "$SRC_DIR/_server" "$BUILD_DIR/_server"
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cp "$REPO_ROOT/LICENSE.md" "$BUILD_DIR/"
 
-cat > "$BUILD_DIR/README.md" << README
-# FrameTrail ${VERSION}
+cat > "$BUILD_DIR/README.md" << 'README'
+# FrameTrail __VERSION__
 
 ## Installation
 
@@ -457,6 +457,8 @@ https://github.com/OpenHypervideo/FrameTrail
 FrameTrail is dual licensed under MIT and GPL v3.
 See LICENSE.md for details.
 README
+sed -i.bak "s/__VERSION__/${VERSION}/" "$BUILD_DIR/README.md"
+rm -f "$BUILD_DIR/README.md.bak"
 
 # ──────────────────────────────────────────────
 #  Summary
