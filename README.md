@@ -6,7 +6,7 @@ Create, annotate, and remix interactive videos on the web.
 
 FrameTrail is an open-source platform for building non-linear, interactive video experiences. Add overlays, annotations, video links, and code snippets to any video — or create time-based presentations without video at all. All data is stored as portable JSON files with no database required.
 
-**No server required for viewing or editing.** FrameTrail runs entirely in the browser using the [File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API) for local file editing, or with an Apache+PHP backend for multi-user collaboration. It also works in any browser — including Firefox and Safari — via an in-memory mode where edits can be exported as JSON.
+FrameTrail works in three modes with different capabilities. A PHP backend provides the full feature set: multi-user accounts, collaborative editing, file uploads, and optional media processing. In Chrome/Edge, the [File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API) enables single-user local editing with file uploads, but without transcoding or user management. In any browser — including Firefox and Safari — an in-memory mode lets you view and edit contents and export changes as JSON.
 
 ---
 
@@ -14,9 +14,9 @@ FrameTrail is an open-source platform for building non-linear, interactive video
 
 ### Three Ways to Run
 
-1. **Server mode** (Apache + PHP) — Full multi-user editing, file uploads, user management
-2. **Local folder mode** (Chrome/Edge) — Full editing without a server, using the File System Access API to read/write a local `_data` folder
-3. **In-memory mode** (all browsers) — Pass hypervideo data via init options; view and edit in-browser; export changes as JSON via Save As. Nothing persists past a page reload unless exported. Works in Firefox, Safari, and everywhere else.
+1. **Server mode** (Apache + PHP) — Multi-user accounts, collaborative editing, file uploads, optional media transcoding and thumbnail generation
+2. **Local folder mode** (Chrome/Edge) — Single-user editing saved directly to a local `_data` folder via the File System Access API; file uploads supported, no transcoding or user management
+3. **In-memory mode** (all browsers) — View and edit in-browser; export changes as JSON via Save As; no file uploads; requires content to be passed via init options. Works in Firefox, Safari, and everywhere else.
 
 ### Editing
 

@@ -43,7 +43,7 @@ Then open `http://localhost:8080`. No Apache, no XAMPP needed if PHP is installe
 
 ### Option 2: Local Folder Mode (No Server)
 
-Full editing without a server. Uses the [File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API) to read and write files directly on disk.
+Single-user editing without a server. Uses the [File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API) to read and write files directly on disk. File uploads (images, video, audio) are supported, but server-side capabilities like media transcoding, thumbnail generation, and user management are not available.
 
 **Requirements:**
 - Chrome or Edge (the File System Access API is not supported in Firefox or Safari)
@@ -54,7 +54,7 @@ Full editing without a server. Uses the [File System Access API](https://develop
 2. Open `index.html` directly in Chrome or Edge
 3. FrameTrail detects the local environment and prompts you to select a `_data` folder
 4. Select an existing `_data` folder or create a new empty folder
-5. Full editing is available — all changes are saved directly to the selected folder
+5. Editing is available — all changes are saved directly to the selected folder
 
 **How it works:**
 
@@ -62,7 +62,8 @@ The `StorageAdapterLocal` class uses the File System Access API (`showDirectoryP
 
 **Limitations:**
 - Identity is name-only (a login dialog prompts for a display name before entering edit mode; no account or password required)
-- No PHP-based file processing (image optimization, video transcoding)
+- No media transcoding or thumbnail generation (no server-side processing)
+- No multi-user collaboration or shared resource library
 - Browser must support File System Access API (Chrome/Edge only)
 
 ### Option 3: In-Memory Mode (All Browsers)
