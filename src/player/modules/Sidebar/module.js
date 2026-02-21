@@ -1072,6 +1072,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                 var _isGuest = FrameTrail.module('UserManagement').isGuestMode();
                 NewHypervideoButton.show().prop('disabled', _isGuest);
                 ForkButton.prop('disabled', _isGuest);
+                DeleteButton.prop('disabled', _isGuest);
                 ExportButton.hide();
                 SaveButton.show().prop('disabled', !_canSave);
                 SaveAsButton.show();

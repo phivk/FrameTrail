@@ -76,7 +76,7 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
                 thumb = hypervideo.renderThumb();
 
 
-                if ( (admin || owner) && editMode ) {
+                if ( (admin || owner) && editMode && FrameTrail.module('StorageManager').canSave() ) {
 
                     var hypervideoOptions = $('<div class="hypervideoOptions"></div>');
                     var editButton = $('<button class="hypervideoEditButton" data-tooltip-bottom="'+ labels['SettingsHypervideoSettings'] +'"><span class="icon-pencil"></span></button>');

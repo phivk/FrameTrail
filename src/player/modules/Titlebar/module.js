@@ -174,9 +174,10 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
         var userID = FrameTrail.module('UserManagement').userID;
         var creatorId = FrameTrail.module('HypervideoModel').creatorId;
 
-        // Guest gets full admin-level editing (changes only exportable, not saved to server)
+        // Guests can edit hypervideo settings only if they can actually save (local mode);
+        // server+guest and download mode cannot persist hypervideo settings changes
         if (FrameTrail.module('UserManagement').isGuestMode()) {
-            return true;
+            return FrameTrail.module('StorageManager').canSave();
         }
 
         return userRole === 'admin' || String(creatorId) === String(userID);

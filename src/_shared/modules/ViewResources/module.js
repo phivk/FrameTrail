@@ -83,6 +83,11 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
         FrameTrail.module('ResourceManager').uploadResource(updateList);
     });
 
+    if (!FrameTrail.module('StorageManager').canSave()) {
+        ResourceUpload.prop('disabled', true);
+        ResourceDelete.prop('disabled', true);
+    }
+
     ResourceDelete.click(toggleDeleteMode);
 
     ResourceDeleteConfirm.hide();

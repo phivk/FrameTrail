@@ -2062,6 +2062,10 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 
 		});
 
+        if (!FrameTrail.module('StorageManager').canSave()) {
+            container.find('.addResourcesButton').prop('disabled', true);
+        }
+
 		for (var i in resourceDatabase) {
 
 			resourceThumb = FrameTrail.newObject(
