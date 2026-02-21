@@ -36,6 +36,7 @@ window.FrameTrail_L10n['de'] = {
 	"ErrorMissingSubtitleFile": "Untertitel-Datei nicht gefunden",
 	"ErrorNoAnnotationsIndexFile": "Annotations Index-Datei nicht gefunden",
 	"ErrorNoConfigFile": "Konfigurations-Datei nicht gefunden",
+	"ErrorBrowserFileProtocol": "Kein Zugriff auf den Datenordner. In Chrome oder Edge \u00f6ffnen f\u00fcr lokalen Ordnerzugriff, oder Seite mit PHP-Server aufrufen.",
 	"ErrorNoHypervideoIndexFile": "Hypervideo Index-Datei nicht gefunden",
 	"ErrorNoHypervideoJSONFile": "hypervideo.json Datei nicht gefunden",
 	"ErrorNoResourcesIndexFile": "Resources Index-Datei nicht gefunden",

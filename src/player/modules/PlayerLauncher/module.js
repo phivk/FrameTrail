@@ -76,6 +76,15 @@
             return;
         }
 
+        if (storageMode === 'download' && window.location.protocol === 'file:' && FrameTrail.getState('config') === null) {
+            // Browser opened the file directly but doesn't support the File System Access API
+            // (e.g. Firefox, Safari). There is no way to load persistent data in this context.
+            // Only applies when no inline config was provided — examples with inline data work fine.
+            FrameTrail.module('InterfaceModal').hideLoadingScreen();
+            FrameTrail.module('InterfaceModal').showErrorMessage(labels['ErrorBrowserFileProtocol']);
+            return;
+        }
+
         // Sync login state now that storageMode is known.
         // UserManagement.isLoggedIn() ran at module-init time before storageMode
         // was set, so loggedIn may be stale (false) for local/download modes.

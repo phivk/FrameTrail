@@ -36,6 +36,7 @@ window.FrameTrail_L10n['en-US'] = {
 	"ErrorMissingSubtitleFile": "Missing subtitle file",
 	"ErrorNoAnnotationsIndexFile": "No annotations index file",
 	"ErrorNoConfigFile": "No config file",
+	"ErrorBrowserFileProtocol": "No access to data folder. Open in Chrome or Edge for local folder access, or run page with PHP server.",
 	"ErrorNoHypervideoIndexFile": "No hypervideo index file",
 	"ErrorNoHypervideoJSONFile": "No hypervideo.json file",
 	"ErrorNoResourcesIndexFile": "No resources index file",
