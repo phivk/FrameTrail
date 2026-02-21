@@ -28,6 +28,11 @@ FrameTrail.defineModule('InterfaceModal', function(FrameTrail){
 	$(FrameTrail.getState('target')).append(loadingScreen);
    	$(FrameTrail.getState('target')).append(statusMessage);
 
+	// Show immediately so no app content is visible before the loading screen covers it.
+	// jQuery's fadeIn() is a no-op on an already-visible element, so showLoadingScreen()
+	// still works correctly for subsequent calls (after hideLoadingScreen() hides it).
+	loadingScreen.show().addClass('active');
+
 
 
 	/**
