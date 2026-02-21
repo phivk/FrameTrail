@@ -1,108 +1,1004 @@
 <!DOCTYPE html>
 <html lang="en">
-<head class="html5">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="Expires" content="-1">
+    <title>FrameTrail Setup</title>
+    <link rel="shortcut icon" href="favico.png">
+    <!-- BUILD:CSS -->
+    <link rel="stylesheet" href="_shared/styles/variables.css">
+    <link rel="stylesheet" href="_shared/styles/frametrail-webfont.css">
+    <link rel="stylesheet" href="_shared/styles/generic.css">
+    <!-- /BUILD:CSS -->
+    <style>
+        /* ============================================================
+           Setup Wizard — layout + structural styles only.
+           Buttons, inputs, and toggle switches use generic.css styles.
+           ============================================================ */
 
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<meta http-equiv="cache-control" content="no-cache">
-	<meta http-equiv="Expires" content="-1">
+        /* Override generic.css: allow scrolling and center wizard both axes */
+        .frametrail-body {
+            margin: 0;              /* kill browser default 8px body margin */
+            align-items: center;
+            justify-content: center;
+            height: auto;
+            min-height: 100vh;
+            overflow: visible;      /* let the window scroll, not the body element */
+            padding: 48px 16px 64px;
+            box-sizing: border-box;
+        }
 
-	<title>FrameTrail</title>
+        .setup-wizard {
+            width: 100%;
+            max-width: 650px;
+            background: var(--primary-fg-color);
+            color: var(--primary-bg-color);
+            padding: 15px 15px;
+            border-radius: 8px;
+        }
 
-	<link rel="stylesheet" type="text/css" href="_lib/html5reset/html5.reset.css">
-	<link rel="stylesheet" type="text/css" href="_lib/jquery.ui/jquery-ui.min.css">
+        /* --- Header --- */
+        .setup-header {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--secondary-bg-color);
+            padding-bottom: 16px;
+        }
 
-	<link rel="shortcut icon" href="favico.png">
+        .setup-logo {
+            width: 52px;
+            height: auto;
+            flex-shrink: 0;
+        }
 
-	<script type="text/javascript" src="_lib/jquery/jquery-3.1.1.min.js"></script>
-	<script type="text/javascript" src="_lib/jquery.ui/jquery-ui.min.js"></script>
-	<script type="text/javascript" src="_lib/jquery.form/jquery.form.min.js"></script>
+        .setup-wordmark {
+            font-size: 26px;
+            letter-spacing: 0.03em;
+        }
 
-	<!--
-            [if lt IE 9]>
-	<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-	<![endif]
-        -->
+        .setup-installation-title {
+            font-size: 20px;
+            margin-left: auto;
+            margin-right: 20px;
+        }
 
-	<link rel="stylesheet" type="text/css" href="_shared/styles/variables.css">
-	<link rel="stylesheet" type="text/css" href="_shared/styles/frametrail-webfont.css">
-	<link rel="stylesheet" type="text/css" href="_shared/styles/generic.css">
+        /* --- Step indicator --- */
+        .setup-steps {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
 
-	<script type="text/javascript">
+        .step-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 7px;
+            flex-shrink: 0;
+        }
 
-		$(document).ready( function() {
+        .step-bubble {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid var(--secondary-bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            color: var(--secondary-bg-color);
+            transition: border-color 0.3s ease, background 0.3s ease, color 0.3s ease;
+        }
 
-			var title = $('.boxTitle'),
-				message = $('#message'),
-				content = $('#content');
+        .step-label {
+            font-size: 11px;
+            color: var(--secondary-bg-color);
+            white-space: nowrap;
+            transition: color 0.3s ease;
+        }
 
-			//TODO
+        .step-item.active .step-bubble {
+            border-color: var(--primary-bg-color);
+            background: var(--primary-bg-color);
+            color: var(--primary-fg-color);
+        }
 
-			$("#initSetup").ajaxForm({
-				url: "_server/ajaxServer.php",
-				type: "POST",
-				data: {"a": "setupInit"},
-				dataType: "json",
-				success: function (ret) {
-					if (ret["code"] != 1) {
-						$("#returnFromSetup").show().append(ret["string"] + "<br>");
-					} else {
-						location.reload();
-					}
-				}
-			});
+        /* active label inherits --primary-bg-color from .setup-wizard */
 
-			if (!!document.location.host) {
+        .step-item.completed .step-bubble {
+            border-color: var(--primary-bg-color);
+            background: var(--primary-bg-color);
+            color: var(--primary-fg-color);
+            font-size: 16px;
+        }
 
-				$.ajax({
-					"type": "POST",
-					url: "_server/ajaxServer.php",
-					data: {"a":"setupCheck"},
-					dataType: "json",
-					success: function(ret) {
+        /* completed label inherits --primary-bg-color from .setup-wizard */
 
-						if (ret["code"] != "1") {
-							$("#setupForm").show();
-						} else {
-							var playerUrl = window.location.href.replace('setup.html', '');
-							window.location.replace(playerUrl);
-						}
+        .step-connector {
+            flex: 1;
+            height: 2px;
+            background: var(--secondary-bg-color);
+            margin: 0 6px 20px;
+            transition: background 0.4s ease;
+        }
 
-					}
-				})
+        .step-connector.filled {
+            background: var(--primary-bg-color);
+        }
 
+        /* --- Content panels --- */
+        .setup-content {
+            position: relative;
+        }
 
-			} else {
+        .step-panel {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
 
-				title.html('No Webserver').show();
-				message.addClass('error').html('This application needs to run on a webserver. You can also use a local server environment like <a href="https://www.apachefriends.org/index.html">XAMPP</a> (Windows, Linux, OS X) or <a href="https://www.mamp.info/">MAMP</a> (Windows, OS X).').show();
+        .step-panel.active {
+            display: block;
+            opacity: 1;
+        }
 
-			}
+        .step-panel h2 {
+            font-size: 20px;
+            font-weight: 400;
+            margin: 0 0 8px;
+        }
 
+        .step-subtitle {
+            color: var(--secondary-bg-color);
+            font-size: 14px;
+            margin: 0 0 28px;
+            line-height: 1.55;
+        }
 
-		});
+        /* --- Pre-flight checklist --- */
+        .preflight-list {
+            list-style: none;
+            margin: 0 0 20px;
+            padding: 0;
+        }
 
-	</script>
+        .preflight-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--secondary-bg-color);
+        }
 
+        .preflight-item:last-child {
+            border-bottom: none;
+        }
 
+        .preflight-icon {
+            width: 20px;
+            flex-shrink: 0;
+            text-align: center;
+            margin-top: 1px;
+            font-size: 15px;
+        }
+
+        .preflight-icon.pass { color: var(--primary-bg-color); }
+        .preflight-icon.fail { color: #e05c5c; }
+
+        .preflight-spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid var(--secondary-bg-color);
+            border-top-color: var(--primary-bg-color);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .preflight-details { flex: 1; }
+
+        .preflight-label {
+            font-size: 14px;
+        }
+
+        .preflight-detail {
+            font-size: 12px;
+            color: var(--secondary-bg-color);
+            margin-top: 3px;
+            line-height: 1.4;
+        }
+
+        .preflight-detail.fail {
+            color: #e05c5c;
+            font-family: monospace;
+            word-break: break-all;
+        }
+
+        #recheck-btn {
+            display: none;
+            margin-top: 12px;
+        }
+
+        /* --- No-server message --- */
+        .noserver-message {
+            display: none;
+            padding: 20px 24px;
+            background: var(--primary-bg-color);
+            border-radius: 6px;
+            color: var(--primary-fg-color);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .noserver-message h3 {
+            margin: 0 0 10px;
+            font-size: 16px;
+        }
+
+        .noserver-message a {
+            color: var(--highlight-color);
+        }
+
+        .noserver-message code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 7px;
+            border-radius: 3px;
+            font-size: 13px;
+            font-family: monospace;
+        }
+
+        /* --- Step 2: Form fields --- */
+        .setup-field {
+            margin-bottom: 22px;
+        }
+
+        .setup-field label {
+            display: block;
+            font-size: 11px;
+            color: var(--secondary-bg-color);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 7px;
+        }
+
+        .setup-field .input-wrap {
+            position: relative;
+        }
+
+        /* Override generic.css margin/box-model for full-width wizard inputs.
+           input[type="email"] is not in generic.css, so it also gets the base styles here. */
+        .setup-field input[type="text"],
+        .setup-field input[type="email"],
+        .setup-field input[type="password"] {
+            width: 100%;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 7px 10px;
+            background: var(--primary-fg-color);
+            color: var(--primary-bg-color);
+            border: 2px solid var(--semi-transparent-bg-color);
+        }
+
+        .setup-field input[type="email"]:focus {
+            border-color: var(--primary-bg-color);
+        }
+
+        .setup-field input.has-toggle {
+            padding-right: 52px;
+        }
+
+        .setup-field input.invalid {
+            border-color: #e05c5c;
+        }
+
+        .field-error {
+            font-size: 12px;
+            color: #e05c5c;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .field-error.visible {
+            display: block;
+        }
+
+        /* Password show/hide toggle — no visible box */
+        .setup-wizard .toggle-pw {
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 100%;
+            padding: 0 13px;
+            border: none;
+            background: none;
+            color: var(--secondary-bg-color);
+            cursor: pointer;
+            font-size: 12px;
+            font-family: inherit;
+            letter-spacing: 0.02em;
+        }
+
+        .setup-wizard .toggle-pw:hover {
+            background: none;
+            color: var(--primary-bg-color);
+        }
+
+        /* Password strength */
+        .strength-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 7px;
+        }
+
+        .strength-bar {
+            flex: 1;
+            height: 3px;
+            background: var(--secondary-bg-color);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .strength-fill {
+            height: 100%;
+            width: 0;
+            border-radius: 2px;
+            transition: width 0.25s ease, background 0.25s ease;
+        }
+
+        .strength-label {
+            font-size: 11px;
+            min-width: 52px;
+            text-align: right;
+            color: var(--secondary-bg-color);
+        }
+
+        /* Error banner */
+        .step-error {
+            background: rgba(224, 92, 92, 0.12);
+            border: 1px solid rgba(224, 92, 92, 0.4);
+            border-radius: 5px;
+            color: #e05c5c;
+            font-size: 13px;
+            padding: 10px 14px;
+            margin-bottom: 22px;
+            display: none;
+            line-height: 1.45;
+        }
+
+        .step-error.visible {
+            display: block;
+        }
+
+        /* --- Step 3: Toggle settings (uses generic.css .switch / .slider.round) --- */
+        .toggle-setting {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 28px;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--secondary-bg-color);
+        }
+
+        .toggle-setting:last-of-type {
+            border-bottom: none;
+        }
+
+        .toggle-text strong {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+
+        .toggle-text span {
+            font-size: 12px;
+            color: var(--secondary-bg-color);
+            line-height: 1.45;
+        }
+
+        /* --- Done panel --- */
+        .done-icon {
+            font-size: 80px;
+            color: #76C11F;
+            text-align: center;
+            margin-bottom: 18px;
+        }
+
+        /* --- Footer --- */
+        .setup-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 36px;
+            padding-top: 22px;
+            border-top: 1px solid var(--secondary-bg-color);
+        }
+
+        .footer-right {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* More padding than generic.css default (4px 6px) */
+        .setup-wizard button {
+            padding: 6px 18px;
+        }
+
+        /* Restore pointer-events (generic.css sets none on [disabled]) so cursor shows */
+        .setup-wizard button[disabled] {
+            pointer-events: auto;
+            cursor: not-allowed;
+        }
+
+        /* Prevent generic.css hover fill from applying on disabled buttons */
+        .setup-wizard button[disabled]:hover {
+            background-color: #a3a3a3;
+            color: var(--primary-bg-color);
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 600px) {
+            .frametrail-body { padding: 28px 14px 48px; }
+            .setup-header { margin-bottom: 32px; }
+            .step-label { display: none; }
+            /* Stack two-column form rows on narrow screens */
+            .setup-wizard .layoutRow { grid-template-columns: 1fr; }
+            .setup-wizard .layoutRow > .column-6 { grid-column: span 1; }
+        }
+    </style>
 </head>
 <body class="frametrail-body">
-<div class="ui-blocking-overlay">
-	<div class="ui-overlay-box">
-		<div class="boxTitle" style="display: none;"></div>
-		<div id="message" class="message"></div>
-		<div id="content">
-			  <div id="setupForm" style="display: none">
-				<form id="initSetup">
-					<input name="mail" placeholder="Admin Mail-Address (login name)" type="text">
-					<input name="name" placeholder="Admin Username" type="text">
-					<input name="passwd" placeholder="Admin Password" type="password">
-					<button type="submit" id="submitBtn">OK</button>
-					<div id="returnFromSetup" class="message error" style="margin-top: 10px;">
-					</div>
-				</form>
-			</div>
-		</div>
-	</div>
-</div>
+
+<div class="setup-wizard">
+
+    <!-- Header -->
+    <header class="setup-header">
+        <svg class="setup-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 268.47 210.02" aria-hidden="true">
+            <path fill="#a9a9b0" d="M24.79,91.28a75,75,0,1,0,75-75A75,75,0,0,0,24.79,91.28Z"/>
+            <polyline fill="#a9a9b0" points="0 90.63 41.72 138.81 41.77 44.01"/>
+            <circle fill="#37363c" cx="204.05" cy="177.21" r="32.8" transform="translate(-24.52 321.42) rotate(-73.22)"/>
+            <path fill="#f5bf00" d="M212.92,181.08a12.8,12.8,0,1,0-7.82,16.33A12.8,12.8,0,0,0,212.92,181.08Z"/>
+            <path fill="#f5bf00" d="M201,176.23c-5.5,7.54-60.16-36.83-88.31-64.35-27.09-11.7-31.45-13.89-9,12.32C182.14,170,192,188.55,192,188.55Z"/>
+            <circle fill="#37363c" cx="108.27" cy="91.67" r="52.69"/>
+            <circle fill="#f5bf00" cx="97.13" cy="107.27" r="17.43" transform="translate(-33.61 169.29) rotate(-73.22)"/>
+            <polyline fill="#37363c" points="250.01 177.69 226.72 153.6 226.68 201"/>
+            <path fill="#37363c" d="M203.69,11.45A37.71,37.71,0,1,0,257,10.65,37.71,37.71,0,0,0,203.69,11.45Z"/>
+            <polyline fill="#a9a9b0" points="248.28 37.69 220.57 56.27 220.57 19.61"/>
+            <path fill="#37363c" d="M194.55,40.93c-17,15.5-30.08,18.73-50.5,18.5-6.85,16.43-8.58,22,12.5,28C179.71,63.6,205,59.93,205,59.93S219.26,18.4,194.55,40.93Z"/>
+        </svg>
+        <span class="setup-wordmark">FrameTrail</span>
+        <div class="setup-installation-title">Installation</div>
+    </header>
+
+    <!-- Step indicator -->
+    <nav class="setup-steps" aria-label="Setup progress">
+        <div class="step-item active" data-step="1">
+            <div class="step-bubble">1</div>
+            <div class="step-label">Environment</div>
+        </div>
+        <div class="step-connector" id="connector-1-2"></div>
+        <div class="step-item" data-step="2">
+            <div class="step-bubble">2</div>
+            <div class="step-label">Admin Account</div>
+        </div>
+        <div class="step-connector" id="connector-2-3"></div>
+        <div class="step-item" data-step="3">
+            <div class="step-bubble">3</div>
+            <div class="step-label">Configuration</div>
+        </div>
+    </nav>
+
+    <!-- Step panels -->
+    <div class="setup-content">
+
+        <!-- Step 1: Environment -->
+        <div class="step-panel active" id="panel-1">
+            <h2>Welcome to FrameTrail</h2>
+            <p class="step-subtitle">Let&#8217;s check your server environment before getting started.</p>
+
+            <ul class="preflight-list" id="preflight-list">
+                <li class="preflight-item" id="check-php">
+                    <div class="preflight-icon"><span class="preflight-spinner"></span></div>
+                    <div class="preflight-details">
+                        <div class="preflight-label">PHP Version</div>
+                        <div class="preflight-detail">Checking&#8230;</div>
+                    </div>
+                </li>
+                <li class="preflight-item" id="check-root_writable">
+                    <div class="preflight-icon"><span class="preflight-spinner"></span></div>
+                    <div class="preflight-details">
+                        <div class="preflight-label">Root Directory</div>
+                        <div class="preflight-detail">Checking&#8230;</div>
+                    </div>
+                </li>
+                <li class="preflight-item" id="check-data_writable">
+                    <div class="preflight-icon"><span class="preflight-spinner"></span></div>
+                    <div class="preflight-details">
+                        <div class="preflight-label">Data Directory</div>
+                        <div class="preflight-detail">Checking&#8230;</div>
+                    </div>
+                </li>
+            </ul>
+
+            <button id="recheck-btn">Re-check</button>
+
+            <div class="noserver-message" id="noserver-message">
+                <h3>No web server detected</h3>
+                <p>FrameTrail needs PHP to run. In your FrameTrail folder, start PHP&#8217;s built-in server:</p>
+                <p><code>php -S localhost:8080</code></p>
+                <p>Then open <code>http://localhost:8080</code> in your browser.</p>
+                <p>No PHP installed? Use <a href="https://www.apachefriends.org/" target="_blank" rel="noopener">XAMPP</a> (Windows) or <a href="https://www.mamp.info/" target="_blank" rel="noopener">MAMP</a> (Mac / Windows).</p>
+                <p>Alternatively, open <code>index.html</code> directly in Chrome or Edge &#8212; FrameTrail works without any server in those browsers.</p>
+            </div>
+        </div>
+
+        <!-- Step 2: Admin account -->
+        <div class="step-panel" id="panel-2">
+            <h2>Create Admin Account</h2>
+            <p class="step-subtitle">This account will be the first administrator of your FrameTrail installation.</p>
+
+            <div class="step-error" id="step2-error"></div>
+
+            <div class="layoutRow">
+                <div class="column-6">
+                    <div class="setup-field">
+                        <label for="field-email">Email address</label>
+                        <input type="email" id="field-email" name="mail"
+                               placeholder="admin@example.com" autocomplete="email">
+                        <div class="field-error" id="error-email">Please enter a valid email address</div>
+                    </div>
+                </div>
+                <div class="column-6">
+                    <div class="setup-field">
+                        <label for="field-name">Display name</label>
+                        <input type="text" id="field-name" name="name"
+                               placeholder="Admin" autocomplete="name">
+                        <div class="field-error" id="error-name">Name must be at least 2 characters</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="layoutRow">
+                <div class="column-6">
+                    <div class="setup-field">
+                        <label for="field-password">Password</label>
+                        <div class="input-wrap">
+                            <input type="password" id="field-password" name="passwd"
+                                   placeholder="At least 6 characters" autocomplete="new-password"
+                                   class="has-toggle">
+                            <button type="button" class="toggle-pw" id="toggle-pw" aria-label="Show password">Show</button>
+                        </div>
+                        <div class="strength-row">
+                            <div class="strength-bar">
+                                <div class="strength-fill" id="strength-fill"></div>
+                            </div>
+                            <div class="strength-label" id="strength-label"></div>
+                        </div>
+                        <div class="field-error" id="error-password">Password must be at least 6 characters</div>
+                    </div>
+                </div>
+                <div class="column-6">
+                    <div class="setup-field">
+                        <label for="field-confirm">Confirm password</label>
+                        <input type="password" id="field-confirm" name="passwd_confirm"
+                               placeholder="Repeat your password" autocomplete="new-password">
+                        <div class="field-error" id="error-confirm">Passwords do not match</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Configuration -->
+        <div class="step-panel" id="panel-3">
+            <h2>Configure Your Installation</h2>
+            <p class="step-subtitle">Sensible defaults are already selected. Everything here can be changed later in the admin panel.</p>
+
+            <div class="toggle-setting">
+                <div class="toggle-text">
+                    <strong>Require approval for new accounts</strong>
+                    <span>New registrations must be approved by an admin before they can log in</span>
+                </div>
+                <label class="switch" title="Require admin approval">
+                    <input type="checkbox" id="cfg-confirmation" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+
+            <div class="toggle-setting">
+                <div class="toggle-text">
+                    <strong>Require login to view content</strong>
+                    <span>Visitors must be logged in to access any hypervideo</span>
+                </div>
+                <label class="switch" title="Require login">
+                    <input type="checkbox" id="cfg-forcelogin">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+
+            <div class="toggle-setting">
+                <div class="toggle-text">
+                    <strong>Allow file uploads</strong>
+                    <span>Users can upload images, audio, and video files</span>
+                </div>
+                <label class="switch" title="Allow uploads">
+                    <input type="checkbox" id="cfg-uploads" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Done -->
+        <div class="step-panel" id="panel-done">
+            <div class="done-icon icon-ok"></div>
+            <h2 style="text-align:center">You&#8217;re all set!</h2>
+            <p class="step-subtitle" style="text-align:center">Admin account created. Your FrameTrail installation is ready.</p>
+            <div style="text-align:center;margin-top:28px">
+                <button id="open-frametrail">Open FrameTrail</button>
+            </div>
+        </div>
+
+    </div><!-- /.setup-content -->
+
+    <!-- Footer -->
+    <footer class="setup-footer" id="setup-footer">
+        <button id="btn-back">Back</button>
+        <div class="footer-right">
+            <button id="btn-skip" style="display:none">Skip &amp; Finish</button>
+            <button id="btn-next" disabled>Continue</button>
+        </div>
+    </footer>
+
+</div><!-- /.setup-wizard -->
+
+<script>
+(function () {
+    'use strict';
+
+    var currentStep = 1;
+    var preflightOk = false;
+
+    var btnBack   = document.getElementById('btn-back');
+    var btnNext   = document.getElementById('btn-next');
+    var btnSkip   = document.getElementById('btn-skip');
+    var footer    = document.getElementById('setup-footer');
+
+    // ── Panel display ─────────────────────────────────────────────
+
+    function showPanel(id) {
+        // Instantly hide all outgoing panels — having two panels in flow at once
+        // causes a layout jump when the outgoing one eventually gets display:none.
+        document.querySelectorAll('.step-panel').forEach(function (p) {
+            p.classList.remove('active');
+            if (p.id !== id) {
+                p.style.display = 'none';
+            }
+        });
+
+        // Show the incoming panel at opacity:0, then add .active to fade it in.
+        // Double rAF ensures the browser paints opacity:0 before transitioning to 1.
+        var next = document.getElementById(id);
+        next.style.display = 'block';
+        requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+                next.classList.add('active');
+            });
+        });
+    }
+
+    // ── Step navigation ───────────────────────────────────────────
+
+    function goToStep(n) {
+        currentStep = n;
+
+        // Step indicator
+        var items = document.querySelectorAll('.step-item');
+        items.forEach(function (el) {
+            var s = parseInt(el.getAttribute('data-step'), 10);
+            var bubble = el.querySelector('.step-bubble');
+            el.classList.remove('active', 'completed');
+            if (n === 'done') {
+                el.classList.add('completed');
+                bubble.innerHTML = '<span class="icon-ok"></span>';
+            } else {
+                if (s < n) {
+                    el.classList.add('completed');
+                    bubble.innerHTML = '<span class="icon-ok"></span>';
+                } else if (s === n) {
+                    el.classList.add('active');
+                    bubble.textContent = s;
+                } else {
+                    bubble.textContent = s;
+                }
+            }
+        });
+
+        // Connectors
+        document.getElementById('connector-1-2').classList.toggle(
+            'filled', n === 'done' || n > 1
+        );
+        document.getElementById('connector-2-3').classList.toggle(
+            'filled', n === 'done' || n > 2
+        );
+
+        showPanel(n === 'done' ? 'panel-done' : 'panel-' + n);
+        updateFooter();
+    }
+
+    function updateFooter() {
+        if (currentStep === 'done') {
+            footer.style.display = 'none';
+            return;
+        }
+        footer.style.display = '';
+        btnBack.style.display  = (currentStep === 1) ? 'none' : '';
+        btnSkip.style.display  = (currentStep === 3) ? '' : 'none';
+        btnNext.textContent    = (currentStep === 3) ? 'Save \u0026 Finish' : 'Continue';
+        refreshNextButton();
+    }
+
+    function refreshNextButton() {
+        if (currentStep === 1) {
+            btnNext.disabled = !preflightOk;
+        } else if (currentStep === 2) {
+            btnNext.disabled = !isStep2Valid();
+        } else {
+            btnNext.disabled = false;
+        }
+    }
+
+    btnBack.addEventListener('click', function () {
+        if (typeof currentStep === 'number' && currentStep > 1) {
+            goToStep(currentStep - 1);
+        }
+    });
+
+    btnNext.addEventListener('click', function () {
+        if (currentStep === 1) {
+            goToStep(2);
+        } else if (currentStep === 2) {
+            if (validateStep2()) goToStep(3);
+        } else if (currentStep === 3) {
+            submitSetup(false);
+        }
+    });
+
+    btnSkip.addEventListener('click', function () {
+        submitSetup(true);
+    });
+
+    document.getElementById('open-frametrail').addEventListener('click', function () {
+        window.location.href = 'index.html';
+    });
+
+    // ── Pre-flight checks ─────────────────────────────────────────
+
+    function setCheckState(key, state, detail) {
+        var item   = document.getElementById('check-' + key);
+        if (!item) return;
+        var icon   = item.querySelector('.preflight-icon');
+        var detEl  = item.querySelector('.preflight-detail');
+
+        if (state === 'loading') {
+            icon.innerHTML  = '<span class="preflight-spinner"></span>';
+            icon.className  = 'preflight-icon';
+            detEl.textContent = 'Checking\u2026';
+            detEl.className = 'preflight-detail';
+        } else if (state === 'pass') {
+            icon.innerHTML  = '<span class="icon-ok-circled"></span>';
+            icon.className  = 'preflight-icon pass';
+            detEl.textContent = detail;
+            detEl.className = 'preflight-detail';
+        } else {
+            icon.innerHTML  = '<span class="icon-cancel"></span>';
+            icon.className  = 'preflight-icon fail';
+            detEl.textContent = detail;
+            detEl.className = 'preflight-detail fail';
+        }
+    }
+
+    function runPreflight() {
+        ['php', 'root_writable', 'data_writable'].forEach(function (k) {
+            setCheckState(k, 'loading');
+        });
+        document.getElementById('recheck-btn').style.display = 'none';
+        preflightOk = false;
+        btnNext.disabled = true;
+
+        fetch('_server/ajaxServer.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'a=setupCheckDetailed'
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.alreadySetup) {
+                window.location.replace(window.location.href.replace('setup.html', ''));
+                return;
+            }
+            var allPass = true;
+            Object.keys(data.checks).forEach(function (key) {
+                var c = data.checks[key];
+                setCheckState(key, c.pass ? 'pass' : 'fail', c.detail);
+                if (!c.pass) allPass = false;
+            });
+            preflightOk = allPass;
+            btnNext.disabled = !allPass;
+            if (!allPass) document.getElementById('recheck-btn').style.display = '';
+        })
+        .catch(function () {
+            ['php', 'root_writable', 'data_writable'].forEach(function (k) {
+                setCheckState(k, 'fail', 'Could not reach the server');
+            });
+            document.getElementById('recheck-btn').style.display = '';
+        });
+    }
+
+    document.getElementById('recheck-btn').addEventListener('click', runPreflight);
+
+    // ── Step 2 validation ──────────────────────────────────────────
+
+    function isEmailValid(v) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+    }
+
+    function isStep2Valid() {
+        var email   = document.getElementById('field-email').value;
+        var name    = document.getElementById('field-name').value;
+        var pw      = document.getElementById('field-password').value;
+        var confirm = document.getElementById('field-confirm').value;
+        return isEmailValid(email) && name.trim().length >= 2 &&
+               pw.length >= 6 && pw === confirm;
+    }
+
+    function setFieldValid(inputId, errorId, valid) {
+        document.getElementById(inputId).classList.toggle('invalid', !valid);
+        document.getElementById(errorId).classList.toggle('visible', !valid);
+        return valid;
+    }
+
+    function validateStep2() {
+        var email   = document.getElementById('field-email').value;
+        var name    = document.getElementById('field-name').value;
+        var pw      = document.getElementById('field-password').value;
+        var confirm = document.getElementById('field-confirm').value;
+        var ok = true;
+        ok = setFieldValid('field-email',    'error-email',    isEmailValid(email))          && ok;
+        ok = setFieldValid('field-name',     'error-name',     name.trim().length >= 2)      && ok;
+        ok = setFieldValid('field-password', 'error-password', pw.length >= 6)               && ok;
+        ok = setFieldValid('field-confirm',  'error-confirm',  pw === confirm && pw.length > 0) && ok;
+        return ok;
+    }
+
+    document.getElementById('field-email').addEventListener('blur', function () {
+        setFieldValid('field-email', 'error-email', isEmailValid(this.value));
+        refreshNextButton();
+    });
+
+    document.getElementById('field-name').addEventListener('blur', function () {
+        setFieldValid('field-name', 'error-name', this.value.trim().length >= 2);
+        refreshNextButton();
+    });
+
+    document.getElementById('field-password').addEventListener('input', function () {
+        updateStrength(this.value);
+        var confirm = document.getElementById('field-confirm').value;
+        if (confirm) setFieldValid('field-confirm', 'error-confirm', this.value === confirm && this.value.length > 0);
+        refreshNextButton();
+    });
+
+    document.getElementById('field-password').addEventListener('blur', function () {
+        setFieldValid('field-password', 'error-password', this.value.length >= 6);
+        refreshNextButton();
+    });
+
+    document.getElementById('field-confirm').addEventListener('blur', function () {
+        var pw = document.getElementById('field-password').value;
+        setFieldValid('field-confirm', 'error-confirm', this.value === pw && pw.length > 0);
+        refreshNextButton();
+    });
+
+    // Show / hide password
+    document.getElementById('toggle-pw').addEventListener('click', function () {
+        var inp = document.getElementById('field-password');
+        var show = inp.type === 'password';
+        inp.type = show ? 'text' : 'password';
+        this.textContent = show ? 'Hide' : 'Show';
+    });
+
+    // Strength indicator
+    function updateStrength(pw) {
+        var fill  = document.getElementById('strength-fill');
+        var label = document.getElementById('strength-label');
+        var len   = pw.length;
+        var pct, color, text;
+        if      (len === 0)  { pct = 0;   color = '';        text = ''; }
+        else if (len < 6)    { pct = 20;  color = '#e05c5c'; text = 'Too short'; }
+        else if (len < 8)    { pct = 40;  color = '#e05c5c'; text = 'Weak'; }
+        else if (len < 12)   { pct = 70;  color = '#f5bf00'; text = 'Medium'; }
+        else                 { pct = 100; color = '#6dbf7e'; text = 'Strong'; }
+        fill.style.width      = pct + '%';
+        fill.style.background = color;
+        label.textContent     = text;
+        label.style.color     = color || '';
+    }
+
+    // ── Setup submission ──────────────────────────────────────────
+
+    function submitSetup(skipConfig) {
+        btnNext.disabled = true;
+        btnSkip.disabled = true;
+
+        var params = new URLSearchParams();
+        params.set('a',      'setupInit');
+        params.set('mail',   document.getElementById('field-email').value.trim());
+        params.set('name',   document.getElementById('field-name').value.trim());
+        params.set('passwd', document.getElementById('field-password').value);
+
+        if (!skipConfig) {
+            params.set('userNeedsConfirmation',
+                document.getElementById('cfg-confirmation').checked ? 'true' : 'false');
+            params.set('alwaysForceLogin',
+                document.getElementById('cfg-forcelogin').checked ? 'true' : 'false');
+            params.set('allowUploads',
+                document.getElementById('cfg-uploads').checked ? 'true' : 'false');
+        }
+
+        fetch('_server/ajaxServer.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: params.toString()
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.code === 1) {
+                goToStep('done');
+            } else {
+                showError(data.string || 'An error occurred. Please try again.');
+                btnNext.disabled = false;
+                btnSkip.disabled = false;
+            }
+        })
+        .catch(function () {
+            showError('Could not reach the server. Please check your connection and try again.');
+            btnNext.disabled = false;
+            btnSkip.disabled = false;
+        });
+    }
+
+    function showError(msg) {
+        // Always surface errors on step 2 (where the form lives)
+        if (currentStep !== 2) goToStep(2);
+        var el = document.getElementById('step2-error');
+        el.textContent = msg;
+        el.classList.add('visible');
+    }
+
+    // ── Init ──────────────────────────────────────────────────────
+
+    updateFooter();
+
+    if (document.location.host) {
+        runPreflight();
+    } else {
+        document.getElementById('preflight-list').style.display   = 'none';
+        document.getElementById('noserver-message').style.display = 'block';
+        // Dim unavailable steps
+        document.querySelectorAll('[data-step="2"],[data-step="3"],.step-connector')
+            .forEach(function (el) {
+                el.style.opacity      = '0.3';
+                el.style.pointerEvents = 'none';
+            });
+    }
+
+}());
+</script>
+
 </body>
 </html>

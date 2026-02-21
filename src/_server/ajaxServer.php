@@ -196,10 +196,10 @@ switch($_REQUEST["a"]) {
 
 	case "setupCheck":
 
-		if ( version_compare(phpversion(), '5.4.4', '<') ) {
+		if ( version_compare(phpversion(), '7.4.0', '<') ) {
 			$return["status"] = "fail";
 			$return["code"] = 2;
-			$return["string"] = "Server does not meet the requirements. PHP version needs to be 5.4.4 or later (".phpversion()." is installed)";
+			$return["string"] = "Server does not meet the requirements. PHP version needs to be 7.4 or later (".phpversion()." is installed)";
 			echo json_encode($return);
 			exit;
 		}
@@ -259,6 +259,70 @@ switch($_REQUEST["a"]) {
 
 	break;
 
+	case "setupCheckDetailed":
+
+		// Only available before setup is complete
+		$alreadySetup = file_exists($conf["dir"]["data"]."/users.json")
+		             && file_exists($conf["dir"]["data"]."/config.json")
+		             && file_exists($conf["dir"]["data"]."/tagdefinitions.json");
+
+		if ($alreadySetup) {
+			$return["status"] = "success";
+			$return["alreadySetup"] = true;
+			$return["checks"] = array();
+			break;
+		}
+
+		$checks = array();
+
+		// PHP version
+		$phpOk = version_compare(phpversion(), '7.4.0', '>=');
+		$checks["php"] = array(
+			"pass"   => $phpOk,
+			"label"  => "PHP Version",
+			"detail" => $phpOk
+				? "PHP " . phpversion()
+				: "PHP " . phpversion() . " found — 7.4+ required"
+		);
+
+		// Root directory writable (needed to create _data/)
+		$rootWritable = file_exists($conf["dir"]["data"]) || is_writable("../");
+		$checks["root_writable"] = array(
+			"pass"   => $rootWritable,
+			"label"  => "Root Directory",
+			"detail" => $rootWritable
+				? "Writable"
+				: "Not writable. Run: chmod 755 " . realpath("../")
+		);
+
+		// Data directory writable (if it already exists)
+		if (file_exists($conf["dir"]["data"])) {
+			$dataWritable = is_writable($conf["dir"]["data"]);
+			$checks["data_writable"] = array(
+				"pass"   => $dataWritable,
+				"label"  => "Data Directory",
+				"detail" => $dataWritable
+					? "Writable"
+					: "Not writable. Run: chmod -R 775 " . realpath($conf["dir"]["data"])
+			);
+		} else {
+			$checks["data_writable"] = array(
+				"pass"   => true,
+				"label"  => "Data Directory",
+				"detail" => "Will be created during setup"
+			);
+		}
+
+		$allPass = true;
+		foreach ($checks as $c) {
+			if (!$c["pass"]) { $allPass = false; break; }
+		}
+
+		$return["status"]      = $allPass ? "success" : "fail";
+		$return["checks"]      = $checks;
+		$return["alreadySetup"] = false;
+		break;
+
 	case "setupInit":
 		$errorCnt = 0;
 		if (!file_exists($conf["dir"]["data"]) && !is_dir($conf["dir"]["data"])) {
@@ -300,6 +364,18 @@ switch($_REQUEST["a"]) {
 					"useFFmpeg"=> false
 				)
 			);
+			// Apply optional config overrides sent by the setup wizard
+			$configOverrides = array("defaultUserRole", "userNeedsConfirmation",
+			                         "alwaysForceLogin", "allowUploads", "theme");
+			foreach ($configOverrides as $key) {
+				if (isset($_REQUEST[$key])) {
+					$val = $_REQUEST[$key];
+					if ($val === "true")  $val = true;
+					if ($val === "false") $val = false;
+					$tmpConf[$key] = $val;
+				}
+			}
+
 			if (!file_put_contents($conf["dir"]["data"]."/config.json", json_encode($tmpConf,$conf["settings"]["json_flags"]))) {
 				$errorCnt++;
 			}

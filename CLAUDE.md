@@ -223,17 +223,16 @@ All 29 resource types inherit from the base `Resource` type in `src/_shared/type
 
 ### Prerequisites
 
-- Apache 2.2.29+ with PHP 5.6.2+ (for server mode)
+- PHP 7.4+ (for server mode — run `php -S localhost:8080` in `src/`, no Apache needed for local dev)
 - Or: Chrome/Edge for local folder mode (File System Access API)
 - No build tools required for development — edit files directly in `src/`
 
 ### Running Locally
 
 **Development (with server):**
-1. Point Apache at `src/` directory
-2. Access via browser (e.g., `http://localhost/frametrail/src/`)
-3. First run opens setup wizard
-4. Creates `src/_data/` directory and admin account
+1. Run `php -S localhost:8080` in the `src/` directory
+2. Open `http://localhost:8080` — first run opens setup wizard
+3. Creates `src/_data/` directory and admin account
 
 **Development (local folder mode):**
 1. Open `src/index.html` directly in Chrome or Edge

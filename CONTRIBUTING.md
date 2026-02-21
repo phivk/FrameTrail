@@ -6,7 +6,7 @@ Thank you for your interest in contributing to FrameTrail! This guide covers dev
 
 ### Prerequisites
 
-- Apache Web Server (2.2.29+) with PHP (5.6.2+)
+- PHP 7.4+ (run `php -S localhost:8080` in `src/` for local dev — no Apache needed)
 - A modern browser (Chrome or Firefox)
 - Git
 

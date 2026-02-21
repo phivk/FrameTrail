@@ -4,14 +4,21 @@ This guide covers the three ways to run FrameTrail (server, local folder, and in
 
 ## Deployment Options
 
-### Option 1: Server Deployment (Apache + PHP)
+### Option 1: Server Deployment (PHP)
 
 Full multi-user mode with file uploads, user management, and collaboration.
 
 **Requirements:**
-- Apache 2.2.29+ with PHP 5.6.2+
-- The web server needs write permissions to the installation directory
-- `mod_rewrite` enabled (for the `.htaccess` rules)
+- PHP 7.4+
+- The directory needs write permissions so FrameTrail can create `_data/`
+
+**Quickest local setup:**
+```bash
+php -S localhost:8080
+```
+Then open `http://localhost:8080`. No Apache, no XAMPP needed if PHP is installed.
+
+**Public / production server:** Use Apache (`.htaccess` included and handles security rules) or nginx + PHP-FPM (add a deny rule for `_data/` in your nginx config).
 
 **Steps:**
 

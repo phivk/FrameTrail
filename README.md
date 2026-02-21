@@ -60,14 +60,16 @@ FrameTrail supports a wide range of embeddable content:
 
 ## Installation
 
-### Option 1: Server Deployment (Apache + PHP)
+### Option 1: Server Deployment (PHP)
 
 1. Download the [latest release](https://github.com/OpenHypervideo/FrameTrail/releases) or build from source
-2. Extract to your web server directory
-3. Open in your browser and follow the setup wizard
-4. Create an admin account — you're ready to go
+2. Extract to any directory
+3. In that directory, run: `php -S localhost:8080`
+4. Open `http://localhost:8080` and follow the setup wizard
 
-**Requirements:** Apache 2.2.29+ with PHP 5.6.2+. The web server needs write permissions to the installation directory.
+**Requirements:** PHP 7.4+. The directory needs write permissions so FrameTrail can create `_data/`.
+
+For public deployments, use Apache (`.htaccess` included) or nginx with PHP-FPM. No PHP installed? Use [XAMPP](https://www.apachefriends.org/) (Windows) or [MAMP](https://www.mamp.info/) (Mac/Windows).
 
 ### Option 2: Local Folder Mode (No Server)
 

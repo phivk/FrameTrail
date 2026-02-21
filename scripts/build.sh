@@ -410,77 +410,9 @@ cat > "$BUILD_DIR/resources.html" << 'RESOURCES_HTML'
 </html>
 RESOURCES_HTML
 
-cat > "$BUILD_DIR/setup.html" << 'SETUP_HTML'
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="cache-control" content="no-cache">
-    <title>FrameTrail Setup</title>
-    <link rel="shortcut icon" href="favico.png">
-    <link rel="stylesheet" href="frametrail.min.css">
-    <script src="frametrail.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            $("#initSetup").ajaxForm({
-                url: "_server/ajaxServer.php",
-                type: "POST",
-                data: {"a": "setupInit"},
-                dataType: "json",
-                success: function(ret) {
-                    if (ret["code"] != 1) {
-                        $("#returnFromSetup").show().append(ret["string"] + "<br>");
-                    } else { location.reload(); }
-                }
-            });
-            if (!!document.location.host) {
-                $.ajax({
-                    type: "POST",
-                    url: "_server/ajaxServer.php",
-                    data: {"a": "setupCheck"},
-                    dataType: "json",
-                    success: function(ret) {
-                        if (ret["code"] != "1") {
-                            $("#setupForm").show();
-                        } else {
-                            window.location.replace(
-                                window.location.href.replace('setup.html', '')
-                            );
-                        }
-                    }
-                });
-            } else {
-                $('.boxTitle').html('No Webserver').show();
-                $('#message').addClass('error').html(
-                    'This application needs to run on a webserver. ' +
-                    'You can use <a href="https://www.apachefriends.org/">XAMPP</a> ' +
-                    'or <a href="https://www.mamp.info/">MAMP</a> for local development.'
-                ).show();
-            }
-        });
-    </script>
-</head>
-<body class="frametrail-body">
-    <div class="ui-blocking-overlay">
-        <div class="ui-overlay-box">
-            <div class="boxTitle" style="display:none"></div>
-            <div id="message" class="message"></div>
-            <div id="content">
-                <div id="setupForm" style="display:none">
-                    <form id="initSetup">
-                        <input name="mail" placeholder="Admin Mail-Address (login name)" type="text">
-                        <input name="name" placeholder="Admin Username" type="text">
-                        <input name="passwd" placeholder="Admin Password" type="password">
-                        <button type="submit">OK</button>
-                        <div id="returnFromSetup" class="message error" style="margin-top:10px"></div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-</body>
-</html>
-SETUP_HTML
+# Copy setup.html from source, replacing dev CSS links with the minified bundle
+sed '/<!-- BUILD:CSS -->/,/<!-- \/BUILD:CSS -->/c\    <link rel="stylesheet" href="frametrail.min.css">' \
+    "$SRC_DIR/setup.html" > "$BUILD_DIR/setup.html"
 
 # ──────────────────────────────────────────────
 #  Copy static files
@@ -489,6 +421,7 @@ SETUP_HTML
 echo "Copying static files..."
 cp "$SRC_DIR/favico.png" "$BUILD_DIR/"
 cp "$SRC_DIR/.htaccess" "$BUILD_DIR/"
+cp "$SRC_DIR/.user.ini" "$BUILD_DIR/"
 cp -r "$SRC_DIR/_server" "$BUILD_DIR/_server"
 
 # ──────────────────────────────────────────────
@@ -503,14 +436,16 @@ cat > "$BUILD_DIR/README.md" << README
 
 ## Installation
 
-1. Extract this archive into your Apache web server directory
-2. Open the directory in your browser
-3. Follow the setup wizard to create an admin account
+1. Extract this archive into your web server directory (or any local directory)
+2. Open a terminal in that directory and run: `php -S localhost:8080`
+3. Open `http://localhost:8080` and follow the setup wizard
+
+For public server deployment, use Apache (`.htaccess` included) or nginx with PHP 7.4+.
 
 ### Requirements
 
-- Apache 2.2.29+ with PHP 5.6.2+
-- The web server needs write permissions to the installation directory
+- PHP 7.4+
+- The directory needs write permissions so FrameTrail can create `_data/`
 
 ### Documentation
 

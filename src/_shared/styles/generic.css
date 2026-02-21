@@ -102,7 +102,7 @@ button.active, input[type="submit"].active, input[type="button"].active, .button
     color: var(--primary-fg-color);
 }
 
-input[type="text"], input[type="password"], textarea, input[type="number"], input[type="time"] {
+input[type="text"], input[type="password"], textarea, input[type="number"], input[type="time"], input[type="email"] {
 	font-family: TitilliumWeb,"Helvetica Neue",Helvetica,Arial,sans-serif;
 	font-size: 14px;
 	margin: 4px 8px 4px 0;
