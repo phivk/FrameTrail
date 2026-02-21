@@ -1,6 +1,15 @@
 <?php
 error_reporting(E_ALL ^ E_NOTICE ^ E_WARNING);
 
+$_isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+         || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path'     => '/',
+    'httponly' => true,
+    'samesite' => 'Lax',
+    'secure'   => $_isHttps,
+]);
 session_start();
 
 //DIR

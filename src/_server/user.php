@@ -9,7 +9,15 @@ require_once("./config.php");
 function userGet($userID) {
 	global $conf;
 
-	$json = file_get_contents($conf["dir"]["data"]."/users.json");
+	$userFile = $conf["dir"]["data"]."/users.json";
+	if (!file_exists($userFile)) {
+		$return["status"] = "fail";
+		$return["code"] = 4;
+		$return["string"] = "Could not find user database";
+		return $return;
+	}
+
+	$json = file_get_contents($userFile);
 
 	$uDB = json_decode($json,true);
 	//if ($_SESSION["ohv"]["projects"][$projectID]["user"]["role"] != "admin") {
@@ -81,7 +89,7 @@ function userRegister($name, $mail, $passwd) {
 	$user["user"][$user["user-increment"]]["name"] = $name;
 	$user["user"][$user["user-increment"]]["mail"] = strtolower($mail);
 	$user["user"][$user["user-increment"]]["registrationDate"] =  time();
-	$user["user"][$user["user-increment"]]["passwd"] = hash("sha256",$passwd.$user["user"][$user["user-increment"]]["registrationDate"]);
+	$user["user"][$user["user-increment"]]["passwd"] = password_hash($passwd, PASSWORD_DEFAULT);
 	$user["user"][$user["user-increment"]]["role"] = (($tmpFirstUser) ? "admin" : $configDB["defaultUserRole"]);
     $user["user"][$user["user-increment"]]["active"] = (($tmpFirstUser) ? 1 : (($configDB["userNeedsConfirmation"]) ? 0 : 1));
 	$user["user"][$user["user-increment"]]["lastLogin"] = "";
@@ -155,7 +163,7 @@ function userLogin($mail, $passwd) {
 		$file->close();
 		return $return;
 	}
-	if ($user["passwd"] != hash("sha256",$passwd.$user["registrationDate"])) {
+	if (!password_verify($passwd, $user["passwd"])) {
 		$return["status"] = "fail";
 		$return["code"] = 3;
 		$return["string"] = "Wrong password!";
@@ -328,7 +336,7 @@ function userChange($userID,$mail,$name,$passwd,$color,$role,$active) {
 				$userdb["user"][$userID]["mail"] = $mail;
 				$userdb["user"][$userID]["color"] = $color;
 				$userdb["user"][$userID]["active"] = ((($active==="1" || $active==="0") && (($_SESSION["ohv"]["user"]["role"] == "admin"))) ? $active*1 : $userdb["user"][$userID]["active"]*1);
-				$userdb["user"][$userID]["passwd"] = ($passwd) ? hash("sha256",$passwd.$userdb["user"][$userID]["registrationDate"]) : $userdb["user"][$userID]["passwd"];
+				$userdb["user"][$userID]["passwd"] = ($passwd) ? password_hash($passwd, PASSWORD_DEFAULT) : $userdb["user"][$userID]["passwd"];
 				$file->write(json_encode($userdb, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));				
 				$return["status"] = "success";
 				$return["string"] = "userdata updated";

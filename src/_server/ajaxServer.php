@@ -318,12 +318,40 @@ switch($_REQUEST["a"]) {
 			if (!$c["pass"]) { $allPass = false; break; }
 		}
 
-		$return["status"]      = $allPass ? "success" : "fail";
-		$return["checks"]      = $checks;
+		$_SESSION["setup_csrf"] = bin2hex(random_bytes(16));
+		$return["status"]       = $allPass ? "success" : "fail";
+		$return["checks"]       = $checks;
 		$return["alreadySetup"] = false;
+		$return["csrf"]         = $_SESSION["setup_csrf"];
 		break;
 
 	case "setupInit":
+		// Guard: reject if setup has already been completed
+		$alreadySetup = file_exists($conf["dir"]["data"]."/users.json")
+		             && file_exists($conf["dir"]["data"]."/config.json")
+		             && file_exists($conf["dir"]["data"]."/tagdefinitions.json");
+		if ($alreadySetup) {
+			$return["status"] = "fail";
+			$return["code"]   = 0;
+			$return["string"] = "Already installed";
+			break;
+		}
+		// CSRF validation — token was issued by setupCheckDetailed and stored in session
+		if (empty($_SESSION["setup_csrf"]) || $_REQUEST["csrf"] !== $_SESSION["setup_csrf"]) {
+			$return["status"] = "fail";
+			$return["code"]   = 0;
+			$return["string"] = "Invalid request";
+			break;
+		}
+		unset($_SESSION["setup_csrf"]); // one-time token — consume immediately
+		// Input length limits
+		if (strlen(isset($_REQUEST["passwd"]) ? $_REQUEST["passwd"] : '') > 1024
+		    || strlen(isset($_REQUEST["name"]) ? $_REQUEST["name"] : '') > 200) {
+			$return["status"] = "fail";
+			$return["code"]   = 2;
+			$return["string"] = "Input too long";
+			break;
+		}
 		$errorCnt = 0;
 		if (!file_exists($conf["dir"]["data"]) && !is_dir($conf["dir"]["data"])) {
 			if (!mkdir($conf["dir"]["data"])) {
@@ -372,6 +400,8 @@ switch($_REQUEST["a"]) {
 					$val = $_REQUEST[$key];
 					if ($val === "true")  $val = true;
 					if ($val === "false") $val = false;
+					// Sanitize theme: allow only safe identifier characters
+					if ($key === "theme") { $val = preg_replace('/[^a-z0-9_-]/', '', strtolower((string)$val)); }
 					$tmpConf[$key] = $val;
 				}
 			}

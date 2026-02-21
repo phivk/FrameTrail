@@ -663,6 +663,7 @@
 
     var currentStep = 1;
     var preflightOk = false;
+    var csrfToken   = '';
 
     var btnBack   = document.getElementById('btn-back');
     var btnNext   = document.getElementById('btn-next');
@@ -828,6 +829,7 @@
                 setCheckState(key, c.pass ? 'pass' : 'fail', c.detail);
                 if (!c.pass) allPass = false;
             });
+            csrfToken   = data.csrf || '';
             preflightOk = allPass;
             btnNext.disabled = !allPass;
             if (!allPass) document.getElementById('recheck-btn').style.display = '';
@@ -937,6 +939,7 @@
 
         var params = new URLSearchParams();
         params.set('a',      'setupInit');
+        params.set('csrf',   csrfToken);
         params.set('mail',   document.getElementById('field-email').value.trim());
         params.set('name',   document.getElementById('field-name').value.trim());
         params.set('passwd', document.getElementById('field-password').value);

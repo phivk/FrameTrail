@@ -221,7 +221,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
             data: 		"a=userGet",
 			success: function(data) {
 
-				if (!data.response) {
+				if (!data || !data.response) {
 					console.error(labels['ErrorNoUserFile']);
 					return;
 				}
