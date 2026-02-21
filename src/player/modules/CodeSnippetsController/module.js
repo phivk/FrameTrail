@@ -434,8 +434,9 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
 
         } else {
 
-
-            ViewVideo.CodeSnippetTimeline.droppable('destroy');
+            if (ViewVideo.CodeSnippetTimeline.hasClass('ui-droppable')) {
+                ViewVideo.CodeSnippetTimeline.droppable('destroy');
+            }
 
         }
 

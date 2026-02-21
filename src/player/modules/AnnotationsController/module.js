@@ -722,7 +722,9 @@
 
         } else {
 
-            ViewVideo.AnnotationTimeline.droppable('destroy');
+            if (ViewVideo.AnnotationTimeline.hasClass('ui-droppable')) {
+                ViewVideo.AnnotationTimeline.droppable('destroy');
+            }
 
         }
 

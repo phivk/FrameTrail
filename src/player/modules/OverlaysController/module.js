@@ -576,7 +576,9 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
 
         } else {
 
-            ViewVideo.OverlayContainer.droppable('destroy');
+            if (ViewVideo.OverlayContainer.hasClass('ui-droppable')) {
+                ViewVideo.OverlayContainer.droppable('destroy');
+            }
 
         }
 
