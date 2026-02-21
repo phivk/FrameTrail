@@ -2,9 +2,9 @@
 
 ## Open Hypervideo Environment
 
-Create, annotate, and remix interactive videos on the web.
+> Film shall be programmed with Open Web Technologies.
 
-FrameTrail is an open-source platform for building non-linear, interactive video experiences. Add overlays, annotations, video links, and code snippets to any video — or create time-based presentations without video at all. All data is stored as portable JSON files with no database required.
+FrameTrail is an open source software that lets you experience, manage and edit interactive video directly in your web browser. Add overlays, annotations, video links, and code snippets to any video — or create time-based presentations without video at all. All data is stored as portable JSON files with no database required.
 
 FrameTrail works in three modes with different capabilities. A PHP backend provides the full feature set: multi-user accounts, collaborative editing, file uploads, and optional media processing. In Chrome/Edge, the [File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API) enables single-user local editing with file uploads, but without transcoding or user management. In any browser — including Firefox and Safari — an in-memory mode lets you view and edit contents and export changes as JSON.
 
