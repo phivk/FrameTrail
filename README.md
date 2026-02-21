@@ -1,6 +1,4 @@
-# FrameTrail
-
-## Open Hypervideo Environment
+# FrameTrail — Open Hypervideo Environment
 
 > Film shall be programmed with Open Web Technologies.
 
