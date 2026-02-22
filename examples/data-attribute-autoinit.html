@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<!--
+  EXAMPLE: Data attribute auto-init — FrameTrail.autoInit()
+  ──────────────────────────────────────────────────────────
+  Requirements: None. Works in any modern browser without a server.
+  (Annotation files must be reachable — use a local server if loading from disk.)
+
+  Demonstrates:
+  - Zero-JS initialisation: add data attributes to <video> tags, call autoInit()
+  - Multiple <video data-frametrail> elements on one page each get their own instance
+  - Supported data attributes:
+      data-frametrail-annotations   URL to a W3C annotations JSON file
+      data-frametrail-language      language code (default: en-US)
+      data-frametrail-config        inline JSON config object
+
+  FrameTrail.autoInit() scans the document for [data-frametrail] video elements,
+  wraps each one automatically, and calls FrameTrail.init() with options derived
+  from the data attributes — no manual init calls required.
+-->
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>FrameTrail – Data Attribute Auto-init</title>
+    <link rel="stylesheet" href="../build/frametrail.min.css" />
+    <script src="../build/frametrail.min.js"></script>
+    <style>
+        body   { margin: 0; background: #111; }
+        video  { width: 100vw; height: 100vh; display: block; }
+    </style>
+</head>
+<body>
+
+    <!--
+      Add `data-frametrail` to any <video> to make it a FrameTrail player.
+      data-frametrail-annotations  — URL of a W3C annotations JSON file
+      data-frametrail-language     — player UI language (default: en-US)
+      data-frametrail-config       — inline JSON to override config fields
+    -->
+    <video data-frametrail
+           data-frametrail-annotations="path/to/annotations.json"
+           data-frametrail-language="en-US"
+           data-frametrail-config='{"autohideControls": true}'
+           src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+           playsinline="">
+    </video>
+
+    <!--
+      Additional <video data-frametrail> elements each become independent players.
+      Uncomment to test multiple instances:
+    -->
+    <!--
+    <video data-frametrail
+           data-frametrail-annotations="path/to/other-annotations.json"
+           src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+           playsinline="">
+    </video>
+    -->
+
+    <script>
+    $(document).ready(function() {
+
+        // One call initialises all [data-frametrail] video elements on the page.
+        // Pass a DOM element or selector to limit the scan to a subtree, e.g.:
+        //   FrameTrail.autoInit(document.getElementById('article'));
+        FrameTrail.autoInit();
+
+        // All created instances are accessible via FrameTrail.instances[]
+        // e.g. FrameTrail.instances[0].play()
+
+    });
+    </script>
+</body>
+</html>
