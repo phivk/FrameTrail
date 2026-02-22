@@ -100,26 +100,115 @@ In server and local modes, Save As is also available as a supplemental export to
 </iframe>
 ```
 
-### Inline on a Page
+### Lightweight embedding (single video, no server needed)
 
-Include all FrameTrail scripts/styles and initialize:
+Three drop-in patterns that need no `_data/` folder or PHP backend. All three work in any modern browser (including Firefox and Safari) using the in-memory storage adapter.
+
+#### Adopt an existing `<video>` element
+
+Point FrameTrail at a `<video>` already in your page. FrameTrail auto-creates a wrapper div before it and takes over the element — your page layout is unchanged.
 
 ```html
-<div id="frametrail-container"></div>
+<video id="my-video"
+       src="https://example.com/video.mp4"
+       style="width: 900px; height: 600px; display: block;"
+       playsinline="">
+</video>
 
 <script>
 $(document).ready(function() {
     FrameTrail.init({
-        target: '#frametrail-container',
-        startID: 'your-hypervideo-id'
+        videoElement: '#my-video',          // selector or DOM ref — no target needed
+        annotations:  'annotations.json',  // URL string, array of URLs, or inline W3C objects
+        language:     'en-US',
+        config:       { autohideControls: true }
     }, 'PlayerLauncher');
 });
 </script>
 ```
 
-### With Inline Data
+The wrapper div inherits the video's computed `width` and `height`, so the player fills exactly the same space the `<video>` occupied.
 
-You can pass all hypervideo and resource data directly via init options, bypassing the `_data/` directory entirely. This works in all three storage modes and is the primary approach for in-memory mode (Option 3) — embed FrameTrail on any page without any backend or data folder.
+#### Explicit container + video URL
+
+Use when you have a container `<div>` but no pre-existing `<video>` element.
+
+```html
+<div id="player" style="width: 900px; height: 600px;"></div>
+
+<script>
+$(document).ready(function() {
+    FrameTrail.init({
+        target:      '#player',
+        videoSource: 'https://example.com/video.mp4',
+        annotations: 'annotations.json',
+        language:    'en-US'
+    }, 'PlayerLauncher');
+});
+</script>
+```
+
+#### Data-attribute auto-init
+
+The lowest-friction option: decorate `<video>` tags with `data-frametrail` and call `FrameTrail.autoInit()` once. One call initialises every matching element on the page.
+
+```html
+<video data-frametrail
+       data-frametrail-annotations="annotations.json"
+       data-frametrail-language="en-US"
+       data-frametrail-config='{"autohideControls": true}'
+       src="https://example.com/video.mp4"
+       playsinline="">
+</video>
+
+<!-- Multiple players: add more <video data-frametrail> elements -->
+
+<script>
+$(document).ready(function() {
+    FrameTrail.autoInit();
+    // To limit the scan to a subtree: FrameTrail.autoInit(document.getElementById('article'));
+});
+</script>
+```
+
+Supported data attributes:
+
+| Attribute | Effect |
+|-----------|--------|
+| `data-frametrail` | presence flag — marks the element for auto-init |
+| `data-frametrail-annotations` | URL of a W3C annotations JSON file |
+| `data-frametrail-language` | language code (e.g. `en-US`, `de`) |
+| `data-frametrail-config` | inline JSON config object |
+
+All instances created by `autoInit()` are accessible via `FrameTrail.instances[]`.
+
+See [examples/](../examples/) for runnable HTML files for each pattern.
+
+### `serverPath` option — loading from a subdirectory or remote origin
+
+When your page lives in a subdirectory of the FrameTrail installation (e.g. `examples/`) or on a different host, pass `serverPath` so that FrameTrail's internal AJAX calls resolve correctly without needing a `<base href>` on the page:
+
+```javascript
+// Page is in examples/, FrameTrail root is one level up
+FrameTrail.init({
+    serverPath: '../',
+    startID: 'your-hypervideo-id',
+    // …
+}, 'PlayerLauncher');
+
+// FrameTrail backend on a separate server (the remote server must send CORS headers)
+FrameTrail.init({
+    serverPath: 'https://frametrail.example.com/',
+    startID: 'your-hypervideo-id',
+    // …
+}, 'PlayerLauncher');
+```
+
+`serverPath` is prepended to any relative URL starting with `_server/` or `_data/`. Absolute URLs are passed through unchanged.
+
+### Inline on a Page (full data, no server)
+
+Pass all hypervideo and resource data directly via init options, bypassing the `_data/` directory entirely. This works in all three storage modes and is the primary approach for in-memory mode (Option 3).
 
 ```javascript
 FrameTrail.init({

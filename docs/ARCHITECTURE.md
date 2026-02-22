@@ -13,6 +13,7 @@ window.FrameTrail = {
     defineModule:  // Register a module definition
     defineType:    // Register a type definition
     init:          // Create a new FrameTrail instance
+    autoInit:      // Scan for [data-frametrail] video elements and init each
     instances:     // Array of all active instances
 };
 ```
@@ -256,7 +257,7 @@ FrameTrail.changeState('editMode', true);
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `target` | String | CSS selector for mount point |
+| `target` | String/Element | CSS selector or DOM element for mount point |
 | `editMode` | Boolean/String | `false`, `'overlays'`, `'annotations'`, etc. |
 | `viewMode` | String | `'video'`, `'overview'`, `'resources'` |
 | `storageMode` | String | `'server'`, `'local'`, `'needsFolder'`, `'download'` |
@@ -267,6 +268,10 @@ FrameTrail.changeState('editMode', true);
 | `viewSize` | Array | `[width, height]` of viewport |
 | `unsavedChanges` | Boolean | Dirty flag for editing |
 | `slidePosition` | String | `'left'`, `'middle'`, `'right'` |
+| `videoElement` | String/Element | Selector or ref to an existing `<video>` to adopt (shorthand API) |
+| `videoSource` | String | Video URL to use when creating a new `<video>` (shorthand API) |
+| `annotations` | String/Array | URL string or array of W3C annotation URLs / inline objects (shorthand API) |
+| `serverPath` | String | Prefix prepended to all internal `_server/` and `_data/` AJAX URLs |
 
 ### Reactive Updates
 
@@ -493,22 +498,142 @@ PHP sessions are used for authentication. Session data is stored in `$_SESSION['
 
 ## Initialization Options
 
-FrameTrail supports multiple initialization patterns:
+### Full Init (server or inline data)
+
+The complete init signature — used when loading data from a PHP server or passing it fully inline:
 
 ```javascript
 FrameTrail.init({
-    target: '#container',           // Mount point (CSS selector)
-    startID: 'hypervideo-id',       // Hypervideo to load (skips overview)
-    config: { /* ... */ },          // Pre-loaded config (skips _data/config.json)
-    resources: [{ /* ... */ }],     // Resource sources
-    contents: null,                 // Pre-loaded content (inline or URL)
-    language: 'en-US',              // UI language
-    tagdefinitions: null,           // Tag definitions
-    contentTargets: {}              // Custom content rendering targets
-}, 'PlayerLauncher');               // Launcher module name
+    // ── Mount point ───────────────────────────────────────────────────────────
+    target:         '#container',   // CSS selector or DOM element (default: 'body')
+
+    // ── Data sources ──────────────────────────────────────────────────────────
+    startID:        'hypervideo-id',// ID of the hypervideo to open (skips overview)
+    config:         { /* … */ },   // Inline config object — skips _data/config.json.
+                                    // Pass null to load from the server instead.
+    contents:       null,           // Pre-loaded hypervideo data (see inline-data pattern)
+    resources:      [{ /* … */ }], // Resource pool definitions (see below)
+    tagdefinitions: null,           // Tag definitions (loaded from server if null)
+    language:       'en-US',        // UI language code
+
+    // ── Server path ───────────────────────────────────────────────────────────
+    serverPath:     '',             // Prefix for all internal _server/ and _data/
+                                    // AJAX URLs. Use when FrameTrail is loaded from
+                                    // a subdirectory or a remote origin.
+                                    // Examples:
+                                    //   serverPath: '../'              (one level up)
+                                    //   serverPath: 'https://api.example.com/'
+
+    // ── Advanced ──────────────────────────────────────────────────────────────
+    contentTargets: {}              // Custom DOM targets for content views
+}, 'PlayerLauncher');
 ```
 
-Multiple instances can coexist on one page. Access all instances via `FrameTrail.instances`.
+### Shorthand Init (lightweight embedding)
+
+Three patterns for embedding a single video without any `_data/` folder or server:
+
+#### Scenario A — Adopt an existing `<video>` element
+
+FrameTrail auto-creates a wrapper div immediately before the video element and uses that as the player container. The video's computed `width` and `height` are copied to the wrapper so the layout is a seamless replacement.
+
+```javascript
+// HTML: <video id="my-video" src="video.mp4" playsinline=""></video>
+
+FrameTrail.init({
+    videoElement: '#my-video',          // CSS selector or DOM element ref — no target needed
+    annotations:  'annotations.json',  // URL string, array of URLs, or inline W3C objects
+    language:     'en-US',
+    config:       { autohideControls: true }
+}, 'PlayerLauncher');
+```
+
+#### Scenario B — Explicit container + video URL
+
+FrameTrail creates a `<video>` element inside the given container and sources it from the URL.
+
+```javascript
+// HTML: <div id="player"></div>
+
+FrameTrail.init({
+    target:      '#player',
+    videoSource: 'https://example.com/video.mp4',
+    annotations: [
+        'https://example.com/annotations.json',    // URL string
+        { /* inline W3C Annotation object */ }      // or inline object
+    ],
+    language: 'en-US'
+}, 'PlayerLauncher');
+```
+
+#### Scenario C — Data-attribute auto-scan
+
+Decorate `<video>` tags with `data-frametrail` and call `FrameTrail.autoInit()` once.
+
+```html
+<video data-frametrail
+       data-frametrail-annotations="annotations.json"
+       data-frametrail-language="en-US"
+       data-frametrail-config='{"autohideControls": true}'
+       src="video.mp4"
+       playsinline="">
+</video>
+
+<script>
+$(document).ready(function() {
+    // Initialises all [data-frametrail] video elements on the page.
+    // Pass a DOM element or selector to limit the scan to a subtree:
+    //   FrameTrail.autoInit(document.getElementById('article'));
+    FrameTrail.autoInit();
+});
+</script>
+```
+
+Supported data attributes:
+
+| Attribute | Maps to | Example |
+|-----------|---------|---------|
+| `data-frametrail` | presence flag — triggers auto-init | |
+| `data-frametrail-annotations` | `annotations` | `"path/to/file.json"` |
+| `data-frametrail-language` | `language` | `"de"` |
+| `data-frametrail-config` | `config` (inline JSON) | `'{"autohideControls":true}'` |
+
+In all three shorthand scenarios:
+- `storageMode` is forced to `'download'` (in-memory, no persistence needed)
+- `startID` is set to `'0'` automatically — the overview is skipped
+- Overview mode is never shown (Titlebar hides the toggle when only one video is present)
+
+### `serverPath` option
+
+When FrameTrail is loaded from a subdirectory (e.g. `examples/`) or a different origin from the PHP backend, pass `serverPath` so that internal AJAX calls resolve correctly:
+
+```javascript
+// FrameTrail installed at site root; page served from /examples/
+FrameTrail.init({
+    serverPath: '../',
+    // … other options …
+}, 'PlayerLauncher');
+
+// FrameTrail backend on a separate server (requires CORS headers on the remote server)
+FrameTrail.init({
+    serverPath: 'https://api.example.com/frametrail/',
+    // … other options …
+}, 'PlayerLauncher');
+```
+
+`serverPath` is prepended to any relative URL that starts with `_server/` or `_data/`. Absolute URLs (starting with `http://` or `https://`) are never modified.
+
+### Multiple Instances
+
+Multiple FrameTrail instances can coexist on one page. Each has completely independent state, modules, and storage. All instances are accessible via `FrameTrail.instances`:
+
+```javascript
+var ftLeft  = FrameTrail.init({ target: '#left',  startID: 'id-1' }, 'PlayerLauncher');
+var ftRight = FrameTrail.init({ target: '#right', startID: 'id-2' }, 'PlayerLauncher');
+
+// FrameTrail.instances[0] === ftLeft
+// FrameTrail.instances[1] === ftRight
+```
 
 ## Debugging
 
