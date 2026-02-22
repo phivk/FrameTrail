@@ -142,6 +142,10 @@
         var initOptionsResources = FrameTrail.getState('resources'),
             countdown = initOptionsResources.length;
 
+        if (countdown === 0) {
+            return success.call(this);
+        }
+
         for (var i = 0, l = countdown; i < l; i++) {
 
             if (initOptionsResources[i].type === 'frametrail') {

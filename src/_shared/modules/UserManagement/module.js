@@ -270,7 +270,10 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 
 	domElement.find('.administrationFormRefresh').click(refreshAdministrationForm);
 
-	if (FrameTrail.module('RouteNavigation').environment.server && !FrameTrail.getState('users')) {
+	if (FrameTrail.module('RouteNavigation').environment.server &&
+        !FrameTrail.getState('videoElement') &&
+        !FrameTrail.getState('videoSource') &&
+        !FrameTrail.getState('users')) {
         refreshAdministrationForm();
     }
 
@@ -572,7 +575,10 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 		}
 
 		// In local/download mode without guest mode active, user is not yet identified.
-		if (storageMode === 'local' || storageMode === 'download') {
+		// Also applies when storageMode is not yet set but shorthand API options
+		// indicate that the Download adapter will be used (videoElement / videoSource).
+		if (storageMode === 'local' || storageMode === 'download' ||
+		    FrameTrail.getState('videoElement') || FrameTrail.getState('videoSource')) {
 			window.setTimeout(function() {
 				callback.call(window, false);
 			}, 2);

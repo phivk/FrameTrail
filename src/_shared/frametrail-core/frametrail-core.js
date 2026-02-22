@@ -11,6 +11,7 @@
         defineModule: 	_defineModule,
         defineType: 	_defineType,
         init:           _init,
+        autoInit:       _autoInit,
 
         getActiveInstance: null,
         setActiveInstance: null,
@@ -28,6 +29,41 @@
         defs_modules[name] = definition;
 
     }
+
+    /**
+     * Scan the document (or a subtree) for <video data-frametrail> elements and
+     * initialise a FrameTrail player around each one.
+     *
+     * Supported data attributes on the <video> element:
+     *   data-frametrail-annotations  — URL of a W3C annotations JSON file
+     *   data-frametrail-language     — language code (default: 'en-US')
+     *   data-frametrail-config       — inline JSON config object
+     *
+     * @method autoInit
+     * @param {Element|Document} [scope]  Optional root element to search within (default: document)
+     */
+    function _autoInit(scope) {
+        var root   = scope || document;
+        var videos = root.querySelectorAll('video[data-frametrail]');
+
+        for (var i = 0; i < videos.length; i++) {
+            (function (video) {
+                var annotations = video.getAttribute('data-frametrail-annotations') || null;
+                var language    = video.getAttribute('data-frametrail-language')    || 'en-US';
+                var configAttr  = video.getAttribute('data-frametrail-config');
+                var config      = configAttr ? JSON.parse(configAttr) : {};
+
+                // No target provided — _start() will auto-create the wrapper div
+                _init({
+                    videoElement: video,
+                    annotations:  annotations,
+                    language:     language,
+                    config:       config
+                });
+            })(videos[i]);
+        }
+    }
+
 
     function _defineType(name, definition) {
 
@@ -73,11 +109,34 @@
 
     	function _start(runtimeConfig, appName) {
 
+            // Auto-wrap: if videoElement is provided without an explicit target,
+            // create a wrapper div immediately before the video element and use it
+            // as the target. This keeps the video in the normal document flow until
+            // ViewVideo adopts it into the player structure.
+            var resolvedTarget = options.target;
+            if (!resolvedTarget && options.videoElement) {
+                var _el = (typeof options.videoElement === 'string')
+                    ? document.querySelector(options.videoElement)
+                    : options.videoElement;
+                if (_el && _el.parentNode) {
+                    var _wrapper = document.createElement('div');
+                    // Mirror the video element's computed dimensions so the wrapper
+                    // is a seamless in-flow replacement (same footprint in the document
+                    // flow). display is intentionally not copied — .frametrail-body CSS
+                    // sets display:flex which is required for the player layout.
+                    var _cs = window.getComputedStyle(_el);
+                    _wrapper.style.width  = _cs.width;
+                    _wrapper.style.height = _cs.height;
+                    _el.parentNode.insertBefore(_wrapper, _el);
+                    resolvedTarget = _wrapper;
+                }
+            }
+
     		// TODO: Check if this belongs here
-            $(runtimeConfig.target).addClass('frametrail-body');
+            $(resolvedTarget).addClass('frametrail-body');
 
             state = {
-                target:             options.target || 'body',
+                target:             resolvedTarget || 'body',
                 fullscreenTarget:   options.fullscreenTarget || null,
                 contentTargets:     options.contentTargets || {},
                 contents:           options.contents,
@@ -87,6 +146,10 @@
                 config:             options.config,
                 users:              options.users,
                 language:           options.language || null,
+                videoSource:        options.videoSource  || null,
+                videoElement:       options.videoElement || null,
+                annotations:        options.annotations  || null,
+                serverPath:         options.serverPath   || '',
 
                 loggedIn:           false,
                 username:           '',
@@ -98,6 +161,20 @@
                 viewSize:           [0,0],
                 unsavedChanges:     false
             };
+
+            // If a serverPath is provided (e.g. '../' when FrameTrail is loaded from
+            // a subdirectory), prepend it to all relative _server/ and _data/ AJAX
+            // URLs so that FrameTrail's internal calls resolve correctly without
+            // needing a <base href> on the host page.
+            if (options.serverPath) {
+                var _sp = options.serverPath;
+                $.ajaxPrefilter(function(ajaxOptions) {
+                    if (typeof ajaxOptions.url === 'string' &&
+                        /^(_server|_data)\//.test(ajaxOptions.url)) {
+                        ajaxOptions.url = _sp + ajaxOptions.url;
+                    }
+                });
+            }
 
     		if (appName) {
                 _initModule(appName);

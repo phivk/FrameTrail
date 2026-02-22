@@ -27,6 +27,84 @@
 
  FrameTrail.defineModule('PlayerLauncher', function(FrameTrail){
 
+    // ─── Simple init shorthand pre-processing ───────────────────────────────
+    // Must run BEFORE RouteNavigation.initModule so that `startID: 0` is in
+    // state when RouteNavigation captures it into its `hypervideoID` closure.
+    // If the caller used the shorthand API (videoElement / videoSource +
+    // annotations) instead of the full `contents` array, synthesize a minimal
+    // single-hypervideo contents array here so the rest of the init chain
+    // works without modification.
+    if (!FrameTrail.getState('contents')) {
+
+        var _videoSrc    = null;
+        var _videoElOpt  = FrameTrail.getState('videoElement');
+        var _videoSrcOpt = FrameTrail.getState('videoSource');
+        var _annoOpt     = FrameTrail.getState('annotations');
+
+        if (_videoElOpt) {
+            // Scenario A — adopt existing <video> element
+            var _el = (typeof _videoElOpt === 'string')
+                ? document.querySelector(_videoElOpt)
+                : _videoElOpt;
+            if (_el) {
+                _videoSrc = _el.getAttribute('src') || _el.currentSrc || '';
+            }
+        } else if (_videoSrcOpt) {
+            // Scenario B — explicit target container + video URL
+            _videoSrc = _videoSrcOpt;
+        }
+
+        if (_videoSrc !== null) {
+            var _annotations = !_annoOpt      ? []
+                : Array.isArray(_annoOpt)     ? _annoOpt
+                : [_annoOpt];
+
+            FrameTrail.changeState('contents', [{
+                hypervideo: {
+                    meta: {
+                        name:        'Video',
+                        description: '',
+                        thumb:       null,
+                        creator:     'guest',
+                        creatorId:   'guest',
+                        created:     Date.now(),
+                        lastchanged: Date.now()
+                    },
+                    config: {
+                        hidden:            false,
+                        slidingMode:       'none',
+                        slidingTrigger:    'click',
+                        autohideControls:  false,
+                        captionsVisible:   false,
+                        clipTimeVisible:   false,
+                        layoutArea: {
+                            areaTop:    [],
+                            areaBottom: [],
+                            areaLeft:   [],
+                            areaRight:  []
+                        }
+                    },
+                    clips: [{
+                        src:        _videoSrc,
+                        duration:   0,
+                        in:         0,
+                        out:        0,
+                        resourceId: null
+                    }],
+                    contents:     [],
+                    subtitles:    [],
+                    globalEvents: {},
+                    customCSS:    ''
+                },
+                annotations: _annotations
+            }]);
+
+            FrameTrail.changeState('startID', '0');
+        }
+    }
+    // ─── end simple init shorthand pre-processing ────────────────────────────
+
+
     // Set up Localization
     FrameTrail.initModule('Localization');
     var labels = FrameTrail.module('Localization').labels;

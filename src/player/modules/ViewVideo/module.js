@@ -176,6 +176,34 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         wasPlaying                  = false;
 
 
+    // Adopt existing <video> element when videoElement init option is set (Scenario A).
+    // The element was created/owned by the page author; we move it into the player
+    // structure and strip browser-native controls so FrameTrail controls take over.
+    (function () {
+        var _videoElOpt = FrameTrail.getState('videoElement');
+        if (!_videoElOpt) { return; }
+
+        var _existingEl = (typeof _videoElOpt === 'string')
+            ? document.querySelector(_videoElOpt)
+            : _videoElOpt;
+
+        if (!_existingEl) { return; }
+
+        _existingEl.removeAttribute('controls');
+        _existingEl.setAttribute('playsinline', '');
+        _existingEl.setAttribute('disablePictureInPicture', '');
+        $(_existingEl).addClass('video');
+
+        // Replace the template <video> inside .hypervideo with the existing element.
+        // jQuery's replaceWith moves the DOM node, so the element ends up inside
+        // the player structure and is removed from its original position.
+        Hypervideo.find('video.video').replaceWith(_existingEl);
+
+        // Point the Video reference at the adopted element
+        Video = _existingEl;
+    })();
+
+
     ExpandButton.click(function() {
         showDetails(false);
     });

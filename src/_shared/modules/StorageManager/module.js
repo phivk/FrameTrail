@@ -41,6 +41,16 @@ FrameTrail.defineModule('StorageManager', function(FrameTrail) {
         _localAdapter = new StorageAdapterLocal();
         _downloadAdapter = new StorageAdapterDownload();
 
+        // When using the simple shorthand API (videoElement or videoSource), all
+        // content is provided inline — no server probe or folder prompt needed.
+        // Go straight to the Download adapter (in-memory, no persistence).
+        if (FrameTrail.getState('videoElement') || FrameTrail.getState('videoSource')) {
+            _currentAdapter = _downloadAdapter;
+            FrameTrail.changeState('storageMode', 'download');
+            _initialized = true;
+            return Promise.resolve(_currentAdapter);
+        }
+
         var hasServer = FrameTrail.module('RouteNavigation').environment.server;
 
         if (hasServer) {
