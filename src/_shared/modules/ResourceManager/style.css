@@ -49,44 +49,43 @@
 	margin: 6px;
 }
 
-/* Upload Form */
+/* Upload Dialog Layout */
 
-.uploadForm .resourceInput {
-	width: 230px;
+.uploadDialog .resourceInputTabContainer {
+	margin-bottom: 10px;
 }
 
-.uploadForm .resourceNameInput {
-	width: 239px;
+/* URL Tab */
+
+#resourceInputTabURL {
+	padding: 12px 0;
 }
 
-.uploadForm .corsWarning {
-	position: absolute;
-	top: 78px;
-	right: 170px;
-	width: 180px;
-	height: 110px;
+#resourceInputTabURL .resourceInput[name="url"] {
+	width: 100%;
+	box-sizing: border-box;
+	margin-bottom: 8px;
 }
 
-.uploadForm .resourceURLPreview {
-	position: absolute;
-	top: 80px;
-	right: 10px;
+#resourceInputTabURL .corsWarning {
+	margin-top: 8px;
+}
+
+#resourceInputTabURL .resourceURLPreview {
+	margin-top: 10px;
 	width: 150px;
 	height: 110px;
+	position: relative;
+	background: var(--secondary-fg-color);
 }
 
-.uploadForm .resourceURLPreview .resourceThumb {
+#resourceInputTabURL .resourceURLPreview .resourceThumb {
 	width: 100%;
 	height: 100%;
 	cursor: default;
 }
 
 /* Drag and Drop Zone */
-
-.dropZoneContainer {
-	margin-bottom: 20px;
-	display: block;
-}
 
 .dropZone {
 	border: 3px dashed var(--primary-bg-color);
@@ -96,7 +95,7 @@
 	background-color: rgba(255, 255, 255, 0.05);
 	cursor: pointer;
 	transition: all 0.3s ease;
-	margin-bottom: 15px;
+	margin-bottom: 10px;
 }
 
 .dropZone:hover {
@@ -124,18 +123,19 @@
 	font-weight: bold;
 }
 
-.dropZoneContent .dropZoneHint {
-	font-size: 13px;
-	opacity: 0.7;
-	font-weight: normal;
+.formatBadge {
+	font-size: 12px;
+	opacity: 0.6;
+	text-align: center;
+	padding: 4px 0 2px;
 }
 
 /* Upload Queue */
 
 .uploadQueue {
-	max-height: 300px;
+	max-height: 200px;
 	overflow-y: auto;
-	margin-bottom: 10px;
+	margin-bottom: 8px;
 	border: 1px solid var(--primary-bg-color);
 	border-radius: 4px;
 	background-color: rgba(0, 0, 0, 0.1);
@@ -158,7 +158,8 @@
 	opacity: 0.7;
 }
 
-.uploadQueue .queueRow.uploading {
+.uploadQueue .queueRow.uploading,
+.uploadQueue .queueRow.generating-thumb {
 	background-color: rgba(33, 150, 243, 0.1);
 	border-left: 3px solid #2196f3;
 }
@@ -192,6 +193,7 @@
 	text-align: center;
 	padding: 2px 8px;
 	background-color: var(--primary-bg-color);
+	color: var(--primary-fg-color);
 	border-radius: 3px;
 	font-size: 11px;
 	text-transform: uppercase;
@@ -205,24 +207,50 @@
 }
 
 .queueSummary {
-	padding: 8px 12px;
-	font-size: 14px;
+	padding: 6px 12px;
+	font-size: 13px;
 	font-weight: bold;
 	text-align: center;
 	background-color: rgba(255, 255, 255, 0.05);
 	border-radius: 4px;
 	display: none;
+	margin-bottom: 8px;
 }
 
-/* Hide traditional form when queue is active */
+/* Upload progress bar */
 
-.dropZoneContainer.hasQueue + .uploadForm {
-	display: none !important;
+.uploadProgressBarWrap {
+	height: 4px;
+	background-color: rgba(255, 255, 255, 0.1);
+	border-radius: 2px;
+	overflow: hidden;
+	margin-bottom: 8px;
 }
 
-/* Adjust dialog when queue is shown */
+.uploadProgressBar {
+	height: 100%;
+	width: 0%;
+	background-color: #2196f3;
+	transition: width 0.2s ease;
+}
 
-.uploadDialog .dropZoneContainer.hasQueue .uploadQueue,
-.uploadDialog .dropZoneContainer.hasQueue .queueSummary {
-	display: block;
+/* Name input at bottom of dialog */
+
+.nameInputContainer {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding-top: 8px;
+	border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nameInputContainer .nameInputMessage {
+	flex-shrink: 0;
+	font-size: 13px;
+	font-weight: bold;
+	opacity: 0.8;
+}
+
+.nameInputContainer .resourceNameInput {
+	flex: 1;
 }

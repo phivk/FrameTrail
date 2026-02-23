@@ -19,15 +19,15 @@ Returning Code:
 	0		=	Success. In $return["response"]["resource"] will the new JSON be returned. in $return["response"]["resId"] you can find the new ID
 	1		=	failed. User is not logged in into the Project. Or User is not activated.
 	3		= 	failed. Could not find the resources folder
-	4		= 	failed. Type "image" was expected but the file wasn't transferred.
-	5		= 	failed. Type "video" was expected but not both video files has been transferred.
-	6		= 	failed. Type "video" was expected but attached File-Mimetypes seem to be incorrect.
-	7		= 	failed. Type "map" was expected but $lat or $lon aren't send by parameter.
+	4		= 	failed. File type expected but file wasn't transferred.
+	5		= 	failed. No video file transferred.
+	6		= 	failed. File format not supported (FFmpeg unavailable for transcoding).
+	7		= 	failed. Type "map" was expected but $lat or $lon aren't sent.
 	8		= 	failed. $type or $name have not been transferred.
-	9		= 	failed. $type was wrong.
+	9		= 	failed. $type was wrong or file type not recognized.
 	10		=	failed. File size too big.
 	11		=	failed. Type "url" was expected but url is empty.
- *
+	20		=	failed. Uploads not allowed in config.
  *
  */
 function fileUpload($type, $name, $description="", $attributes, $files, $lat, $lon, $boundingBox) {
@@ -44,17 +44,15 @@ function fileUpload($type, $name, $description="", $attributes, $files, $lat, $l
 		$file = new sharedFile($conf["dir"]["data"]."/users.json");
 		$json = $file->read();
 		$file->close();
-		$u = json_decode($json,true);
+		$u = json_decode($json, true);
 		$_SESSION["ohv"]["user"] = array_replace_recursive($_SESSION["ohv"]["user"], $u["user"][$_SESSION["ohv"]["user"]["id"]]);
 	}
-
 
 	if (!is_dir($conf["dir"]["data"]."/resources")) {
 		$return["status"] = "fail";
 		$return["code"] = 3;
 		$return["string"] = "Could not find the resources folder";
 		return $return;
-		exit;
 	}
 
 	if ((!$type) || (!$name) || ($name == "")) {
@@ -62,21 +60,44 @@ function fileUpload($type, $name, $description="", $attributes, $files, $lat, $l
 		$return["code"] = 8;
 		$return["string"] = "Name or Type have not been submitted.";
 		return $return;
-		exit;
 	}
 
 	if (!$attributes) {
 		$attributes = new ArrayObject();
 	}
 
-	$max_upload = (int)(ini_get('upload_max_filesize'));
-	$max_post = (int)(ini_get('post_max_size'));
-	$memory_limit = (int)(ini_get('memory_limit'));
-	$upload_mb = min($max_upload, $max_post, $memory_limit);
+	// If a unified file upload is present, auto-detect type from MIME type
+	if (!empty($files["file"]) && $files["file"]["size"] > 0) {
+		$uploadedMime = $files["file"]["type"];
+		$uploadedName = strtolower($files["file"]["name"]);
 
+		if (strpos($uploadedMime, 'image/') === 0 || preg_match('/\.(jpg|jpeg|png|gif)$/', $uploadedName)) {
+			$type = 'image';
+		} elseif ($uploadedMime === 'application/pdf' || preg_match('/\.pdf$/', $uploadedName)) {
+			$type = 'pdf';
+		} elseif (strpos($uploadedMime, 'video/') === 0 || preg_match('/\.(mp4|mov|avi|webm|m4v|mkv|flv)$/', $uploadedName)) {
+			$type = 'video';
+		} elseif (strpos($uploadedMime, 'audio/') === 0 || preg_match('/\.(mp3|wav|ogg|m4a|aac)$/', $uploadedName)) {
+			$type = 'audio';
+		} else {
+			$return["status"] = "fail";
+			$return["code"] = 9;
+			$return["string"] = "Unsupported file type: " . $uploadedMime;
+			return $return;
+		}
+	}
+
+	// Check allowUploads for file types
 	$configjson = file_get_contents($conf["dir"]["data"]."/config.json");
 	$configDB = json_decode($configjson, true);
 	$uploadsAllowed = $configDB["allowUploads"];
+
+	if (in_array($type, ['image', 'pdf', 'audio', 'video']) && $uploadsAllowed === false) {
+		$return["status"] = "fail";
+		$return["code"] = 20;
+		$return["string"] = "User not allowed to upload files";
+		return $return;
+	}
 
 	$cTime = time();
 	$newResource["name"] = $name;
@@ -87,327 +108,248 @@ function fileUpload($type, $name, $description="", $attributes, $files, $lat, $l
 
 	switch ($type) {
 		case "url":
-			
 			$urlAttr = json_decode($attributes, true);
-
-			if ( !$urlAttr["src"] || $urlAttr["src"] == "" ) {
+			if (!$urlAttr["src"] || $urlAttr["src"] == "") {
 				$return["status"] = "fail";
 				$return["code"] = 11;
 				$return["string"] = "Empty field: URL.";
 				return $return;
-				exit;
 			}
 			$newResource["src"] = $urlAttr["src"];
 			$newResource["type"] = $urlAttr["type"];
 			$newResource["attributes"] = $urlAttr["attributes"];
 			$newResource["thumb"] = $urlAttr["thumb"];
 		break;
-		case "image":
-			if ($uploadsAllowed === false) {
-				$return["status"] = "fail";
-				$return["code"] = 20;
-				$return["string"] = "User not allowed to upload files";
-				return $return;
-				exit;
-			}
 
-			if ((!$files["image"]) || (!$files["image"]["size"])) {
+		case "image":
+			$uploadedFile = !empty($files["file"]) ? $files["file"] : null;
+			if (!$uploadedFile || !$uploadedFile["size"]) {
 				$return["status"] = "fail";
 				$return["code"] = 4;
-				$return["string"] = "No Image file to upload";
+				$return["string"] = "No image file to upload";
 				return $return;
-				exit;
 			}
 
-			// Validate file size
-			$sizeValidation = validateFileSize($files["image"]["size"]);
+			$sizeValidation = validateFileSize($uploadedFile["size"]);
 			if (!$sizeValidation['valid']) {
 				$return["status"] = "fail";
 				$return["code"] = 10;
 				$return["string"] = $sizeValidation['error'];
 				return $return;
-				exit;
 			}
 
-			// Check if optimization is enabled
-			$configFile = $conf["dir"]["data"]."/config.json";
-			$optimizationEnabled = false;
-			if (file_exists($configFile)) {
-				$configJson = file_get_contents($configFile);
-				$config = json_decode($configJson, true);
-				if (isset($config['mediaOptimization']['enabled'])) {
-					$optimizationEnabled = $config['mediaOptimization']['enabled'];
-				}
-			}
-
-			$filearray = preg_split("/\./", $files["image"]["name"]);
-			$filetype = array_pop($filearray);
-
-			// Preserve original file extension (GIF, PNG, JPG)
-			$filename = substr($_SESSION["ohv"]["user"]["id"]."_".$cTime."_".sanitize($name),0,90).".".$filetype;
+			$fileparts = preg_split("/\./", $uploadedFile["name"]);
+			$filetype = array_pop($fileparts);
+			$filename = substr($_SESSION["ohv"]["user"]["id"]."_".$cTime."_".sanitize($name), 0, 90).".".$filetype;
 			$finalPath = $conf["dir"]["data"]."/resources/".$filename;
+			$tempPath = $uploadedFile["tmp_name"];
 
-			// Move uploaded file to temporary location first
-			$tempPath = $files["image"]["tmp_name"];
-
-			if ($optimizationEnabled) {
-				// Optimize the image
+			// Optimize source file if GD is available
+			if (extension_loaded('gd')) {
 				$optimizeResult = optimizeImage($tempPath, $finalPath, 1920, 85);
-
 				if (isset($optimizeResult['error'])) {
-					// Optimization failed, fall back to original file
-					error_log('FrameTrail: Image optimization failed: ' . $optimizeResult['error'] . ', saving original');
+					error_log('FrameTrail: Image optimization failed: '.$optimizeResult['error'].', saving original');
 					move_uploaded_file($tempPath, $finalPath);
 				}
-				// If optimization succeeded, optimized file is already at $finalPath
-
-				// Generate thumbnail
-				$baseFilename = substr($_SESSION["ohv"]["user"]["id"]."_".$cTime."_thumb_".sanitize($name),0,90);
-				$thumbFilename = $baseFilename.".png";
-				$thumbPath = $conf["dir"]["data"]."/resources/".$thumbFilename;
-
-				$thumbResult = generateThumbnail($finalPath, $thumbPath);
-				if (isset($thumbResult['error'])) {
-					error_log('FrameTrail: Thumbnail generation failed: ' . $thumbResult['error']);
-					// Continue without thumbnail
-				} else {
-					$newResource["thumb"] = $thumbFilename;
+				// Generate server-side thumbnail as fallback only when client provided none
+				if (empty($_REQUEST["thumb"])) {
+					$thumbFilename = substr($_SESSION["ohv"]["user"]["id"]."_".$cTime."_thumb_".sanitize($name), 0, 90).".png";
+					$thumbResult = generateThumbnail($finalPath, $conf["dir"]["data"]."/resources/".$thumbFilename);
+					if (!isset($thumbResult['error'])) {
+						$newResource["thumb"] = $thumbFilename;
+					}
 				}
 			} else {
-				// No optimization, just move the file
 				move_uploaded_file($tempPath, $finalPath);
 			}
 
 			$newResource["src"] = $filename;
 			$newResource["type"] = "image";
-			$newResource["attributes"] = ($attributes) ? $attributes : Array();
+			$newResource["attributes"] = [];
 		break;
-		case "pdf":
-			if ($uploadsAllowed === false) {
-				$return["status"] = "fail";
-				$return["code"] = 20;
-				$return["string"] = "User not allowed to upload files";
-				return $return;
-				exit;
-			}
 
-			if ((!$files["pdf"]) || (!$files["pdf"]["size"])) {
+		case "pdf":
+			$uploadedFile = !empty($files["file"]) ? $files["file"] : null;
+			if (!$uploadedFile || !$uploadedFile["size"]) {
 				$return["status"] = "fail";
 				$return["code"] = 4;
 				$return["string"] = "No PDF file to upload";
 				return $return;
-				exit;
 			}
 
-			// Validate file size
-			$sizeValidation = validateFileSize($files["pdf"]["size"]);
+			$sizeValidation = validateFileSize($uploadedFile["size"]);
 			if (!$sizeValidation['valid']) {
 				$return["status"] = "fail";
 				$return["code"] = 10;
 				$return["string"] = $sizeValidation['error'];
 				return $return;
-				exit;
 			}
 
-			$filearray = preg_split("/\./", $files["pdf"]["name"]);
-			$filetype = array_pop($filearray);
-			$filename = substr($_SESSION["ohv"]["user"]["id"]."_".$cTime."_".sanitize($name),0,90).".".$filetype;
+			$fileparts = preg_split("/\./", $uploadedFile["name"]);
+			$filetype = array_pop($fileparts);
+			$filename = substr($_SESSION["ohv"]["user"]["id"]."_".$cTime."_".sanitize($name), 0, 90).".".$filetype;
+			move_uploaded_file($uploadedFile["tmp_name"], $conf["dir"]["data"]."/resources/".$filename);
 			$newResource["src"] = $filename;
 			$newResource["type"] = "pdf";
-			$newResource["attributes"] = ($attributes) ? $attributes : Array();
-			move_uploaded_file($files["pdf"]["tmp_name"], $conf["dir"]["data"]."/resources/".$filename);
+			$newResource["attributes"] = [];
 		break;
-		case "audio":
-			if ($uploadsAllowed === false) {
-				$return["status"] = "fail";
-				$return["code"] = 20;
-				$return["string"] = "User not allowed to upload files";
-				return $return;
-				exit;
-			}
 
-			if ((!$files["audio"]) || (!$files["audio"]["size"])) {
+		case "audio":
+			$uploadedFile = !empty($files["file"]) ? $files["file"] : null;
+			if (!$uploadedFile || !$uploadedFile["size"]) {
 				$return["status"] = "fail";
 				$return["code"] = 4;
 				$return["string"] = "No audio file to upload";
 				return $return;
-				exit;
 			}
 
-			// Validate file size
-			$sizeValidation = validateFileSize($files["audio"]["size"]);
+			$sizeValidation = validateFileSize($uploadedFile["size"]);
 			if (!$sizeValidation['valid']) {
 				$return["status"] = "fail";
 				$return["code"] = 10;
 				$return["string"] = $sizeValidation['error'];
 				return $return;
-				exit;
 			}
 
-			$filename = substr($_SESSION["ohv"]["user"]["id"]."_".$cTime."_".sanitize($name),0,90).".mp3";
+			$filename = substr($_SESSION["ohv"]["user"]["id"]."_".$cTime."_".sanitize($name), 0, 90).".mp3";
 			$finalPath = $conf["dir"]["data"]."/resources/".$filename;
-			$uploadedType = $files["audio"]["type"];
-
-			// Check if FFmpeg transcoding is enabled and needed
-			// Read from _data/config.json
-			$configFile = new sharedFile($conf["dir"]["data"]."/config.json");
-			$configJson = $configFile->read();
-			$configData = json_decode($configJson, true);
-			$ffmpegEnabled = isset($configData["mediaOptimization"]["useFFmpeg"]) && $configData["mediaOptimization"]["useFFmpeg"] === true;
-			$needsTranscoding = !in_array($uploadedType, array("audio/mp3", "audio/mpeg"));
+			$uploadedMime = $uploadedFile["type"];
+			$needsTranscoding = !in_array($uploadedMime, ["audio/mp3", "audio/mpeg"]);
 
 			if ($needsTranscoding) {
-				if (!$ffmpegEnabled) {
-					// FFmpeg disabled, only accept MP3
+				$ffmpegPath = detectFFmpegPath();
+				if (!$ffmpegPath) {
 					$return["status"] = "fail";
 					$return["code"] = 6;
-					$return["string"] = "Wrong audio file format. Only MP3 is supported. Enable FFmpeg transcoding in config to upload other formats.";
+					$return["string"] = "Wrong audio file format. Only MP3 is supported. FFmpeg is not available on this server for transcoding other formats.";
 					return $return;
-					exit;
 				}
-
-				// FFmpeg enabled, transcode to MP3
-				$tempPath = $files["audio"]["tmp_name"];
-				$transcodeResult = transcodeAudioToMP3($tempPath, $finalPath, 192);
-
+				$transcodeResult = transcodeAudioToMP3($uploadedFile["tmp_name"], $finalPath, 192);
 				if (isset($transcodeResult['error'])) {
 					$return["status"] = "fail";
 					$return["code"] = 6;
-					$return["string"] = "Audio transcoding failed: " . $transcodeResult['error'];
+					$return["string"] = "Audio transcoding failed: ".$transcodeResult['error'];
 					return $return;
-					exit;
 				}
-
-				error_log('FrameTrail: Audio transcoded from ' . $uploadedType . ' to MP3');
+				error_log('FrameTrail: Audio transcoded to MP3');
 			} else {
-				// Already MP3, just move it
-				move_uploaded_file($files["audio"]["tmp_name"], $finalPath);
+				move_uploaded_file($uploadedFile["tmp_name"], $finalPath);
 			}
 
 			$newResource["src"] = $filename;
 			$newResource["type"] = "audio";
-			$newResource["attributes"] = ($attributes) ? $attributes : Array();
+			$newResource["attributes"] = [];
 		break;
+
 		case "video":
-			if ($uploadsAllowed === false) {
-				$return["status"] = "fail";
-				$return["code"] = 20;
-				$return["string"] = "User not allowed to upload files";
-				return $return;
-				exit;
-			}
-			if ( (!$_FILES["mp4"]) || (!$_FILES["mp4"]["size"]) ) {
+			$uploadedFile = !empty($files["file"]) ? $files["file"] : null;
+			if (!$uploadedFile || !$uploadedFile["size"]) {
 				$return["status"] = "fail";
 				$return["code"] = 5;
-				$return["string"] = "Not enough video sources";
+				$return["string"] = "No video file to upload";
 				return $return;
-				exit;
 			}
 
-			// Validate file size
-			$sizeValidation = validateFileSize($_FILES["mp4"]["size"]);
+			$sizeValidation = validateFileSize($uploadedFile["size"]);
 			if (!$sizeValidation['valid']) {
 				$return["status"] = "fail";
 				$return["code"] = 10;
 				$return["string"] = $sizeValidation['error'];
 				return $return;
-				exit;
 			}
 
-			$filename = substr($_SESSION["ohv"]["user"]["id"]."_".$cTime."_".sanitize($name),0,90);
+			$filename = substr($_SESSION["ohv"]["user"]["id"]."_".$cTime."_".sanitize($name), 0, 90);
 			$finalPath = $conf["dir"]["data"]."/resources/".$filename.".mp4";
-			$uploadedType = $_FILES["mp4"]["type"];
-
-			// Check if FFmpeg transcoding is enabled and needed
-			// Read from _data/config.json
-			$configFile = new sharedFile($conf["dir"]["data"]."/config.json");
-			$configJson = $configFile->read();
-			$configData = json_decode($configJson, true);
-			$ffmpegEnabled = isset($configData["mediaOptimization"]["useFFmpeg"]) && $configData["mediaOptimization"]["useFFmpeg"] === true;
-			$needsTranscoding = !in_array($uploadedType, array("video/mp4", "video/mpeg4"));
+			$uploadedMime = $uploadedFile["type"];
+			$needsTranscoding = !in_array($uploadedMime, ["video/mp4", "video/mpeg4"]);
 
 			if ($needsTranscoding) {
-				if (!$ffmpegEnabled) {
-					// FFmpeg disabled, only accept MP4
+				$ffmpegPath = detectFFmpegPath();
+				if (!$ffmpegPath) {
 					$return["status"] = "fail";
 					$return["code"] = 6;
-					$return["string"] = "Wrong video file format. Only MP4 is supported. Enable FFmpeg transcoding in config to upload other formats.";
+					$return["string"] = "Wrong video file format. Only MP4 is supported. FFmpeg is not available on this server for transcoding other formats.";
 					return $return;
-					exit;
 				}
-
-				// FFmpeg enabled, transcode to MP4
-				$tempPath = $files["mp4"]["tmp_name"];
-				$transcodeResult = transcodeVideoToMP4($tempPath, $finalPath, 1920);
-
+				$transcodeResult = transcodeVideoToMP4($uploadedFile["tmp_name"], $finalPath, 1920);
 				if (isset($transcodeResult['error'])) {
 					$return["status"] = "fail";
 					$return["code"] = 6;
-					$return["string"] = "Video transcoding failed: " . $transcodeResult['error'];
+					$return["string"] = "Video transcoding failed: ".$transcodeResult['error'];
 					return $return;
-					exit;
 				}
-
-				error_log('FrameTrail: Video transcoded from ' . $uploadedType . ' to MP4');
+				error_log('FrameTrail: Video transcoded to MP4');
 			} else {
-				// Already MP4, just move it
-				move_uploaded_file($files["mp4"]["tmp_name"], $finalPath);
+				move_uploaded_file($uploadedFile["tmp_name"], $finalPath);
 			}
 
-			// Generate video thumbnail using FFmpeg (at 50% of video duration)
-			// Matches client-side: 400x300 canvas saved as PNG via canvas.toDataURL()
-			$baseFilename = substr($_SESSION["ohv"]["user"]["id"]."_".$cTime."_thumb_".sanitize($name),0,90);
-			$thumbFilename = $baseFilename.".png";
-			$thumbPath = $conf["dir"]["data"]."/resources/".$thumbFilename;
-
-			$thumbResult = generateVideoThumbnail($finalPath, $thumbPath);
-			if (isset($thumbResult['error'])) {
-				error_log('FrameTrail: Video thumbnail generation failed: ' . $thumbResult['error']);
-				// Continue without thumbnail - not a fatal error
-			} else {
-				$newResource["thumb"] = $thumbFilename;
-				error_log('FrameTrail: Video thumbnail generated: ' . $thumbFilename);
+			// Generate server-side video thumbnail only when client did not provide one
+			// (client cannot generate thumbnails for non-MP4 formats that required transcoding)
+			if (empty($_REQUEST["thumb"])) {
+				$thumbFilename = substr($_SESSION["ohv"]["user"]["id"]."_".$cTime."_thumb_".sanitize($name), 0, 90).".png";
+				$thumbPath = $conf["dir"]["data"]."/resources/".$thumbFilename;
+				$thumbResult = generateVideoThumbnail($finalPath, $thumbPath);
+				if (!isset($thumbResult['error'])) {
+					$newResource["thumb"] = $thumbFilename;
+					error_log('FrameTrail: Video thumbnail generated: '.$thumbFilename);
+				}
 			}
 
 			$newResource["src"] = $filename.".mp4";
-			$newResource["attributes"] = ($attributes) ? $attributes : Array();
-			foreach ($files["subtitles"]["name"] as $k=>$v) {
-				$filetype = array_pop(preg_split("/\./", $v));
-				$filename = substr($_SESSION["ohv"]["user"]["id"]."_".$cTime."_".sanitize($name),0,90)."_sub_".$k.".".$filetype;
-				move_uploaded_file($files["subtitles"]["tmp_name"][$k], $conf["dir"]["data"]."/resources/".$filename);
-				$newResource["subtitles"][$k] = $filename;
-			}
-
 			$newResource["type"] = "video";
+			$newResource["attributes"] = [];
+
+			// Handle subtitle files if provided
+			if (!empty($files["subtitles"]["name"]) && is_array($files["subtitles"]["name"])) {
+				foreach ($files["subtitles"]["name"] as $k => $v) {
+					$subparts = preg_split("/\./", $v);
+					$subtype = array_pop($subparts);
+					$subFilename = substr($_SESSION["ohv"]["user"]["id"]."_".$cTime."_".sanitize($name), 0, 90)."_sub_".$k.".".$subtype;
+					move_uploaded_file($files["subtitles"]["tmp_name"][$k], $conf["dir"]["data"]."/resources/".$subFilename);
+					$newResource["subtitles"][$k] = $subFilename;
+				}
+			}
 		break;
+
 		case "map":
 			if ((!$lat) || (!$lon)) {
 				$return["status"] = "fail";
 				$return["code"] = 7;
 				$return["string"] = "Lat or Lon are missing";
 				return $return;
-				exit;
 			}
 			$newResource["type"] = "location";
 			$newResource["src"] = "";
-			$mapAttr = ($attributes) ? json_decode($attributes, true) : Array();
-			if (!$mapAttr) { $mapAttr = Array(); }
-			$mapAttr["lat"] = $lat;
-			$mapAttr["lon"] = $lon;
-			$mapAttr["boundingBox"] = $boundingBox;
-			$newResource["attributes"] = $mapAttr;
+			$newResource["attributes"] = [
+				"lat" => $lat,
+				"lon" => $lon,
+				"boundingBox" => $boundingBox ?: []
+			];
 		break;
+
 		default:
 			$return["status"] = "fail";
 			$return["code"] = 9;
 			$return["string"] = "Type was not correct";
 			return $return;
-			exit;
 		break;
 	}
+
+	// Save client-provided thumbnail inline (overrides any server-generated thumb)
+	// Client generates thumbnails for: images, MP4 video, PDFs (via PDF.js)
+	if (!empty($_REQUEST["thumb"]) && in_array($type, ['image', 'pdf', 'audio', 'video'])) {
+		$thumbData = preg_replace('/^data:image\/\w+;base64,/', '', $_REQUEST["thumb"]);
+		$decodedThumb = base64_decode($thumbData);
+		if ($decodedThumb !== false && strlen($decodedThumb) > 0) {
+			$thumbFilename = substr($_SESSION["ohv"]["user"]["id"]."_".$cTime."_thumb_".sanitize($name), 0, 90).".png";
+			file_put_contents($conf["dir"]["data"]."/resources/".$thumbFilename, $decodedThumb);
+			$newResource["thumb"] = $thumbFilename;
+		}
+	}
+
 	$file = new sharedFile($conf["dir"]["data"]."/resources/_index.json");
 	$json = $file->read();
-	$res = json_decode($json,true);
+	$res = json_decode($json, true);
 	if (!$res["resources-increment"]) {
 		$res["resources-increment"] = 0;
 	}
@@ -824,34 +766,23 @@ function fileGetMaxUploadSize() {
 }
 
 /**
- * Get media optimization configuration including FFmpeg availability
+ * Get server capabilities: max upload size and FFmpeg availability.
+ * FFmpeg is auto-detected at runtime — no config flag needed.
  *
- * @return array Configuration response
+ * @return array Capabilities response
  */
-function fileGetMediaOptimizationConfig() {
-	global $conf;
-
-	// Read configuration from _data/config.json (not config.php)
-	$configFile = new sharedFile($conf["dir"]["data"]."/config.json");
-	$configJson = $configFile->read();
-	$configData = json_decode($configJson, true);
-
-	$config = [
-		'enabled' => isset($configData['mediaOptimization']['enabled']) && $configData['mediaOptimization']['enabled'] === true,
-		'ffmpegEnabled' => isset($configData['mediaOptimization']['useFFmpeg']) && $configData['mediaOptimization']['useFFmpeg'] === true,
-		'ffmpegAvailable' => false
-	];
-
-	// Check if FFmpeg is actually available when enabled
-	if ($config['ffmpegEnabled']) {
-		$ffmpegPath = detectFFmpegPath();
-		$config['ffmpegAvailable'] = ($ffmpegPath !== null);
+function fileGetCapabilities() {
+	$max_size = parse_size(ini_get('post_max_size'));
+	$upload_max = parse_size(ini_get('upload_max_filesize'));
+	if ($upload_max > 0 && $upload_max < $max_size) {
+		$max_size = $upload_max;
 	}
 
 	$return["status"] = "success";
 	$return["code"] = 0;
-	$return["string"] = "Media optimization config retrieved";
-	$return["config"] = $config;
+	$return["string"] = "Capabilities retrieved";
+	$return["maxUploadBytes"] = $max_size;
+	$return["ffmpegAvailable"] = (detectFFmpegPath() !== null);
 	return $return;
 }
 

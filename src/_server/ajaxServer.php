@@ -77,14 +77,9 @@ switch($_REQUEST["a"]) {
 		$return = fileGetByFilter($_REQUEST["key"],$_REQUEST["condition"],$_REQUEST["values"]);
 		break;
 
-	case "fileGetMaxUploadSize":
+	case "fileGetCapabilities":
 		include_once("files.php");
-		$return = fileGetMaxUploadSize();
-		break;
-
-	case "fileGetMediaOptimizationConfig":
-		include_once("files.php");
-		$return = fileGetMediaOptimizationConfig();
+		$return = fileGetCapabilities();
 		break;
 
 	case "fileGetUrlInfo":

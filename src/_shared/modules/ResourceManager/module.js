@@ -19,17 +19,14 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 
 	var labels = FrameTrail.module('Localization').labels;
 
-    var maxUploadBytes,
-        tmpObj,
-        previewXHR,
+    var previewXHR,
         uploadQueue = [],
         completedUploads = [],
         isUploading = false,
         currentUploadDialog = null,
         currentSuccessCallback = null,
-        mediaOptimizationConfig = {
-            enabled: false,
-            ffmpegEnabled: false,
+        serverCapabilities = {
+            maxUploadBytes: 500 * 1024 * 1024,
             ffmpegAvailable: false
         };
 
@@ -85,10 +82,11 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 	 * @method uploadSingleFileLocally
 	 * @param {File} file
 	 * @param {String} type
+	 * @param {String|null} thumbDataUrl - base64 thumbnail data URL, or null
 	 * @param {Function} callback - callback(success, errorMessage)
 	 * @private
 	 */
-	function uploadSingleFileLocally(file, type, callback) {
+	function uploadSingleFileLocally(file, type, thumbDataUrl, callback) {
 		var fileName = file.name.replace(/\.[^/.]+$/, ''); // Remove extension
 		var fileExt = file.name.split('.').pop().toLowerCase();
 		var timestamp = Date.now();
@@ -116,7 +114,12 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 			resourceObj.src = storedName;
 		}
 
-		addResourceLocally(resourceObj, file).then(function() {
+		// Assign thumbnail filename if provided
+		if (thumbDataUrl) {
+			resourceObj.thumb = (userId + '_' + timestamp + '_thumb_' + sanitizeFilename(fileName)).substring(0, 90) + '.png';
+		}
+
+		addResourceLocally(resourceObj, file, thumbDataUrl).then(function() {
 			callback(true);
 		}).catch(function(err) {
 			callback(false, 'Local save failed: ' + err.message);
@@ -132,122 +135,6 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 	 */
 	function sanitizeFilename(name) {
 		return name.replace(/[^a-zA-Z0-9_\-]/g, '_');
-	}
-
-	/**
-	 * Handle the traditional single-file upload form submission in local mode.
-	 * Reads form fields and saves the resource locally.
-	 * @method submitFormLocally
-	 * @param {jQuery} uploadDialog
-	 * @param {Function} successCallback
-	 * @private
-	 */
-	function submitFormLocally(uploadDialog, successCallback) {
-		var tmpType = uploadDialog.find('.nameInputContainer input[name="type"]').val();
-		var resourceName = uploadDialog.find('.nameInputContainer input[name="name"]').val();
-
-		if (!resourceName || resourceName.length < 1) {
-			$('.uploadDialog').append('<div class="message active error">'+ labels['ErrorEmptyName'] +'</div>');
-			return;
-		}
-
-		uploadDialog.find('.progress').show();
-		uploadDialog.find('.bar').width('50%');
-		uploadDialog.find('.percent').html('50%');
-		uploadDialog.find('.uploadStatus').html('Saving...');
-		$('.newResourceConfirm').prop('disabled', true);
-
-		if (tmpType === 'url') {
-			// URL resource — no file to store
-			var tmpObj = checkResourceInput(
-				uploadDialog.find('.resourceInput').val(),
-				uploadDialog.find('.resourceNameInput').val(),
-				uploadDialog.find('.resourceInput[name="thumbnail"]').val()
-			);
-			if (!tmpObj || !tmpObj.src) {
-				uploadDialog.find('.progress').hide();
-				$('.newResourceConfirm').prop('disabled', false);
-				$('.uploadDialog').append('<div class="message active error">'+ labels['ErrorEmptyURL'] +'</div>');
-				return;
-			}
-			tmpObj.name = resourceName;
-			addResourceLocally(tmpObj).then(function() {
-				uploadDialog.find('.bar').width('100%');
-				uploadDialog.find('.percent').html('100%');
-				FrameTrail.module('Database').loadResourceData(function() {
-					uploadDialog.dialog('close');
-					successCallback && successCallback.call();
-				});
-			}).catch(function(err) {
-				uploadDialog.find('.progress').hide();
-				$('.newResourceConfirm').prop('disabled', false);
-				$('.uploadDialog').append('<div class="message active error">Save failed: ' + err.message + '</div>');
-			});
-
-		} else if (tmpType === 'map') {
-			// Map resource — no file, just coordinates
-			var lat = uploadDialog.find('input[name="lat"]').val();
-			var lon = uploadDialog.find('input[name="lon"]').val();
-			if (!lat || !lon) {
-				uploadDialog.find('.progress').hide();
-				$('.newResourceConfirm').prop('disabled', false);
-				$('.uploadDialog').append('<div class="message active error">'+ labels['ErrorMapNoCoordinates'] +'</div>');
-				return;
-			}
-			var mapResource = {
-				name: resourceName,
-				src: '',
-				type: 'location',
-				attributes: {
-					lat: lat,
-					lon: lon,
-					boundingBox: [
-						uploadDialog.find('input.BB1').val(),
-						uploadDialog.find('input.BB2').val(),
-						uploadDialog.find('input.BB3').val(),
-						uploadDialog.find('input.BB4').val()
-					]
-				}
-			};
-			addResourceLocally(mapResource).then(function() {
-				uploadDialog.find('.bar').width('100%');
-				uploadDialog.find('.percent').html('100%');
-				FrameTrail.module('Database').loadResourceData(function() {
-					uploadDialog.dialog('close');
-					successCallback && successCallback.call();
-				});
-			}).catch(function(err) {
-				uploadDialog.find('.progress').hide();
-				$('.newResourceConfirm').prop('disabled', false);
-				$('.uploadDialog').append('<div class="message active error">Save failed: ' + err.message + '</div>');
-			});
-
-		} else {
-			// File upload (image, video, audio, pdf)
-			var fileInput = uploadDialog.find('#resourceInputTab' + tmpType.charAt(0).toUpperCase() + tmpType.slice(1) + ' input[type="file"]');
-			var file = fileInput[0] && fileInput[0].files[0];
-			if (!file) {
-				uploadDialog.find('.progress').hide();
-				$('.newResourceConfirm').prop('disabled', false);
-				$('.uploadDialog').append('<div class="message active error">No file selected.</div>');
-				return;
-			}
-
-			uploadSingleFileLocally(file, tmpType, function(success, error) {
-				if (success) {
-					uploadDialog.find('.bar').width('100%');
-					uploadDialog.find('.percent').html('100%');
-					FrameTrail.module('Database').loadResourceData(function() {
-						uploadDialog.dialog('close');
-						successCallback && successCallback.call();
-					});
-				} else {
-					uploadDialog.find('.progress').hide();
-					$('.newResourceConfirm').prop('disabled', false);
-					$('.uploadDialog').append('<div class="message active error">' + (error || 'Upload failed') + '</div>');
-				}
-			});
-		}
 	}
 
 	/**
@@ -288,7 +175,9 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 
 
 	/**
-	 * Detect resource type from file object
+	 * Detect resource type from file object.
+	 * Only MP4 and MP3 are accepted output formats. Other video/audio formats
+	 * are allowed only when FFmpeg is available on the server for transcoding.
 	 * @method detectResourceType
 	 * @param {File} file
 	 * @return {Object} {type: string, needsTranscoding: boolean, canUpload: boolean, error: string}
@@ -318,20 +207,16 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 		// Video detection
 		if (mimeType.indexOf('video/') === 0 || /\.(mp4|mov|avi|webm|m4v|mkv|flv)$/i.test(fileName)) {
 			result.type = 'video';
-			// Check if it's already MP4
 			if (mimeType === 'video/mp4' || /\.mp4$/i.test(fileName)) {
 				result.needsTranscoding = false;
 			} else {
-				// Other video formats need transcoding
 				result.needsTranscoding = true;
-				// Check if FFmpeg is available for transcoding
-					if (mediaOptimizationConfig.ffmpegEnabled && mediaOptimizationConfig.ffmpegAvailable) {
+				if (serverCapabilities.ffmpegAvailable) {
 					result.canUpload = true;
-					result.error = null; // Will be transcoded server-side
-					} else {
+				} else {
 					result.canUpload = false;
-					result.error = 'Video must be in MP4 format. Please convert ' + fileName + ' to MP4 before uploading.';
-					}
+					result.error = labels['ErrorVideoFileFormat'] + ' (' + file.name + ')';
+				}
 			}
 			return result;
 		}
@@ -339,19 +224,15 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 		// Audio detection
 		if (mimeType.indexOf('audio/') === 0 || /\.(mp3|wav|ogg|m4a|aac)$/i.test(fileName)) {
 			result.type = 'audio';
-			// Check if it's already MP3
 			if (mimeType === 'audio/mp3' || mimeType === 'audio/mpeg' || /\.mp3$/i.test(fileName)) {
 				result.needsTranscoding = false;
 			} else {
-				// Other audio formats need transcoding
 				result.needsTranscoding = true;
-				// Check if FFmpeg is available for transcoding
-				if (mediaOptimizationConfig.ffmpegEnabled && mediaOptimizationConfig.ffmpegAvailable) {
+				if (serverCapabilities.ffmpegAvailable) {
 					result.canUpload = true;
-					result.error = null; // Will be transcoded server-side
 				} else {
 					result.canUpload = false;
-					result.error = 'Audio must be in MP3 format. Please convert ' + fileName + ' to MP3 before uploading.';
+					result.error = labels['ErrorAudioFileFormat'] + ' (' + file.name + ')';
 				}
 			}
 			return result;
@@ -359,12 +240,71 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 
 		// Unknown type
 		result.canUpload = false;
-		result.error = 'Unsupported file type: ' + fileName;
+		result.error = labels['ErrorUnsupportedFileType'] + ': ' + file.name;
 		return result;
 	}
 
 	/**
-	 * Process upload queue - uploads files one at a time
+	 * Generate a thumbnail from a File object before uploading.
+	 * Returns a Promise that resolves with a base64 PNG data URL, or null if not possible.
+	 * @method generateThumbnailFromFile
+	 * @param {File} file
+	 * @param {String} type - 'image', 'video', 'pdf', or 'audio'
+	 * @return {Promise<String|null>}
+	 * @private
+	 */
+	function generateThumbnailFromFile(file, type) {
+		return new Promise(function(resolve) {
+
+			if (type === 'image') {
+				var blobUrl = URL.createObjectURL(file);
+				var img = new Image();
+				img.onload = function() {
+					var canvas = document.createElement('canvas');
+					canvas.width = 350;
+					canvas.height = 250;
+					canvas.getContext('2d').drawImage(img, 0, 0, 350, 250);
+					URL.revokeObjectURL(blobUrl);
+					try { resolve(canvas.toDataURL('image/png')); } catch(e) { resolve(null); }
+				};
+				img.onerror = function() { URL.revokeObjectURL(blobUrl); resolve(null); };
+				img.src = blobUrl;
+
+			} else if (type === 'video') {
+				var blobUrl = URL.createObjectURL(file);
+				var video = document.createElement('video');
+				video.style.cssText = 'position:absolute;visibility:hidden;width:400px;height:300px;';
+				document.body.appendChild(video);
+
+				video.addEventListener('loadedmetadata', function() {
+					video.currentTime = video.duration / 2;
+				});
+				video.addEventListener('seeked', function() {
+					var canvas = document.createElement('canvas');
+					canvas.width = 400;
+					canvas.height = 300;
+					canvas.getContext('2d').drawImage(video, 0, 0, 400, 300);
+					document.body.removeChild(video);
+					URL.revokeObjectURL(blobUrl);
+					try { resolve(canvas.toDataURL('image/png')); } catch(e) { resolve(null); }
+				});
+				video.addEventListener('error', function() {
+					document.body.removeChild(video);
+					URL.revokeObjectURL(blobUrl);
+					resolve(null);
+				});
+				video.src = blobUrl;
+
+			} else {
+				// Audio and other types: no thumbnail
+				resolve(null);
+			}
+
+		});
+	}
+
+	/**
+	 * Process upload queue - generates thumbnail then uploads, one file at a time
 	 * @method processUploadQueue
 	 * @private
 	 */
@@ -376,34 +316,36 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 		isUploading = true;
 		var queueItem = uploadQueue[0];
 
-		// Mark as uploading and update UI
-		queueItem.status = 'uploading';
+		queueItem.status = 'generating-thumb';
 		updateQueueUI();
 
-		// Upload the file (use local adapter when in local storage mode)
-		var uploadFn = (FrameTrail.getState('storageMode') === 'local') ? uploadSingleFileLocally : uploadSingleFile;
-		uploadFn(queueItem.file, queueItem.type, function(success, error) {
-			// Update status
-			if (success) {
-				queueItem.status = 'completed';
-			} else {
-				queueItem.status = 'error';
-				queueItem.error = error;
-			}
-
-			// Move to completed list
-			completedUploads.push(uploadQueue.shift());
-			isUploading = false;
-
+		// Generate thumbnail from the file before uploading
+		generateThumbnailFromFile(queueItem.file, queueItem.type).then(function(thumbDataUrl) {
+			queueItem.thumb = thumbDataUrl;
+			queueItem.status = 'uploading';
 			updateQueueUI();
 
-			// Process next file
-			if (uploadQueue.length > 0) {
-				setTimeout(processUploadQueue, 100);
-			} else {
-				// All uploads complete
-				finishBatchUpload();
-			}
+			var isLocal = (FrameTrail.getState('storageMode') === 'local');
+			var uploadFn = isLocal ? uploadSingleFileLocally : uploadSingleFile;
+
+			uploadFn(queueItem.file, queueItem.type, queueItem.thumb, function(success, error) {
+				if (success) {
+					queueItem.status = 'completed';
+				} else {
+					queueItem.status = 'error';
+					queueItem.error = error;
+				}
+
+				completedUploads.push(uploadQueue.shift());
+				isUploading = false;
+				updateQueueUI();
+
+				if (uploadQueue.length > 0) {
+					setTimeout(processUploadQueue, 100);
+				} else {
+					finishBatchUpload();
+				}
+			});
 		});
 	}
 
@@ -430,7 +372,8 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 			var statusClass = item.status || 'pending';
 			var statusText = item.status === 'error' ? (item.error || 'Failed') :
 			                 item.status === 'completed' ? 'Completed' :
-			                 item.status === 'uploading' ? 'Uploading...' : 'Pending';
+			                 item.status === 'uploading' ? 'Uploading...' :
+			                 item.status === 'generating-thumb' ? 'Preparing...' : 'Pending';
 
 			if (item.status === 'completed') completed++;
 			if (item.status === 'error') failed++;
@@ -478,30 +421,25 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 	}
 
 	/**
-	 * Upload a single file
+	 * Upload a single file to the server.
 	 * @method uploadSingleFile
 	 * @param {File} file
-	 * @param {String} type
-	 * @param {Function} callback
+	 * @param {String} type - detected file type ('image', 'video', 'audio', 'pdf')
+	 * @param {String|null} thumbDataUrl - base64 thumbnail PNG data URL, or null
+	 * @param {Function} callback - callback(success, errorMessage)
 	 * @private
 	 */
-	function uploadSingleFile(file, type, callback) {
-		// Generate a unique name from filename
-		var fileName = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
+	function uploadSingleFile(file, type, thumbDataUrl, callback) {
+		var fileName = file.name.replace(/\.[^/.]+$/, ''); // Remove extension
 
 		var formData = new FormData();
 		formData.append('a', 'fileUpload');
 		formData.append('name', fileName);
 		formData.append('type', type);
+		formData.append('file', file); // Unified field — PHP auto-detects type from MIME
 
-		if (type === 'image') {
-			formData.append('image', file);
-		} else if (type === 'video') {
-			formData.append('mp4', file);
-		} else if (type === 'audio') {
-			formData.append('audio', file);
-		} else if (type === 'pdf') {
-			formData.append('pdf', file);
+		if (thumbDataUrl) {
+			formData.append('thumb', thumbDataUrl);
 		}
 
 		$.ajax({
@@ -510,11 +448,21 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 			data: formData,
 			processData: false,
 			contentType: false,
+			xhr: function() {
+				var xhr = new XMLHttpRequest();
+				xhr.upload.addEventListener('progress', function(e) {
+					if (e.lengthComputable && currentUploadDialog) {
+						var pct = Math.round((e.loaded / e.total) * 100);
+						currentUploadDialog.find('.uploadProgressBar').css('width', pct + '%');
+					}
+				});
+				return xhr;
+			},
 			success: function(response) {
 				if (response.code === 0) {
 					callback(true);
 				} else {
-					callback(false, 'Upload failed: ' + (response.string || 'Unknown error'));
+					callback(false, response.string || 'Upload failed');
 				}
 			},
 			error: function() {
@@ -525,12 +473,11 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 
 	/**
 	 * I open a jquery UI dialog, which allows the user to upload a new resource.
-     * When the onlyVideo parameter is set to true, I allow only uploads of videos (needed during creation of a new hypervideo)
+	 * Three tabs: Paste URL, Upload Files, Add Map.
 	 *
 	 * @method uploadResource
 	 * @param {Function} successCallback
-     * @param {Boolean} onlyVideo
-	 *
+	 * @param {Boolean} onlyVideo - if true, only video uploads are allowed (for hypervideo creation)
 	 */
 	function uploadResource(successCallback, onlyVideo) {
         FrameTrail.module('UserManagement').ensureAuthenticated(function(){
@@ -539,88 +486,72 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 
             function showUploadDialog() {
 
-                    var uploadDialog =  $('<div class="uploadDialog" title="'+ labels['ResourceAddNew'] +'">'
-                                        + '    <div class="dropZoneContainer">'
-                                        + '        <div class="dropZone">'
-                                        + '            <div class="dropZoneContent">'
-                                        + '                <span class="icon-upload"></span>'
-                                        + '                <p>Drag and drop files here</p>'
-                                        + '                <p class="dropZoneHint">or use the tabs below to upload</p>'
-                                        + '            </div>'
-                                        + '        </div>'
-                                        + '        <div class="uploadQueue"></div>'
-                                        + '        <div class="queueSummary"></div>'
-                                        + '    </div>'
-                                        + '    <form class="uploadForm" method="post">'
-                                        + '        <div class="resourceInputTabContainer">'
-                                        + '            <ul class="resourceInputTabList">'
-                                        + '                <li data-type="url"><a href="#resourceInputTabURL">'+ labels['ResourcePasteURL'] +'</a></li>'
-                                        + '                <li data-type="image"><a href="#resourceInputTabImage">'+ labels['ResourceUploadImage'] +'</a></li>'
-                                        + '                <li data-type="video"><a href="#resourceInputTabVideo">'+ labels['ResourceUploadVideo'] +'</a></li>'
-                                        + '                <li data-type="audio"><a href="#resourceInputTabAudio">'+ labels['ResourceUploadAudio'] +'</a></li>'
-                                        + '                <li data-type="pdf"><a href="#resourceInputTabPDF">'+ labels['ResourceUploadPDF'] +'</a></li>'
-                                        + '                <li data-type="map"><a href="#resourceInputTabMap">'+ labels['ResourceAddMap'] +'</a></li>'
-                                        + '            </ul>'
-                                        + '            <div id="resourceInputTabURL">'
-                                        + '                <div class="resourceInputMessage message active">'+ labels['MessagePasteAnyURL'] +'</div>'
-                                        + '                <input type="text" name="url" placeholder="URL" class="resourceInput">'
-                                        + '                <input type="hidden" name="thumbnail" class="resourceInput">'
-                                        + '                <input type="hidden" name="embed" class="resourceInput">'
-                                        + '                <div class="corsWarning message warning">'+ labels['MessageEmbedNotAllowed'] +'</div>'
-                                        + '                <div class="resourceURLPreview"></div>'
-                                        + '            </div>'
-                                        + '            <div id="resourceInputTabImage">'
-                                        + '                <div class="message active">'+ labels['MessageAddImageFileFormat'] +' <b>3 MB</b></div>'
-                                        + '                <input type="file" name="image">'
-                                        + '            </div>'
-                                        + '            <div id="resourceInputTabVideo">'
-                                        + '                <div class="videoInputMessage message active">'+ labels['MessageAddVideoFileFormat'] +' <b>'+ bytesToSize(maxUploadBytes) +'</b>.<br>'+ labels['MessageMoreInfoVideoConversion'] +'</div>'
-                                        + '                <input type="file" name="mp4"> .mp4'
-                                        + '            </div>'
-                                        + '            <div id="resourceInputTabAudio">'
-                                        + '                <div class="audioInputMessage message active">'+ labels['MessageAddAudioFileFormat'] +' <b>3 MB</b>.</div>'
-                                        + '                <input type="file" name="audio"> .mp3'
-                                        + '            </div>'
-                                        + '            <div id="resourceInputTabPDF">'
-                                        + '                <div class="pdfInputMessage message active">'+ labels['MessageAddPDFFileFormat'] +' <b>3 MB</b>.</div>'
-                                        + '                <input type="file" name="pdf"> .pdf'
-                                        + '            </div>'
-                                        + '            <div id="resourceInputTabMap">'
-                                        + '                <div class="locationSearchWrapper">'
-                                        + '                    <input type="text" name="locationQ" class="locationQ" placeholder="'+ labels['LocationSearch'] +'">'
-                                        + '                    <span class="locationSearchCopyright">Data © OpenStreetMap contributors, ODbL 1.0.</span>'
-                                        + '                    <ul class="locationSearchSuggestions"></ul>'
-                                        + '                </div>'
-                                        + '                <input type="text" name="lat" placeholder="latitude">'
-                                        + '                <input type="text" name="lon" placeholder="longitude">'
-                                        + '                <input type="hidden" name="boundingBox[]" class="BB1">'
-                                        + '                <input type="hidden" name="boundingBox[]" class="BB2">'
-                                        + '                <input type="hidden" name="boundingBox[]" class="BB3">'
-                                        + '                <input type="hidden" name="boundingBox[]" class="BB4">'
-                                        + '            </div>'
-                                        + '        </div>'
-                                        + '        <div class="nameInputContainer">'
-                                        + '            <div class="nameInputMessage">Name</div>'
-                                        + '            <input type="text" name="name" placeholder="'+ labels['MessageNewResourceName'] +'" class="resourceNameInput">'
-                                        + '            <input type="hidden" name="a" value="fileUpload">'
-                                        + '            <input type="hidden" name="attributes" value="">'
-                                        + '            <input type="hidden" name="type" value="url">'
-                                        + '        </div>'
-                                        + '    </form>'
-                                        + '    <div class="progress">'
-                                        + '        <div class="bar"></div >'
-                                        + '        <div class="percent">0%</div >'
-                                        + '        <div class="uploadStatus"></div>'
-                                        + '    </div>'
-                                        + '</div>'
+                    // Build format badge text based on server capabilities
+                    var formatBadgeText = '.jpg · .jpeg · .png · .gif · .pdf · .mp4 · .mp3';
+                    if (serverCapabilities.ffmpegAvailable && !isLocalMode) {
+                        formatBadgeText += ' · .mov · .avi · .webm · .m4v · .mkv · .flv · .wav · .ogg · .m4a · .aac';
+                    }
 
+                    var fileAccept = onlyVideo ? 'video/*' : '*/*';
+
+                    var uploadDialog = $('<div class="uploadDialog" title="'+ labels['ResourceAddNew'] +'">'
+                                        + '    <div class="resourceInputTabContainer">'
+                                        + '        <ul class="resourceInputTabList">'
+                                        + (onlyVideo ? '' : '            <li data-type="url"><a href="#resourceInputTabURL">'+ labels['ResourcePasteURL'] +'</a></li>')
+                                        + '            <li data-type="file"><a href="#resourceInputTabFile">'+ labels['ResourceUploadFiles'] +'</a></li>'
+                                        + (onlyVideo ? '' : '            <li data-type="map"><a href="#resourceInputTabMap">'+ labels['ResourceAddMap'] +'</a></li>')
+                                        + '        </ul>'
+                                        + (onlyVideo ? '' :
+                                              '        <div id="resourceInputTabURL">'
+                                            + '            <div class="resourceInputMessage message active">'+ labels['MessagePasteAnyURL'] +'</div>'
+                                            + '            <input type="text" name="url" placeholder="URL" class="resourceInput">'
+                                            + '            <input type="hidden" name="thumbnail" class="resourceInput">'
+                                            + '            <input type="hidden" name="embed" class="resourceInput">'
+                                            + '            <div class="corsWarning message warning">'+ labels['MessageEmbedNotAllowed'] +'</div>'
+                                            + '            <div class="resourceURLPreview"></div>'
+                                            + '        </div>'
+                                        )
+                                        + '        <div id="resourceInputTabFile">'
+                                        + '            <div class="dropZone">'
+                                        + '                <div class="dropZoneContent">'
+                                        + '                    <span class="icon-upload"></span>'
+                                        + '                    <p>'+ labels['MessageDropFilesHere'] +'</p>'
+                                        + '                    <button type="button" class="chooseFilesBtn">'+ labels['MessageChooseFiles'] +'</button>'
+                                        + '                    <input type="file" class="hiddenFileInput" accept="'+ fileAccept +'" multiple style="display:none">'
+                                        + '                </div>'
+                                        + '                <div class="formatBadge">'+ formatBadgeText +'</div>'
+                                        + '            </div>'
+                                        + '            <div class="uploadQueue"></div>'
+                                        + '            <div class="queueSummary"></div>'
+                                        + '            <div class="uploadProgressBarWrap"><div class="uploadProgressBar"></div></div>'
+                                        + '        </div>'
+                                        + (onlyVideo ? '' :
+                                              '        <div id="resourceInputTabMap">'
+                                            + '            <div class="locationSearchWrapper">'
+                                            + '                <input type="text" name="locationQ" class="locationQ" placeholder="'+ labels['LocationSearch'] +'">'
+                                            + '                <span class="locationSearchCopyright">Data \u00a9 OpenStreetMap contributors, ODbL 1.0.</span>'
+                                            + '                <ul class="locationSearchSuggestions"></ul>'
+                                            + '            </div>'
+                                            + '            <input type="text" name="lat" placeholder="latitude">'
+                                            + '            <input type="text" name="lon" placeholder="longitude">'
+                                            + '            <input type="hidden" name="boundingBox[]" class="BB1">'
+                                            + '            <input type="hidden" name="boundingBox[]" class="BB2">'
+                                            + '            <input type="hidden" name="boundingBox[]" class="BB3">'
+                                            + '            <input type="hidden" name="boundingBox[]" class="BB4">'
+                                            + '        </div>'
+                                        )
+                                        + '    </div>'
+                                        + '    <div class="nameInputContainer"' + (onlyVideo ? ' style="display:none"' : '') + '>'
+                                        + '        <div class="nameInputMessage">Name</div>'
+                                        + '        <input type="text" name="name" placeholder="'+ labels['MessageNewResourceName'] +'" class="resourceNameInput">'
+                                        + '    </div>'
                                         + '</div>');
 
                     // Store reference to current dialog and callback
                     currentUploadDialog = uploadDialog;
                     currentSuccessCallback = successCallback;
 
-                    // Setup drag and drop zone
+                    // ---- Drop Zone & File Picker ----
                     var dropZone = uploadDialog.find('.dropZone');
 
                     dropZone.on('dragover', function(e) {
@@ -639,27 +570,19 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                         e.preventDefault();
                         e.stopPropagation();
                         $(this).removeClass('dragover');
-
                         var files = e.originalEvent.dataTransfer.files;
-                        if (files.length > 0) {
-                            handleFilesDrop(files);
-                        }
+                        if (files.length > 0) { handleFilesDrop(files); }
                     });
 
-                    // Also handle click to open file picker
-                    dropZone.on('click', function() {
-                        var input = $('<input type="file" multiple style="display:none">');
-                        input.on('change', function() {
-                            if (this.files.length > 0) {
-                                handleFilesDrop(this.files);
-                            }
-                        });
-                        input.click();
+                    uploadDialog.find('.chooseFilesBtn').on('click', function(e) {
+                        e.stopPropagation();
+                        uploadDialog.find('.hiddenFileInput').val('').trigger('click');
                     });
 
-                    /**
-                     * Handle files dropped or selected
-                     */
+                    uploadDialog.find('.hiddenFileInput').on('change', function() {
+                        if (this.files.length > 0) { handleFilesDrop(this.files); }
+                    });
+
                     function handleFilesDrop(files) {
                         uploadQueue = [];
                         completedUploads = [];
@@ -667,519 +590,320 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 
                         for (var i = 0; i < files.length; i++) {
                             var file = files[i];
-
-                            // Check file size
-                            if (file.size > maxUploadBytes) {
-                                errors.push(file.name + ' exceeds maximum size of ' + bytesToSize(maxUploadBytes));
+                            if (onlyVideo) {
+                                // Restrict to video types when onlyVideo is set
+                                if (!file.type || file.type.indexOf('video/') !== 0) {
+                                    errors.push(labels['ErrorChooseVideoFile'] + ': ' + file.name);
+                                    continue;
+                                }
+                            }
+                            if (file.size > serverCapabilities.maxUploadBytes) {
+                                errors.push(file.name + ': ' + labels['ErrorFileSize'] + ' (max ' + bytesToSize(serverCapabilities.maxUploadBytes) + ')');
                                 continue;
                             }
-
-                            // Detect file type
                             var detection = detectResourceType(file);
-
                             if (!detection.canUpload) {
                                 errors.push(detection.error);
                                 continue;
                             }
-
-                            // Add to queue
-                            uploadQueue.push({
-                                file: file,
-                                type: detection.type,
-                                status: 'pending',
-                                error: null
-                            });
+                            uploadQueue.push({ file: file, type: detection.type, status: 'pending', error: null, thumb: null });
                         }
 
-                        // Show errors if any
+                        uploadDialog.find('.message.error').remove();
                         if (errors.length > 0) {
-                            uploadDialog.find('.message.error').remove();
-                            $('.uploadDialog').append('<div class="message active error">' + errors.join('<br>') + '</div>');
+                            uploadDialog.find('#resourceInputTabFile').append('<div class="message active error">' + errors.join('<br>') + '</div>');
                         }
 
-                        // If we have files to upload, show queue and start
                         if (uploadQueue.length > 0) {
-                            uploadDialog.find('.dropZoneContainer').addClass('hasQueue');
                             uploadDialog.find('.uploadQueue').show();
                             uploadDialog.find('.queueSummary').show();
                             updateQueueUI();
-
-                            // Hide traditional upload form
-                            uploadDialog.find('.uploadForm').hide();
-
-                            // Enable upload button and change text to "Start Upload"
                             setTimeout(function() {
                                 var buttons = uploadDialog.dialog('option', 'buttons');
-                                buttons[0].text = 'Start Upload';
+                                buttons[0].text = labels['ResourceUploadStart'] || 'Start Upload';
                                 uploadDialog.dialog('option', 'buttons', buttons);
                                 uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', false);
-                            }, 100);
+                            }, 50);
                         }
                     }
 
-                    uploadDialog.find('input[type="file"]').on('change', function() {
-
-                        if (this.files[0].size > maxUploadBytes) {
-                            uploadDialog.find('.newResourceConfirm').prop('disabled', true);
-                            $('.uploadDialog').append('<div class="message active error">'+ labels['ErrorFileSize'] +'. '+ labels['ErrorFileSizeMax'] +' '+ bytesToSize(maxUploadBytes) +'. <br>'+ labels['ErrorFileSizeMoreInfo'] +'</div>');
-                        } else {
-                            uploadDialog.find('.newResourceConfirm').prop('disabled', false);
-                            uploadDialog.find('.message.error').remove();
-
-                        }
-
-                    });
-
-                    uploadDialog.find('.resourceInputTabContainer').tabs({
-                        activate: function(e,ui) {
-
-                            uploadDialog.find('.nameInputContainer input[name="attributes"]').val('');
-                            uploadDialog.find('.nameInputContainer input[name="type"]').val($(ui.newTab[0]).data('type'));
-                            uploadDialog.find('.message.error').remove();
-
-                        },
-
-                        create: function(e,ui) {
-
-                        	if (onlyVideo) {
-
-                            	uploadDialog.find('.resourceInputTabContainer').tabs(
-                            		'option',
-                            		'active',
-                            		uploadDialog.find('#resourceInputTabVideo').index() - 1
-                            	);
-
-                            	uploadDialog.find('.resourceInputTabContainer').tabs('disable');
-                            	uploadDialog.find('.resourceInputTabContainer').tabs('enable', '#resourceInputTabVideo');
-
-                            }
-
-
-                        }
-
-                    });
-
-                    uploadDialog.find('.locationQ').keyup(function(e) {
-
-                        $.getJSON('https://nominatim.openstreetmap.org/search?q='+ uploadDialog.find('.locationQ').val() + '&format=json')
+                    // ---- Map tab: Nominatim location search ----
+                    uploadDialog.find('.locationQ').keyup(function() {
+                        $.getJSON('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent($(this).val()) + '&format=json')
                             .done(function(respText) {
-
-                                uploadDialog.find('.locationSearchSuggestions').empty();
-                                uploadDialog.find('.locationSearchSuggestions').show();
-
-                                for (var location in respText) {
-
-                                    var suggestion = $('<li data-lon="'+ respText[location].lon +'" data-lat="'+ respText[location].lat +'" data-display-name="'+ respText[location].display_name +'" data-bb1="'+ respText[location].boundingbox[0] +'" data-bb2="'+ respText[location].boundingbox[1] +'" data-bb3="'+ respText[location].boundingbox[2] +'" data-bb4="'+ respText[location].boundingbox[3] +'">'+ respText[location].display_name +'</li>')
+                                uploadDialog.find('.locationSearchSuggestions').empty().show();
+                                for (var i = 0; i < respText.length; i++) {
+                                    var loc = respText[i];
+                                    $('<li>')
+                                        .text(loc.display_name)
+                                        .data('loc', loc)
                                         .click(function() {
-                                            uploadDialog.find('input[name="lon"]').val( $(this).attr('data-lon') );
-                                            uploadDialog.find('input[name="lat"]').val( $(this).attr('data-lat') );
-                                            uploadDialog.find('input.BB1').val( $(this).attr('data-bb1') );
-                                            uploadDialog.find('input.BB2').val( $(this).attr('data-bb2') );
-                                            uploadDialog.find('input.BB3').val( $(this).attr('data-bb3') );
-                                            uploadDialog.find('input.BB4').val( $(this).attr('data-bb4') );
-                                            uploadDialog.find('input[name="name"]').val( $(this).attr('data-display-name') );
+                                            var d = $(this).data('loc');
+                                            uploadDialog.find('input[name="lon"]').val(d.lon);
+                                            uploadDialog.find('input[name="lat"]').val(d.lat);
+                                            uploadDialog.find('input.BB1').val(d.boundingbox[0]);
+                                            uploadDialog.find('input.BB2').val(d.boundingbox[1]);
+                                            uploadDialog.find('input.BB3').val(d.boundingbox[2]);
+                                            uploadDialog.find('input.BB4').val(d.boundingbox[3]);
+                                            uploadDialog.find('input[name="name"]').val(d.display_name);
                                             uploadDialog.find('.locationSearchSuggestions').hide();
+                                            uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', false);
                                         })
-                                        .appendTo( uploadDialog.find('.locationSearchSuggestions') );
+                                        .appendTo(uploadDialog.find('.locationSearchSuggestions'));
                                 }
-                                //console.log(respText);
                             });
-
                     });
 
-
-
-                    //Ajaxform
-                    uploadDialog.find('.uploadForm').ajaxForm({
-                        method:     'POST',
-                        url:        '_server/ajaxServer.php',
-                        beforeSerialize: function() {
-
-                            if (previewXHR) { previewXHR.abort() };
-
+                    // ---- Tabs ----
+                    uploadDialog.find('.resourceInputTabContainer').tabs({
+                        activate: function(e, ui) {
                             uploadDialog.find('.message.error').remove();
-
-                            var tmpType = uploadDialog.find('.nameInputContainer input[name="type"]').val();
-
-                            if (tmpType == 'url') {
-                                tmpObj = checkResourceInput( uploadDialog.find('.resourceInput').val(), uploadDialog.find('.resourceNameInput').val(), uploadDialog.find('.resourceInput[name="thumbnail"]').val() );
-                                uploadDialog.find('.nameInputContainer input[name="attributes"]').val(JSON.stringify(tmpObj));
-                                tmpObj = [];
+                            var tabType = $(ui.newTab[0]).data('type');
+                            var buttons = uploadDialog.dialog('option', 'buttons');
+                            if (tabType === 'url') {
+                                uploadDialog.find('.nameInputContainer').show();
+                                buttons[0].text = labels['ResourceAddNew'] || 'Add Resource';
+                                uploadDialog.dialog('option', 'buttons', buttons);
+                                var hasUrl = uploadDialog.find('.resourceInput[name="url"]').val().length > 3;
+                                uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', !hasUrl);
+                            } else if (tabType === 'file') {
+                                uploadDialog.find('.nameInputContainer').hide();
+                                var hasQueue = uploadQueue.length > 0;
+                                buttons[0].text = hasQueue ? (labels['ResourceUploadStart'] || 'Start Upload') : (labels['ResourceAddNew'] || 'Add Resource');
+                                uploadDialog.dialog('option', 'buttons', buttons);
+                                uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', !hasQueue);
+                            } else if (tabType === 'map') {
+                                uploadDialog.find('.nameInputContainer').show();
+                                buttons[0].text = labels['ResourceAddNew'] || 'Add Resource';
+                                uploadDialog.dialog('option', 'buttons', buttons);
+                                var hasCoords = uploadDialog.find('input[name="lat"]').val().length > 0;
+                                uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', !hasCoords);
                             }
-
-                            else if (tmpType == 'image') {
-                                uploadDialog.find('#resourceInputTabVideo input').prop('disabled',true);
-                                uploadDialog.find('#resourceInputTabPDF input').prop('disabled',true);
-                                uploadDialog.find('#resourceInputTabAudio input').prop('disabled',true);
-                            }
-
-                            else if (tmpType == 'video') {
-                                uploadDialog.find('#resourceInputTabImage input').prop('disabled',true);
-                                uploadDialog.find('#resourceInputTabPDF input').prop('disabled',true);
-                                uploadDialog.find('#resourceInputTabAudio input').prop('disabled',true);
-                            }
-
-                            else if (tmpType == 'audio') {
-                                uploadDialog.find('#resourceInputTabImage input').prop('disabled',true);
-                                uploadDialog.find('#resourceInputTabVideo input').prop('disabled',true);
-                                uploadDialog.find('#resourceInputTabPDF input').prop('disabled',true);
-                            }
-
-                            else if (tmpType == 'pdf') {
-                                uploadDialog.find('#resourceInputTabImage input').prop('disabled',true);
-                                uploadDialog.find('#resourceInputTabVideo input').prop('disabled',true);
-                                uploadDialog.find('#resourceInputTabAudio input').prop('disabled',true);
-                            }
-
-                            else if (tmpType == 'map') {
-                                uploadDialog.find('.nameInputContainer input[name="attributes"]').val('{}');
-                            }
-
-                            var percentVal = '0%';
-
-                            uploadDialog.find('.bar').width(percentVal);
-                            uploadDialog.find('.percent').html(percentVal);
-                            uploadDialog.find('.uploadStatus').html('Uploading Resource ...');
-                            uploadDialog.find('.progress').show();
-
-                            $('.newResourceConfirm').prop('disabled', true);
-
                         },
-                        beforeSend: function(xhr) {
-                            var tmpType = uploadDialog.find('.nameInputContainer input[name="type"]').val();
-
-                            // client side pre-validation (server checks again)
-                            if (tmpType == 'video') {
-                                if( uploadDialog.find('[name="mp4"]').val().length < 4) {
-                                    uploadDialog.find('.progress').hide();
-                                    uploadDialog.find('.newResourceConfirm').prop('disabled', false);
-                                    $('.uploadDialog').append('<div class="message active error">'+ labels['ErrorChooseVideoFile'] +'</div>');
-                                    xhr.abort();
-                                }
-
+                        create: function() {
+                            // Hide name input initially if starting on the file tab (onlyVideo mode)
+                            if (onlyVideo) {
+                                uploadDialog.find('.nameInputContainer').hide();
                             }
+                        }
+                    });
 
-                        },
-                        data: tmpObj,
-                        uploadProgress: function(event, position, total, percentComplete) {
+                    // ---- Button click handler ----
+                    function getActiveTabType() {
+                        var activeIdx = uploadDialog.find('.resourceInputTabContainer').tabs('option', 'active');
+                        return uploadDialog.find('.resourceInputTabList li').eq(activeIdx).data('type');
+                    }
 
-                            var percentVal = percentComplete + '%';
+                    function submitURL() {
+                        if (previewXHR) { previewXHR.abort(); }
+                        var resourceName = uploadDialog.find('input[name="name"]').val();
+                        if (!resourceName || resourceName.length < 2) {
+                            uploadDialog.find('.message.error').remove();
+                            uploadDialog.find('#resourceInputTabURL').append('<div class="message active error">'+ labels['ErrorEmptyName'] +'</div>');
+                            return;
+                        }
+                        var urlObj = checkResourceInput(
+                            uploadDialog.find('.resourceInput[name="url"]').val(),
+                            resourceName,
+                            uploadDialog.find('.resourceInput[name="thumbnail"]').val()
+                        );
+                        if (!urlObj || !urlObj.src) {
+                            uploadDialog.find('.message.error').remove();
+                            uploadDialog.find('#resourceInputTabURL').append('<div class="message active error">'+ labels['ErrorEmptyURL'] +'</div>');
+                            return;
+                        }
+                        urlObj.name = resourceName;
+                        uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', true);
 
-                            uploadDialog.find('.bar').width(percentVal)
-                            uploadDialog.find('.percent').html(percentVal);
-
-                        },
-                        success: function(respText) {
-
-                            var percentVal = '100%';
-
-                            uploadDialog.find('.bar').width(percentVal)
-                            uploadDialog.find('.percent').html(percentVal);
-
-                            switch (respText['code']) {
-                                case 0:
-
-                                    // Upload Successful
-
-                                    if (respText['response']['resource']['type'] == 'video' && FrameTrail.module('RouteNavigation').getResourceURL(respText.response.resource.src).indexOf('.m3u8') == -1) {
-
-                                        uploadDialog.find('.uploadStatus').html(labels['MessageGeneratingThumbnail']);
-
-                                        var tmpVideo = $('<video id="tmpVideo" style="visibility: hidden;​ height:​ 300px;​ width:​ 400px;​ position:​ absolute;​">​</video>​');
-                                        var tmpCanvas = $('<canvas id="tmpCanvas" width="400px" height="300px" style="visibility: hidden; position: absolute;"></canvas>');
-                                        $('body').append(tmpVideo);
-                                        $('body').append(tmpCanvas);
-                                        var video = document.getElementById('tmpVideo');
-                                        var canvas = document.getElementById('tmpCanvas');
-
-                                        if ( (video.canPlayType('video/mp4') || (video.canPlayType('video/mpeg4'))) ) {
-                                            video.src = FrameTrail.module('RouteNavigation').getResourceURL(respText.response.resource.src);
-                                        } else {
-                                            console.log(labels['MessageThumbnailNotGenerated']);
-                                        }
-
-                                        video.addEventListener('loadeddata', function() {
-                                            // Go to middle & Play
-                                            video.currentTime = video.duration/2;
-                                            video.play();
-                                        });
-
-                                        video.addEventListener('playing', function() {
-                                            // Adapt and adjust Video & Canvas Dimensions
-                                            //video.width = canvas.width = video.offsetWidth;
-                                            //video.height = canvas.height = video.offsetHeight;
-                                            // Draw current Video-Frame on Canvas
-                                            canvas.getContext('2d').drawImage(video, 0, 0, 400, 300);
-                                            video.pause();
-
-                                            try {
-                                                canvas.toDataURL();
-
-                                                $.ajax({
-                                                    url:        '_server/ajaxServer.php',
-                                                    type:       'post',
-                                                    data:       {'a':'fileUploadThumb','resourcesID':respText['response']['resId'],'type':respText['response']['resource']['type'],'thumb':canvas.toDataURL()},
-                                                    /**
-                                                     * Description
-                                                     * @method success
-                                                     * @return
-                                                     */
-                                                    success: function() {
-                                                        $(video).remove();
-                                                        $(canvas).remove();
-
-                                                        //addResource(respText["res"]);
-                                                        FrameTrail.module('Database').loadResourceData(function() {
-                                                            uploadDialog.dialog('close');
-                                                            successCallback && successCallback.call();
-                                                        });
-                                                    }
-                                                });
-                                            } catch(error) {
-                                                $(image).remove();
-                                                $(canvas).remove();
-
-                                                FrameTrail.module('Database').loadResourceData(function() {
-                                                    uploadDialog.dialog('close');
-                                                    successCallback && successCallback.call();
-                                                });
-                                            }
-                                        });
-
-                                    } else if (respText['response']['resource']['type'] == 'image'
-                                                && (/\.(jpg|jpeg|png)$/i.exec(respText['response']['resource']['src'])) ) {
-
-                                        uploadDialog.find('.uploadStatus').html(labels['MessageGeneratingThumbnail']);
-
-                                        var tmpImage = $('<img id="tmpImage" style="visibility: hidden;​ height:​ 250px;​ width:​350px;​ position:​ absolute;​"/>​');
-                                        var tmpCanvas = $('<canvas id="tmpCanvas" width="350px" height="250px" style="visibility:hidden; position: absolute;"></canvas>');
-                                        $('body').append(tmpImage);
-                                        $('body').append(tmpCanvas);
-                                        var image = document.getElementById('tmpImage');
-                                        var canvas = document.getElementById('tmpCanvas');
-
-                                        image.src = FrameTrail.module('RouteNavigation').getResourceURL(respText['response']['resource']['src']);
-                                        image.addEventListener('load', function() {
-
-                                            // Adapt and adjust Image & Canvas Dimensions
-                                            //image.width = canvas.width = image.offsetWidth;
-                                            //image.height = canvas.height = image.offsetHeight;
-                                            // Draw current Image on Canvas
-                                            canvas.getContext('2d').drawImage(image, 0, 0, 350, 250);
-
-                                            try {
-                                                canvas.toDataURL();
-
-                                                $.ajax({
-                                                    url:        '_server/ajaxServer.php',
-                                                    type:       'post',
-                                                    data:       {'a':'fileUploadThumb','resourcesID':respText['response']['resId'],'type':respText['response']['resource']['type'],'thumb':canvas.toDataURL()},
-                                                    success: function() {
-                                                        $(image).remove();
-                                                        $(canvas).remove();
-
-                                                        //addResource(respText["res"]);
-                                                        FrameTrail.module('Database').loadResourceData(function() {
-                                                            uploadDialog.dialog('close');
-                                                            successCallback && successCallback.call();
-                                                        });
-                                                    }
-                                                });
-                                            } catch(error) {
-                                                $(image).remove();
-                                                $(canvas).remove();
-
-                                                FrameTrail.module('Database').loadResourceData(function() {
-                                                    uploadDialog.dialog('close');
-                                                    successCallback && successCallback.call();
-                                                });
-                                            }
-
-
-                                        });
-
-                                    } else {
-
-                                        //addResource(respText['response']);
+                        if (isLocalMode) {
+                            addResourceLocally(urlObj).then(function() {
+                                FrameTrail.module('Database').loadResourceData(function() {
+                                    uploadDialog.dialog('close');
+                                    successCallback && successCallback.call();
+                                });
+                            }).catch(function(err) {
+                                uploadDialog.find('.message.error').remove();
+                                uploadDialog.find('#resourceInputTabURL').append('<div class="message active error">' + err.message + '</div>');
+                                uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', false);
+                            });
+                        } else {
+                            $.ajax({
+                                url: '_server/ajaxServer.php',
+                                type: 'POST',
+                                data: { a: 'fileUpload', type: 'url', name: resourceName, attributes: JSON.stringify(urlObj) },
+                                success: function(resp) {
+                                    if (resp.code === 0) {
                                         FrameTrail.module('Database').loadResourceData(function() {
                                             uploadDialog.dialog('close');
                                             successCallback && successCallback.call();
                                         });
-
+                                    } else {
+                                        uploadDialog.find('.message.error').remove();
+                                        uploadDialog.find('#resourceInputTabURL').append('<div class="message active error">'+ (resp.string || labels['ErrorGeneric']) +'</div>');
+                                        uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', false);
                                     }
-                                    break;
-                                case 1:
-                                    uploadDialog.find('.progress').hide();
-                                    uploadDialog.find('.newResourceConfirm').prop('disabled', false);
-                                    $('.uploadDialog').append('<div class="message active error">'+ labels['ErrorNotLoggedInAnymore'] +'</div>');
-                                    break;
-                                case 2:
-                                    uploadDialog.find('.progress').hide();
-                                    uploadDialog.find('.newResourceConfirm').prop('disabled', false);
-                                    $('.uploadDialog').append('<div class="message active error">'+ labels['ErrorNotActivated'] +'</div>');
-                                    break;
-                                case 3:
-                                    uploadDialog.find('.progress').hide();
-                                    uploadDialog.find('.newResourceConfirm').prop('disabled', false);
-                                    $('.uploadDialog').append('<div class="message active error">'+ labels['ErrorCouldNotFindResourcesDirectory'] +'</div>');
-                                    break;
-                                case 4:
-                                    uploadDialog.find('.progress').hide();
-                                    uploadDialog.find('.newResourceConfirm').prop('disabled', false);
-                                    $('.uploadDialog').append('<div class="message active error">'+ labels['ErrorChooseImageFile'] +'</div>');
-                                    break;
-                                case 5:
-                                    uploadDialog.find('.progress').hide();
-                                    uploadDialog.find('.newResourceConfirm').prop('disabled', false);
-                                    $('.uploadDialog').append('<div class="message active error">'+ labels['ErrorChooseVideoFile'] +'</div>');
-                                    break;
-                                case 6:
-                                    uploadDialog.find('.progress').hide();
-                                    uploadDialog.find('.newResourceConfirm').prop('disabled', false);
-                                    $('.uploadDialog').append('<div class="message active error">'+ labels['ErrorVideoFileFormat'] +'</div>');
-                                    break;
-                                case 7:
-                                    uploadDialog.find('.progress').hide();
-                                    uploadDialog.find('.newResourceConfirm').prop('disabled', false);
-                                    $('.uploadDialog').append('<div class="message active error">'+ labels['ErrorMapNoCoordinates'] +'</div>');
-                                    break;
-                                case 8:
-                                    uploadDialog.find('.progress').hide();
-                                    uploadDialog.find('.newResourceConfirm').prop('disabled', false);
-                                    $('.uploadDialog').append('<div class="message active error">'+ labels['ErrorEmptyName'] +'</div>');
-                                    break;
-                                case 9:
-                                    uploadDialog.find('.progress').hide();
-                                    uploadDialog.find('.newResourceConfirm').prop('disabled', false);
-                                    $('.uploadDialog').append('<div class="message active error">'+ labels['ErrorWrongType'] +'</div>');
-                                    break;
-                                case 10:
-                                    uploadDialog.find('.progress').hide();
-                                    uploadDialog.find('.newResourceConfirm').prop('disabled', false);
-                                    $('.uploadDialog').append('<div class="message active error">'+ labels['ErrorFileSize'] +'. '+ labels['ErrorFileSizeMoreInfo'] +'</div>');
-                                    break;
-                                case 11:
-                                    uploadDialog.find('.progress').hide();
-                                    uploadDialog.find('.newResourceConfirm').prop('disabled', false);
-                                    $('.uploadDialog').append('<div class="message active error">'+ labels['ErrorEmptyURL'] +'</div>');
-                                    break;
-                                case 12:
-                                    uploadDialog.find('.progress').hide();
-                                    uploadDialog.find('.newResourceConfirm').prop('disabled', false);
-                                    $('.uploadDialog').append('<div class="message active error">'+ labels['MessageEmbedNotAllowed'] +'</div>');
-                                    break;
-                                case 20:
-                                    uploadDialog.find('.progress').hide();
-                                    uploadDialog.find('.newResourceConfirm').prop('disabled', false);
-                                    $('.uploadDialog').append('<div class="message active error">'+ labels['ErrorUploadNotAllowed'] +'</div>');
-                                    break;
-                                default:
-                                    uploadDialog.find('.progress').hide();
-                                    uploadDialog.find('.newResourceConfirm').prop('disabled', false);
-                                    $('.uploadDialog').append('<div class="message active error">'+ labels['ErrorGeneric'] +'</div>');
-                                    break;
-                            }
+                                },
+                                error: function() {
+                                    uploadDialog.find('.message.error').remove();
+                                    uploadDialog.find('#resourceInputTabURL').append('<div class="message active error">'+ labels['ErrorGeneric'] +'</div>');
+                                    uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', false);
+                                }
+                            });
                         }
-                    });
+                    }
 
+                    function submitMap() {
+                        var resourceName = uploadDialog.find('input[name="name"]').val();
+                        var lat = uploadDialog.find('input[name="lat"]').val();
+                        var lon = uploadDialog.find('input[name="lon"]').val();
+                        if (!lat || !lon) {
+                            uploadDialog.find('.message.error').remove();
+                            uploadDialog.find('#resourceInputTabMap').append('<div class="message active error">'+ labels['ErrorMapNoCoordinates'] +'</div>');
+                            return;
+                        }
+                        if (!resourceName || resourceName.length < 2) {
+                            uploadDialog.find('.message.error').remove();
+                            uploadDialog.find('#resourceInputTabMap').append('<div class="message active error">'+ labels['ErrorEmptyName'] +'</div>');
+                            return;
+                        }
+                        uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', true);
+                        var mapResource = {
+                            src: '', type: 'location', name: resourceName,
+                            attributes: {
+                                lat: lat, lon: lon,
+                                boundingBox: [
+                                    uploadDialog.find('input.BB1').val(),
+                                    uploadDialog.find('input.BB2').val(),
+                                    uploadDialog.find('input.BB3').val(),
+                                    uploadDialog.find('input.BB4').val()
+                                ]
+                            }
+                        };
+
+                        if (isLocalMode) {
+                            addResourceLocally(mapResource).then(function() {
+                                FrameTrail.module('Database').loadResourceData(function() {
+                                    uploadDialog.dialog('close');
+                                    successCallback && successCallback.call();
+                                });
+                            }).catch(function(err) {
+                                uploadDialog.find('.message.error').remove();
+                                uploadDialog.find('#resourceInputTabMap').append('<div class="message active error">' + err.message + '</div>');
+                                uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', false);
+                            });
+                        } else {
+                            $.ajax({
+                                url: '_server/ajaxServer.php',
+                                type: 'POST',
+                                data: {
+                                    a: 'fileUpload', type: 'map', name: resourceName,
+                                    lat: lat, lon: lon,
+                                    'boundingBox[]': [
+                                        uploadDialog.find('input.BB1').val(),
+                                        uploadDialog.find('input.BB2').val(),
+                                        uploadDialog.find('input.BB3').val(),
+                                        uploadDialog.find('input.BB4').val()
+                                    ]
+                                },
+                                success: function(resp) {
+                                    if (resp.code === 0) {
+                                        FrameTrail.module('Database').loadResourceData(function() {
+                                            uploadDialog.dialog('close');
+                                            successCallback && successCallback.call();
+                                        });
+                                    } else {
+                                        uploadDialog.find('.message.error').remove();
+                                        uploadDialog.find('#resourceInputTabMap').append('<div class="message active error">'+ (resp.string || labels['ErrorGeneric']) +'</div>');
+                                        uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', false);
+                                    }
+                                },
+                                error: function() {
+                                    uploadDialog.find('.message.error').remove();
+                                    uploadDialog.find('#resourceInputTabMap').append('<div class="message active error">'+ labels['ErrorGeneric'] +'</div>');
+                                    uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', false);
+                                }
+                            });
+                        }
+                    }
+
+                    function startBatchUpload() {
+                        var buttons = uploadDialog.dialog('option', 'buttons');
+                        buttons[0].text = labels['ResourceUploading'] || 'Uploading...';
+                        uploadDialog.dialog('option', 'buttons', buttons);
+                        uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', true);
+                        processUploadQueue();
+                    }
+
+                    function resetAndClose() {
+                        if (previewXHR) { previewXHR.abort(); }
+                        uploadQueue = [];
+                        completedUploads = [];
+                        isUploading = false;
+                        currentUploadDialog = null;
+                        currentSuccessCallback = null;
+                        uploadDialog.dialog('close');
+                    }
 
                     uploadDialog.dialog({
                         resizable: false,
                         width: 680,
                         height: 'auto',
                         modal: true,
+                        closeOnEscape: false,
                         close: function() {
-                            if (previewXHR) { previewXHR.abort() };
-                            // Clear queue and reset
-                            uploadQueue = [];
-                            completedUploads = [];
-                            isUploading = false;
-                            currentUploadDialog = null;
-                            currentSuccessCallback = null;
-                            $(this).dialog('close');
-                            //$(this).find('.uploadForm').resetForm();
+                            resetAndClose();
                             $(this).remove();
                         },
-                        closeOnEscape: false,
                         buttons: [
                             {
                                 class: 'newResourceConfirm',
-                                text: 'Add Resource',
+                                text: labels['ResourceAddNew'] || 'Add Resource',
                                 click: function() {
-                                    if (previewXHR) { previewXHR.abort() };
-
-                                    // Check if upload is complete - button should close dialog
-                                    if (uploadDialog.find('.queueSummary').text().indexOf('complete') !== -1) {
-                                        uploadQueue = [];
-                                        completedUploads = [];
-                                        isUploading = false;
-                                        currentUploadDialog = null;
-                                        currentSuccessCallback = null;
-                                        $(this).dialog('close');
-                                        return;
-                                    }
-
-                                    // Check if we're in batch upload mode
-                                    if (uploadQueue.length > 0 && uploadDialog.find('.dropZoneContainer').hasClass('hasQueue')) {
-                                        // Start batch upload
-                                        var buttons = uploadDialog.dialog('option', 'buttons');
-                                        buttons[0].text = 'Uploading...';
-                                        uploadDialog.dialog('option', 'buttons', buttons);
-                                        uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', true);
-                                        processUploadQueue();
-                                    } else {
-                                        // Traditional single file upload
-                                        if (isLocalMode) {
-                                            submitFormLocally(uploadDialog, successCallback);
-                                        } else {
-                                            $('.uploadForm').submit();
+                                    var tabType = getActiveTabType();
+                                    if (tabType === 'url') {
+                                        submitURL();
+                                    } else if (tabType === 'file') {
+                                        if (completedUploads.length > 0 && uploadQueue.length === 0) {
+                                            resetAndClose();
+                                        } else if (uploadQueue.length > 0) {
+                                            startBatchUpload();
                                         }
+                                    } else if (tabType === 'map') {
+                                        submitMap();
                                     }
                                 }
                             },
                             {
-                                text: 'Cancel',
-                                click: function() {
-                                    // Clear queue and reset
-                                    uploadQueue = [];
-                                    completedUploads = [];
-                                    isUploading = false;
-                                    currentUploadDialog = null;
-                                    currentSuccessCallback = null;
-                                    $(this).dialog('close');
-                                }
+                                text: labels['Cancel'] || 'Cancel',
+                                click: function() { resetAndClose(); }
                             }
                         ],
-                        open: function( event, ui ) {
-                            $('.newResourceConfirm').prop('disabled', true);
+                        open: function() {
+                            uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', true);
                         }
                     });
 
             } // End of showUploadDialog
 
             if (isLocalMode) {
-                // Local mode: use generous defaults, no server config needed
-                maxUploadBytes = 500 * 1024 * 1024; // 500 MB
-                mediaOptimizationConfig = { enabled: false, ffmpegEnabled: false, ffmpegAvailable: false };
+                // Local mode: no server to query, use generous defaults
+                serverCapabilities = { maxUploadBytes: 500 * 1024 * 1024, ffmpegAvailable: false };
                 showUploadDialog();
             } else {
-                // Server mode: fetch config from server
-                $.when(
-                    $.ajax({
-                        type: 'GET',
-                        url: '_server/ajaxServer.php',
-                        data: {'a':'fileGetMaxUploadSize'}
-                    }),
-                    $.ajax({
-                        type: 'GET',
-                        url: '_server/ajaxServer.php',
-                        data: {'a':'fileGetMediaOptimizationConfig'}
-                    })
-                ).done(function(maxSizeResponse, mediaConfigResponse) {
-                    maxUploadBytes = maxSizeResponse[0].maxuploadbytes;
-                    if (mediaConfigResponse[0] && mediaConfigResponse[0].config) {
-                        mediaOptimizationConfig = mediaConfigResponse[0].config;
+                // Server mode: fetch capabilities with a single request
+                $.ajax({
+                    type: 'GET',
+                    url: '_server/ajaxServer.php',
+                    data: { a: 'fileGetCapabilities' }
+                }).done(function(resp) {
+                    if (resp && resp.code === 0) {
+                        serverCapabilities = {
+                            maxUploadBytes: resp.maxUploadBytes || (500 * 1024 * 1024),
+                            ffmpegAvailable: resp.ffmpegAvailable || false
+                        };
                     }
+                    showUploadDialog();
+                }).fail(function() {
                     showUploadDialog();
                 });
             }
@@ -1214,6 +938,13 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
     function checkResourceInput(uriValue, nameValue, thumbValue) {
 
         if ( uriValue.length > 3 ) {
+
+            // Auto-prepend https:// if no protocol is present
+            if (!/^[a-zA-Z][a-zA-Z0-9+\-.]*:\/\//.test(uriValue)) {
+                uriValue = 'https://' + uriValue;
+                // Also update the input field so the user sees the normalised value
+                $('#resourceInputTabURL input[name="url"]').val(uriValue);
+            }
 
             var newResource = null;
 

@@ -86,10 +86,6 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                             +   '        <label for="defaultHypervideoHidden" data-tooltip-bottom-left="'+ labels['MessageNewHypervideoHidden'] +'">'+ labels['SettingsNewHypervideoHidden'] +'</label><br>'
                             +   '        <input type="checkbox" name="allowUploads" id="allowUploads" value="allowUploads" '+((configData.allowUploads && configData.allowUploads.toString() == "true") ? "checked" : "")+'>'
                             +   '        <label for="allowUploads" data-tooltip-left="'+ labels['MessageAllowFileUploads'] +'">'+ labels['SettingsAllowUploads'] +'</label><br>'
-                            +   '        <input type="checkbox" name="mediaOptimizationEnabled" id="mediaOptimizationEnabled" value="mediaOptimizationEnabled" '+((configData.mediaOptimization && configData.mediaOptimization.enabled) ? "checked" : "")+'>'
-                            +   '        <label for="mediaOptimizationEnabled" data-tooltip-left="'+ labels['MessageMediaOptimization'] +'">'+ labels['SettingsMediaOptimization'] +'</label><br>'
-                            +   '        <input type="checkbox" name="mediaOptimizationUseFFmpeg" id="mediaOptimizationUseFFmpeg" value="mediaOptimizationUseFFmpeg" '+((configData.mediaOptimization && configData.mediaOptimization.useFFmpeg) ? "checked" : "")+'>'
-                            +   '        <label for="mediaOptimizationUseFFmpeg" data-tooltip-left="'+ labels['MessageUseFFmpeg'] +'">'+ labels['SettingsUseFFmpeg'] +'</label><br>'
                             +   '    </div>'
                             +   '    <div class="column-3">'
                             +   '        <input type="checkbox" name="captureUserTraces" id="captureUserTraces" value="captureUserTraces" '+((configData.captureUserTraces && configData.captureUserTraces.toString() == "true") ? "checked" : "")+'>'
@@ -550,17 +546,7 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                                     var key = $(this).attr('name'),
                                         value = $(this).is(':checked');
                                     
-                                    if (key === 'mediaOptimizationEnabled') {
-                                        if (!database.config.mediaOptimization) {
-                                            database.config.mediaOptimization = {};
-                                        }
-                                        database.config.mediaOptimization.enabled = value;
-                                    } else if (key === 'mediaOptimizationUseFFmpeg') {
-                                        if (!database.config.mediaOptimization) {
-                                            database.config.mediaOptimization = {};
-                                        }
-                                        database.config.mediaOptimization.useFFmpeg = value;
-                                    } else if (key) {
+                                    if (key) {
                                         database.config[key] = value;
                                     }
                                 });

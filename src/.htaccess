@@ -28,7 +28,7 @@ AddType text/vtt .vtt
 ########################################################
 # Try to set correct server vars
 ########################################################
-<IfModule mod_php5.c>
+<IfModule mod_php.c>
 	php_value post_max_size 900M
 	php_value upload_max_filesize 400M
 	php_value memory_limit 900M
