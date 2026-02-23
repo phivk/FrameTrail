@@ -109,18 +109,9 @@
 	border-style: solid;
 }
 
-.dropZoneContent span[class^="icon-"]::before,
-.dropZoneContent span[class*=" icon-"]::before {
-	font-size: 48px;
-	display: block;
-	margin-bottom: 10px;
-	opacity: 0.6;
-}
-
 .dropZoneContent p {
-	margin: 8px 0;
+	margin: 0px 0 10px 0;
 	font-size: 16px;
-	font-weight: bold;
 }
 
 .formatBadge {
@@ -128,6 +119,9 @@
 	opacity: 0.6;
 	text-align: center;
 	padding: 4px 0 2px;
+	text-transform: uppercase;
+	width: 50%;
+	margin: 10px auto 0 auto;
 }
 
 /* Upload Queue */
