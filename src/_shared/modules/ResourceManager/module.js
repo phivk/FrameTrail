@@ -1396,7 +1396,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
         $('#resourceInputTabURL .resourceURLPreview').empty();
         $('.resourceInput[name="thumbnail"]').val('');
         $('.resourceInput[name="embed"]').val('');
-        $('.uploadForm .corsWarning').removeClass('active');
+        $('#resourceInputTabURL .corsWarning').removeClass('active');
 
         $('#resourceInputTabURL .resourceURLPreview').append('<div class="workingSpinner dark"></div>');
 
@@ -1476,9 +1476,9 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
         $('#resourceInputTabURL .resourceURLPreview').append(previewElem);
 
         if (embed && embed == 'forbidden') {
-            $('.uploadForm .corsWarning').addClass('active');
+            $('#resourceInputTabURL .corsWarning').addClass('active');
         } else {
-            $('.uploadForm .corsWarning').removeClass('active');
+            $('#resourceInputTabURL .corsWarning').removeClass('active');
         }
 
         $('#resourceInputTabURL .resourceURLPreview .workingSpinner').remove();
