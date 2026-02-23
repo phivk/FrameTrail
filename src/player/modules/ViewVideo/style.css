@@ -583,7 +583,7 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
 }
 
 .editActive[data-edit-mode="overlays"] .hypervideoContainer .infoAreaRight, .editActive[data-edit-mode="codesnippets"] .hypervideoContainer .infoAreaRight, .editActive[data-edit-mode="annotations"] .hypervideoContainer .infoAreaRight {
-    flex: 0 0 550px;
+    flex: 0 0 684px;
 }
 
 /* InfoAreaRight Tab Bar */

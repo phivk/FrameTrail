@@ -232,6 +232,7 @@ window.FrameTrail_L10n['en-US'] = {
 	"ResourceUploadFiles": "Upload Files",
 	"ResourceUploadStart": "Start Upload",
 	"ResourceUploading": "Uploading...",
+	"ResourceUploadVideo": "Upload Video",
 	"SettingsActions": "Actions",
 	"SettingsActionsIfRight": "If answer is correct",
 	"SettingsActionsIfWrong": "If answer is wrong",

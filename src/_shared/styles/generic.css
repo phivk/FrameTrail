@@ -1007,7 +1007,7 @@ input:checked + .slider:before {
 }
 
 .ui-tabs .ui-tabs-nav li.ui-tabs-right.tab-label {
-    padding: 2px 8px 0 0;
+    padding: 5px 8px 0 0;
 }
 
 .ui-tabs .ui-tabs-nav li.ui-state-disabled a {
@@ -1019,20 +1019,24 @@ input:checked + .slider:before {
 .ui-tabs .ui-tabs-nav .ui-tabs-anchor {
 	color: var(--primary-bg-color);
     opacity: .8;
-	border-bottom: 3px solid var(--secondary-fg-color);
     padding: 2px 6px;
+    background: var(--primary-fg-color);
+    border-radius: 50rem;
+    border: 1px solid var(--secondary-bg-color);
+    padding: 4px 11px;
+    margin-right: 2px;
 }
 
 .ui-tabs .ui-tabs-nav li a:hover, .ui-tabs .ui-tabs-nav .ui-tabs-anchor:hover {
     opacity: 1;
 }
 
-
 .ui-tabs .ui-tabs-nav li.ui-state-active a {
-	color: var(--primary-bg-color);
+	color: var(--primary-fg-color);
     opacity: 1;
-	border-bottom: 3px solid var(--primary-bg-color);
-	outline: none;
+    outline: none;
+    background: var(--primary-bg-color);
+    border-color: var(--primary-bg-color);
 }
 
 .ui-tabs .ui-tabs-panel {
