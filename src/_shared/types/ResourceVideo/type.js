@@ -231,7 +231,7 @@ FrameTrail.defineType(
 
                     checkboxRow.append(syncedCheckbox, syncedLabel);
 
-                    basicControls.controlsContainer.find('#OverlayOptions').append(checkboxRow);
+                    basicControls.controlsContainer.find('#OverlayOptions').prepend(checkboxRow);
 
                     return basicControls;
 

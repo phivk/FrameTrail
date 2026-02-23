@@ -197,7 +197,7 @@ FrameTrail.defineType(
 
                     var basicControls = this.renderBasicPropertiesControls(overlay);
 
-                    basicControls.controlsContainer.find('#OverlayOptions').append(this.renderHotspotEditor(overlay));
+                    basicControls.controlsContainer.find('#OverlayOptions').prepend(this.renderHotspotEditor(overlay));
 
 
                     return basicControls;

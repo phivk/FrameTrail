@@ -194,7 +194,7 @@ FrameTrail.defineType(
 
                     var basicControls = this.renderBasicPropertiesControls(overlay);
 
-                    basicControls.controlsContainer.find('#OverlayOptions').append(this.renderQuizEditor(overlay));
+                    basicControls.controlsContainer.find('#OverlayOptions').prepend(this.renderQuizEditor(overlay));
 
 
                     return basicControls;

@@ -140,7 +140,7 @@ FrameTrail.defineType(
 
                     var basicControls = this.renderBasicPropertiesControls(overlay);
 
-                    basicControls.controlsContainer.find('#OverlayOptions').append(this.renderTextEditors(overlay));
+                    basicControls.controlsContainer.find('#OverlayOptions').prepend(this.renderTextEditors(overlay));
 
 
                     return basicControls;
