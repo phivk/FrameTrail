@@ -83,11 +83,6 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
         FrameTrail.module('ResourceManager').uploadResource(updateList);
     });
 
-    if (!FrameTrail.module('StorageManager').canSave()) {
-        ResourceUpload.prop('disabled', true);
-        ResourceDelete.prop('disabled', true);
-    }
-
     ResourceDelete.click(toggleDeleteMode);
 
     ResourceDeleteConfirm.hide();
@@ -284,12 +279,24 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
 
 
     /**
+     * I update the disabled state of the upload and delete buttons based on whether saving is allowed.
+     * @method updateButtonStates
+     */
+    function updateButtonStates() {
+        var canSave = FrameTrail.module('StorageManager').canSave();
+        ResourceUpload.prop('disabled', !canSave);
+        ResourceDelete.prop('disabled', !canSave);
+    }
+
+
+    /**
      * I show the DOM element to the user and (optionally) set a callback, when I was opened not as a stand-alone element, but inside a jQuery UI dialog.
      * @method open
      * @param {Function} closeCallback
      */
     function open(closeCallback) {
 
+        updateButtonStates();
         updateList();
 
         if (showAsDialog) {
@@ -327,7 +334,8 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
    	return {
 
    		onChange: {
-            viewSize: changeViewSize
+            viewSize: changeViewSize,
+            loggedIn: updateButtonStates
         },
 
    		create: create,
