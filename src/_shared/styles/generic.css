@@ -1019,11 +1019,10 @@ input:checked + .slider:before {
 .ui-tabs .ui-tabs-nav .ui-tabs-anchor {
 	color: var(--primary-bg-color);
     opacity: .8;
-    padding: 2px 6px;
     background: var(--primary-fg-color);
     border-radius: 50rem;
     border: 1px solid var(--secondary-bg-color);
-    padding: 4px 11px;
+    padding: 6px 11px;
     margin-right: 2px;
 }
 
