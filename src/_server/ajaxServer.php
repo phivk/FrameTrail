@@ -381,11 +381,7 @@ switch($_REQUEST["a"]) {
 				"theme"=> "",
 				"defaultHypervideoHidden"=> false,
 				"userColorCollection"=> $tmpColors,
-				"videoFit"=> "contain",
-				"mediaOptimization"=> array(
-					"enabled"=> true,
-					"useFFmpeg"=> false
-				)
+				"videoFit"=> "contain"
 			);
 			// Apply optional config overrides sent by the setup wizard
 			$configOverrides = array("defaultUserRole", "userNeedsConfirmation",
