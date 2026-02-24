@@ -321,7 +321,7 @@
             + folderInfo
             + '</div>');
 
-        var folderDialogCtrl = FrameTrailDialog({
+        var folderDialogCtrl = Dialog({
             title:         labels['SelectDataFolder'],
             content:       folderDialog,
             modal:         true,

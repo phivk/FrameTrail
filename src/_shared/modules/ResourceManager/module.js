@@ -832,7 +832,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                         currentSuccessCallback = null;
                     }
 
-                    uploadDialogCtrl = FrameTrailDialog({
+                    uploadDialogCtrl = Dialog({
                         title: labels['ResourceAddNew'] || 'Add Resource',
                         resizable: false,
                         width: 680,

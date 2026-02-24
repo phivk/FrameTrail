@@ -35,7 +35,7 @@ CSS_FILES=(
     "_shared/styles/variables.css"
     "_shared/styles/frametrail-webfont.css"
     "_shared/styles/generic.css"
-    "_shared/styles/dialog.css"
+    "_lib/dialog/dialog.css"
 
     # Type styles (player types)
     "player/types/Annotation/style.css"
@@ -109,14 +109,14 @@ JS_FILES=(
     "_lib/interactjs/interact.min.js"
     "_lib/quill/quill.min.js"
     "_lib/leaflet/leaflet.js"
-    "_lib/jquery.collisiondetection/jquery.collisiondetection.js"
+    "_lib/collisiondetection/collisiondetection.js"
     "_lib/animejs/anime.min.js"
     "_lib/codemirror6/jshint.js"
     "_lib/codemirror6/csslint.js"
     "_lib/codemirror6/htmlhint.js"
     "_lib/codemirror6/cm6.bundle.js"
     "_lib/codemirror6/cm6linters.js"
-    "_lib/d3/d3.v5.min.js"
+    "_lib/d3/d3.min.js"
 
     # FrameTrail Core (must come before any defineModule/defineType calls)
     "_shared/frametrail-core/frametrail-core.js"
@@ -164,8 +164,8 @@ JS_FILES=(
     "player/types/ContentView/type.js"
 
     # Dialog and tabs helpers (must come before modules that use them)
-    "_shared/frametrail-core/dialog.js"
-    "_shared/frametrail-core/tabs.js"
+    "_lib/dialog/dialog.js"
+    "_lib/jquery.tabs/jquery.tabs.js"
 
     # Storage layer (must come before StorageManager and Database)
     "_shared/frametrail-core/storage/StorageAdapter.js"

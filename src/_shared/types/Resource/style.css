@@ -221,7 +221,7 @@
 	color: var(--primary-bg-color);
 }
 
-.editPropertiesContainer .ft-spinner {
+.editPropertiesContainer input[type="number"] {
 	border: 1px solid var(--primary-bg-color);
 	background: var(--primary-fg-color);
 	margin: 3px 2px;

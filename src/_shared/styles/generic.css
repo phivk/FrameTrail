@@ -167,6 +167,16 @@ input[readonly], textarea[readonly] {
 	background-color: #cfcfcf;
 }
 
+details > summary {
+	cursor: pointer;
+	padding: 4px 0;
+	user-select: none;
+}
+
+details[open] > summary {
+	margin-bottom: 6px;
+}
+
 /* CSS Grid system with 12 columns and Bootstrap-like breakpoints */
 /* Gap of 15px (7.5px on each side) */
 

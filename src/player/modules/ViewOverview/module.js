@@ -138,7 +138,7 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
                                                 + '    <p>'+ labels['MessageSaveChangesQuestion'] +'</p>'
                                                 + '</div>');
 
-                            var confirmDialogCtrl = FrameTrailDialog({
+                            var confirmDialogCtrl = Dialog({
                               title:     labels['MessageSaveChangesQuestionShort'],
                               content:   confirmDialog,
                               resizable: false,

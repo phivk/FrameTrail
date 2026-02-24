@@ -77,7 +77,7 @@ class StorageAdapterDownload extends StorageAdapter {
             + '</div>');
 
         var self = this;
-        var dlgCtrl = FrameTrailDialog({
+        var dlgCtrl = Dialog({
             title:   labels['DownloadProjectData'],
             content: dialog,
             modal:   true,

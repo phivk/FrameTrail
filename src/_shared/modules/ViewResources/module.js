@@ -136,7 +136,7 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
 
         if (showAsDialog) {
 
-            viewResourcesDialog = FrameTrailDialog({
+            viewResourcesDialog = Dialog({
                 title:    labels['ResourcesManage'],
                 content:  domElement,
                 autoOpen: false,

@@ -77,7 +77,7 @@ FrameTrail.defineModule('HypervideoPicker', function(FrameTrail){
         }
 
         // Open dialog - CSS Grid handles responsive layout automatically
-        pickerDialogCtrl = FrameTrailDialog({
+        pickerDialogCtrl = Dialog({
             title:     labels['HypervideoPickerTitle'],
             content:   pickerDialog,
             resizable: true,

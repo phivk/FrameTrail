@@ -119,7 +119,7 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
             $(this).select();
         });
 
-        var shareDialogCtrl = FrameTrailDialog({
+        var shareDialogCtrl = Dialog({
             title:     labels['GenericShareEmbed'],
             content:   shareDialog,
             modal:     true,

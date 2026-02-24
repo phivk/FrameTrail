@@ -742,7 +742,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
                                   + '    <div class="message success active">'+ labels['MessageUserLoggedOut'] +'</div>'
                                   + '</div>');
 
-	                var loggedOutDialogCtrl = FrameTrailDialog({
+	                var loggedOutDialogCtrl = Dialog({
 						resizable: false,
 						modal: true,
 						content: loggedOutDialog,
@@ -929,7 +929,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 
 		ensureAuthenticated(function() {
 
-			userDialogCtrl = FrameTrailDialog({
+			userDialogCtrl = Dialog({
 				title: labels['UserManagement'],
 				content: domElement,
 				modal: true,

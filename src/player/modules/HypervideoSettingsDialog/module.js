@@ -187,7 +187,7 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
                             + '    <div class="affectedItems">' + messageLines.join('<br>') + '</div>'
                             + '</div>');
 
-        var confirmDialogCtrl = FrameTrailDialog({
+        var confirmDialogCtrl = Dialog({
             title:   labels['DurationChangeWarningTitle'],
             modal:   true,
             width:   450,
@@ -851,7 +851,7 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
         var hypervideoDialog = $('<div class="hypervideoSettingsDialog"></div>');
         hypervideoDialog.append(EditHypervideoForm);
 
-        hypervideoDialogCtrl = FrameTrailDialog({
+        hypervideoDialogCtrl = Dialog({
             title:   labels['SettingsHypervideoSettings'],
             modal:   true,
             width:   830,

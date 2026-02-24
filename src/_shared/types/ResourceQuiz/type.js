@@ -71,7 +71,7 @@ FrameTrail.defineType(
                                 var textDialog = $('<div class="textDialog">'
                                                 + '    <p>'+ self.resourceData.attributes.onCorrectAnswer.showText +'</p>'
                                                 + '</div>');
-                                var textDialogCtrl = FrameTrailDialog({
+                                var textDialogCtrl = Dialog({
                                     content:       textDialog,
                                     modal:         true,
                                     classes:       'quizDialog',
@@ -110,7 +110,7 @@ FrameTrail.defineType(
                                 var textDialog = $('<div class="shareDialog">'
                                                 + '    <p>'+ self.resourceData.attributes.onWrongAnswer.showText +'</p>'
                                                 + '</div>');
-                                var textDialogCtrl = FrameTrailDialog({
+                                var textDialogCtrl = Dialog({
                                     content:       textDialog,
                                     modal:         true,
                                     classes:       'quizDialog',

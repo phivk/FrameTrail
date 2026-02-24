@@ -1087,7 +1087,7 @@
 			saveAsDialogCtrl.close();
 		});
 
-		saveAsDialogCtrl = FrameTrailDialog({
+		saveAsDialogCtrl = Dialog({
 			title:   labels['GenericSaveAs'],
 			content: saveAsDialog,
 			modal:   true,
@@ -1118,7 +1118,7 @@
 									+ '    <p>'+ labels['MessageSaveChangesQuestion'] +'</p>'
 									+ '</div>');
 
-				var confirmDialogCtrl = FrameTrailDialog({
+				var confirmDialogCtrl = Dialog({
 					title:     labels['MessageSaveChangesQuestionShort'],
 					content:   confirmDialog,
 					resizable: false,

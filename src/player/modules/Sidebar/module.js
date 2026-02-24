@@ -609,7 +609,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
         })
 
 
-        newDialogCtrl = FrameTrailDialog({
+        newDialogCtrl = Dialog({
             modal:    true,
             width:    830,
             height:   600,
@@ -753,7 +753,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
             });
         });
 
-        forkDialogCtrl = FrameTrailDialog({
+        forkDialogCtrl = Dialog({
             modal:   true,
             content: forkDialog,
             close: function() {
@@ -863,7 +863,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
             });
         });
 
-        deleteDialogCtrl = FrameTrailDialog({
+        deleteDialogCtrl = Dialog({
                 modal:   true,
                 content: deleteDialog,
                 open: function() {

@@ -68,7 +68,7 @@ FrameTrail.defineType(
                         var previewContent = $('<div class="resourcePreviewDialog"></div>')
                             .append(self.renderContent());
 
-                        var previewDialogCtrl = FrameTrailDialog({
+                        var previewDialogCtrl = Dialog({
                             title:     (self.resourceData.type == 'text') ? '' : self.resourceData.name,
                             content:   previewContent,
                             resizable: false,
@@ -140,19 +140,19 @@ FrameTrail.defineType(
                         					+ '    <div class="propertiesTypeIcon" data-type="' + overlay.data.type + '"><span class="icon-doc-inv"></span></div>'
                                             + '    <button class="deleteOverlay"><span class="icon-trash"></span></button>'
                                             + '    <label for="TimeStart">'+ this.labels['SettingsTimeStart'] +'</label>'
-                                            + '    <input id="TimeStart" value="' + overlay.data.start + '" data-tooltip-bottom-right="'+ this.labels['SettingsTimeStart'] +'">'
+                                            + '    <input id="TimeStart" type="number" min="0" step="0.1" value="' + overlay.data.start + '" data-tooltip-bottom-right="'+ this.labels['SettingsTimeStart'] +'">'
                                             + '    <label for="TimeEnd">'+ this.labels['SettingsTimeEnd'] +'</label>'
-                                            + '    <input id="TimeEnd" value="' + overlay.data.end + '">'
+                                            + '    <input id="TimeEnd" type="number" min="0" step="0.1" value="' + overlay.data.end + '">'
                                             + '</div>'
                                             + '<div class="positionControls">'
                                             + '    <label for="PositionHeight">'+ this.labels['SettingsPositionHeight'] +'</label>'
-                                            + '    <input id="PositionHeight" class="positionHeight" value="' + overlay.data.position.height + '">'
+                                            + '    <input id="PositionHeight" class="positionHeight" type="number" step="0.1" value="' + overlay.data.position.height + '">'
                                             + '    <label for="PositionWidth">'+ this.labels['SettingsPositionWidth'] +'</label>'
-                                            + '    <input id="PositionWidth" class="positionWidth" value="' + overlay.data.position.width + '">'
+                                            + '    <input id="PositionWidth" class="positionWidth" type="number" step="0.1" value="' + overlay.data.position.width + '">'
                                             + '    <label for="PositionLeft">'+ this.labels['SettingsPositionLeft'] +'</label>'
-                                            + '    <input id="PositionLeft" class="positionLeft" value="' + overlay.data.position.left + '">'
+                                            + '    <input id="PositionLeft" class="positionLeft" type="number" step="0.1" value="' + overlay.data.position.left + '">'
                                             + '    <label for="PositionTop">'+ this.labels['SettingsPositionTop'] +'</label>'
-                                            + '    <input id="PositionTop" class="positionTop" value="' + overlay.data.position.top + '">'
+                                            + '    <input id="PositionTop" class="positionTop" type="number" step="0.1" value="' + overlay.data.position.top + '">'
                                             + '</div>'
                                             + '<div class="overlayOptionsWrapper">'
                                             + '    <div class="overlayOptionsTabs">'
@@ -244,123 +244,72 @@ FrameTrail.defineType(
 
                     var oldOverlayData;
 
-                    controlsContainer.find('#TimeStart').spinner({
-                        step: 0.1,
-                        min: 0,
-                        max: FrameTrail.module('HypervideoModel').duration,
-                        numberFormat: 'n',
-                        icons: { down: "icon-angle-down", up: "icon-angle-up" },
-                        create: function(evt, ui) {
-                        	$(evt.target).parent().attr('data-input-id', $(evt.target).attr('id'));
-
-                            oldOverlayData = jQuery.extend({}, overlay.data);
-                        },
-                        spin: function(evt, ui) {
-
+                    (function() {
+                        var $ts = controlsContainer.find('#TimeStart');
+                        $ts.attr('max', FrameTrail.module('HypervideoModel').duration);
+                        $ts.parent().attr('data-input-id', $ts.attr('id'));
+                        oldOverlayData = jQuery.extend({}, overlay.data);
+                        $ts.on('input', function(evt) {
                             if(manualInputMode){
-                                overlay.data.start = ui.value;
+                                overlay.data.start = parseFloat(this.value);
                                 overlay.updateTimelineElement();
                                 FrameTrail.module('HypervideoController').currentTime = overlay.data.start;
                                 FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-
                                 FrameTrail.triggerEvent('userAction', {
                                     action: 'OverlayChange',
                                     overlay: overlay.data,
-                                    changes: [
-                                        {
-                                            property: 'start',
-                                            oldValue: oldOverlayData.start,
-                                            newValue: overlay.data.start
-                                        }
-                                    ]
+                                    changes: [{ property: 'start', oldValue: oldOverlayData.start, newValue: overlay.data.start }]
                                 });
                             }
-
-
-
-                        },
-                        change: function(evt, ui) {
-
+                        });
+                        $ts.on('change', function(evt) {
                             if(manualInputMode){
-                                overlay.data.start = $(evt.target).val();
+                                overlay.data.start = parseFloat($(evt.target).val());
                                 overlay.updateTimelineElement();
                                 FrameTrail.module('HypervideoController').currentTime = overlay.data.start;
                                 FrameTrail.module('OverlaysController').stackTimelineView();
                                 FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-
                                 FrameTrail.triggerEvent('userAction', {
                                     action: 'OverlayChange',
                                     overlay: overlay.data,
-                                    changes: [
-                                        {
-                                            property: 'start',
-                                            oldValue: oldOverlayData.start,
-                                            newValue: overlay.data.start
-                                        }
-                                    ]
+                                    changes: [{ property: 'start', oldValue: oldOverlayData.start, newValue: overlay.data.start }]
                                 });
                             }
+                        });
+                    }());
 
-                        }
-                    });
-
-                    controlsContainer.find('#TimeEnd').spinner({
-                        step: 0.1,
-                        min: 0,
-                        max: FrameTrail.module('HypervideoModel').duration,
-                        numberFormat: 'n',
-                        icons: { down: "icon-angle-down", up: "icon-angle-up" },
-                        create: function(evt, ui) {
-                        	$(evt.target).parent().attr('data-input-id', $(evt.target).attr('id'));
-
-                            oldOverlayData = jQuery.extend({}, overlay.data);
-                        },
-                        spin: function(evt, ui) {
-
+                    (function() {
+                        var $te = controlsContainer.find('#TimeEnd');
+                        $te.attr('max', FrameTrail.module('HypervideoModel').duration);
+                        $te.parent().attr('data-input-id', $te.attr('id'));
+                        $te.on('input', function(evt) {
                             if(manualInputMode){
-                                overlay.data.end = ui.value;
+                                overlay.data.end = parseFloat(this.value);
                                 overlay.updateTimelineElement();
                                 FrameTrail.module('HypervideoController').currentTime = overlay.data.end;
                                 FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-
                                 FrameTrail.triggerEvent('userAction', {
                                     action: 'OverlayChange',
                                     overlay: overlay.data,
-                                    changes: [
-                                        {
-                                            property: 'end',
-                                            oldValue: oldOverlayData.end,
-                                            newValue: overlay.data.end
-                                        }
-                                    ]
+                                    changes: [{ property: 'end', oldValue: oldOverlayData.end, newValue: overlay.data.end }]
                                 });
                             }
-
-                        },
-                        change: function(evt, ui) {
-
+                        });
+                        $te.on('change', function(evt) {
                             if(manualInputMode){
-                                overlay.data.end = $(evt.target).val();
+                                overlay.data.end = parseFloat($(evt.target).val());
                                 overlay.updateTimelineElement();
                                 FrameTrail.module('HypervideoController').currentTime = overlay.data.end;
                                 FrameTrail.module('OverlaysController').stackTimelineView();
                                 FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-
                                 FrameTrail.triggerEvent('userAction', {
                                     action: 'OverlayChange',
                                     overlay: overlay.data,
-                                    changes: [
-                                        {
-                                            property: 'end',
-                                            oldValue: oldOverlayData.end,
-                                            newValue: overlay.data.end
-                                        }
-                                    ]
+                                    changes: [{ property: 'end', oldValue: oldOverlayData.end, newValue: overlay.data.end }]
                                 });
                             }
-
-                        }
-                    });
+                        });
+                    }());
 
                     // Add undo support for time spinners
                     var timeBeforeEdit = {};
@@ -411,217 +360,122 @@ FrameTrail.defineType(
                         }
                     });
 
-                    controlsContainer.find('.positionTop').spinner({
-                        step: 0.1,
-                        numberFormat: 'n',
-                        icons: { down: "icon-angle-down", up: "icon-angle-up" },
-                        create: function(evt, ui) {
-                        	$(evt.target).parent().attr('data-input-id', 'PositionTop');
-
-                            oldOverlayData = jQuery.extend({}, overlay.data);
-                        },
-                        spin: function(evt, ui) {
-
+                    (function() {
+                        var $pt = controlsContainer.find('.positionTop');
+                        $pt.parent().attr('data-input-id', 'PositionTop');
+                        oldOverlayData = jQuery.extend({}, overlay.data);
+                        $pt.on('input', function(evt) {
                             if(manualInputMode){
-                                overlay.data.position.top = ui.value;
+                                overlay.data.position.top = parseFloat(this.value);
                                 overlay.updateOverlayElement();
                                 FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-
                                 FrameTrail.triggerEvent('userAction', {
                                     action: 'OverlayChange',
                                     overlay: overlay.data,
-                                    changes: [
-                                        {
-                                            property: 'position.top',
-                                            oldValue: oldOverlayData.position.top,
-                                            newValue: overlay.data.position.top
-                                        }
-                                    ]
+                                    changes: [{ property: 'position.top', oldValue: oldOverlayData.position.top, newValue: overlay.data.position.top }]
                                 });
                             }
-
-                        },
-                        change: function(evt, ui) {
-
+                        });
+                        $pt.on('change', function(evt) {
                             if(manualInputMode){
-                                overlay.data.position.top = $(evt.target).val();
+                                overlay.data.position.top = parseFloat($(evt.target).val());
                                 overlay.updateOverlayElement();
                                 FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-
                                 FrameTrail.triggerEvent('userAction', {
                                     action: 'OverlayChange',
                                     overlay: overlay.data,
-                                    changes: [
-                                        {
-                                            property: 'position.top',
-                                            oldValue: oldOverlayData.position.top,
-                                            newValue: overlay.data.position.top
-                                        }
-                                    ]
+                                    changes: [{ property: 'position.top', oldValue: oldOverlayData.position.top, newValue: overlay.data.position.top }]
                                 });
                             }
+                        });
+                    }());
 
-                        }
-                    });
-
-                    controlsContainer.find('.positionLeft').spinner({
-                        step: 0.1,
-                        numberFormat: 'n',
-                        icons: { down: "icon-angle-down", up: "icon-angle-up" },
-                        create: function(evt, ui) {
-                        	$(evt.target).parent().attr('data-input-id', 'PositionLeft');
-
-                            oldOverlayData = jQuery.extend({}, overlay.data);
-                        },
-                        spin: function(evt, ui) {
-
+                    (function() {
+                        var $pl = controlsContainer.find('.positionLeft');
+                        $pl.parent().attr('data-input-id', 'PositionLeft');
+                        $pl.on('input', function(evt) {
                             if(manualInputMode){
-                                overlay.data.position.left = ui.value;
+                                overlay.data.position.left = parseFloat(this.value);
                                 overlay.updateOverlayElement();
                                 FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-
                                 FrameTrail.triggerEvent('userAction', {
                                     action: 'OverlayChange',
                                     overlay: overlay.data,
-                                    changes: [
-                                        {
-                                            property: 'position.left',
-                                            oldValue: oldOverlayData.position.left,
-                                            newValue: overlay.data.position.left
-                                        }
-                                    ]
+                                    changes: [{ property: 'position.left', oldValue: oldOverlayData.position.left, newValue: overlay.data.position.left }]
                                 });
                             }
-
-                        },
-                        change: function(evt, ui) {
-
+                        });
+                        $pl.on('change', function(evt) {
                             if(manualInputMode){
-                                overlay.data.position.left = $(evt.target).val();
+                                overlay.data.position.left = parseFloat($(evt.target).val());
                                 overlay.updateOverlayElement();
                                 FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-
                                 FrameTrail.triggerEvent('userAction', {
                                     action: 'OverlayChange',
                                     overlay: overlay.data,
-                                    changes: [
-                                        {
-                                            property: 'position.left',
-                                            oldValue: oldOverlayData.position.left,
-                                            newValue: overlay.data.position.left
-                                        }
-                                    ]
+                                    changes: [{ property: 'position.left', oldValue: oldOverlayData.position.left, newValue: overlay.data.position.left }]
                                 });
                             }
+                        });
+                    }());
 
-                        }
-                    });
-
-                    controlsContainer.find('.positionWidth').spinner({
-                        step: 0.1,
-                        numberFormat: 'n',
-                        icons: { down: "icon-angle-down", up: "icon-angle-up" },
-                        create: function(evt, ui) {
-                        	$(evt.target).parent().attr('data-input-id', 'PositionWidth');
-
-                            oldOverlayData = jQuery.extend({}, overlay.data);
-                        },
-                        spin: function(evt, ui) {
-
+                    (function() {
+                        var $pw = controlsContainer.find('.positionWidth');
+                        $pw.parent().attr('data-input-id', 'PositionWidth');
+                        $pw.on('input', function(evt) {
                             if(manualInputMode){
-                                overlay.data.position.width = ui.value;
+                                overlay.data.position.width = parseFloat(this.value);
                                 overlay.updateOverlayElement();
                                 FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-
                                 FrameTrail.triggerEvent('userAction', {
                                     action: 'OverlayChange',
                                     overlay: overlay.data,
-                                    changes: [
-                                        {
-                                            property: 'position.width',
-                                            oldValue: oldOverlayData.position.width,
-                                            newValue: overlay.data.position.width
-                                        }
-                                    ]
+                                    changes: [{ property: 'position.width', oldValue: oldOverlayData.position.width, newValue: overlay.data.position.width }]
                                 });
                             }
-
-                        },
-                        change: function(evt, ui) {
-
+                        });
+                        $pw.on('change', function(evt) {
                             if(manualInputMode){
-                                overlay.data.position.width = $(evt.target).val();
+                                overlay.data.position.width = parseFloat($(evt.target).val());
                                 overlay.updateOverlayElement();
                                 FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-
                                 FrameTrail.triggerEvent('userAction', {
                                     action: 'OverlayChange',
                                     overlay: overlay.data,
-                                    changes: [
-                                        {
-                                            property: 'position.width',
-                                            oldValue: oldOverlayData.position.width,
-                                            newValue: overlay.data.position.width
-                                        }
-                                    ]
+                                    changes: [{ property: 'position.width', oldValue: oldOverlayData.position.width, newValue: overlay.data.position.width }]
                                 });
                             }
+                        });
+                    }());
 
-                        }
-                    });
-
-                    controlsContainer.find('.positionHeight').spinner({
-                        step: 0.1,
-                        numberFormat: 'n',
-                        icons: { down: "icon-angle-down", up: "icon-angle-up" },
-                        create: function(evt, ui) {
-                        	$(evt.target).parent().attr('data-input-id', 'PositionHeight');
-
-                            oldOverlayData = jQuery.extend({}, overlay.data);
-                        },
-                        spin: function(evt, ui) {
-
+                    (function() {
+                        var $ph = controlsContainer.find('.positionHeight');
+                        $ph.parent().attr('data-input-id', 'PositionHeight');
+                        $ph.on('input', function(evt) {
                             if(manualInputMode){
-                                overlay.data.position.height = ui.value;
+                                overlay.data.position.height = parseFloat(this.value);
                                 overlay.updateOverlayElement();
                                 FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-
                                 FrameTrail.triggerEvent('userAction', {
                                     action: 'OverlayChange',
                                     overlay: overlay.data,
-                                    changes: [
-                                        {
-                                            property: 'position.height',
-                                            oldValue: oldOverlayData.position.height,
-                                            newValue: overlay.data.position.height
-                                        }
-                                    ]
+                                    changes: [{ property: 'position.height', oldValue: oldOverlayData.position.height, newValue: overlay.data.position.height }]
                                 });
                             }
-
-                        },
-                        change: function(evt, ui) {
-
+                        });
+                        $ph.on('change', function(evt) {
                             if(manualInputMode){
-                                overlay.data.position.height = $(evt.target).val();
+                                overlay.data.position.height = parseFloat($(evt.target).val());
                                 overlay.updateOverlayElement();
                                 FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-
                                 FrameTrail.triggerEvent('userAction', {
                                     action: 'OverlayChange',
                                     overlay: overlay.data,
-                                    changes: [
-                                        {
-                                            property: 'position.height',
-                                            oldValue: oldOverlayData.position.height,
-                                            newValue: overlay.data.position.height
-                                        }
-                                    ]
+                                    changes: [{ property: 'position.height', oldValue: oldOverlayData.position.height, newValue: overlay.data.position.height }]
                                 });
                             }
-
-                        }
-                    });
+                        });
+                    }());
 
                     // Add undo support for position spinners
                     var positionBeforeEdit = {};
@@ -988,22 +842,22 @@ FrameTrail.defineType(
 
                         changeStart:  function(val) {
                             manualInputMode = false;
-                            controlsContainer.find('#TimeStart').spinner('value', val);
+                            controlsContainer.find('#TimeStart').val(val);
                             manualInputMode = true;
                         },
 
                         changeEnd: function(val) {
                             manualInputMode = false;
-                            controlsContainer.find('#TimeEnd').spinner('value', val);
+                            controlsContainer.find('#TimeEnd').val(val);
                             manualInputMode = true;
                         },
 
                         changeDimensions: function(val) {
                             manualInputMode = false;
-                            controlsContainer.find('.positionTop').spinner('value', val.top);
-                            controlsContainer.find('.positionLeft').spinner('value', val.left);
-                            controlsContainer.find('.positionWidth').spinner('value', val.width);
-                            controlsContainer.find('.positionHeight').spinner('value', val.height);
+                            controlsContainer.find('.positionTop').val(val.top);
+                            controlsContainer.find('.positionLeft').val(val.left);
+                            controlsContainer.find('.positionWidth').val(val.width);
+                            controlsContainer.find('.positionHeight').val(val.height);
                             manualInputMode = true;
                         }
 
@@ -1043,9 +897,9 @@ FrameTrail.defineType(
                                             + '    <div class="propertiesTypeIcon" data-type="' + annotation.data.type + '"><span class="icon-doc-inv"></span></div>'
                                             + '    <button class="deleteAnnotation"><span class="icon-trash"></span></button>'
                                             + '    <label for="TimeStart">'+ this.labels['SettingsTimeStart'] +'</label>'
-                                            + '    <input id="TimeStart" value="' + annotation.data.start + '">'
+                                            + '    <input id="TimeStart" type="number" min="0" step="0.1" value="' + annotation.data.start + '">'
                                             + '    <label for="TimeEnd">'+ this.labels['SettingsTimeEnd'] +'</label>'
-                                            + '    <input id="TimeEnd" value="' + annotation.data.end + '">'
+                                            + '    <input id="TimeEnd" type="number" min="0" step="0.1" value="' + annotation.data.end + '">'
                                             + '</div>'),
                         thumbContainer    = $('<div class="previewThumbContainer"></div>');
 
@@ -1219,123 +1073,72 @@ FrameTrail.defineType(
 
                     var oldAnnotationData;
 
-                    controlsContainer.find('#TimeStart').spinner({
-                        step: 0.1,
-                        min: 0,
-                        max: FrameTrail.module('HypervideoModel').duration,
-                        numberFormat: 'n',
-                        icons: { down: "icon-angle-down", up: "icon-angle-up" },
-                        create: function(evt, ui) {
-                            $(evt.target).parent().attr('data-input-id', $(evt.target).attr('id'));
-
-                            oldAnnotationData = jQuery.extend({}, annotation.data);
-                        },
-                        spin: function(evt, ui) {
-
+                    (function() {
+                        var $ts = controlsContainer.find('#TimeStart');
+                        $ts.attr('max', FrameTrail.module('HypervideoModel').duration);
+                        $ts.parent().attr('data-input-id', $ts.attr('id'));
+                        oldAnnotationData = jQuery.extend({}, annotation.data);
+                        $ts.on('input', function(evt) {
                             if(manualInputMode){
-                                annotation.data.start = ui.value;
+                                annotation.data.start = parseFloat(this.value);
                                 annotation.updateTimelineElement();
                                 FrameTrail.module('HypervideoController').currentTime = annotation.data.start;
                                 FrameTrail.module('HypervideoModel').newUnsavedChange('annotations');
-
                                 FrameTrail.triggerEvent('userAction', {
                                     action: 'AnnotationChange',
                                     annotation: annotation.data,
-                                    changes: [
-                                        {
-                                            property: 'start',
-                                            oldValue: oldAnnotationData.start,
-                                            newValue: annotation.data.start
-                                        }
-                                    ]
+                                    changes: [{ property: 'start', oldValue: oldAnnotationData.start, newValue: annotation.data.start }]
                                 });
                             }
-
-
-
-                        },
-                        change: function(evt, ui) {
-
+                        });
+                        $ts.on('change', function(evt) {
                             if(manualInputMode){
-                                annotation.data.start = $(evt.target).val();
+                                annotation.data.start = parseFloat($(evt.target).val());
                                 annotation.updateTimelineElement();
                                 FrameTrail.module('HypervideoController').currentTime = annotation.data.start;
                                 FrameTrail.module('AnnotationsController').stackTimelineView();
                                 FrameTrail.module('HypervideoModel').newUnsavedChange('annotations');
-
                                 FrameTrail.triggerEvent('userAction', {
                                     action: 'AnnotationChange',
                                     annotation: annotation.data,
-                                    changes: [
-                                        {
-                                            property: 'start',
-                                            oldValue: oldAnnotationData.start,
-                                            newValue: annotation.data.start
-                                        }
-                                    ]
+                                    changes: [{ property: 'start', oldValue: oldAnnotationData.start, newValue: annotation.data.start }]
                                 });
                             }
+                        });
+                    }());
 
-                        }
-                    });
-
-                    controlsContainer.find('#TimeEnd').spinner({
-                        step: 0.1,
-                        min: 0,
-                        max: FrameTrail.module('HypervideoModel').duration,
-                        numberFormat: 'n',
-                        icons: { down: "icon-angle-down", up: "icon-angle-up" },
-                        create: function(evt, ui) {
-                            $(evt.target).parent().attr('data-input-id', $(evt.target).attr('id'));
-
-                            oldAnnotationData = jQuery.extend({}, annotation.data);
-                        },
-                        spin: function(evt, ui) {
-
+                    (function() {
+                        var $te = controlsContainer.find('#TimeEnd');
+                        $te.attr('max', FrameTrail.module('HypervideoModel').duration);
+                        $te.parent().attr('data-input-id', $te.attr('id'));
+                        $te.on('input', function(evt) {
                             if(manualInputMode){
-                                annotation.data.end = ui.value;
+                                annotation.data.end = parseFloat(this.value);
                                 annotation.updateTimelineElement();
                                 FrameTrail.module('HypervideoController').currentTime = annotation.data.end;
                                 FrameTrail.module('HypervideoModel').newUnsavedChange('annotations');
-
                                 FrameTrail.triggerEvent('userAction', {
                                     action: 'AnnotationChange',
                                     annotation: annotation.data,
-                                    changes: [
-                                        {
-                                            property: 'end',
-                                            oldValue: oldAnnotationData.end,
-                                            newValue: annotation.data.end
-                                        }
-                                    ]
+                                    changes: [{ property: 'end', oldValue: oldAnnotationData.end, newValue: annotation.data.end }]
                                 });
                             }
-
-                        },
-                        change: function(evt, ui) {
-
+                        });
+                        $te.on('change', function(evt) {
                             if(manualInputMode){
-                                annotation.data.end = $(evt.target).val();
+                                annotation.data.end = parseFloat($(evt.target).val());
                                 annotation.updateTimelineElement();
                                 FrameTrail.module('HypervideoController').currentTime = annotation.data.end;
                                 FrameTrail.module('AnnotationsController').stackTimelineView();
                                 FrameTrail.module('HypervideoModel').newUnsavedChange('annotations');
-
                                 FrameTrail.triggerEvent('userAction', {
                                     action: 'AnnotationChange',
                                     annotation: annotation.data,
-                                    changes: [
-                                        {
-                                            property: 'end',
-                                            oldValue: oldAnnotationData.end,
-                                            newValue: annotation.data.end
-                                        }
-                                    ]
+                                    changes: [{ property: 'end', oldValue: oldAnnotationData.end, newValue: annotation.data.end }]
                                 });
                             }
-
-                        }
-                    });
+                        });
+                    }());
 
                     // Add undo support for annotation time spinners
                     var annotationTimeBeforeEdit = {};
@@ -1409,13 +1212,13 @@ FrameTrail.defineType(
 
                         changeStart:  function(val) {
                             manualInputMode = false;
-                            controlsContainer.find('#TimeStart').spinner('value', val);
+                            controlsContainer.find('#TimeStart').val(val);
                             manualInputMode = true;
                         },
 
                         changeEnd: function(val) {
                             manualInputMode = false;
-                            controlsContainer.find('#TimeEnd').spinner('value', val);
+                            controlsContainer.find('#TimeEnd').val(val);
                             manualInputMode = true;
                         }
 

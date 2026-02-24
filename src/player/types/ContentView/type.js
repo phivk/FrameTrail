@@ -1722,7 +1722,7 @@ FrameTrail.defineType(
 
                         editDialog.append(self.renderContentViewPreviewEditingUI());
 
-                        var editDialogCtrl = FrameTrailDialog({
+                        var editDialogCtrl = Dialog({
                             title:     dialogTitle,
                             content:   editDialog,
                             resizable: false,
@@ -1886,14 +1886,14 @@ FrameTrail.defineType(
                                     +'        <div class="message active">'+ self.labels['SettingsItemsInCollection'] +': <span class="collectionCounter"></span></div>'
                                     +'        <hr>'
                                     +'    </div>'
-                                    +'    <div class="typeSpecific advanced codeEditorSmall '+ (contentViewData.type == 'TimedContent' ? 'active' : '') +'" data-type="TimedContent">'
-                                    +'        <h3>'+ self.labels['GenericAdvancedOptions'] +'</h3>'
+                                    +'    <details class="typeSpecific advanced codeEditorSmall '+ (contentViewData.type == 'TimedContent' ? 'active' : '') +'" data-type="TimedContent">'
+                                    +'        <summary>'+ self.labels['GenericAdvancedOptions'] +'</summary>'
                                     +'        <div>'
                                     +'            <label>onClickContentItem:</label>'
                                     +'            <div class="message active">'+ self.labels['MessageHintContentViewClickItem'] +'</div>'
                                     +'            <textarea class="contentViewData" data-property="onClickContentItem" data-value="'+ contentViewData.onClickContentItem +'" placeholder="('+ self.labels['GenericOptional'] +')">'+ contentViewData.onClickContentItem +'</textarea>'
                                     +'        </div>'
-                                    +'    </div>'
+                                    +'    </details>'
                                     +'    <div class="typeSpecific codeEditorLarge '+ (contentViewData.type == 'CustomHTML' ? 'active' : '') +'" data-type="CustomHTML">'
                                     +'        <label>'+ self.labels['GenericCustomHTML'] +':</label>'
                                     +'        <textarea class="contentViewData" data-property="html" data-value="'+ contentViewData.html +'">'+ contentViewData.html +'</textarea>'
@@ -1930,12 +1930,6 @@ FrameTrail.defineType(
                             });
                         }
 
-                    });
-
-                    editingUI.find('.advanced').accordion({
-                        collapsible: true,
-                        active: false,
-                        heightStyle: 'content'
                     });
 
                     // Transcripts

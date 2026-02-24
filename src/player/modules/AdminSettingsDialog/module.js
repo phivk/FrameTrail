@@ -394,7 +394,7 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                 addLanguageRow('', '', '', false);
             });
 
-            var tagDialogCtrl = FrameTrailDialog({
+            var tagDialogCtrl = Dialog({
                 title:   isNew ? labels['TagAddNew'] : labels['TagEdit'] + ': ' + tagId,
                 content: dialogContent,
                 modal:   true,
@@ -515,7 +515,7 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                 }
             }
 
-            var tagUsageDialogCtrl = FrameTrailDialog({
+            var tagUsageDialogCtrl = Dialog({
                 title:   labels['TagCannotDeleteTitle'],
                 content: content,
                 modal:   true,
@@ -527,7 +527,7 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
             });
         }
 
-        var adminDialogCtrl = FrameTrailDialog({
+        var adminDialogCtrl = Dialog({
             title:   labels['GenericAdministration'],
             content: adminDialog,
             modal: true,

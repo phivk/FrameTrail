@@ -3,7 +3,7 @@
  * Replaces jQuery UI's .dialog() widget.
  *
  * Usage:
- *   var ctrl = FrameTrailDialog({
+ *   var ctrl = Dialog({
  *       title:    'Dialog Title',            // or derived from content.getAttribute('title')
  *       content:  domElementOrJQueryObject,  // required
  *       modal:    true,                      // default true
@@ -29,7 +29,7 @@
  *   ctrl.element                   // jQuery-wrapped content element
  */
 
-window.FrameTrailDialog = function(opts) {
+window.Dialog = function(opts) {
     opts = opts || {};
 
     // Resolve content element (accept jQuery wrapper or plain DOM node)
