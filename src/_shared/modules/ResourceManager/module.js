@@ -687,7 +687,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                     }
 
                     function submitURL() {
-                        if (previewXHR) { previewXHR.abort(); }
+                        if (previewController) { previewController.abort(); previewController = null; }
                         var resourceName = uploadDialog.find('input[name="name"]').val();
                         if (!resourceName || resourceName.length < 2) {
                             uploadDialog.find('.message.error').remove();
