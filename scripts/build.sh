@@ -29,14 +29,13 @@ echo "  Output:  $BUILD_DIR"
 
 CSS_FILES=(
     # Library CSS
-    "_lib/html5reset/html5.reset.css"
     "_lib/perfectscrollbar/perfect-scrollbar.min.css"
     "_lib/jquery.ui/jquery-ui.min.css"
+    "_lib/quill/quill.snow.css"
     "_lib/leaflet/leaflet.css"
     "_lib/codemirror/codemirror.css"
     "_lib/codemirror/lint.css"
     "_lib/codemirror/theme/hopscotch.css"
-    "_lib/flexicolorpicker/colorpicker.css"
 
     # FrameTrail base styles
     "_shared/styles/variables.css"
@@ -116,10 +115,8 @@ JS_FILES=(
     "_lib/jquery.form/jquery.form.min.js"
     "_lib/jquery.ui/jquery-ui.min.js"
     "_lib/perfectscrollbar/perfect-scrollbar.min.js"
+    "_lib/quill/quill.min.js"
     "_lib/leaflet/leaflet.js"
-    "_lib/raphaeljs/raphael-min.js"
-    "_lib/raphaeljs/raphael-connections.js"
-    "_lib/raphaeljs/raphael-trapezoid.js"
     "_lib/jquery.collisiondetection/jquery.collisiondetection.js"
     "_lib/animejs/anime.min.js"
     "_lib/codemirror/codemirror.js"
@@ -136,9 +133,6 @@ JS_FILES=(
     "_lib/codemirror/css-lint.js"
     "_lib/codemirror/html-lint.js"
     "_lib/codemirror/formatting.js"
-    "_lib/wysihtml5/wysihtml5-parser.js"
-    "_lib/wysihtml5/wysihtml5.js"
-    "_lib/flexicolorpicker/colorpicker.js"
     "_lib/d3/d3.v5.min.js"
 
     # FrameTrail Core (must come before any defineModule/defineType calls)

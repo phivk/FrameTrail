@@ -19,9 +19,10 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
                         +  '    <div class="overviewList"></div>'
                         +  '</div>'),
 
-        OverviewList     = domElement.find('.overviewList'),
-        animationElement = null,
-        lastSelectedThumb = null;
+        OverviewList          = domElement.find('.overviewList'),
+        overviewScrollbar     = null,
+        animationElement      = null,
+        lastSelectedThumb     = null;
 
 
 
@@ -38,7 +39,7 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
         toggleViewMode(FrameTrail.getState('viewMode'));
         toggleEditMode(FrameTrail.getState('editMode'));
 
-        OverviewList.perfectScrollbar({
+        overviewScrollbar = new PerfectScrollbar(OverviewList[0], {
             wheelSpeed: 4,
             suppressScrollX: true,
             wheelPropagation: true
@@ -263,7 +264,7 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
         if ( FrameTrail.getState('viewMode') != 'overview' ) return;
 
         // Height is now set via CSS (100%), just update perfectScrollbar
-        OverviewList.perfectScrollbar('update');
+        if (overviewScrollbar) overviewScrollbar.update();
 
     };
 
@@ -347,17 +348,16 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
         thumbElement.css('opacity', '0');
 
         // Animate to full size with opacity change
-        if (typeof anime !== 'undefined') {
-            anime({
-                targets: animationElement[0],
+        if (typeof anime !== 'undefined' && typeof anime.animate === 'function') {
+            anime.animate(animationElement[0], {
                 left: mainContainerRect.left + 'px',
                 top: mainContainerRect.top + 'px',
                 width: endWidth + 'px',
                 height: endHeight + 'px',
                 opacity: 1,
                 duration: 400,
-                easing: 'easeInOutQuad',
-                complete: function() {
+                ease: 'inOutQuad',
+                onComplete: function() {
                     if (animationElement) {
                         animationElement.remove();
                         animationElement = null;
@@ -461,17 +461,16 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
             $('body').append(animationElement);
 
             // Animate to thumb position with opacity change
-            if (typeof anime !== 'undefined') {
-                anime({
-                    targets: animationElement[0],
+            if (typeof anime !== 'undefined' && typeof anime.animate === 'function') {
+                anime.animate(animationElement[0], {
                     left: thumbRect.left + 'px',
                     top: thumbRect.top + 'px',
                     width: thumbRect.width + 'px',
                     height: thumbRect.height + 'px',
                     opacity: 1,
                     duration: 400,
-                    easing: 'easeInOutQuad',
-                    complete: function() {
+                    ease: 'inOutQuad',
+                    onComplete: function() {
                         if (animationElement) {
                             animationElement.remove();
                             animationElement = null;

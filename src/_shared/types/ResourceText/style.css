@@ -105,249 +105,58 @@
 	box-sizing: border-box;
 }
 
-.editPropertiesContainer [data-role="editor-toolbar"]  {
-	-webkit-user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
-	user-select: none;
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] .btn-group {
-	float: left;
-	position: relative;
-	height: 24px;
-	margin: 0 8px 8px 0;
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] .btn-group .btn .icon-down-open {
-	font-size: 8px;
-	margin-right: 2px;
-	vertical-align: middle;
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] .dropdown-toggle {
-	padding-right: 10px;
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] .dropdown-toggle.open, .editPropertiesContainer .hyperlink.wysihtml5-command-dialog-opened {
-	background: var(--primary-fg-color);
-	color: var(--primary-bg-color);
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] .dropdown-toggle.open:not(.right):after, .editPropertiesContainer .hyperlink.wysihtml5-command-dialog-opened:after {
-	position: absolute;
-	left: 4px;
-	bottom: -4px;
-	content: "";
-	width: 0;
-	height: 0;
-	border-style: solid;
-	border-width: 0 7px 4px 7px;
-	border-color: transparent transparent var(--primary-bg-color) transparent;
-	z-index: 2;
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] .dropdown-toggle.right {
-	padding-right: 18px;
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] .dropdown-toggle .caret {
-	position: absolute;
-	right: 4px;
-	top: 10px;
-	border-right: 4px solid transparent;
-	border-left: 4px solid transparent;
-	border-top: 4px solid var(--primary-bg-color);
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] .dropdown-toggle .caretRight {
-	position: absolute;
-	right: 7px;
-	top: 8px;
-	border-bottom: 4px solid transparent;
-	border-right: 4px solid var(--primary-bg-color);
-	border-top: 4px solid transparent;
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] .dropdown-menu, .editPropertiesContainer .hyperlink-dropdown {
-	position: absolute;
-	top: 28px;
-	left: -7px;
-	width: 200px;
-	max-height: 100px;
-	margin: 0;
-	padding: 0;
-	overflow: auto;
-	background: var(--primary-fg-color);
-	color: var(--primary-bg-color);
-	z-index: 1;
-	border: 2px solid var(--primary-bg-color);
-	list-style: none;
-	display: none;
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] .hyperlink-dropdown {
-	display: block;
-	left: auto;
-	right: -18px;
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] .dropdown-menu.small {
-	width: 84px;
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] .dropdown-menu.input-append, .editPropertiesContainer .hyperlink-dropdown.input-append {
-	width: 185px;
-	color: var(--primary-fg-color);
-	background-color: var(--primary-bg-color);
-	padding: 4px;
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] .dropdown-menu.input-append input, .editPropertiesContainer .hyperlink-dropdown.input-append input {
-	float: left;
-	border: none;
-	margin: 0px;
-	padding: 4px;
-	height: 22px;
-	width: 116px;
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] .dropdown-menu.input-append a, .editPropertiesContainer .hyperlink-dropdown.input-append a {
-	position: relative;
-	cursor: pointer;
-	width: 30px;
-	height: 30px;
-	margin: 0;
-	border: none;
-	outline: none;
-	overflow: visible;
-	background-color: rgb(255, 41, 61);
-	background-repeat: no-repeat;
-	background-size: 30px auto;
-	background-position: center;
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] .dropdown-menu.input-append a:hover, .editPropertiesContainer .hyperlink-dropdown.input-append a:hover {
-	background-color: rgb(183, 12, 29);
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] .hyperlink-dropdown.input-append a[data-wysihtml5-dialog-action="save"] {
-	background-image: url(./icons/confirm.svg);
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] .hyperlink-dropdown.input-append a[data-wysihtml5-command="removeLink"] {
-	background-image: url(./icons/unlink.svg);
-	opacity: .6;
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] .hyperlink-dropdown.input-append a[data-wysihtml5-command="removeLink"]:hover {
-	background-color: rgb(255, 41, 61);
-	cursor: default;
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] .hyperlink-dropdown.input-append a[data-wysihtml5-command="removeLink"].wysihtml5-command-active {
-	opacity: 1;
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] .hyperlink-dropdown.input-append a[data-wysihtml5-command="removeLink"].wysihtml5-command-active:hover {
-	background-color: rgb(183, 12, 29);
-	cursor:	pointer;
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] .hyperlink-dropdown.input-append a[data-wysihtml5-dialog-action="cancel"] {
-	display: none;
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] .dropdown-menu.active {
-	display: block !important;
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] .dropdown-menu li, .editPropertiesContainer .dropdown-menu li a {
-	display: block;
-	color: var(--primary-bg-color);
-	font-size: 12px;
-	height: auto;
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] .dropdown-menu li a {
-	padding: 3px 6px;
-	text-decoration: none;
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] .dropdown-menu li a.wysihtml5-command-active {
-	background: var(--primary-fg-color);
-	color: var(--primary-bg-color);
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] a {
-	border: 1px solid transparent;
-	color: var(--primary-bg-color);
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] a:hover {
-	border-color: var(--primary-bg-color);
-	cursor: pointer;
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] a.wysihtml5-command-active {
-	background: var(--primary-bg-color);
-	color: var(--primary-fg-color);
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] a.hyperlink.wysihtml5-command-active:not(.wysihtml5-command-dialog-opened) {
-	background: var(--primary-bg-color);
-	color: var(--primary-fg-color);
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] .colorpicker-container-text {
-	position: absolute;
-	background-color: var(--primary-bg-color);
-	border:	2px solid var(--primary-bg-color);
-	padding: 5px;
-	box-sizing: border-box;
-	top: 28px;
-	left: -20px;
-	display: none;
-	z-index: 1;
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] .colorpicker-container-text.active {
-	display: block;
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] .colorpicker-container-text.active:after {
-	position: absolute;
-	left: 22px;
-	top: -6px;
-	content: "";
-	width: 0;
-	height: 0;
-	border-style: solid;
-	border-width: 0 7px 4px 7px;
-	border-color: transparent transparent var(--primary-bg-color) transparent;
-	z-index: 2;
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] .colorpicker-container-text .colorpicker-container {
-	background-color: var(--primary-bg-color);
-}
-
-.editPropertiesContainer [data-role="editor-toolbar"] .colorpicker .picker, .editPropertiesContainer [data-role="editor-toolbar"] .colorpicker .slide, .editPropertiesContainer [data-role="editor-toolbar"] .colorpicker-top-colors span, .editPropertiesContainer [data-role="editor-toolbar"] .colorpicker-transparent {
-	outline: 1px solid var(--primary-fg-color);
-}
-
+/* Quill inserts .ql-toolbar as a sibling BEFORE the passed element (.quillEditorContainer),
+   so .visualEditorWrapper is the correct flex container for the toolbar + editor layout. */
 .editPropertiesContainer .visualEditorWrapper {
 	clear: both;
 	position: relative;
 	background: #cfcfcf;
-	height: calc(100% - 27px);
+	height: 100%;
+	display: flex;
+	flex-direction: column;
 }
 
-.editPropertiesContainer .visualEditorWrapper textarea {
-	height: 100%;
+.editPropertiesContainer .visualEditorWrapper .ql-toolbar {
+	flex-shrink: 0;
+	background: var(--primary-bg-color);
+	border-color: #555;
 }
 
-.editPropertiesContainer .wysihtml5-sandbox {
-	width: 100%;
-	height: 100%;
+.editPropertiesContainer .visualEditorWrapper .ql-toolbar .ql-stroke {
+	stroke: var(--primary-fg-color);
+}
+
+.editPropertiesContainer .visualEditorWrapper .ql-toolbar .ql-fill {
+	fill: var(--primary-fg-color);
+}
+
+.editPropertiesContainer .visualEditorWrapper .ql-toolbar .ql-picker {
+	color: var(--primary-fg-color);
+}
+
+/* .quillEditorContainer receives ql-container + ql-snow from Quill; it is the editor area */
+.editPropertiesContainer .quillEditorContainer {
+	flex: 1;
+	min-height: 0;
+	background: white;
+	font-size: 14px;
+	border-color: #555;
+}
+
+.editPropertiesContainer .quillEditorContainer .ql-editor {
+	min-height: 100%;
+}
+
+/* Show actual font name / size value in the picker label and dropdown items.
+   Quill Snow only has ::before rules for its 3 built-in fonts; all custom
+   fonts fall back to "Sans Serif". Override at the .ql-snow level (same scope
+   as Quill's own CSS) so the selector always matches regardless of ancestor. */
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value]::before {
+	content: attr(data-value) !important;
+}
+
+.ql-snow .ql-picker.ql-size .ql-picker-label[data-value]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value]::before {
+	content: attr(data-value) !important;
 }

@@ -60,7 +60,8 @@ FrameTrail.defineType(
                         + '    </div>'
                         + '    <div class="resourceTooltip"></div>'
                         + '</div>'
-                    ).perfectScrollbar({
+                    );
+                    new PerfectScrollbar(resourceElement[0], {
                         wheelSpeed: 4,
                         suppressScrollX: true
                     });
