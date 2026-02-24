@@ -20,7 +20,7 @@ FrameTrail/
 │   ├── setup.html                  # First-run setup wizard
 │   ├── .htaccess                   # Apache rewrite rules
 │   ├── favico.png
-│   ├── _lib/                       # Vendored third-party libraries (17 packages)
+│   ├── _lib/                       # Vendored third-party libraries (13 packages)
 │   ├── _shared/
 │   │   ├── frametrail-core/
 │   │   │   ├── frametrail-core.js  # Core: defineModule, defineType, init, state
@@ -111,25 +111,19 @@ _data/
 
 | Directory | Library | Notes |
 |-----------|---------|-------|
-| `jquery/` | jQuery 3.1.1 | Core DOM/AJAX |
-| `jquery.ui/` | jQuery UI | Drag/drop, dialogs, sortable |
-| `jquery.form/` | jQuery Form | AJAX form submission |
-| `jquery.mousewheel/` | jQuery Mousewheel | Scroll events |
-| `jquery.collisiondetection/` | Collision Detection | Overlay collision |
+| `jquery/` | jQuery 3.7.1 | Core DOM/AJAX |
+| `jquery.tabs/` | jquery.tabs (custom) | Lightweight drop-in for jQuery UI `.tabs()` |
+| `collisiondetection/` | Collision Detection | Overlay collision |
+| `interactjs/` | Interact.js | Drag/drop and resize (replaces jQuery UI draggable/resizable) |
+| `sortablejs/` | SortableJS | Sortable lists (replaces jQuery UI sortable) |
+| `dialog/` | dialog (custom) | Lightweight wrapper around native `<dialog>` (replaces jQuery UI dialog) |
 | `leaflet/` | Leaflet | Map rendering (OpenStreetMap) |
-| `raphaeljs/` | Raphael | SVG rendering + custom plugins (connections, trapezoid) |
-| `codemirror/` | CodeMirror | Code editor (JS/CSS/HTML modes + linting) |
+| `codemirror6/` | CodeMirror 6 | Code editor (JS/CSS/HTML modes + linting) |
 | `hlsjs/` | HLS.js | Adaptive video streaming |
 | `d3/` | D3.js v5 | Data visualization |
 | `animejs/` | Anime.js | Animation library |
-| `screenfull/` | screenfull.js | Fullscreen API |
-| `wysihtml5/` | WYSIHTML5 | Rich text editing |
-| `flexicolorpicker/` | FlexiColorPicker | Color picker |
-| `perfectscrollbar/` | Perfect Scrollbar | Custom scrollbars |
+| `quill/` | Quill | Rich text editing (replaces WYSIHTML5) |
 | `parsers/` | VTT parser | Subtitle parsing |
-| `html5reset/` | HTML5 Reset | CSS reset |
-
-Note: Some libraries have custom/patched versions (raphael-connections.js, raphael-trapezoid.js). Do not replace with standard npm packages.
 
 ### Storage Modes (`storageMode` state)
 

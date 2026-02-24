@@ -221,8 +221,7 @@ Resource (abstract base)
 ├── ResourceCodepen
 ├── ResourceFigma
 ├── ResourceSlideshare
-├── ResourceUrlPreview
-└── ResourceFlickr
+└── ResourceUrlPreview
 
 Overlay          (video overlay with position + time range)
 Annotation       (sidebar annotation with time range)
