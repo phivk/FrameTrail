@@ -440,33 +440,45 @@ FrameTrail.defineType(
                     var snippetElement = propertiesControls.find('.codeSnippetCode'),
                         snippet = snippetElement.val();
 
-                    var codeEditor = CodeMirror.fromTextArea(snippetElement[0], {
-                      value: snippet,
-                      lineNumbers: true,
-                      mode:  'javascript',
-                      gutters: ['CodeMirror-lint-markers'],
-                      lint: true,
-                      lineWrapping: true,
-                      tabSize: 2,
-                      theme: 'hopscotch'
-                    });
+                    var CM6 = window.FrameTrailCM6;
+                    var editorHeight = FrameTrail.module('ViewVideo').EditPropertiesContainer.height() - 70;
+                    var cm6Wrapper = $('<div class="cm6-wrapper"></div>').css('height', editorHeight + 'px');
+                    snippetElement.after(cm6Wrapper).hide();
 
                     // Capture initial value for undo
                     this._snippetBeforeEdit = this.data.snippet;
                     this._snippetChanged = false;
 
-                    codeEditor.on('change', function(instance, changeObj) {
-                        self.data.snippet = codeEditor.getValue();
-                        self.initCodeSnippetFunction();
-                        self._snippetChanged = true;
-
-                        FrameTrail.module('HypervideoModel').newUnsavedChange('codeSnippets');
+                    var codeEditor = new CM6.EditorView({
+                        state: CM6.EditorState.create({
+                            doc: snippet,
+                            extensions: [
+                                CM6.oneDark,
+                                CM6.lineNumbers(),
+                                CM6.highlightActiveLine(),
+                                CM6.highlightActiveLineGutter(),
+                                CM6.drawSelection(),
+                                CM6.history(),
+                                CM6.keymap.of([].concat(CM6.defaultKeymap, CM6.historyKeymap)),
+                                CM6.EditorView.lineWrapping,
+                                CM6.StreamLanguage.define(CM6.legacyModes.javascript),
+                                window.FrameTrailCM6Linters.js,
+                                CM6.lintGutter(),
+                                CM6.EditorView.updateListener.of(function(update) {
+                                    if (!update.docChanged) { return; }
+                                    self.data.snippet = update.state.doc.toString();
+                                    self.initCodeSnippetFunction();
+                                    self._snippetChanged = true;
+                                    FrameTrail.module('HypervideoModel').newUnsavedChange('codeSnippets');
+                                })
+                            ]
+                        }),
+                        parent: cm6Wrapper[0]
                     });
-
-                    var editorHeight = FrameTrail.module('ViewVideo').EditPropertiesContainer.height() - 70;
-                    codeEditor.setSize(null, editorHeight);
+                    cm6Wrapper[0]._cm6view = codeEditor;
 
                     this.codeEditorInstance = codeEditor;
+                    this.cm6Wrapper = cm6Wrapper;
 
 
                     this.timelineElement.addClass('highlighted');

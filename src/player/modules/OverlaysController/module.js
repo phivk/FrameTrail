@@ -634,9 +634,8 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
         ViewVideo.switchInfoTab('properties');
         ViewVideo.EditPropertiesContainer.find('.overlayOptionsTabs').tabs('refresh');
 
-        if ( ViewVideo.EditPropertiesContainer.find('.CodeMirror').length != 0 ) {
-            ViewVideo.EditPropertiesContainer.find('.CodeMirror')[0].CodeMirror.refresh();
-        }
+        var cm6Wrapper = ViewVideo.EditPropertiesContainer.find('.cm6-wrapper')[0];
+        if ( cm6Wrapper && cm6Wrapper._cm6view ) { cm6Wrapper._cm6view.requestMeasure(); }
 
 
     };

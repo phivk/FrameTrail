@@ -1753,11 +1753,9 @@ FrameTrail.defineType(
                                 $('.ui-widget-overlay').click(function() {
                                     editDialog.dialog('close');
                                 });
-                                if (editDialog.find('.CodeMirror').length != 0) {
-                                    editDialog.find('.CodeMirror').each(function() {
-                                        $(this)[0].CodeMirror.refresh();
-                                    });
-                                }
+                                editDialog.find('.cm6-wrapper').each(function() {
+                                    if (this._cm6view) { this._cm6view.requestMeasure(); }
+                                });
                             },
                             buttons: [
                                 { text: self.labels['GenericApply'],
@@ -1938,11 +1936,9 @@ FrameTrail.defineType(
                                     editingUI.find('.typeSpecific[data-type="'+ parent.attr('data-value') +'"]').addClass('active');
                                 }
 
-                                if (editingUI.find('.CodeMirror').length != 0) {
-                                    editingUI.find('.CodeMirror').each(function() {
-                                        $(this)[0].CodeMirror.refresh();
-                                    });
-                                }
+                                editingUI.find('.cm6-wrapper').each(function() {
+                                    if (this._cm6view) { this._cm6view.requestMeasure(); }
+                                });
                             });
                         }
 
@@ -2162,57 +2158,70 @@ FrameTrail.defineType(
                         editingUI.find('.contentViewData[data-property="collectionFilter-users"]').val(userFilterString);
                     }
 
-                    // Init CodeMirror for onClickContentItem
+                    // Init CodeMirror 6 for onClickContentItem
 
+                    var CM6 = window.FrameTrailCM6;
                     var textarea = editingUI.find('.contentViewData[data-property="onClickContentItem"]');
+                    var cm6WrapperJS = $('<div class="cm6-wrapper" style="height: 100%;"></div>');
+                    textarea.after(cm6WrapperJS).hide();
 
-                    var codeEditor = CodeMirror.fromTextArea(textarea[0], {
-                            value: textarea[0].value,
-                            lineNumbers: true,
-                            mode:  'javascript',
-                            gutters: ['CodeMirror-lint-markers'],
-                            lint: true,
-                            lineWrapping: true,
-                            tabSize: 2,
-                            theme: 'hopscotch'
-                        });
-                    codeEditor.on('change', function(instance, changeObj) {
-
-                        var thisTextarea = $(instance.getTextArea());
-
-                        $(thisTextarea).attr('data-value', instance.getValue());
-
-                        thisTextarea.val(instance.getValue());
-
-
+                    var codeEditor = new CM6.EditorView({
+                        state: CM6.EditorState.create({
+                            doc: textarea.val(),
+                            extensions: [
+                                CM6.oneDark,
+                                CM6.lineNumbers(),
+                                CM6.highlightActiveLine(),
+                                CM6.highlightActiveLineGutter(),
+                                CM6.drawSelection(),
+                                CM6.history(),
+                                CM6.keymap.of([].concat(CM6.defaultKeymap, CM6.historyKeymap)),
+                                CM6.EditorView.lineWrapping,
+                                CM6.StreamLanguage.define(CM6.legacyModes.javascript),
+                                window.FrameTrailCM6Linters.js,
+                                CM6.lintGutter(),
+                                CM6.EditorView.updateListener.of(function(update) {
+                                    if (!update.docChanged) { return; }
+                                    var val = update.state.doc.toString();
+                                    textarea.attr('data-value', val).val(val);
+                                })
+                            ]
+                        }),
+                        parent: cm6WrapperJS[0]
                     });
-                    codeEditor.setSize(null, '100%');
+                    cm6WrapperJS[0]._cm6view = codeEditor;
 
-                    // Init CodeMirror for Custom HTML
+                    // Init CodeMirror 6 for Custom HTML
 
                     var htmlTextarea = editingUI.find('.contentViewData[data-property="html"]');
+                    var cm6WrapperHTML = $('<div class="cm6-wrapper" style="height: 100%;"></div>');
+                    htmlTextarea.after(cm6WrapperHTML).hide();
 
-                    var htmlCodeEditor = CodeMirror.fromTextArea(htmlTextarea[0], {
-                            value: htmlTextarea[0].value,
-                            lineNumbers: true,
-                            mode:  'text/html',
-                            htmlMode: true,
-                            lint: true,
-                            lineWrapping: true,
-                            tabSize: 2,
-                            theme: 'hopscotch'
-                        });
-                    htmlCodeEditor.on('change', function(instance, changeObj) {
-
-                        var thisTextarea = $(instance.getTextArea());
-
-                        $(thisTextarea).attr('data-value', instance.getValue());
-
-                        thisTextarea.val(instance.getValue());
-
-
+                    var htmlCodeEditor = new CM6.EditorView({
+                        state: CM6.EditorState.create({
+                            doc: htmlTextarea.val(),
+                            extensions: [
+                                CM6.oneDark,
+                                CM6.lineNumbers(),
+                                CM6.highlightActiveLine(),
+                                CM6.highlightActiveLineGutter(),
+                                CM6.drawSelection(),
+                                CM6.history(),
+                                CM6.keymap.of([].concat(CM6.defaultKeymap, CM6.historyKeymap)),
+                                CM6.EditorView.lineWrapping,
+                                CM6.StreamLanguage.define(CM6.legacyModes.html),
+                                window.FrameTrailCM6Linters.html,
+                                CM6.lintGutter(),
+                                CM6.EditorView.updateListener.of(function(update) {
+                                    if (!update.docChanged) { return; }
+                                    var val = update.state.doc.toString();
+                                    htmlTextarea.attr('data-value', val).val(val);
+                                })
+                            ]
+                        }),
+                        parent: cm6WrapperHTML[0]
                     });
-                    htmlCodeEditor.setSize(null, '100%');
+                    cm6WrapperHTML[0]._cm6view = htmlCodeEditor;
 
 
                     return editingUI;

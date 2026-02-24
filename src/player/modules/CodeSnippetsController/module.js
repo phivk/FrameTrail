@@ -227,9 +227,8 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
                                     .tabs({
                                         heightStyle: 'fill',
                                         activate: function(event, ui) {
-                                            if (ui.newPanel.find('.CodeMirror').length != 0) {
-                                                ui.newPanel.find('.CodeMirror')[0].CodeMirror.refresh();
-                                            }
+                                            var cm6Wrapper = ui.newPanel.find('.cm6-wrapper')[0];
+                                            if (cm6Wrapper && cm6Wrapper._cm6view) { cm6Wrapper._cm6view.requestMeasure(); }
                                         }
                                     }),
 
@@ -281,63 +280,79 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
 
         codeSnippetList.append(codeSnippetElement);
 
-        // Init CodeMirror for Events
+        // Init CodeMirror 6 editors for Events
 
+        var CM6 = window.FrameTrailCM6;
         var codeTextareas = codeSnippetEditingOptions.find('.codeTextarea');
 
         for (var i=0; i<codeTextareas.length; i++) {
-            var textarea = codeTextareas.eq(i),
-                codeEditor = CodeMirror.fromTextArea(textarea[0], {
-                    value: textarea[0].value,
-                    lineNumbers: true,
-                    mode:  'javascript',
-                    gutters: ['CodeMirror-lint-markers'],
-                    lint: true,
-                    lineWrapping: true,
-                    tabSize: 2,
-                    theme: 'hopscotch'
+            (function(textarea) {
+                var cm6Wrapper = $('<div class="cm6-wrapper" style="height: 100%;"></div>');
+                textarea.after(cm6Wrapper).hide();
+                var codeEditor = new CM6.EditorView({
+                    state: CM6.EditorState.create({
+                        doc: textarea.val(),
+                        extensions: [
+                            CM6.oneDark,
+                            CM6.lineNumbers(),
+                            CM6.highlightActiveLine(),
+                            CM6.highlightActiveLineGutter(),
+                            CM6.drawSelection(),
+                            CM6.history(),
+                            CM6.keymap.of([].concat(CM6.defaultKeymap, CM6.historyKeymap)),
+                            CM6.EditorView.lineWrapping,
+                            CM6.StreamLanguage.define(CM6.legacyModes.javascript),
+                            window.FrameTrailCM6Linters.js,
+                            CM6.lintGutter(),
+                            CM6.EditorView.updateListener.of(function(update) {
+                                if (!update.docChanged) { return; }
+                                var currentEvents = FrameTrail.module('HypervideoModel').events;
+                                currentEvents[textarea.data('eventname')] = update.state.doc.toString();
+                                FrameTrail.module('HypervideoModel').events = currentEvents;
+                            })
+                        ]
+                    }),
+                    parent: cm6Wrapper[0]
                 });
-            codeEditor.on('change', function(instance, changeObj) {
-
-                var thisTextarea = $(instance.getTextArea()),
-                    currentEvents = FrameTrail.module('HypervideoModel').events;
-
-                currentEvents[thisTextarea.data('eventname')] = instance.getValue();
-                FrameTrail.module('HypervideoModel').events = currentEvents;
-                thisTextarea.val(instance.getValue());
-
-            });
-            codeEditor.setSize(null, '100%');
+                cm6Wrapper[0]._cm6view = codeEditor;
+            })(codeTextareas.eq(i));
         }
 
-        // Init CodeMirror for Custom CSS
+        // Init CodeMirror 6 editors for Custom CSS
 
         var cssTextareas = codeSnippetEditingOptions.find('.cssTextarea');
 
         for (var i=0; i<cssTextareas.length; i++) {
-            var textarea = cssTextareas.eq(i),
-                codeEditor = CodeMirror.fromTextArea(textarea[0], {
-                    value: textarea[0].value,
-                    lineNumbers: true,
-                    mode:  'css',
-                    gutters: ['CodeMirror-lint-markers'],
-                    lint: true,
-                    lineWrapping: true,
-                    tabSize: 2,
-                    theme: 'hopscotch'
+            (function(textarea) {
+                var cm6Wrapper = $('<div class="cm6-wrapper" style="height: 100%;"></div>');
+                textarea.after(cm6Wrapper).hide();
+                var codeEditor = new CM6.EditorView({
+                    state: CM6.EditorState.create({
+                        doc: textarea.val(),
+                        extensions: [
+                            CM6.oneDark,
+                            CM6.lineNumbers(),
+                            CM6.highlightActiveLine(),
+                            CM6.highlightActiveLineGutter(),
+                            CM6.drawSelection(),
+                            CM6.history(),
+                            CM6.keymap.of([].concat(CM6.defaultKeymap, CM6.historyKeymap)),
+                            CM6.EditorView.lineWrapping,
+                            CM6.StreamLanguage.define(CM6.legacyModes.css),
+                            window.FrameTrailCM6Linters.css,
+                            CM6.lintGutter(),
+                            CM6.EditorView.updateListener.of(function(update) {
+                                if (!update.docChanged) { return; }
+                                var newValue = update.state.doc.toString();
+                                FrameTrail.module('HypervideoModel').customCSS = newValue;
+                                updateCustomCSS(newValue);
+                            })
+                        ]
+                    }),
+                    parent: cm6Wrapper[0]
                 });
-            codeEditor.on('change', function(instance, changeObj) {
-
-                var thisTextarea = $(instance.getTextArea());
-
-                FrameTrail.module('HypervideoModel').customCSS = instance.getValue();
-                thisTextarea.val(instance.getValue());
-
-                updateCustomCSS(instance.getValue());
-
-
-            });
-            codeEditor.setSize(null, '100%');
+                cm6Wrapper[0]._cm6view = codeEditor;
+            })(cssTextareas.eq(i));
         }
 
 
@@ -549,9 +564,9 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
      */
     function onViewSizeChanged() {
 
-        if (codeSnippetInFocus && codeSnippetInFocus.codeEditorInstance) {
+        if (codeSnippetInFocus && codeSnippetInFocus.cm6Wrapper) {
             var editorHeight = ViewVideo.EditPropertiesContainer.height() - 70;
-            codeSnippetInFocus.codeEditorInstance.setSize(null, editorHeight);
+            codeSnippetInFocus.cm6Wrapper.css('height', editorHeight + 'px');
         }
 
     }

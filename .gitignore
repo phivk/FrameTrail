@@ -35,3 +35,6 @@ plans/
 
 # Build output
 /build
+
+# CM6 bundle build dependencies (scripts/package.json is committed; node_modules is not)
+node_modules/

@@ -242,9 +242,8 @@ FrameTrail.defineType(
                         heightStyle: 'fill',
                         activate: function(event, ui) {
                             controlsContainer.find('.overlayOptionsTabs').tabs('refresh');
-                            if (ui.newPanel.find('.CodeMirror').length != 0) {
-                                ui.newPanel.find('.CodeMirror')[0].CodeMirror.refresh();
-                            }
+                            var cm6Wrapper = ui.newPanel.find('.cm6-wrapper')[0];
+                            if (cm6Wrapper && cm6Wrapper._cm6view) { cm6Wrapper._cm6view.requestMeasure(); }
                         }
                     });
 
@@ -897,82 +896,84 @@ FrameTrail.defineType(
 
                     });
 
-                    // Init CodeMirror for Actions / Events
+                    // Init CodeMirror 6 editors for Actions / Events
+                    var CM6 = window.FrameTrailCM6;
                     var codeTextareas = controlsContainer.find('.codeTextarea');
 
                     for (var i=0; i<codeTextareas.length; i++) {
-                        var textarea = codeTextareas.eq(i),
-                            codeEditor = CodeMirror.fromTextArea(textarea[0], {
-                                value: textarea[0].value,
-                                lineNumbers: true,
-                                mode:  'javascript',
-                                gutters: ['CodeMirror-lint-markers'],
-                                lint: true,
-                                lineWrapping: true,
-                                tabSize: 2,
-                                theme: 'hopscotch'
-                            });
-                        
-                        // Track changes for undo
-                        codeEditor._eventCodeBeforeEdit = null;
-                        codeEditor._eventCodeChanged = false;
-                        
-                        codeEditor.on('focus', function(instance) {
-                            var thisTextarea = $(instance.getTextArea());
-                            instance._eventCodeBeforeEdit = overlay.data.events[thisTextarea.data('eventname')] || '';
-                            instance._eventCodeChanged = false;
-                        });
-                        
-                        codeEditor.on('change', function(instance, changeObj) {
+                        (function(textarea) {
+                            var eventName = textarea.data('eventname');
+                            var eventCodeBeforeEdit = null;
+                            var eventCodeChanged = false;
 
-                            var thisTextarea = $(instance.getTextArea());
+                            var cm6Wrapper = $('<div class="cm6-wrapper" style="height: calc(100% - 40px);"></div>');
+                            textarea.after(cm6Wrapper).hide();
 
-                            overlay.data.events[thisTextarea.data('eventname')] = instance.getValue();
-                            thisTextarea.val(instance.getValue());
-                            instance._eventCodeChanged = true;
-
-                            FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-                        });
-                        
-                        codeEditor.on('blur', function(instance) {
-                            var thisTextarea = $(instance.getTextArea());
-                            var eventName = thisTextarea.data('eventname');
-                            var newValue = instance.getValue();
-                            
-                            if (instance._eventCodeChanged && instance._eventCodeBeforeEdit !== newValue) {
-                                (function(overlayId, evtName, oldCode, newCode, labels) {
-                                    var findOverlay = function() {
-                                        var overlays = FrameTrail.module('HypervideoModel').overlays;
-                                        for (var i = 0; i < overlays.length; i++) {
-                                            if (overlays[i].data.created === overlayId) {
-                                                return overlays[i];
+                            new CM6.EditorView({
+                                state: CM6.EditorState.create({
+                                    doc: textarea.val(),
+                                    extensions: [
+                                        CM6.oneDark,
+                                        CM6.lineNumbers(),
+                                        CM6.highlightActiveLine(),
+                                        CM6.highlightActiveLineGutter(),
+                                        CM6.drawSelection(),
+                                        CM6.history(),
+                                        CM6.keymap.of([].concat(CM6.defaultKeymap, CM6.historyKeymap)),
+                                        CM6.EditorView.lineWrapping,
+                                        CM6.StreamLanguage.define(CM6.legacyModes.javascript),
+                                        window.FrameTrailCM6Linters.js,
+                                        CM6.lintGutter(),
+                                        CM6.EditorView.domEventHandlers({
+                                            focus: function() {
+                                                eventCodeBeforeEdit = overlay.data.events[eventName] || '';
+                                                eventCodeChanged = false;
+                                            },
+                                            blur: function(evt, view) {
+                                                var newValue = view.state.doc.toString();
+                                                if (eventCodeChanged && eventCodeBeforeEdit !== newValue) {
+                                                    (function(overlayId, evtName, oldCode, newCode, labels) {
+                                                        var findOverlay = function() {
+                                                            var overlays = FrameTrail.module('HypervideoModel').overlays;
+                                                            for (var j = 0; j < overlays.length; j++) {
+                                                                if (overlays[j].data.created === overlayId) { return overlays[j]; }
+                                                            }
+                                                            return null;
+                                                        };
+                                                        FrameTrail.module('UndoManager').register({
+                                                            category: 'overlays',
+                                                            description: labels['SidebarOverlays'] + ' ' + labels['SettingsActions'],
+                                                            undo: function() {
+                                                                var o = findOverlay();
+                                                                if (!o) return;
+                                                                o.data.events[evtName] = oldCode;
+                                                                FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+                                                            },
+                                                            redo: function() {
+                                                                var o = findOverlay();
+                                                                if (!o) return;
+                                                                o.data.events[evtName] = newCode;
+                                                                FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+                                                            }
+                                                        });
+                                                    })(overlay.data.created, eventName, eventCodeBeforeEdit, newValue, self.labels);
+                                                }
+                                                eventCodeBeforeEdit = null;
+                                                eventCodeChanged = false;
                                             }
-                                        }
-                                        return null;
-                                    };
-                                    FrameTrail.module('UndoManager').register({
-                                        category: 'overlays',
-                                        description: labels['SidebarOverlays'] + ' ' + labels['SettingsActions'],
-                                        undo: function() {
-                                            var o = findOverlay();
-                                            if (!o) return;
-                                            o.data.events[evtName] = oldCode;
+                                        }),
+                                        CM6.EditorView.updateListener.of(function(update) {
+                                            if (!update.docChanged) { return; }
+                                            var newValue = update.state.doc.toString();
+                                            overlay.data.events[eventName] = newValue;
+                                            eventCodeChanged = true;
                                             FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-                                        },
-                                        redo: function() {
-                                            var o = findOverlay();
-                                            if (!o) return;
-                                            o.data.events[evtName] = newCode;
-                                            FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-                                        }
-                                    });
-                                })(overlay.data.created, eventName, instance._eventCodeBeforeEdit, newValue, self.labels);
-                            }
-                            instance._eventCodeBeforeEdit = null;
-                            instance._eventCodeChanged = false;
-                        });
-                        
-                        codeEditor.setSize(null, 'calc(100% - 40px)');
+                                        })
+                                    ]
+                                }),
+                                parent: cm6Wrapper[0]
+                            });
+                        })(codeTextareas.eq(i));
                     }
 
                     controlsContainer.find('.executeActionCode').click(function(evt) {
@@ -1079,9 +1080,8 @@ FrameTrail.defineType(
                         heightStyle: 'fill',
                         activate: function(event, ui) {
                             controlsContainer.find('.annotationOptionsTabs').tabs('refresh');
-                            if (ui.newPanel.find('.CodeMirror').length != 0) {
-                                ui.newPanel.find('.CodeMirror')[0].CodeMirror.refresh();
-                            }
+                            var cm6Wrapper = ui.newPanel.find('.cm6-wrapper')[0];
+                            if (cm6Wrapper && cm6Wrapper._cm6view) { cm6Wrapper._cm6view.requestMeasure(); }
                         }
                     });
 

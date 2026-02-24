@@ -60,9 +60,8 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
 
         adminTabs.tabs({
             activate: function(event, ui) {
-                if (ui.newPanel.find('.CodeMirror').length != 0) {
-                    ui.newPanel.find('.CodeMirror')[0].CodeMirror.refresh();
-                }
+                var cm6Wrapper = ui.newPanel.find('.cm6-wrapper')[0];
+                if (cm6Wrapper && cm6Wrapper._cm6view) { cm6Wrapper._cm6view.requestMeasure(); }
             }
         });
 
@@ -207,39 +206,52 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
 
         adminTabs.find('#ChangeGlobalCSS').append(globalCSSEditingUI);
 
-        // Init CodeMirror for CSS Variables
+        // Init CodeMirror 6 editor for CSS Variables
         var textarea = adminTabs.find('.globalCSS');
+        var CM6 = window.FrameTrailCM6;
 
-        var codeEditor = CodeMirror.fromTextArea(textarea[0], {
-                value: textarea[0].value,
-                lineNumbers: true,
-                mode:  'css',
-                gutters: ['CodeMirror-lint-markers'],
-                lint: true,
-                lineWrapping: true,
-                tabSize: 2,
-                theme: 'hopscotch'
-            });
+        var cm6Wrapper = $('<div class="cm6-wrapper" style="height: 100%;"></div>');
+        textarea.after(cm6Wrapper).hide();
+
         var cssEditorValue = cssText;
-        codeEditor.on('change', function(instance, changeObj) {
-            var thisTextarea = $(instance.getTextArea());
 
-            thisTextarea.val(instance.getValue());
-            cssEditorValue = instance.getValue();
-
-            // Track changes but don't apply CSS until save
-            if (changeObj.origin != 'setValue') {
-                globalCSSChanged = true;
-            }
+        var codeEditor = new CM6.EditorView({
+            state: CM6.EditorState.create({
+                doc: cssText,
+                extensions: [
+                    CM6.oneDark,
+                    CM6.lineNumbers(),
+                    CM6.highlightActiveLine(),
+                    CM6.highlightActiveLineGutter(),
+                    CM6.drawSelection(),
+                    CM6.history(),
+                    CM6.keymap.of([].concat(CM6.defaultKeymap, CM6.historyKeymap)),
+                    CM6.EditorView.lineWrapping,
+                    CM6.StreamLanguage.define(CM6.legacyModes.css),
+                    window.FrameTrailCM6Linters.css,
+                    CM6.lintGutter(),
+                    CM6.EditorView.updateListener.of(function(update) {
+                        if (!update.docChanged) { return; }
+                        var isSetter = update.transactions.some(function(tr) {
+                            return tr.annotation(CM6.Transaction.userEvent) === 'setValue';
+                        });
+                        cssEditorValue = update.state.doc.toString();
+                        if (!isSetter) {
+                            globalCSSChanged = true;
+                        }
+                    })
+                ]
+            }),
+            parent: cm6Wrapper[0]
         });
-        codeEditor.setSize(null, '100%');
+        cm6Wrapper[0]._cm6view = codeEditor;
 
         // this is necessary to be able to manipulate the css live
         if ( $('head > style.FrameTrailGlobalCustomCSS').length == 0 ) {
             if (FrameTrail.getState('storageMode') === 'local') {
                 var adapter = FrameTrail.module('StorageManager').getAdapter();
                 adapter.readText('custom.css').then(function(cssString) {
-                    codeEditor.setValue(cssString);
+                    codeEditor.dispatch({ changes: { from: 0, to: codeEditor.state.doc.length, insert: cssString }, annotations: CM6.Transaction.userEvent.of('setValue') });
                     $('head').append('<style class="FrameTrailGlobalCustomCSS" type="text/css">'+ cssString +'</style>');
                     $('head link[href$="custom.css"]').remove();
                 }).catch(function() {
@@ -250,7 +262,7 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
             } else if ( $('head link[href$="custom.css"]').length != 0 ) {
                 $.get($('head link[href$="custom.css"]').attr('href'))
                     .done(function (cssString) {
-                        codeEditor.setValue(cssString);
+                        codeEditor.dispatch({ changes: { from: 0, to: codeEditor.state.doc.length, insert: cssString }, annotations: CM6.Transaction.userEvent.of('setValue') });
                         $('head').append('<style class="FrameTrailGlobalCustomCSS" type="text/css">'+ cssString +'</style>');
                         $('head link[href$="custom.css"]').remove();
                     }).fail(function() {

@@ -73,7 +73,7 @@ FrameTrail.defineModule('InteractionController', function(FrameTrail){
                 if (FrameTrail.getState('editMode') &&
                     evt.target.tagName !== 'INPUT' &&
                     evt.target.tagName !== 'TEXTAREA' &&
-                    !$(evt.target).closest('.CodeMirror').length) {
+                    !$(evt.target).closest('.cm-editor').length) {
 
                     if (evt.shiftKey) {
                         // Redo: Ctrl+Shift+Z / Cmd+Shift+Z
@@ -92,7 +92,7 @@ FrameTrail.defineModule('InteractionController', function(FrameTrail){
                 if (FrameTrail.getState('editMode') &&
                     evt.target.tagName !== 'INPUT' &&
                     evt.target.tagName !== 'TEXTAREA' &&
-                    !$(evt.target).closest('.CodeMirror').length) {
+                    !$(evt.target).closest('.cm-editor').length) {
 
                     FrameTrail.module('UndoManager').redo();
                     evt.preventDefault();

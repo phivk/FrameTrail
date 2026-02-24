@@ -1263,3 +1263,18 @@ input:checked + .slider:before {
     font-size: 14px;
     color: #666;
 }
+
+
+/* CodeMirror 6 editor wrapper sizing */
+.cm6-wrapper {
+    position: relative;
+    box-sizing: border-box;
+}
+
+.cm6-wrapper .cm-editor {
+    height: 100%;
+}
+
+.cm6-wrapper .cm-scroller {
+    overflow: auto;
+}

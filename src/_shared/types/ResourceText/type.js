@@ -206,7 +206,7 @@ FrameTrail.defineType(
                         $(this).addClass('active');
                         htmlEditorContent.show();
                         if (window.htmlCodeEditor) {
-                            window.htmlCodeEditor.refresh();
+                            window.htmlCodeEditor.requestMeasure();
 
                             try {
                                 if (TogetherJS && TogetherJS.running) {
@@ -227,172 +227,141 @@ FrameTrail.defineType(
 
                     //textEditor.style.display = 'none';
 
-                    /* Init CodeMirror for Custom HTML */
+                    /* Init CodeMirror 6 for Custom HTML */
 
-                    window.htmlCodeEditor = CodeMirror.fromTextArea(textarea[0], {
-                            value: textarea[0].value,
-                            lineNumbers: true,
-                            mode:  'text/html',
-                            htmlMode: true,
-                            lint: true,
-                            lineWrapping: true,
-                            tabSize: 2,
-                            theme: 'hopscotch'
-                        });
+                    var CM6 = window.FrameTrailCM6;
+                    var htmlCm6Wrapper = $('<div class="cm6-wrapper" style="height: 100%;"></div>');
+                    textarea.after(htmlCm6Wrapper).hide();
 
                     var delayTimer;
+                    var textBeforeEdit = overlayOrAnnotation.data.attributes.text || '';
+                    var textChanged = false;
 
-                    window.htmlCodeEditor.on('change', function(instance, changeObj) {
-
-                        var thisTextarea = $(instance.getTextArea());
-
-                        thisTextarea.val(instance.getValue());
-                        
-                        // Track change for undo
-                        instance._textChanged = true;
-
-                        if (window.quillEditor && changeObj.origin != 'setValue') {
-                            window.quillEditor.clipboard.dangerouslyPasteHTML(instance.getValue());
-                        } else if (changeObj.origin == 'setValue') {
-                            
-                            // auto-indent
-                            /*
-                            var totalLines = instance.lineCount();
-                            instance.autoFormatRange({line:0, ch:0}, {line:totalLines});
-                            instance.autoIndentRange({line:0, ch:0}, {line:totalLines});
-                            */
-                        }
-
-                        var escapeHelper = document.createElement('div'),
-                            escapedHtml;
-
-                        // save escaped html string
-                        escapeHelper.appendChild(document.createTextNode(instance.getValue()));
-                        escapedHtml = escapeHelper.innerHTML;
-                        overlayOrAnnotation.data.attributes.text = escapedHtml;
-
-                        if (overlayOrAnnotation.overlayElement) {
-                            
-                            overlayOrAnnotation.overlayElement.children('.resourceDetail').html(instance.getValue());
-
-                            FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-
-                            if (window.oldTextContent != overlayOrAnnotation.data.attributes.text) {
-                                clearTimeout(delayTimer);
-                                delayTimer = setTimeout(function() {
-                                    FrameTrail.triggerEvent('userAction', {
-                                        action: 'OverlayChange',
-                                        overlay: overlayOrAnnotation.data,
-                                        changes: [
-                                            {
-                                                property: 'attributes.text',
-                                                oldValue: window.oldTextContent,
-                                                newValue: overlayOrAnnotation.data.attributes.text
-                                            }
-                                        ]
-                                    });
-                                    window.oldTextContent = overlayOrAnnotation.data.attributes.text;
-                                }, 3000);
-                            }
-
-                        } else {
-                            
-                            // Update annotation elements in dom
-
-                            FrameTrail.module('HypervideoModel').newUnsavedChange('annotations');
-
-                            if (window.oldTextContent != overlayOrAnnotation.data.attributes.text) {
-                                clearTimeout(delayTimer);
-                                delayTimer = setTimeout(function() {
-                                    
-                                    $(overlayOrAnnotation.contentViewDetailElements).each(function() {
-                                        $(this).find('.resourceDetail').html(instance.getValue());
-                                    });
-
-                                    //var decoded_string = $("<div/>").html(instance.getValue()).text();
-                                    //var textOnly = $("<div/>").html(decoded_string).text();
-
-                                    $(overlayOrAnnotation.contentViewElements).each(function() {
-                                        $(this).find('.resourceThumb .resourceTextPreview').html(instance.getValue());
-                                    });
-                                    
-                                    overlayOrAnnotation.timelineElement.find('.previewWrapper .resourceTextPreview').html(instance.getValue());
-                                    
-                                    $(FrameTrail.getState('target')).find('.editPropertiesContainer .resourceTextPreview').html(instance.getValue());
-
-                                    FrameTrail.triggerEvent('userAction', {
-                                        action: 'AnnotationChange',
-                                        annotation: overlayOrAnnotation.data,
-                                        changes: [
-                                            {
-                                                property: 'attributes.text',
-                                                oldValue: window.oldTextContent,
-                                                newValue: overlayOrAnnotation.data.attributes.text
-                                            }
-                                        ]
-                                    });
-                                    window.oldTextContent = overlayOrAnnotation.data.attributes.text;
-                                }, 3000);
-                                
-                            }
-
-                        }
-                        
-
-
-                    });
-                    
-                    // Track text content for undo
-                    window.htmlCodeEditor._textBeforeEdit = overlayOrAnnotation.data.attributes.text || '';
-                    window.htmlCodeEditor._textChanged = false;
-                    
-                    window.htmlCodeEditor.on('focus', function(instance) {
-                        instance._textBeforeEdit = overlayOrAnnotation.data.attributes.text || '';
-                        instance._textChanged = false;
-                    });
-                    
-                    window.htmlCodeEditor.on('blur', function(instance) {
-                        var newText = overlayOrAnnotation.data.attributes.text || '';
-                        if (instance._textChanged && instance._textBeforeEdit !== newText) {
-                            var isOverlay = !!overlayOrAnnotation.overlayElement;
-                            var category = isOverlay ? 'overlays' : 'annotations';
-                            var elementId = overlayOrAnnotation.data.created;
-                            
-                            (function(id, oldText, newTxt, cat, labels) {
-                                var findElement = function() {
-                                    var arr = cat === 'overlays' ? 
-                                        FrameTrail.module('HypervideoModel').overlays : 
-                                        FrameTrail.module('HypervideoModel').annotations;
-                                    for (var i = 0; i < arr.length; i++) {
-                                        if (arr[i].data.created === id) {
-                                            return arr[i];
-                                        }
-                                    }
-                                    return null;
-                                };
-                                FrameTrail.module('UndoManager').register({
-                                    category: cat,
-                                    description: (cat === 'overlays' ? labels['SidebarOverlays'] : labels['SidebarMyAnnotations']) + ' Text',
-                                    undo: function() {
-                                        var el = findElement();
-                                        if (!el) return;
-                                        el.data.attributes.text = oldText;
-                                        FrameTrail.module('HypervideoModel').newUnsavedChange(cat);
+                    window.htmlCodeEditor = new CM6.EditorView({
+                        state: CM6.EditorState.create({
+                            doc: textarea.val(),
+                            extensions: [
+                                CM6.oneDark,
+                                CM6.lineNumbers(),
+                                CM6.highlightActiveLine(),
+                                CM6.highlightActiveLineGutter(),
+                                CM6.drawSelection(),
+                                CM6.history(),
+                                CM6.keymap.of([].concat(CM6.defaultKeymap, CM6.historyKeymap)),
+                                CM6.EditorView.lineWrapping,
+                                CM6.StreamLanguage.define(CM6.legacyModes.html),
+                                window.FrameTrailCM6Linters.html,
+                                CM6.lintGutter(),
+                                CM6.EditorView.domEventHandlers({
+                                    focus: function() {
+                                        textBeforeEdit = overlayOrAnnotation.data.attributes.text || '';
+                                        textChanged = false;
                                     },
-                                    redo: function() {
-                                        var el = findElement();
-                                        if (!el) return;
-                                        el.data.attributes.text = newTxt;
-                                        FrameTrail.module('HypervideoModel').newUnsavedChange(cat);
+                                    blur: function(evt, view) {
+                                        var newText = overlayOrAnnotation.data.attributes.text || '';
+                                        if (textChanged && textBeforeEdit !== newText) {
+                                            var isOverlay = !!overlayOrAnnotation.overlayElement;
+                                            var category = isOverlay ? 'overlays' : 'annotations';
+                                            var elementId = overlayOrAnnotation.data.created;
+                                            (function(id, oldText, newTxt, cat, labels) {
+                                                var findElement = function() {
+                                                    var arr = cat === 'overlays' ?
+                                                        FrameTrail.module('HypervideoModel').overlays :
+                                                        FrameTrail.module('HypervideoModel').annotations;
+                                                    for (var i = 0; i < arr.length; i++) {
+                                                        if (arr[i].data.created === id) { return arr[i]; }
+                                                    }
+                                                    return null;
+                                                };
+                                                FrameTrail.module('UndoManager').register({
+                                                    category: cat,
+                                                    description: (cat === 'overlays' ? labels['SidebarOverlays'] : labels['SidebarMyAnnotations']) + ' Text',
+                                                    undo: function() {
+                                                        var el = findElement();
+                                                        if (!el) return;
+                                                        el.data.attributes.text = oldText;
+                                                        FrameTrail.module('HypervideoModel').newUnsavedChange(cat);
+                                                    },
+                                                    redo: function() {
+                                                        var el = findElement();
+                                                        if (!el) return;
+                                                        el.data.attributes.text = newTxt;
+                                                        FrameTrail.module('HypervideoModel').newUnsavedChange(cat);
+                                                    }
+                                                });
+                                            })(elementId, textBeforeEdit, newText, category, self.labels);
+                                        }
+                                        textBeforeEdit = null;
+                                        textChanged = false;
                                     }
-                                });
-                            })(elementId, instance._textBeforeEdit, newText, category, self.labels);
-                        }
-                        instance._textBeforeEdit = null;
-                        instance._textChanged = false;
+                                }),
+                                CM6.EditorView.updateListener.of(function(update) {
+                                    if (!update.docChanged) { return; }
+
+                                    var isSetter = update.transactions.some(function(tr) {
+                                        return tr.annotation(CM6.Transaction.userEvent) === 'setValue';
+                                    });
+
+                                    var newHtml = update.state.doc.toString();
+                                    textChanged = true;
+
+                                    if (window.quillEditor && !isSetter) {
+                                        window.quillEditor.clipboard.dangerouslyPasteHTML(newHtml);
+                                    }
+
+                                    var escapeHelper = document.createElement('div');
+                                    escapeHelper.appendChild(document.createTextNode(newHtml));
+                                    var escapedHtml = escapeHelper.innerHTML;
+                                    overlayOrAnnotation.data.attributes.text = escapedHtml;
+
+                                    if (overlayOrAnnotation.overlayElement) {
+
+                                        overlayOrAnnotation.overlayElement.children('.resourceDetail').html(newHtml);
+                                        FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+
+                                        if (window.oldTextContent != overlayOrAnnotation.data.attributes.text) {
+                                            clearTimeout(delayTimer);
+                                            delayTimer = setTimeout(function() {
+                                                FrameTrail.triggerEvent('userAction', {
+                                                    action: 'OverlayChange',
+                                                    overlay: overlayOrAnnotation.data,
+                                                    changes: [{ property: 'attributes.text', oldValue: window.oldTextContent, newValue: overlayOrAnnotation.data.attributes.text }]
+                                                });
+                                                window.oldTextContent = overlayOrAnnotation.data.attributes.text;
+                                            }, 3000);
+                                        }
+
+                                    } else {
+
+                                        FrameTrail.module('HypervideoModel').newUnsavedChange('annotations');
+
+                                        if (window.oldTextContent != overlayOrAnnotation.data.attributes.text) {
+                                            clearTimeout(delayTimer);
+                                            delayTimer = setTimeout(function() {
+                                                $(overlayOrAnnotation.contentViewDetailElements).each(function() {
+                                                    $(this).find('.resourceDetail').html(newHtml);
+                                                });
+                                                $(overlayOrAnnotation.contentViewElements).each(function() {
+                                                    $(this).find('.resourceThumb .resourceTextPreview').html(newHtml);
+                                                });
+                                                overlayOrAnnotation.timelineElement.find('.previewWrapper .resourceTextPreview').html(newHtml);
+                                                $(FrameTrail.getState('target')).find('.editPropertiesContainer .resourceTextPreview').html(newHtml);
+                                                FrameTrail.triggerEvent('userAction', {
+                                                    action: 'AnnotationChange',
+                                                    annotation: overlayOrAnnotation.data,
+                                                    changes: [{ property: 'attributes.text', oldValue: window.oldTextContent, newValue: overlayOrAnnotation.data.attributes.text }]
+                                                });
+                                                window.oldTextContent = overlayOrAnnotation.data.attributes.text;
+                                            }, 3000);
+                                        }
+
+                                    }
+                                })
+                            ]
+                        }),
+                        parent: htmlCm6Wrapper[0]
                     });
-                    
-                    window.htmlCodeEditor.setSize(null, '100%');
+                    htmlCm6Wrapper[0]._cm6view = window.htmlCodeEditor;
 
                     /* Init Quill Visual Editor */
 
@@ -444,10 +413,14 @@ FrameTrail.defineType(
                         quillInitHelper.textContent || ''
                     );
 
-                    // Quill → CodeMirror sync
+                    // Quill → CodeMirror 6 sync
                     window.quillEditor.on('text-change', function(delta, oldDelta, source) {
                         if (source === 'user' && window.htmlCodeEditor) {
-                            window.htmlCodeEditor.getDoc().setValue(window.quillEditor.root.innerHTML);
+                            var doc = window.htmlCodeEditor.state.doc;
+                            window.htmlCodeEditor.dispatch({
+                                changes: { from: 0, to: doc.length, insert: window.quillEditor.root.innerHTML },
+                                annotations: CM6.Transaction.userEvent.of('setValue')
+                            });
                         }
                     });
 
