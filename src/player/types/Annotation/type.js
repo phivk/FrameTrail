@@ -944,26 +944,28 @@ FrameTrail.defineType(
                                 start: function(e) {
                                     var rect = e.target.getBoundingClientRect();
                                     dragClone = e.target.cloneNode(true);
-                                    dragClone.style.cssText = 'position:fixed;z-index:1000;pointer-events:none;'
-                                        + 'left:' + rect.left + 'px;top:' + rect.top + 'px;'
-                                        + 'width:' + rect.width + 'px;height:' + rect.height + 'px;'
-                                        + 'background-color:' + $(e.target).css('background-color') + ';';
+                                    dragClone.style.position = 'fixed';
+                                    dragClone.style.zIndex = '1000';
+                                    dragClone.style.pointerEvents = 'auto';
+                                    dragClone.style.boxSizing = 'border-box';
+                                    dragClone.style.width = rect.width + 'px';
+                                    dragClone.style.height = rect.height + 'px';
+                                    dragClone.style.left = rect.left + 'px';
+                                    dragClone.style.top = rect.top + 'px';
+                                    dragClone.classList.add('ft-drag-clone');
                                     document.body.appendChild(dragClone);
-                                    e.target.dataset.ftY = 0;
+                                    e.target.classList.add('dragPlaceholder');
+                                    document.body.classList.add('ft-dragging');
                                 },
                                 move: function(e) {
-                                    // y-axis only
-                                    var y = (parseFloat(e.target.dataset.ftY) || 0) + e.dy;
-                                    e.target.style.transform = 'translateY(' + y + 'px)';
-                                    e.target.dataset.ftY = y;
                                     if (dragClone) {
                                         dragClone.style.top = (parseFloat(dragClone.style.top) + e.dy) + 'px';
                                     }
                                 },
                                 end: function(e) {
-                                    e.target.style.transform = '';
-                                    e.target.dataset.ftY = 0;
+                                    e.target.classList.remove('dragPlaceholder');
                                     if (dragClone) { dragClone.remove(); dragClone = null; }
+                                    document.body.classList.remove('ft-dragging');
                                 }
                             }
                         });

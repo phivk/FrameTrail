@@ -205,16 +205,16 @@
 	/*box-shadow: 0px 0px 2px 0px var(--primary-fg-color);*/
 }
 
-.timelineList .userTimelineWrapper.ui-sortable-helper {
+.timelineList .userTimelineWrapper.sortable-chosen {
 	background: var(--primary-bg-color);
 	box-shadow: 0 0 4px 1px rgba(100,100,100,.3)
 }
 
-.timelineList .ui-sortable-handle {
+.timelineList .userTimelineWrapper {
 	cursor: move;
 }
 
-.timelineList .ui-sortable-placeholder {
+.timelineList .sortable-placeholder {
 	background: rgba(200,200,200,.3);
 	border: 2px dotted #333;
 	height: 90px;

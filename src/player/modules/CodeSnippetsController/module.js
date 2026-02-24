@@ -123,10 +123,17 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
 
         var scroller = ViewVideo.CodeSnippetTimeline.find('.timelineScroller');
         if (scroller.length) {
+            // Reset inline heights first so elements resolve to their CSS-defined height
+            // (avoids circular dependency: elements height:100% → scroller min-height:100% → inflated)
+            scroller.css({ height: '', 'flex-basis': '' });
+            ViewVideo.CodeSnippetTimeline.css({ height: '', 'min-height': '', 'flex-basis': '' });
             CollisionDetection(scroller[0], {spacing:0, includeVerticalMargins: true, exclude: '.timelinePlayhead', containerPadding: 4});
+            // Read the inline value CollisionDetection just wrote (not .css() which is affected by CSS min-height:100%)
+            var stackedHeight = scroller[0].style.height;
             ViewVideo.CodeSnippetTimeline.css({
-                height: scroller.css('height'),
-                'flex-basis': scroller.css('flex-basis')
+                height:        stackedHeight,
+                'flex-basis':  stackedHeight,
+                'flex-shrink': '0'
             });
         } else {
             CollisionDetection(ViewVideo.CodeSnippetTimeline[0], {spacing:0, includeVerticalMargins: true});
@@ -151,7 +158,7 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
      */
     function resetTimelineView() {
 
-        ViewVideo.CodeSnippetTimeline.css('height', '');
+        ViewVideo.CodeSnippetTimeline.css({ height: '', 'min-height': '', 'flex-basis': '', 'flex-shrink': '' });
         var target = ViewVideo.CodeSnippetTimeline.find('.timelineScroller');
         if (target.length) {
             target.css({ height: '', 'flex-basis': '' });
@@ -260,29 +267,29 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
                     start: function(e) {
                         var rect = e.target.getBoundingClientRect();
                         dragClone = e.target.cloneNode(true);
-                        dragClone.style.cssText = 'position:fixed;z-index:1000;pointer-events:none;width:' + rect.width + 'px;left:' + rect.left + 'px;top:' + rect.top + 'px;';
+                        dragClone.style.position = 'fixed';
+                        dragClone.style.zIndex = '1000';
+                        dragClone.style.pointerEvents = 'auto';
+                        dragClone.style.boxSizing = 'border-box';
+                        dragClone.style.width = rect.width + 'px';
+                        dragClone.style.height = rect.height + 'px';
+                        dragClone.style.left = rect.left + 'px';
+                        dragClone.style.top = rect.top + 'px';
+                        dragClone.classList.add('ft-drag-clone');
                         document.body.appendChild(dragClone);
                         e.target.classList.add('dragPlaceholder');
-                        e.target.dataset.ftX = 0;
-                        e.target.dataset.ftY = 0;
+                        document.body.classList.add('ft-dragging');
                     },
                     move: function(e) {
-                        var x = (parseFloat(e.target.dataset.ftX) || 0) + e.dx;
-                        var y = (parseFloat(e.target.dataset.ftY) || 0) + e.dy;
-                        e.target.style.transform = 'translate(' + x + 'px,' + y + 'px)';
-                        e.target.dataset.ftX = x;
-                        e.target.dataset.ftY = y;
                         if (dragClone) {
                             dragClone.style.left = (parseFloat(dragClone.style.left) + e.dx) + 'px';
                             dragClone.style.top  = (parseFloat(dragClone.style.top)  + e.dy) + 'px';
                         }
                     },
                     end: function(e) {
-                        e.target.style.transform = '';
-                        e.target.dataset.ftX = 0;
-                        e.target.dataset.ftY = 0;
                         e.target.classList.remove('dragPlaceholder');
                         if (dragClone) { dragClone.remove(); dragClone = null; }
+                        document.body.classList.remove('ft-dragging');
                     }
                 }
             });
@@ -384,7 +391,7 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
 
             interact(ViewVideo.CodeSnippetTimeline[0]).dropzone({
                 accept:  '.codeSnippetElement',
-                overlap: 0.01,
+                overlap: 'pointer',
                 ondropactivate:   function(e) { $(e.target).addClass('droppableActive'); },
                 ondropdeactivate: function(e) { $(e.target).removeClass('droppableActive droppableHover'); ViewVideo.PlayerProgress.find('.ui-slider-handle').removeClass('highlight'); },
                 ondragenter:      function(e) { $(e.target).addClass('droppableHover'); ViewVideo.PlayerProgress.find('.ui-slider-handle').addClass('highlight'); },

@@ -1791,29 +1791,29 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 						start: function(e) {
 							var rect = e.target.getBoundingClientRect();
 							window._ftCurrentDragClone = e.target.cloneNode(true);
-							window._ftCurrentDragClone.style.cssText = 'position:fixed;z-index:1000;pointer-events:none;width:' + rect.width + 'px;left:' + rect.left + 'px;top:' + rect.top + 'px;';
+							window._ftCurrentDragClone.style.position = 'fixed';
+							window._ftCurrentDragClone.style.zIndex = '1000';
+							window._ftCurrentDragClone.style.pointerEvents = 'auto';
+							window._ftCurrentDragClone.style.boxSizing = 'border-box';
+							window._ftCurrentDragClone.style.width = rect.width + 'px';
+							window._ftCurrentDragClone.style.height = rect.height + 'px';
+							window._ftCurrentDragClone.style.left = rect.left + 'px';
+							window._ftCurrentDragClone.style.top = rect.top + 'px';
+							window._ftCurrentDragClone.classList.add('ft-drag-clone');
 							document.body.appendChild(window._ftCurrentDragClone);
 							e.target.classList.add('dragPlaceholder');
-							e.target.dataset.ftX = 0;
-							e.target.dataset.ftY = 0;
+							document.body.classList.add('ft-dragging');
 						},
 						move: function(e) {
-							var x = (parseFloat(e.target.dataset.ftX) || 0) + e.dx;
-							var y = (parseFloat(e.target.dataset.ftY) || 0) + e.dy;
-							e.target.style.transform = 'translate(' + x + 'px,' + y + 'px)';
-							e.target.dataset.ftX = x;
-							e.target.dataset.ftY = y;
 							if (window._ftCurrentDragClone) {
 								window._ftCurrentDragClone.style.left = (parseFloat(window._ftCurrentDragClone.style.left) + e.dx) + 'px';
 								window._ftCurrentDragClone.style.top  = (parseFloat(window._ftCurrentDragClone.style.top)  + e.dy) + 'px';
 							}
 						},
 						end: function(e) {
-							e.target.style.transform = '';
-							e.target.dataset.ftX = 0;
-							e.target.dataset.ftY = 0;
 							e.target.classList.remove('dragPlaceholder');
 							if (window._ftCurrentDragClone) { window._ftCurrentDragClone.remove(); window._ftCurrentDragClone = null; }
+							document.body.classList.remove('ft-dragging');
 						}
 					}
 				});

@@ -75,14 +75,14 @@
 
 .resourceThumb.dragPlaceholder {
 	outline: 1px dashed var(--primary-bg-color);
-	background: transparent;
+	background: none !important;
 }
 
 .resourceThumb.dragPlaceholder .resourceOverlay, .resourceThumb.dragPlaceholder .resourceTitle {
 	opacity: .2;
 }
 
-.resourceThumb.ui-draggable-dragging {
+.resourceThumb.ft-drag-clone {
 	outline: 1px solid #FF9919;
 }
 
@@ -173,7 +173,7 @@
 	display: block;
 }
 
-.resourceThumb.ui-draggable-dragging .resourcePreviewButton, .resourceThumb.resourceAnimationDiv .resourcePreviewButton {
+.resourceThumb.ft-drag-clone .resourcePreviewButton, .resourceThumb.dragPlaceholder .resourcePreviewButton, .resourceThumb.resourceAnimationDiv .resourcePreviewButton {
 	display: none;
 }
 

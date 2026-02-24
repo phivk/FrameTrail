@@ -41,7 +41,8 @@
 
     CollisionDetection.prototype.sort = function (els) {
         var t = this;
-        var sorted = els.slice().sort(function (a, b) {
+        // Sort in-place so leveler() also processes elements in left-to-right order
+        els.sort(function (a, b) {
             // Sort elements by left positioning, if same then by width
             var a_left  = a.offsetLeft,
                 b_left  = b.offsetLeft,
@@ -54,8 +55,8 @@
         });
         // Detach all sorted elements, then re-append in sorted order
         // (elements matching `exclude` remain in their original position)
-        sorted.forEach(function (el) { el.remove(); });
-        sorted.forEach(function (el) { t.container.appendChild(el); });
+        els.forEach(function (el) { el.remove(); });
+        els.forEach(function (el) { t.container.appendChild(el); });
     };
 
     CollisionDetection.prototype.leveler = function (els) {

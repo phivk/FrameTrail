@@ -344,10 +344,17 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
 
         var scroller = ViewVideo.OverlayTimeline.find('.timelineScroller');
         if (scroller.length) {
+            // Reset inline heights first so elements resolve to their CSS-defined height
+            // (avoids circular dependency: elements height:100% → scroller min-height:100% → inflated)
+            scroller.css({ height: '', 'flex-basis': '' });
+            ViewVideo.OverlayTimeline.css({ height: '', 'min-height': '', 'flex-basis': '' });
             CollisionDetection(scroller[0], {spacing:0, includeVerticalMargins: true, exclude: '.timelinePlayhead', containerPadding: 4});
+            // Read the inline value CollisionDetection just wrote (not .css() which is affected by CSS min-height:100%)
+            var stackedHeight = scroller[0].style.height;
             ViewVideo.OverlayTimeline.css({
-                height: scroller.css('height'),
-                'flex-basis': scroller.css('flex-basis')
+                height:        stackedHeight,
+                'flex-basis':  stackedHeight,
+                'flex-shrink': '0'
             });
         } else {
             CollisionDetection(ViewVideo.OverlayTimeline[0], {spacing:0, includeVerticalMargins: true});
@@ -369,7 +376,7 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
      */
     function resetTimelineView() {
 
-        ViewVideo.OverlayTimeline.css('height', '');
+        ViewVideo.OverlayTimeline.css({ height: '', 'min-height': '', 'flex-basis': '', 'flex-shrink': '' });
         var target = ViewVideo.OverlayTimeline.find('.timelineScroller');
         if (target.length) {
             target.css({ height: '', 'flex-basis': '' });
@@ -404,7 +411,7 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
 
             interact(ViewVideo.OverlayContainer[0]).dropzone({
                 accept:  '.resourceThumb',
-                overlap: 0.01,
+                overlap: 'pointer',
                 ondropactivate:   function(e) { $(e.target).addClass('droppableActive'); },
                 ondropdeactivate: function(e) { $(e.target).removeClass('droppableActive droppableHover'); ViewVideo.PlayerProgress.find('.ui-slider-handle').removeClass('highlight'); },
                 ondragenter:      function(e) { $(e.target).addClass('droppableHover'); ViewVideo.PlayerProgress.find('.ui-slider-handle').addClass('highlight'); },
@@ -700,29 +707,29 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
                 start: function(e) {
                     var rect = e.target.getBoundingClientRect();
                     _ftDragClone = e.target.cloneNode(true);
-                    _ftDragClone.style.cssText = 'position:fixed;z-index:1000;pointer-events:none;width:' + rect.width + 'px;left:' + rect.left + 'px;top:' + rect.top + 'px;';
+                    _ftDragClone.style.position = 'fixed';
+                    _ftDragClone.style.zIndex = '1000';
+                    _ftDragClone.style.pointerEvents = 'auto';
+                    _ftDragClone.style.boxSizing = 'border-box';
+                    _ftDragClone.style.width = rect.width + 'px';
+                    _ftDragClone.style.height = rect.height + 'px';
+                    _ftDragClone.style.left = rect.left + 'px';
+                    _ftDragClone.style.top = rect.top + 'px';
+                    _ftDragClone.classList.add('ft-drag-clone');
                     document.body.appendChild(_ftDragClone);
                     e.target.classList.add('dragPlaceholder');
-                    e.target.dataset.ftX = 0;
-                    e.target.dataset.ftY = 0;
+                    document.body.classList.add('ft-dragging');
                 },
                 move: function(e) {
-                    var x = (parseFloat(e.target.dataset.ftX) || 0) + e.dx;
-                    var y = (parseFloat(e.target.dataset.ftY) || 0) + e.dy;
-                    e.target.style.transform = 'translate(' + x + 'px,' + y + 'px)';
-                    e.target.dataset.ftX = x;
-                    e.target.dataset.ftY = y;
                     if (_ftDragClone) {
                         _ftDragClone.style.left = (parseFloat(_ftDragClone.style.left) + e.dx) + 'px';
                         _ftDragClone.style.top  = (parseFloat(_ftDragClone.style.top)  + e.dy) + 'px';
                     }
                 },
                 end: function(e) {
-                    e.target.style.transform = '';
-                    e.target.dataset.ftX = 0;
-                    e.target.dataset.ftY = 0;
                     e.target.classList.remove('dragPlaceholder');
                     if (_ftDragClone) { _ftDragClone.remove(); _ftDragClone = null; }
+                    document.body.classList.remove('ft-dragging');
                 }
             }
         };
