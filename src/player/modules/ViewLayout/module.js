@@ -462,8 +462,7 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
 
 		LayoutManager.find('.layoutAreaContent').droppable({
 			accept: '.contentViewTemplate, .contentViewPreview',
-			activeClass: 'droppableActive',
-			hoverClass: 'droppableHover',
+			classes: { 'ui-droppable-active': 'droppableActive', 'ui-droppable-hover': 'droppableHover' },
 			tolerance: 'pointer',
 			drop: function( event, ui ) {
 

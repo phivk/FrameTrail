@@ -359,8 +359,7 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
 
             ViewVideo.CodeSnippetTimeline.droppable({
                 accept:         '.codeSnippetElement',
-                activeClass:    'droppableActive',
-                hoverClass:     'droppableHover',
+                classes:        { 'ui-droppable-active': 'droppableActive', 'ui-droppable-hover': 'droppableHover' },
                 tolerance:      'touch',
 
                 over: function( event, ui ) {

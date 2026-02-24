@@ -401,8 +401,7 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
 
             ViewVideo.OverlayContainer.droppable({
                 accept:         '.resourceThumb',
-                activeClass:    'droppableActive',
-                hoverClass:     'droppableHover',
+                classes:        { 'ui-droppable-active': 'droppableActive', 'ui-droppable-hover': 'droppableHover' },
 
                 over: function( event, ui ) {
                     ViewVideo.PlayerProgress.find('.ui-slider-handle').addClass('highlight');

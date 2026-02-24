@@ -592,8 +592,7 @@
 
             ViewVideo.AnnotationTimeline.droppable({
                 accept:         '.resourceThumb, .compareTimelineElement',
-                activeClass:    'droppableActive',
-                hoverClass:     'droppableHover',
+                classes:        { 'ui-droppable-active': 'droppableActive', 'ui-droppable-hover': 'droppableHover' },
                 tolerance:      'touch',
 
                 over: function( event, ui ) {
