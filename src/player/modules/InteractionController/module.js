@@ -16,6 +16,21 @@
 
 FrameTrail.defineModule('InteractionController', function(FrameTrail){
 
+	// Prevent text selection during any drag operation (one-time global setup)
+	document.addEventListener('mousedown', function() {
+		function onMove() {
+			document.body.classList.add('ft-dragging');
+			document.removeEventListener('mousemove', onMove);
+		}
+		function onUp() {
+			document.body.classList.remove('ft-dragging');
+			document.removeEventListener('mousemove', onMove);
+			document.removeEventListener('mouseup', onUp);
+		}
+		document.addEventListener('mousemove', onMove);
+		document.addEventListener('mouseup', onUp);
+	});
+
 
     var keyBindings = {
 

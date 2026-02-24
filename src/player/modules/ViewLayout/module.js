@@ -458,26 +458,15 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
 					dragClone = el.cloneNode(true);
 					dragClone.style.cssText = 'position:fixed;z-index:1000;pointer-events:none;width:' + rect.width + 'px;left:' + rect.left + 'px;top:' + rect.top + 'px;';
 					document.body.appendChild(dragClone);
-					el.dataset.ftX = 0;
-					el.dataset.ftY = 0;
 				},
 				move: function(e) {
-					var el = e.target;
-					var x = (parseFloat(el.dataset.ftX) || 0) + e.dx;
-					var y = (parseFloat(el.dataset.ftY) || 0) + e.dy;
-					el.style.transform = 'translate(' + x + 'px,' + y + 'px)';
-					el.dataset.ftX = x;
-					el.dataset.ftY = y;
+					// Only move the floating clone — original stays in place as visual placeholder
 					if (dragClone) {
 						dragClone.style.left = (parseFloat(dragClone.style.left) + e.dx) + 'px';
 						dragClone.style.top  = (parseFloat(dragClone.style.top)  + e.dy) + 'px';
 					}
 				},
 				end: function(e) {
-					var el = e.target;
-					el.style.transform = '';
-					el.dataset.ftX = 0;
-					el.dataset.ftY = 0;
 					if (dragClone) { dragClone.remove(); dragClone = null; }
 				}
 			}

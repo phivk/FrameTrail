@@ -230,13 +230,18 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
         // previewPopupWrapper elements on the body simultaneously.
         var currentDetachedEl = null;
 
+        // Dismiss preview before interact.js takes control of the pointer on mousedown.
+        // mouseleave does not reliably fire once interact.js captures pointer events,
+        // so without this the preview can stay visible for the entire drag.
+        container.on('mousedown.previewPopup', childSelector, function() {
+            returnPreviewToElement($(this));
+            currentDetachedEl = null;
+        });
+
         container.on('mouseenter.previewPopup', childSelector, function() {
             var el = $(this);
             var preview = el.find('.previewWrapper');
             if (!preview.length || !preview.children().length) return;
-
-            // Don't show during drag
-            if (el.hasClass('ui-draggable-dragging')) return;
 
             // If a different element's preview is still detached, return it first
             if (currentDetachedEl && currentDetachedEl[0] !== el[0]) {

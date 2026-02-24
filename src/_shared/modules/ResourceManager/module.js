@@ -1688,7 +1688,8 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 	 */
 	function getFilteredList(targetElement, key, condition, values) {
 
-		if (FrameTrail.getState('storageMode') === 'local') {
+		var storageMode = FrameTrail.getState('storageMode');
+		if (storageMode === 'local' || storageMode === 'download') {
 			// Client-side filtering using the already-loaded Database resources
 			var allResources = FrameTrail.module('Database').resources;
 			var result = {};
@@ -1708,10 +1709,15 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 			return;
 		}
 
+		// Build POST body: send array values as separate values[] entries so PHP receives a proper array
+		// (URLSearchParams.toString() on an array joins with commas, breaking PHP's array detection)
+		var params = new URLSearchParams({ a: 'fileGetByFilter', key: key, condition: condition });
+		(Array.isArray(values) ? values : [values]).forEach(function(v) { params.append('values[]', v); });
+
 		fetch('_server/ajaxServer.php', {
 			method: 'POST',
 			cache: 'no-cache',
-			body: new URLSearchParams({ a: 'fileGetByFilter', key: key, condition: condition, values: values })
+			body: params
 		})
 		.then(function(r) { return r.json(); })
 		.then(function(data) {

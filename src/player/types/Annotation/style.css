@@ -361,10 +361,6 @@ body > .timelineElement.previewPositionRight .previewWrapper {
 	display: block;
 }
 
-.compareTimelineElement.ui-draggable-dragging:hover .previewWrapper,
-.timelineElement.ui-draggable-dragging:hover .previewWrapper {
-	display: none;
-}
 
 .compareTimelineElement .previewWrapper:after, 
 .timelineElement .previewWrapper:after, 
