@@ -26,11 +26,12 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 		userSessionLifetime		= 0,
 		userSessionTimeout		= null,
 		isGuestMode				= false,
+		userDialogCtrl			= null,
 
 		userBoxCallback 		= null,
 		userBoxCallbackCancel 	= null,
 
-		domElement 	= $(	'<div class="UserBox" title="'+ labels['UserManagement'] +'">'
+		domElement 	= $(	'<div class="UserBox">'
 						+   '    <div class="userStatusMessage message">'
 						+	'    </div>'
 						+   '    <div class="userTabs">'
@@ -145,12 +146,12 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
     });
 
 
-	domElement.find('.registrationForm').ajaxForm({
-		method: 	"POST",
-		url: 		"_server/ajaxServer.php",
-		dataType:   "json",
-		success: function(response) {
-
+	domElement.find('.registrationForm').on('submit', function(e) {
+		e.preventDefault();
+		var _form = this;
+		fetch('_server/ajaxServer.php', { method: 'POST', body: new FormData(_form) })
+		.then(function(r) { return r.json(); })
+		.then(function(response) {
 			switch(response.code){
 				case 0:
 					domElement.find('.registrationFormStatus').removeClass('error').addClass('active success').text(labels['MessageSuccessfullyRegistered']);
@@ -164,23 +165,22 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 				case 3:
 					domElement.find('.registrationFormStatus').removeClass('success error').addClass('active').text(labels['MessageRegisteredActivationPending']);
 					break;
-
 			}
-		}
+		});
 	});
 
 
-	domElement.find('.settingsForm').ajaxForm({
-		method: 	"POST",
-		url: 		"_server/ajaxServer.php",
-		dataType:   "json",
-		success: function(response) {
+	domElement.find('.settingsForm').on('submit', function(e) {
+		e.preventDefault();
+		var _form = this;
+		fetch('_server/ajaxServer.php', { method: 'POST', body: new FormData(_form) })
+		.then(function(r) { return r.json(); })
+		.then(function(response) {
 			switch(response.code){
 				case 0:
 					FrameTrail.module('Database').users[FrameTrail.module('UserManagement').userID].color = response.response.color;
 					FrameTrail.changeState('username', response.response.name);
 					FrameTrail.changeState('userColor', response.response.color);
-
 					domElement.find('.settingsFormStatus').removeClass('error').addClass('active success').text(labels['MessageSettingsChanged']);
 					break;
 				case 1:
@@ -201,9 +201,8 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 				case 6:
 					domElement.find('.settingsFormStatus').removeClass('success').addClass('active error').text(labels['ErrorUserNotFound']);
 					break;
-
 			}
-		}
+		});
 	});
 
 
@@ -214,27 +213,26 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
         domElement.find('.userDataContainer').hide();
 
 
-		$.ajax({
-			method: 	"POST",
-			url: 		"_server/ajaxServer.php",
-			dataType: 	"json",
-            data: 		"a=userGet",
-			success: function(data) {
+		fetch('_server/ajaxServer.php', {
+			method: 'POST',
+			body: new URLSearchParams({ a: 'userGet' })
+		})
+		.then(function(r) { return r.json(); })
+		.then(function(data) {
 
-				if (!data || !data.response) {
-					console.error(labels['ErrorNoUserFile']);
-					return;
-				}
-
-				var allUsers = data.response.user;
-
-				domElement.find("#user_change_user").html('<option value="" selected disabled>'+ labels['UserSelect'] +'</option>');
-
-				for (var id in allUsers) {
-					domElement.find("#user_change_user").append('<option value="' + id + '">' + allUsers[id].name + '</option>');
-				}
-
+			if (!data || !data.response) {
+				console.error(labels['ErrorNoUserFile']);
+				return;
 			}
+
+			var allUsers = data.response.user;
+
+			domElement.find("#user_change_user").html('<option value="" selected disabled>'+ labels['UserSelect'] +'</option>');
+
+			for (var id in allUsers) {
+				domElement.find("#user_change_user").append('<option value="' + id + '">' + allUsers[id].name + '</option>');
+			}
+
 		});
 
 	}
@@ -242,27 +240,25 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 	// Bind change event once on the native select element
 	domElement.find("#user_change_user").on('change', function(evt){
 
-		$.ajax({
-			method: "POST",
-			url: 	"_server/ajaxServer.php",
-			data: 	{	"a": "userGet",
-						"userID": $(this).val()
-					},
-
-			success: function(ret) {
-				domElement.find("#user_change_name").val(ret["response"]["name"]);
-				domElement.find("#user_change_mail").val(ret["response"]["mail"]);
-				domElement.find("#user_change_color").val(ret["response"]["color"]);
-				domElement.find("#user_change_passwd").val("");
-				domElement.find(".administrationForm input[name='role']").prop("checked",false).removeAttr("checked");
-				domElement.find(".administrationForm input#user_change_role_"+ret["response"]["role"]).prop("checked",true).attr("checked","checked");
-				domElement.find(".administrationForm input[name='active']").prop("checked",false).removeAttr("checked");
-				domElement.find(".administrationForm input#user_change_active_"+ret["response"]["active"]).prop("checked",true).attr("checked","checked");
-				getUserColorCollection(function() {
-					renderUserColorCollectionForm(ret["response"]["color"],"#user_change_colorContainer");
-				});
-				domElement.find('.userDataContainer').show();
-			}
+		var selectedUserID = $(this).val();
+		fetch('_server/ajaxServer.php', {
+			method: 'POST',
+			body: new URLSearchParams({ a: 'userGet', userID: selectedUserID })
+		})
+		.then(function(r) { return r.json(); })
+		.then(function(ret) {
+			domElement.find("#user_change_name").val(ret["response"]["name"]);
+			domElement.find("#user_change_mail").val(ret["response"]["mail"]);
+			domElement.find("#user_change_color").val(ret["response"]["color"]);
+			domElement.find("#user_change_passwd").val("");
+			domElement.find(".administrationForm input[name='role']").prop("checked",false).removeAttr("checked");
+			domElement.find(".administrationForm input#user_change_role_"+ret["response"]["role"]).prop("checked",true).attr("checked","checked");
+			domElement.find(".administrationForm input[name='active']").prop("checked",false).removeAttr("checked");
+			domElement.find(".administrationForm input#user_change_active_"+ret["response"]["active"]).prop("checked",true).attr("checked","checked");
+			getUserColorCollection(function() {
+				renderUserColorCollectionForm(ret["response"]["color"],"#user_change_colorContainer");
+			});
+			domElement.find('.userDataContainer').show();
 		});
 
 	});
@@ -278,14 +274,14 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
     }
 
 
-	domElement.find(".administrationForm").ajaxForm({
-		method: 	"POST",
-		url: 		"_server/ajaxServer.php",
-		dataType: 	"json",
-		success: function(response) {
+	domElement.find(".administrationForm").on('submit', function(e) {
+		e.preventDefault();
+		var _form = this;
+		fetch('_server/ajaxServer.php', { method: 'POST', body: new FormData(_form) })
+		.then(function(r) { return r.json(); })
+		.then(function(response) {
 			// TODO: Update client userData Object if Admin edited himself via this view instead of "Settings" Tab
 			refreshAdministrationForm();
-
 			switch(response.code){
 				case 0:
 					domElement.find('.administrationFormStatus').removeClass('error').addClass('active success').text(labels['MessageSettingsChanged']);
@@ -308,10 +304,8 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 				case 6:
 					domElement.find('.administrationFormStatus').removeClass('success').addClass('active error').text(labels['ErrorUserNotFound']);
 					break;
-
 			}
-
-		}
+		});
 	});
 
 	function renderUserColorCollectionForm(selectedColor, targetElement) {
@@ -346,13 +340,11 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 			// Database module not available or config not loaded yet
 		}
 		
-		// Fallback: load config.json using text dataType to prevent XML parsing errors
-		// Then manually parse JSON to avoid browser XML parser being triggered
-		$.ajax({
-			url: "_data/config.json",
-			type: "GET",
-			dataType: "text",
-			success: function(textData) {
+		// Fallback: load config.json as text to prevent XML parsing errors,
+		// then manually parse JSON.
+		fetch('_data/config.json', { cache: 'no-cache' })
+			.then(function(r) { return r.text(); })
+			.then(function(textData) {
 				try {
 					var data = JSON.parse(textData);
 					userColorCollection = data["userColorCollection"] || defaultColors;
@@ -363,15 +355,14 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 				if (typeof(callback) == "function") {
 					callback.call();
 				}
-			},
-			error: function(jqXHR, textStatus, errorThrown) {
+			})
+			.catch(function() {
 				// If config.json doesn't exist or fails to load, use default colors
 				userColorCollection = defaultColors;
 				if (typeof(callback) == "function") {
 					callback.call();
 				}
-			}
-		});
+			});
 
 	}
 
@@ -430,20 +421,17 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 
     });
 
-    loginBox.find('.loginForm').ajaxForm({
-
-		method: 	"POST",
-		url: 		"_server/ajaxServer.php",
-		dataType:   "json",
-
-		success: function(response) {
+    loginBox.find('.loginForm').on('submit', function(e) {
+		e.preventDefault();
+		var _form = this;
+		fetch('_server/ajaxServer.php', { method: 'POST', body: new FormData(_form) })
+		.then(function(r) { return r.json(); })
+		.then(function(response) {
 			//console.log(response);
 			switch(response.code){
-
 				case 0:
 					userSessionLifetime = parseInt(response.session_lifetime);
 					login(response.userdata);
-
 					FrameTrail.triggerEvent('userAction', {
 						action: 'UserLogin',
 						userID: response.userdata.id,
@@ -451,7 +439,6 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 						userRole: response.userdata.role,
 						userMail: response.userdata.mail
 					});
-
 					loginBox.find('.loginFormStatus').removeClass('active error success').text('');
 					updateView(true);
 					if(typeof userBoxCallback === 'function'){
@@ -459,7 +446,6 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 						closeLoginBox();
 					}
 					break;
-
 				case 1:
 					loginBox.find('.loginFormStatus').removeClass('success').addClass('active error').text(labels['ErrorEmptyFields']);
 					break;
@@ -476,18 +462,16 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 					loginBox.find('.loginFormStatus').removeClass('success').addClass('active error').text(labels['ErrorNotActivated']);
 					break;
 			}
-
-		}
-
+		});
 	});
 
 
-	loginBox.find('.userRegistrationForm').ajaxForm({
-		method: 	"POST",
-		url: 		"_server/ajaxServer.php",
-		dataType:   "json",
-		success: function(response) {
-
+	loginBox.find('.userRegistrationForm').on('submit', function(e) {
+		e.preventDefault();
+		var _form = this;
+		fetch('_server/ajaxServer.php', { method: 'POST', body: new FormData(_form) })
+		.then(function(r) { return r.json(); })
+		.then(function(response) {
 			switch(response.code){
 				case 0:
 					loginBox.find('.loginFormStatus').removeClass('error').addClass('active success').text(labels['MessageSuccessfullyRegistered']);
@@ -509,9 +493,8 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 				case 3:
 					loginBox.find('.userRegistrationFormStatus').removeClass('error').addClass('active success').text(labels['MessageRegisteredActivationPending']);
 					break;
-
 			}
-		}
+		});
 	});
 
 	$(FrameTrail.getState('target')).append(loginBox);
@@ -599,58 +582,55 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
             return;
         }
 
-		$.ajax({
-			method: 	"POST",
-			url: 		"_server/ajaxServer.php",
-			dataType: 	"json",
-            data: 		"a=userCheckLogin",
-			success: function(response) {
-				switch(response.code){
+		fetch('_server/ajaxServer.php', {
+			method: 'POST',
+			body: new URLSearchParams({ a: 'userCheckLogin' })
+		})
+		.then(function(r) { return r.json(); })
+		.then(function(response) {
+			switch(response.code){
 
-					case 0:
-						logout();
-						callback.call(window, false);
-						break;
+				case 0:
+					logout();
+					callback.call(window, false);
+					break;
 
-					case 1:
-						userSessionLifetime = parseInt(response.session_lifetime);
-						login(response.response);
-						callback.call(window, true);
-						break;
+				case 1:
+					userSessionLifetime = parseInt(response.session_lifetime);
+					login(response.response);
+					callback.call(window, true);
+					break;
 
-					case 2:
-						console.error(labels['ErrorNoUserFile']);
-						FrameTrail.changeState({
-							editMode: false,
-							loggedIn: false,
-							username: '',
-							userColor: ''
-						});
-						callback.call(window, false);
-						break;
+				case 2:
+					console.error(labels['ErrorNoUserFile']);
+					FrameTrail.changeState({
+						editMode: false,
+						loggedIn: false,
+						username: '',
+						userColor: ''
+					});
+					callback.call(window, false);
+					break;
 
-					case 3:
-						console.error(labels['ErrorNotActivated']);
-						break;
+				case 3:
+					console.error(labels['ErrorNotActivated']);
+					break;
 
-					case 4:
-						console.error(labels['ErrorWrongRole']);
-						break;
+				case 4:
+					console.error(labels['ErrorWrongRole']);
+					break;
 
-				}
-
-
-			},
-			error: function(err) {
-				FrameTrail.changeState({
-					editMode: false,
-					loggedIn: false,
-					username: '',
-					userColor: ''
-				});
-				callback.call(window, false);
-				//console.log(err.statusText);
 			}
+
+		})
+		.catch(function() {
+			FrameTrail.changeState({
+				editMode: false,
+				loggedIn: false,
+				username: '',
+				userColor: ''
+			});
+			callback.call(window, false);
 		});
 
 	}
@@ -750,29 +730,29 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 			return;
 		}
 
-		$.ajax({
-			method: 	"POST",
-			url: 		"_server/ajaxServer.php",
-			dataType: 	"json",
-            data: 		"a=userLogout",
-			success: function(data) {
+		fetch('_server/ajaxServer.php', {
+			method: 'POST',
+			body: new URLSearchParams({ a: 'userLogout' })
+		})
+		.then(function(r) { return r.json(); })
+		.then(function(data) {
 
-				if (userID != '') {
-					var loggedOutDialog = $('<div class="loggedOutDialog" title="'+ labels['UserLogout'] +'">'
-                                      + '    <div class="message success active">'+ labels['MessageUserLoggedOut'] +'</div>'
-                                      + '</div>');
+			if (userID != '') {
+				var loggedOutDialog = $('<div class="loggedOutDialog">'
+                                  + '    <div class="message success active">'+ labels['MessageUserLoggedOut'] +'</div>'
+                                  + '</div>');
 
-	                loggedOutDialog.dialog({
+	                var loggedOutDialogCtrl = FrameTrailDialog({
 						resizable: false,
 						modal: true,
+						content: loggedOutDialog,
 						close: function() {
-							
 							try {
 								if (TogetherJS && TogetherJS.running) {
 	                                var elementFinder = TogetherJS.require("elementFinder");
-	                                var location = elementFinder.elementLocation($(this)[0]);
+	                                var location = elementFinder.elementLocation(loggedOutDialog[0]);
 	                                TogetherJS.send({
-	                                    type: "simulate-dialog-close", 
+	                                    type: "simulate-dialog-close",
 	                                    element: location
 	                                });
 	                          	}
@@ -787,16 +767,11 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 								FrameTrail.module('UserManagement').ensureAuthenticated(function() {}, function() {}, true);
 							}
 
-							loggedOutDialog.remove();
-							/*
-							window.setTimeout(function() {
-                                window.location.reload();
-                            }, 100);
-                            */
+							loggedOutDialogCtrl.destroy();
 						},
 						buttons: {
 							"OK": function() {
-								$( this ).dialog( "close" );
+								loggedOutDialogCtrl.close();
 							}
 						}
 	                });
@@ -821,8 +796,6 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 				FrameTrail.triggerEvent('userAction', {
 					action: 'UserLogout'
 				});
-
-			}
 
 		});
 
@@ -897,8 +870,8 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 		}
 
 		loginBox.find('.message').removeClass('active error').text('');
-		loginBox.find('.loginForm').resetForm();
-		loginBox.find('.userRegistrationForm').resetForm();
+		loginBox.find('.loginForm')[0].reset();
+		loginBox.find('.userRegistrationForm')[0].reset();
 
 		// Pre-fill guest name from localStorage if available
 		var savedGuest = localStorage.getItem('frametrail_guest_user');
@@ -956,7 +929,9 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 
 		ensureAuthenticated(function() {
 
-			var userDialog = domElement.dialog({
+			userDialogCtrl = FrameTrailDialog({
+				title: labels['UserManagement'],
+				content: domElement,
 				modal: true,
 				width: 600,
 				height: 460,
@@ -968,7 +943,8 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 					});
 		        },
 		        close: function() {
-					$(this).dialog('destroy');
+					userDialogCtrl.destroy();
+					userDialogCtrl = null;
 				}
 			});
 
@@ -985,7 +961,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 	 */
 	function closeAdministrationBox() {
 
-		userDialog.dialog('close');
+		if (userDialogCtrl) userDialogCtrl.close();
 
 	}
 

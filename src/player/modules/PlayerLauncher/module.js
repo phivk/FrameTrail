@@ -316,23 +316,23 @@
             ? '<p style="margin-top:8px; color:#666;">' + labels['CurrentFolder'] + ': <strong>' + currentFolder + '</strong></p>'
             : '';
 
-        var folderDialog = $('<div class="folderPromptDialog" title="' + labels['SelectDataFolder'] + '">'
+        var folderDialog = $('<div class="folderPromptDialog">'
             + '<p>' + labels['SelectDataFolderDescription'] + '</p>'
             + folderInfo
             + '</div>');
 
-        folderDialog.dialog({
-            modal: true,
-            width: 450,
+        var folderDialogCtrl = FrameTrailDialog({
+            title:         labels['SelectDataFolder'],
+            content:       folderDialog,
+            modal:         true,
+            width:         450,
             closeOnEscape: false,
-            open: function() { $(this).closest('.ui-dialog').find('.ui-dialog-titlebar-close').hide(); },
             buttons: [
                 {
                     text: labels['SelectFolder'],
                     click: function() {
                         FrameTrail.module('StorageManager').switchToLocal().then(function() {
-                            folderDialog.dialog('close');
-                            folderDialog.remove();
+                            folderDialogCtrl.destroy();
                             // Clear hypervideo hash — old ID likely doesn't exist in new folder
                             if (window.location.hash) {
                                 window.location.hash = '';

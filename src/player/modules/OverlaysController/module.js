@@ -25,7 +25,10 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
 
         updateControlsStart      = function(){},
         updateControlsEnd        = function(){},
-        updateControlsDimensions = function(){};
+        updateControlsDimensions = function(){},
+
+        // Shared state for clone-drag drop position (set by draggable, read by droppable)
+        _ftDragClone = null;
 
 
 
@@ -341,13 +344,13 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
 
         var scroller = ViewVideo.OverlayTimeline.find('.timelineScroller');
         if (scroller.length) {
-            scroller.CollisionDetection({spacing:0, includeVerticalMargins: true, exclude: '.timelinePlayhead', containerPadding: 4});
+            CollisionDetection(scroller[0], {spacing:0, includeVerticalMargins: true, exclude: '.timelinePlayhead', containerPadding: 4});
             ViewVideo.OverlayTimeline.css({
                 height: scroller.css('height'),
                 'flex-basis': scroller.css('flex-basis')
             });
         } else {
-            ViewVideo.OverlayTimeline.CollisionDetection({spacing:0, includeVerticalMargins: true});
+            CollisionDetection(ViewVideo.OverlayTimeline[0], {spacing:0, includeVerticalMargins: true});
         }
         ViewVideo.adjustLayout();
         ViewVideo.adjustHypervideo();
@@ -399,139 +402,68 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
 
         if (droppable) {
 
-            ViewVideo.OverlayContainer.droppable({
-                accept:         '.resourceThumb',
-                classes:        { 'ui-droppable-active': 'droppableActive', 'ui-droppable-hover': 'droppableHover' },
-
-                over: function( event, ui ) {
-                    ViewVideo.PlayerProgress.find('.ui-slider-handle').addClass('highlight');
-                },
-
-                out: function( event, ui ) {
-                    ViewVideo.PlayerProgress.find('.ui-slider-handle').removeClass('highlight');
-                },
-
-                drop: function( event, ui ) {
-
-                    var resourceID      = ui.helper.attr('data-resourceID'),
+            interact(ViewVideo.OverlayContainer[0]).dropzone({
+                accept:  '.resourceThumb',
+                overlap: 0.01,
+                ondropactivate:   function(e) { $(e.target).addClass('droppableActive'); },
+                ondropdeactivate: function(e) { $(e.target).removeClass('droppableActive droppableHover'); ViewVideo.PlayerProgress.find('.ui-slider-handle').removeClass('highlight'); },
+                ondragenter:      function(e) { $(e.target).addClass('droppableHover'); ViewVideo.PlayerProgress.find('.ui-slider-handle').addClass('highlight'); },
+                ondragleave:      function(e) { $(e.target).removeClass('droppableHover'); ViewVideo.PlayerProgress.find('.ui-slider-handle').removeClass('highlight'); },
+                ondrop: function(e) {
+                    var $dragged        = $(e.relatedTarget),
+                        resourceID      = $dragged.attr('data-resourceID'),
                         videoDuration   = FrameTrail.module('HypervideoModel').duration,
                         startTime       = FrameTrail.module('HypervideoController').currentTime,
-                        endTime         = (startTime + 4 > videoDuration)
-                                            ? videoDuration
-                                            : startTime + 4,
-
-
-                        tmpOffset               = ui.helper.offset(),
-                        overlayContainerOffset  = ViewVideo.OverlayContainer.offset(),
-                        tmpOffsetTop            = tmpOffset.top - overlayContainerOffset.top,
-                        tmpOffsetLeft           = tmpOffset.left - overlayContainerOffset.left,
-                        overlayPositionTop      = 100 * (tmpOffsetTop / ViewVideo.OverlayContainer.height()),
-                        overlayPositionLeft     = 100 * (tmpOffsetLeft / ViewVideo.OverlayContainer.width()),
+                        endTime         = (startTime + 4 > videoDuration) ? videoDuration : startTime + 4,
+                        containerRect   = ViewVideo.OverlayContainer[0].getBoundingClientRect(),
+                        _activeClone    = _ftDragClone || window._ftCurrentDragClone,
+                        cloneLeft       = _activeClone ? parseFloat(_activeClone.style.left) : e.dragEvent.clientX,
+                        cloneTop        = _activeClone ? parseFloat(_activeClone.style.top)  : e.dragEvent.clientY,
+                        tmpOffsetLeft   = cloneLeft - containerRect.left,
+                        tmpOffsetTop    = cloneTop  - containerRect.top,
+                        overlayPositionLeft = 100 * (tmpOffsetLeft / ViewVideo.OverlayContainer.width()),
+                        overlayPositionTop  = 100 * (tmpOffsetTop  / ViewVideo.OverlayContainer.height()),
                         newOverlay;
 
-                        if (ui.helper.attr('data-type') == 'text') {
-
+                        if ($dragged.attr('data-type') == 'text') {
                             newOverlay = FrameTrail.module('HypervideoModel').newOverlay({
-                                "name":         labels['ResourceCustomTextHTML'],
-                                "type":         ui.helper.attr('data-type'),
-                                "start":        startTime,
-                                "end":          endTime,
-                                "attributes":   {
-                                    "text": ""
-                                },
-                                "position": {
-                                    "top":      overlayPositionTop,
-                                    "left":     overlayPositionLeft,
-                                    "width":    30,
-                                    "height":   30
-                                }
+                                "name": labels['ResourceCustomTextHTML'], "type": $dragged.attr('data-type'),
+                                "start": startTime, "end": endTime, "attributes": { "text": "" },
+                                "position": { "top": overlayPositionTop, "left": overlayPositionLeft, "width": 30, "height": 30 }
                             });
-
-                        } else if (ui.helper.attr('data-type') == 'quiz') {
-
+                        } else if ($dragged.attr('data-type') == 'quiz') {
                             newOverlay = FrameTrail.module('HypervideoModel').newOverlay({
-                                "name":         labels['ResourceTypeQuiz'],
-                                "type":         ui.helper.attr('data-type'),
-                                "start":        startTime,
-                                "end":          endTime,
-                                "attributes":   {
+                                "name": labels['ResourceTypeQuiz'], "type": $dragged.attr('data-type'),
+                                "start": startTime, "end": endTime,
+                                "attributes": {
                                     "question": labels['SettingsQuizDefaultQuestion'],
                                     "answers": [
-                                        {
-                                            'text': labels['SettingsQuizDefaultAnswer1'],
-                                            'correct': false
-                                        },
-                                        {
-                                            'text': labels['SettingsQuizDefaultAnswer2'],
-                                            'correct': true
-                                        },
-                                        {
-                                            'text': labels['SettingsQuizDefaultAnswer3'],
-                                            'correct': false
-                                        }
+                                        { 'text': labels['SettingsQuizDefaultAnswer1'], 'correct': false },
+                                        { 'text': labels['SettingsQuizDefaultAnswer2'], 'correct': true  },
+                                        { 'text': labels['SettingsQuizDefaultAnswer3'], 'correct': false }
                                     ],
-                                    "onCorrectAnswer": {
-                                        "jumpForward": false,
-                                        "resumePlayback": true,
-                                        "showText": false
-                                    },
-                                    "onWrongAnswer": {
-                                        "jumpBackward": false,
-                                        "resumePlayback": false,
-                                        "showText": false
-                                    }
+                                    "onCorrectAnswer": { "jumpForward": false, "resumePlayback": true,  "showText": false },
+                                    "onWrongAnswer":   { "jumpBackward": false, "resumePlayback": false, "showText": false }
                                 },
-                                "position": {
-                                    "top":      overlayPositionTop,
-                                    "left":     overlayPositionLeft,
-                                    "width":    30,
-                                    "height":   30
-                                }
+                                "position": { "top": overlayPositionTop, "left": overlayPositionLeft, "width": 30, "height": 30 }
                             });
-
-                        } else if (ui.helper.attr('data-type') == 'hotspot') {
-
+                        } else if ($dragged.attr('data-type') == 'hotspot') {
                             newOverlay = FrameTrail.module('HypervideoModel').newOverlay({
-                                "name":         "Hotspot / Link",
-                                "type":         ui.helper.attr('data-type'),
-                                "start":        startTime,
-                                "end":          endTime,
-                                "attributes":   {
-                                    "color": "#0096ff",
-                                    "linkUrl": "",
-                                    "borderWidth": 5,
-                                    "shape": "circle",
-                                    "borderRadius": 10
-                                },
-                                "position": {
-                                    "top":      overlayPositionTop,
-                                    "left":     overlayPositionLeft,
-                                    "width":    20,
-                                    "height":   30
-                                }
+                                "name": "Hotspot / Link", "type": $dragged.attr('data-type'),
+                                "start": startTime, "end": endTime,
+                                "attributes": { "color": "#0096ff", "linkUrl": "", "borderWidth": 5, "shape": "circle", "borderRadius": 10 },
+                                "position": { "top": overlayPositionTop, "left": overlayPositionLeft, "width": 20, "height": 30 }
                             });
-
                         } else {
-
                             newOverlay = FrameTrail.module('HypervideoModel').newOverlay({
-                                "start":        startTime,
-                                "end":          endTime,
-                                "resourceId":   resourceID,
-                                "position": {
-                                    "top":      overlayPositionTop,
-                                    "left":     overlayPositionLeft,
-                                    "width":    30,
-                                    "height":   30
-                                }
+                                "start": startTime, "end": endTime, "resourceId": resourceID,
+                                "position": { "top": overlayPositionTop, "left": overlayPositionLeft, "width": 30, "height": 30 }
                             });
-
                         }
-
 
                     newOverlay.renderInDOM();
                     newOverlay.startEditing();
                     updateStatesOfOverlays(FrameTrail.module('HypervideoController').currentTime);
-
                     stackTimelineView();
                     FrameTrail.module('TimelineController').refreshMinimap();
 
@@ -540,9 +472,7 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
                         var findOverlay = function() {
                             var overlays = FrameTrail.module('HypervideoModel').overlays;
                             for (var i = 0; i < overlays.length; i++) {
-                                if (overlays[i].data.created === overlayData.created) {
-                                    return overlays[i];
-                                }
+                                if (overlays[i].data.created === overlayData.created) { return overlays[i]; }
                             }
                             return null;
                         };
@@ -551,9 +481,7 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
                             description: labels['SidebarOverlays'] + ' ' + labels['GenericAdd'],
                             undo: function() {
                                 var overlay = findOverlay();
-                                if (overlay) {
-                                    deleteOverlay(overlay, true);
-                                }
+                                if (overlay) { deleteOverlay(overlay, true); }
                             },
                             redo: function() {
                                 var restoredOverlay = FrameTrail.module('HypervideoModel').newOverlay(overlayData, true);
@@ -567,17 +495,12 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
                     })(JSON.parse(JSON.stringify(newOverlay.data)));
 
                     ViewVideo.PlayerProgress.find('.ui-slider-handle').removeClass('highlight');
-
                 }
-
-
             });
 
         } else {
 
-            if (ViewVideo.OverlayContainer.hasClass('ui-droppable')) {
-                ViewVideo.OverlayContainer.droppable('destroy');
-            }
+            interact(ViewVideo.OverlayContainer[0]).unset();
 
         }
 
@@ -772,31 +695,39 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
                 + '                  <div class="resourceTitle">Hotspot / Link</div>'
                 + '              </div>');
 
-        textElement.add(quizElement).add(hotspotElement).each(function() {
-            $(this).draggable({
-                containment:    '.mainContainer',
-                helper:         'clone',
-                revert:         'invalid',
-                revertDuration: 100,
-                appendTo:       'body',
-                distance:       10,
-                zIndex:         1000,
-
-                start: function( event, ui ) {
-                    ui.helper.css({
-                        top: $(event.currentTarget).offset().top + "px",
-                        left: $(event.currentTarget).offset().left + "px",
-                        width: $(event.currentTarget).width() + "px",
-                        height: $(event.currentTarget).height() + "px"
-                    });
-                    $(event.currentTarget).addClass('dragPlaceholder');
+        var thumbDraggableOpts = {
+            listeners: {
+                start: function(e) {
+                    var rect = e.target.getBoundingClientRect();
+                    _ftDragClone = e.target.cloneNode(true);
+                    _ftDragClone.style.cssText = 'position:fixed;z-index:1000;pointer-events:none;width:' + rect.width + 'px;left:' + rect.left + 'px;top:' + rect.top + 'px;';
+                    document.body.appendChild(_ftDragClone);
+                    e.target.classList.add('dragPlaceholder');
+                    e.target.dataset.ftX = 0;
+                    e.target.dataset.ftY = 0;
                 },
-
-                stop: function( event, ui ) {
-                    $(event.target).removeClass('dragPlaceholder');
+                move: function(e) {
+                    var x = (parseFloat(e.target.dataset.ftX) || 0) + e.dx;
+                    var y = (parseFloat(e.target.dataset.ftY) || 0) + e.dy;
+                    e.target.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+                    e.target.dataset.ftX = x;
+                    e.target.dataset.ftY = y;
+                    if (_ftDragClone) {
+                        _ftDragClone.style.left = (parseFloat(_ftDragClone.style.left) + e.dx) + 'px';
+                        _ftDragClone.style.top  = (parseFloat(_ftDragClone.style.top)  + e.dy) + 'px';
+                    }
+                },
+                end: function(e) {
+                    e.target.style.transform = '';
+                    e.target.dataset.ftX = 0;
+                    e.target.dataset.ftY = 0;
+                    e.target.classList.remove('dragPlaceholder');
+                    if (_ftDragClone) { _ftDragClone.remove(); _ftDragClone = null; }
                 }
-
-            });
+            }
+        };
+        [textElement[0], quizElement[0], hotspotElement[0]].forEach(function(el) {
+            interact(el).draggable(thumbDraggableOpts);
         });
 
         overlayEditingOptions.find('#CustomOverlay').append(textElement, quizElement, hotspotElement);

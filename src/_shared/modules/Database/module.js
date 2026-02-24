@@ -41,6 +41,31 @@
         users  = {};
 
 
+    /**
+     * Private fetch-based AJAX helper replacing $.ajax().done().fail().
+     * @param {Object}   opts          – url, type ('GET'|'POST'), data (plain obj), dataType ('json'|'text')
+     * @param {Function} done          – called with parsed response on success
+     * @param {Function} [fail]        – called with Error on network/HTTP failure
+     */
+    function _ajax(opts, done, fail) {
+        var cachePolicy = (config.allowCaching) ? 'default' : 'no-cache';
+        var method      = (opts.type || 'GET').toUpperCase();
+        var fetchOpts   = { cache: cachePolicy };
+
+        if (method === 'POST') {
+            fetchOpts.method = 'POST';
+            fetchOpts.body   = new URLSearchParams(opts.data || {});
+        }
+
+        fetch(opts.url, fetchOpts)
+            .then(function (r) {
+                if (!r.ok) { throw new Error('HTTP ' + r.status); }
+                return (opts.dataType === 'text') ? r.text() : r.json();
+            })
+            .then(done)
+            .catch(fail || function () {});
+    }
+
 
     /**
      * I load the config data (_data/config.json) from the server
@@ -89,18 +114,13 @@
             return;
         }
 
-        $.ajax({
-            type:   "GET",
-            url:    configInitOptions || ('_data/config.json'),
-            cache:  (config.allowCaching) ? config.allowCaching : false,
-            dataType: "json",
-            mimeType: "application/json"
-        }).done(function(data){
+        _ajax({
+            url:      configInitOptions || '_data/config.json',
+            dataType: 'json'
+        }, function (data) {
             applyConfig(data);
-        }).fail(function(){
-
+        }, function () {
             fail(labels['ErrorNoConfigFile']);
-
         });
 
     };
@@ -152,17 +172,14 @@
 
                 if (typeof initOptionsResources[i].data === 'string') {
 
-                    $.ajax({
-                        type:   "GET",
-                        url:    initOptionsResources[i].data,
-                        cache:  (config.allowCaching) ? config.allowCaching : false,
-                        dataType: "json",
-                        mimeType: "application/json"
-                    }).done(function(data){
+                    _ajax({
+                        url:      initOptionsResources[i].data,
+                        dataType: 'json'
+                    }, function (data) {
                         resources = Object.assign(resources, data.resources);
                         //console.log('resources', resources);
                         ready();
-                    }).fail(function(){
+                    }, function () {
                         fail(labels['ErrorNoResourcesIndexFile']);
                     });
 
@@ -233,54 +250,37 @@
 
         } else if (!FrameTrail.module('RouteNavigation').environment.server) {
 
-            $.ajax({
-                type:   "GET",
-                url:    ('_data/users.json'),
-                cache:  (config.allowCaching) ? config.allowCaching : false,
-                dataType: "json",
-                mimeType: "application/json"
-            }).done(function(data){
-
+            _ajax({
+                url:      '_data/users.json',
+                dataType: 'json'
+            }, function (data) {
                 users = data.user;
                 //console.log('users', users);
                 success.call(this);
-
-            }).fail(function(){
-
+            }, function () {
                 fail(labels['ErrorNoUserIndexFile']);
                 success.call(this);
-
             });
+
         } else {
 
-            $.ajax({
-
-                type:   "POST",
-                url:    ('_server/ajaxServer.php'),
-                cache:  (config.allowCaching) ? config.allowCaching : false,
-                dataType: "json",
-                mimeType: "application/json",
-                data:   {
-                    a: 'userGet'
-                }
-
-            }).done(function(data){
-
+            _ajax({
+                type:     'POST',
+                url:      '_server/ajaxServer.php',
+                dataType: 'json',
+                data:     { a: 'userGet' }
+            }, function (data) {
                 if (!data.response) {
                     console.error(labels['ErrorNoUserIndexFile']);
                     success.call(this);
                     return;
                 }
-
                 users = data.response.user;
                 //console.log('users', users);
                 success.call(this);
-
-            }).fail(function(){
-
+            }, function () {
                 console.error(labels['ErrorNoUserIndexFile']);
                 success.call(this);
-
             });
 
         }
@@ -391,14 +391,10 @@
      */
     function loadHypervideoData_FrametrailServer(urlpath, success, fail) {
 
-        $.ajax({
-            type:   "GET",
-            url:    urlpath + '_index.json',
-            cache:  (config.allowCaching) ? config.allowCaching : false,
-            dataType: "json",
-            mimeType: "application/json"
-        }).done(function(data){
-
+        _ajax({
+            url:      urlpath + '_index.json',
+            dataType: 'json'
+        }, function (data) {
 
             var countdown = Object.keys(data.hypervideos).length,
                 bufferedData = {};
@@ -412,49 +408,43 @@
             for (var key in data.hypervideos) {
                 (function (hypervideoID) {
 
-                    $.ajax({
-                        type:   "GET",
-                        url:    (urlpath + data.hypervideos[hypervideoID] + '/hypervideo.json'),
-                        cache:  (config.allowCaching) ? config.allowCaching : false,
-                        dataType: "json",
-                        mimeType: "application/json"
-                    }).done(function (hypervideoData) {
+                    _ajax({
+                        url:      urlpath + data.hypervideos[hypervideoID] + '/hypervideo.json',
+                        dataType: 'json'
+                    }, function (hypervideoData) {
 
-                        $.ajax({
-                            type:   "GET",
-                            url:    (urlpath + data.hypervideos[hypervideoID] + '/annotations/_index.json'),
-                            cache:  (config.allowCaching) ? config.allowCaching : false,
-                            dataType: "json",
-                            mimeType: "application/json"
-                        }).done(function (annotationsIndex) {
+                        _ajax({
+                            url:      urlpath + data.hypervideos[hypervideoID] + '/annotations/_index.json',
+                            dataType: 'json'
+                        }, function (annotationsIndex) {
 
-                                bufferedData[hypervideoID] = {
-                                    "name": hypervideoData.meta.name,
-                                    "description": hypervideoData.meta.description,
-                                    "thumb": hypervideoData.meta.thumb,
-                                    "creator": hypervideoData.meta.creator,
-                                    "creatorId": hypervideoData.meta.creatorId,
-                                    "created": hypervideoData.meta.created,
-                                    "lastchanged": hypervideoData.meta.lastchanged,
-                                    "hidden": hypervideoData.config.hidden,
-                                    "config": hypervideoData.config,
-                                    "mainAnnotation": annotationsIndex.mainAnnotation,
-                                    "annotationfiles": annotationsIndex.annotationfiles,
-                                    "subtitles": hypervideoData.subtitles,
-                                    "clips": hypervideoData.clips,
-                                    "hypervideoData": hypervideoData
-                                };
-                                delete bufferedData[hypervideoID].config.hidden;
+                            bufferedData[hypervideoID] = {
+                                "name": hypervideoData.meta.name,
+                                "description": hypervideoData.meta.description,
+                                "thumb": hypervideoData.meta.thumb,
+                                "creator": hypervideoData.meta.creator,
+                                "creatorId": hypervideoData.meta.creatorId,
+                                "created": hypervideoData.meta.created,
+                                "lastchanged": hypervideoData.meta.lastchanged,
+                                "hidden": hypervideoData.config.hidden,
+                                "config": hypervideoData.config,
+                                "mainAnnotation": annotationsIndex.mainAnnotation,
+                                "annotationfiles": annotationsIndex.annotationfiles,
+                                "subtitles": hypervideoData.subtitles,
+                                "clips": hypervideoData.clips,
+                                "hypervideoData": hypervideoData
+                            };
+                            delete bufferedData[hypervideoID].config.hidden;
 
-                                if (!--countdown) {
-                                    next();
-                                }
+                            if (!--countdown) {
+                                next();
+                            }
 
-                            }).fail(function () {
-                                fail(labels['ErrorNoAnnotationsIndexFile']);
-                            });
+                        }, function () {
+                            fail(labels['ErrorNoAnnotationsIndexFile']);
+                        });
 
-                    }).fail(function () {
+                    }, function () {
                         fail(labels['ErrorNoHypervideoJSONFile']);
                     });
 
@@ -470,10 +460,8 @@
 
             }
 
-        }).fail(function(){
-
+        }, function () {
             fail(labels['ErrorNoHypervideoIndexFile']);
-
         });
 
     };
@@ -492,13 +480,10 @@
      */
     function loadHypervideoData_DefaultServer(id, url, success, fail) {
 
-        $.ajax({
-            type:   "GET",
-            url:    url,
-            cache:  (config.allowCaching) ? config.allowCaching : false,
-            dataType: "json",
-            mimeType: "application/json"
-        }).done(function (hypervideoData) {
+        _ajax({
+            url:      url,
+            dataType: 'json'
+        }, function (hypervideoData) {
 
             hypervideos[id] = {
                 "name": hypervideoData.meta.name,
@@ -519,7 +504,7 @@
 
             success();
 
-        }).fail(function(){
+        }, function () {
             fail(labels['ErrorNoHypervideoJSONFile']);
         });
 
@@ -776,13 +761,10 @@
 
             (function(id){
 
-                $.ajax({
-                    type: "GET",
-                    url: (url + hypervideoID + '/annotations/' + id + '.json'),
-                    cache: (config.allowCaching) ? config.allowCaching : false,
-                    dataType: "json",
-                    mimeType: "application/json"
-                }).done(function(data){
+                _ajax({
+                    url:      url + hypervideoID + '/annotations/' + id + '.json',
+                    dataType: 'json'
+                }, function (data) {
 
                     for (var i in data) {
 
@@ -850,10 +832,8 @@
                     }
 
 
-                }).fail(function() {
-
+                }, function () {
                     fail(labels['ErrorMissingAnnotationFile']);
-
                 });
 
             }).call(this, id)
@@ -895,13 +875,10 @@
 
             if (typeof initAnnotations[i] === 'string') {
 
-                $.ajax({
-                    type: "GET",
-                    url: initAnnotations[i],
-                    cache: (config.allowCaching) ? config.allowCaching : false,
-                    dataType: "json",
-                    mimeType: "application/json"
-                }).done(function(data){
+                _ajax({
+                    url:      initAnnotations[i],
+                    dataType: 'json'
+                }, function (data) {
 
                     for (var i in data) {
 
@@ -962,10 +939,8 @@
                     ready();
 
 
-                }).fail(function() {
-
+                }, function () {
                     fail(labels['ErrorMissingAnnotationFile']);
-
                 });
 
             } else if (initAnnotations[i].url && initAnnotations[i].type) {
@@ -1214,22 +1189,15 @@
 
                     var currentSubtitles = hypervideo.subtitles[i];
 
-                    $.ajax({
-
-                        type: "GET",
-                        url: ('_data/hypervideos/' + hypervideoID + '/subtitles/' + currentSubtitles.src),
-                        cache: (config.allowCaching) ? config.allowCaching : false
-
-                    }).done(function(data){
-
+                    _ajax({
+                        url:      '_data/hypervideos/' + hypervideoID + '/subtitles/' + currentSubtitles.src,
+                        dataType: 'text'
+                    }, function (data) {
                         parseSubtitleData(data, currentSubtitles);
-
-                    }).fail(function() {
-
+                    }, function () {
                         //fail(labels['ErrorMissingSubtitleFile']);
                         console.warn(labels['ErrorMissingSubtitleFile']);
                         success.call(this);
-
                     });
 
                 }).call(this, i)
@@ -1639,39 +1607,19 @@
             return;
         }
 
-        $.ajax({
-            type:   'POST',
-            url:    '_server/ajaxServer.php',
-            cache:  (config.allowCaching) ? config.allowCaching : false,
-
-            data: {
-                a:              'configChange',
-                src:            JSON.stringify(config, null, 4)
-            }
-
-        }).done(function(data) {
-
+        _ajax({
+            type:     'POST',
+            url:      '_server/ajaxServer.php',
+            dataType: 'json',
+            data:     { a: 'configChange', src: JSON.stringify(config, null, 4) }
+        }, function (data) {
             if (data.code === 0) {
-
                 callback.call(window, { success: true });
-
             } else {
-
-                callback.call(window, {
-                    failed: 'config',
-                    error: data.string,
-                    code: data.code
-                });
-
+                callback.call(window, { failed: 'config', error: data.string, code: data.code });
             }
-
-        }).fail(function(error){
-
-            callback.call(window, {
-                failed: 'config',
-                error: error
-            });
-
+        }, function (error) {
+            callback.call(window, { failed: 'config', error: error });
         });
 
     };
@@ -1708,39 +1656,19 @@
             return;
         }
 
-        $.ajax({
-            type:   'POST',
-            url:    '_server/ajaxServer.php',
-            cache:  (config.allowCaching) ? config.allowCaching : false,
-
-            data: {
-                a:              'globalCSSChange',
-                src:            styles
-            }
-
-        }).done(function(data) {
-
+        _ajax({
+            type:     'POST',
+            url:      '_server/ajaxServer.php',
+            dataType: 'json',
+            data:     { a: 'globalCSSChange', src: styles }
+        }, function (data) {
             if (data.code === 0) {
-
                 callback.call(window, { success: true });
-
             } else {
-
-                callback.call(window, {
-                    failed: 'globalcss',
-                    error: 'ServerError',
-                    code: data.code
-                });
-
+                callback.call(window, { failed: 'globalcss', error: 'ServerError', code: data.code });
             }
-
-        }).fail(function(error){
-
-            callback.call(window, {
-                failed: 'globalcss',
-                error: error
-            });
-
+        }, function (error) {
+            callback.call(window, { failed: 'globalcss', error: error });
         });
 
     };
@@ -1776,40 +1704,19 @@
             return;
         }
 
-        $.ajax({
-            type:   'POST',
-            url:    '_server/ajaxServer.php',
-            cache:  (config.allowCaching) ? config.allowCaching : false,
-
-            data: {
-                a:              'hypervideoChange',
-                hypervideoID:   thisHypervideoID,
-                src:            JSON.stringify(saveData, null, 4)
-            }
-
-        }).done(function(data) {
-
+        _ajax({
+            type:     'POST',
+            url:      '_server/ajaxServer.php',
+            dataType: 'json',
+            data:     { a: 'hypervideoChange', hypervideoID: thisHypervideoID, src: JSON.stringify(saveData, null, 4) }
+        }, function (data) {
             if (data.code === 0) {
-
                 callback.call(window, { success: true });
-
             } else {
-
-                callback.call(window, {
-                    failed: 'hypervideo',
-                    error: 'ServerError',
-                    code: data.code
-                });
-
+                callback.call(window, { failed: 'hypervideo', error: 'ServerError', code: data.code });
             }
-
-        }).fail(function(error){
-
-            callback.call(window, {
-                failed: 'hypervideo',
-                error: error
-            });
-
+        }, function (error) {
+            callback.call(window, { failed: 'hypervideo', error: error });
         });
 
     };
@@ -1985,13 +1892,11 @@
             return;
         }
 
-        $.ajax({
-            type:   'POST',
-            url:    '_server/ajaxServer.php',
-            cache:  (config.allowCaching) ? config.allowCaching : false,
-
+        _ajax({
+            type:     'POST',
+            url:      '_server/ajaxServer.php',
+            dataType: 'json',
             data: {
-
                 a:                'annotationfileSave',
                 hypervideoID:     hypervideoID,
                 action:           action,
@@ -1999,12 +1904,9 @@
                 name:             name,
                 description:      description,
                 hidden:           hidden,
-
                 src:              JSON.stringify(annotationsToSave, null, 4)
-
             }
-
-        }).done(function(data) {
+        }, function (data) {
 
             if (data.code === 0) {
 
@@ -2020,7 +1922,7 @@
 
             }
 
-        }).fail(function(error){
+        }, function (error) {
 
             callback.call(window, {
                 failed: 'annotations',

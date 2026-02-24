@@ -68,15 +68,16 @@ FrameTrail.defineType(
                             $(this).removeClass('wrong').addClass('correct');
                             $(this).parents('.resourceDetail').removeClass('wrong').addClass('correct');
                             if (self.resourceData.attributes.onCorrectAnswer.showText) {
-                                var textDialog = $('<div class="textDialog" title="">'
+                                var textDialog = $('<div class="textDialog">'
                                                 + '    <p>'+ self.resourceData.attributes.onCorrectAnswer.showText +'</p>'
                                                 + '</div>');
-                                textDialog.dialog({
-                                    modal: true,
-                                    classes: { 'ui-dialog': 'quizDialog' },
-                                    resizable: false,
+                                var textDialogCtrl = FrameTrailDialog({
+                                    content:       textDialog,
+                                    modal:         true,
+                                    classes:       'quizDialog',
+                                    resizable:     false,
                                     closeOnEscape: false,
-                                    position: { my: 'center', at: 'center', of: $(this).parents('.overlayContainer') },
+                                    position:      { my: 'center', at: 'center', of: $(this).parents('.overlayContainer') },
                                     close: function() {
                                         if (self.resourceData.attributes.onCorrectAnswer.jumpForward) {
                                             FrameTrail.module('HypervideoController').currentTime = self.resourceData.attributes.onCorrectAnswer.jumpForward;
@@ -84,13 +85,12 @@ FrameTrail.defineType(
                                         if (self.resourceData.attributes.onCorrectAnswer.resumePlayback) {
                                             FrameTrail.module('HypervideoController').play();
                                         }
-                                        $(this).dialog('close');
-                                        $(this).remove();
+                                        textDialogCtrl.destroy();
                                     },
                                     buttons: [
                                         { text: 'OK',
                                             click: function() {
-                                                $( this ).dialog( 'close' );
+                                                textDialogCtrl.close();
                                             }
                                         }
                                     ]
@@ -107,15 +107,16 @@ FrameTrail.defineType(
                             $(this).removeClass('correct').addClass('wrong');
                             $(this).parents('.resourceDetail').removeClass('correct').addClass('wrong');
                             if (self.resourceData.attributes.onWrongAnswer.showText) {
-                                var textDialog = $('<div class="shareDialog" title="">'
+                                var textDialog = $('<div class="shareDialog">'
                                                 + '    <p>'+ self.resourceData.attributes.onWrongAnswer.showText +'</p>'
                                                 + '</div>');
-                                textDialog.dialog({
-                                    modal: true,
-                                    classes: { 'ui-dialog': 'quizDialog' },
-                                    resizable: false,
+                                var textDialogCtrl = FrameTrailDialog({
+                                    content:       textDialog,
+                                    modal:         true,
+                                    classes:       'quizDialog',
+                                    resizable:     false,
                                     closeOnEscape: false,
-                                    position: { my: "center", at: "center", of: $(this).parents('.overlayContainer') },
+                                    position:      { my: 'center', at: 'center', of: $(this).parents('.overlayContainer') },
                                     close: function() {
                                         if (self.resourceData.attributes.onWrongAnswer.jumpBackward) {
                                             FrameTrail.module('HypervideoController').currentTime = FrameTrail.module('HypervideoController').currentTime - self.resourceData.attributes.onWrongAnswer.jumpBackward;
@@ -123,13 +124,12 @@ FrameTrail.defineType(
                                         if (self.resourceData.attributes.onWrongAnswer.resumePlayback) {
                                             FrameTrail.module('HypervideoController').play();
                                         }
-                                        $(this).dialog('close');
-                                        $(this).remove();
+                                        textDialogCtrl.destroy();
                                     },
                                     buttons: [
                                         { text: 'OK',
                                             click: function() {
-                                                $( this ).dialog( 'close' );
+                                                textDialogCtrl.close();
                                             }
                                         }
                                     ]

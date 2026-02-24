@@ -82,7 +82,7 @@ input, select {
     height: 100% !important;
 }
 
-body > .ui-dialog, body > .ui-draggable, body > .contentViewPreview {
+body > .contentViewPreview {
     background-color: var(--primary-bg-color);
     font-family: TitilliumWeb,"Helvetica Neue",Helvetica,Arial,sans-serif;
     font-size: 14px;
@@ -523,39 +523,6 @@ input:checked + .slider:before {
     background: var(--secondary-fg-color);
 }
 
-/* Select Menu */
-
-.ui-selectmenu-button {
-	background-color: var(--primary-fg-color);
-	border: 2px solid var(--primary-bg-color);
-	color: var(--primary-bg-color);
-}
-
-.ui-selectmenu-button:hover {
-	background-color: var(--primary-bg-color);
-	color: var(--primary-fg-color);
-}
-
-.ui-selectmenu-button .ui-icon {
-	width: 18px;
-	height: 18px;
-}
-
-.ui-selectmenu-open {
-	background: var(--primary-fg-color);
-    color: var(--primary-bg-color);
-	box-shadow: 0 0 1px 1px var(--primary-bg-color);
-    height: 195px;
-    overflow-x: hidden;
-    overflow-y: auto;
-    z-index: 1004;
-}
-
-.ui-selectmenu-open .ui-state-active {
-    background: var(--primary-bg-color);
-    color: var(--primary-fg-color);
-}
-
 /* Messages */
 
 .message {
@@ -964,57 +931,6 @@ input:checked + .slider:before {
     background-color: rgba(248,248,248, .1);
 }
 
-.ui-widget-overlay {
-	background: rgba(100, 104, 113, 0.6);
-}
-
-.ui-dialog {
-	background: var(--primary-bg-color);
-}
-
-.ui-dialog .ui-dialog-titlebar {
-	background: var(--primary-bg-color);
-	color: var(--primary-fg-color);
-}
-
-.ui-dialog .ui-dialog-titlebar .ui-dialog-titlebar-close {
-    width: 20px;
-    height: 20px;
-    background-color: transparent !important;
-}
-
-.ui-dialog .ui-dialog-titlebar .ui-dialog-titlebar-close .ui-icon {
-    margin-top: -10px;
-    margin-left: -12px;
-}
-
-.ui-dialog .ui-dialog-titlebar .ui-dialog-titlebar-close .ui-icon::before {
-	font-size: 20px;
-    color: var(--primary-fg-color);
-    margin-top: 0px;
-    margin-left: 0px;
-}
-
-.ui-dialog .ui-dialog-content {
-	background: var(--primary-fg-color);
-    color: var(--primary-bg-color);
-	padding: 10px;
-}
-
-.ui-dialog .ui-dialog-buttonpane {
-	background: var(--primary-fg-color);
-    color: var(--primary-bg-color);
-	margin-top: 2px;
-}
-
-.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset {
-	float: left;
-}
-
-.ui-dialog .ui-dialog-buttonpane button {
-    margin: 3px 6px 0px 0;
-}
-
 /* Tabs */
 
 .ui-tabs {
@@ -1023,8 +939,24 @@ input:checked + .slider:before {
 
 .ui-tabs .ui-tabs-nav {
     padding: 0.2em 0 0;
+    margin: 0;
+    overflow: hidden; /* clearfix for floated <li> elements */
+    list-style: none;
 }
 
+.ui-tabs .ui-tabs-nav li {
+    list-style: none;
+    float: left;
+    position: relative;
+    margin: 0 2px 0 0;
+    padding: 0;
+    white-space: nowrap;
+}
+
+.ui-tabs .ui-tabs-nav li a {
+    display: block;
+    text-decoration: none;
+}
 
 .ui-tabs .ui-tabs-nav li.ui-tabs-right {
     float: right;
@@ -1064,6 +996,31 @@ input:checked + .slider:before {
 
 .ui-tabs .ui-tabs-panel {
 	padding: 12px 0px;
+}
+
+/* Accordion */
+
+.ui-accordion .ui-accordion-header {
+    cursor: pointer;
+    padding: 6px 10px;
+    background: var(--primary-bg-color);
+    color: var(--primary-fg-color);
+    border: 1px solid var(--border-color, #555);
+    border-radius: 3px;
+    margin-top: 4px;
+    user-select: none;
+}
+
+.ui-accordion .ui-accordion-header.ui-state-active {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.ui-accordion .ui-accordion-content {
+    padding: 10px;
+    border: 1px solid var(--border-color, #555);
+    border-top: none;
+    border-radius: 0 0 3px 3px;
 }
 
 /* Droppable UI */
@@ -1264,6 +1221,13 @@ input:checked + .slider:before {
     color: #666;
 }
 
+
+/* SortableJS drag ghost placeholder (replaces jQuery UI ui-state-highlight) */
+.sortable-placeholder {
+    background: var(--semi-transparent-fg-color, rgba(255,255,255,0.15));
+    border: 1px dashed var(--primary-fg-color, #fff);
+    opacity: 0.5;
+}
 
 /* CodeMirror 6 editor wrapper sizing */
 .cm6-wrapper {

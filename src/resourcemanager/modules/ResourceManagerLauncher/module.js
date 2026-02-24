@@ -49,22 +49,22 @@
         var storageMode = FrameTrail.getState('storageMode');
 
         if (storageMode === 'needsFolder') {
-            var folderDialog = $('<div class="folderPromptDialog" title="' + labels['SelectDataFolder'] + '">'
+            var folderDialog = $('<div class="folderPromptDialog">'
                 + '<p>' + labels['SelectDataFolderDescription'] + '</p>'
                 + '</div>');
 
-            folderDialog.dialog({
-                modal: true,
-                width: 450,
+            var folderDialogCtrl = FrameTrailDialog({
+                title:         labels['SelectDataFolder'],
+                content:       folderDialog,
+                modal:         true,
+                width:         450,
                 closeOnEscape: false,
-                open: function() { $(this).closest('.ui-dialog').find('.ui-dialog-titlebar-close').hide(); },
                 buttons: [
                     {
                         text: labels['SelectFolder'],
                         click: function() {
                             FrameTrail.module('StorageManager').switchToLocal().then(function() {
-                                folderDialog.dialog('close');
-                                folderDialog.remove();
+                                folderDialogCtrl.destroy();
                                 continueLoadingRM();
                             }).catch(function(err) {
                                 alert(labels['ErrorCouldNotAccessFolder'] + ' ' + err.message);

@@ -123,13 +123,13 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
 
         var scroller = ViewVideo.CodeSnippetTimeline.find('.timelineScroller');
         if (scroller.length) {
-            scroller.CollisionDetection({spacing:0, includeVerticalMargins: true, exclude: '.timelinePlayhead', containerPadding: 4});
+            CollisionDetection(scroller[0], {spacing:0, includeVerticalMargins: true, exclude: '.timelinePlayhead', containerPadding: 4});
             ViewVideo.CodeSnippetTimeline.css({
                 height: scroller.css('height'),
                 'flex-basis': scroller.css('flex-basis')
             });
         } else {
-            ViewVideo.CodeSnippetTimeline.CollisionDetection({spacing:0, includeVerticalMargins: true});
+            CollisionDetection(ViewVideo.CodeSnippetTimeline[0], {spacing:0, includeVerticalMargins: true});
         }
         ViewVideo.adjustLayout();
         ViewVideo.adjustHypervideo();
@@ -253,30 +253,40 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
                    + '                  <div class="codeSnippetTitle">'+ labels['SettingsCodeSnippetCustom'] +'</div>'
                    + '              </div>');
 
-        codeSnippetElement.draggable({
-            containment:    '.mainContainer',
-            helper:         'clone',
-            revert:         'invalid',
-            revertDuration: 100,
-            appendTo:       'body',
-            distance:       10,
-            zIndex:         1000,
-
-            start: function( event, ui ) {
-                ui.helper.css({
-                    top: $(event.currentTarget).offset().top + "px",
-                    left: $(event.currentTarget).offset().left + "px",
-                    width: $(event.currentTarget).width() + "px",
-                    height: $(event.currentTarget).height() + "px"
-                });
-                $(event.currentTarget).addClass('dragPlaceholder');
-            },
-
-            stop: function( event, ui ) {
-                $(event.target).removeClass('dragPlaceholder');
-            }
-
-        });
+        (function() {
+            var dragClone = null;
+            interact(codeSnippetElement[0]).draggable({
+                listeners: {
+                    start: function(e) {
+                        var rect = e.target.getBoundingClientRect();
+                        dragClone = e.target.cloneNode(true);
+                        dragClone.style.cssText = 'position:fixed;z-index:1000;pointer-events:none;width:' + rect.width + 'px;left:' + rect.left + 'px;top:' + rect.top + 'px;';
+                        document.body.appendChild(dragClone);
+                        e.target.classList.add('dragPlaceholder');
+                        e.target.dataset.ftX = 0;
+                        e.target.dataset.ftY = 0;
+                    },
+                    move: function(e) {
+                        var x = (parseFloat(e.target.dataset.ftX) || 0) + e.dx;
+                        var y = (parseFloat(e.target.dataset.ftY) || 0) + e.dy;
+                        e.target.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+                        e.target.dataset.ftX = x;
+                        e.target.dataset.ftY = y;
+                        if (dragClone) {
+                            dragClone.style.left = (parseFloat(dragClone.style.left) + e.dx) + 'px';
+                            dragClone.style.top  = (parseFloat(dragClone.style.top)  + e.dy) + 'px';
+                        }
+                    },
+                    end: function(e) {
+                        e.target.style.transform = '';
+                        e.target.dataset.ftX = 0;
+                        e.target.dataset.ftY = 0;
+                        e.target.classList.remove('dragPlaceholder');
+                        if (dragClone) { dragClone.remove(); dragClone = null; }
+                    }
+                }
+            });
+        }());
 
         codeSnippetList.append(codeSnippetElement);
 
@@ -372,38 +382,27 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
 
         if (active) {
 
-            ViewVideo.CodeSnippetTimeline.droppable({
-                accept:         '.codeSnippetElement',
-                classes:        { 'ui-droppable-active': 'droppableActive', 'ui-droppable-hover': 'droppableHover' },
-                tolerance:      'touch',
-
-                over: function( event, ui ) {
-                    ViewVideo.PlayerProgress.find('.ui-slider-handle').addClass('highlight');
-                },
-
-                out: function( event, ui ) {
-                    ViewVideo.PlayerProgress.find('.ui-slider-handle').removeClass('highlight');
-                },
-
-                drop: function( event, ui ) {
-
-                    var codeSnippetTitle = ui.helper.find('.codeSnippetTitle').text(),
+            interact(ViewVideo.CodeSnippetTimeline[0]).dropzone({
+                accept:  '.codeSnippetElement',
+                overlap: 0.01,
+                ondropactivate:   function(e) { $(e.target).addClass('droppableActive'); },
+                ondropdeactivate: function(e) { $(e.target).removeClass('droppableActive droppableHover'); ViewVideo.PlayerProgress.find('.ui-slider-handle').removeClass('highlight'); },
+                ondragenter:      function(e) { $(e.target).addClass('droppableHover'); ViewVideo.PlayerProgress.find('.ui-slider-handle').addClass('highlight'); },
+                ondragleave:      function(e) { $(e.target).removeClass('droppableHover'); ViewVideo.PlayerProgress.find('.ui-slider-handle').removeClass('highlight'); },
+                ondrop: function(e) {
+                    var codeSnippetTitle = $(e.relatedTarget).find('.codeSnippetTitle').text(),
                         startTime        = FrameTrail.module('HypervideoController').currentTime,
-
-                        newCodeSnippet = FrameTrail.module('HypervideoModel').newCodeSnippet({
+                        newCodeSnippet   = FrameTrail.module('HypervideoModel').newCodeSnippet({
                             "start":   startTime,
                             "name":    codeSnippetTitle,
                             "snippet": 'console.log("Hello, I am a Code Snippet");'
                         });
 
-
                     newCodeSnippet.renderTimelineInDOM();
                     rearrangeTilesAndContent();
-
                     newCodeSnippet.startEditing();
                     updateStatesOfCodeSnippets(FrameTrail.module('HypervideoController').currentTime);
                     setCodeSnippetInFocus(newCodeSnippet);
-
                     stackTimelineView();
                     FrameTrail.module('TimelineController').refreshMinimap();
 
@@ -412,9 +411,7 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
                         var findCodeSnippet = function() {
                             var codeSnippets = FrameTrail.module('HypervideoModel').codeSnippets;
                             for (var i = 0; i < codeSnippets.length; i++) {
-                                if (codeSnippets[i].data.created === codeSnippetData.created) {
-                                    return codeSnippets[i];
-                                }
+                                if (codeSnippets[i].data.created === codeSnippetData.created) { return codeSnippets[i]; }
                             }
                             return null;
                         };
@@ -423,9 +420,7 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
                             description: labels['SidebarCustomCode'] + ' ' + labels['GenericAdd'],
                             undo: function() {
                                 var codeSnippet = findCodeSnippet();
-                                if (codeSnippet) {
-                                    deleteCodeSnippet(codeSnippet, true);
-                                }
+                                if (codeSnippet) { deleteCodeSnippet(codeSnippet, true); }
                             },
                             redo: function() {
                                 var restoredCodeSnippet = FrameTrail.module('HypervideoModel').newCodeSnippet(codeSnippetData, true);
@@ -439,18 +434,12 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
                     })(JSON.parse(JSON.stringify(newCodeSnippet.data)));
 
                     ViewVideo.PlayerProgress.find('.ui-slider-handle').removeClass('highlight');
-
-
                 }
-
             });
-
 
         } else {
 
-            if (ViewVideo.CodeSnippetTimeline.hasClass('ui-droppable')) {
-                ViewVideo.CodeSnippetTimeline.droppable('destroy');
-            }
+            interact(ViewVideo.CodeSnippetTimeline[0]).unset();
 
         }
 

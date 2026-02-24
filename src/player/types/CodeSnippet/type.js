@@ -268,10 +268,11 @@ FrameTrail.defineType(
                  */
                 stopEditing: function () {
 
-                    if (this.timelineElement.data('ui-draggable')) {
-                        this.timelineElement.draggable('destroy');
+                    if (this.timelineElement[0]) {
+                        try { interact(this.timelineElement[0]).unset(); } catch (ex) {}
                     }
-                    
+                    this.timelineElement.removeClass('ui-draggable ui-draggable-dragging');
+
                     this.timelineElement.unbind('click');
 
 
@@ -291,108 +292,122 @@ FrameTrail.defineType(
                     var self = this,
                         oldStart;
 
+                    var el = this.timelineElement[0];
+                    this.timelineElement.addClass('ui-draggable');
 
-                    this.timelineElement.draggable({
+                    interact(el).draggable({
+                        listeners: {
+                            start: function(e) {
 
-                        axis:        'x',
-                        containment: 'parent',
-                        snapTolerance: 10,
-
-                        drag: function(event, ui) {
-
-                            var closestGridline = FrameTrail.module('ViewVideo').closestToOffset($(FrameTrail.getState('target')).find('.gridline'), {
-                                    left: ui.position.left,
-                                    top: ui.position.top
-                                }),
-                                snapTolerance = $(this).draggable('option', 'snapTolerance');
-
-                            if (closestGridline) {
-
-                                $(FrameTrail.getState('target')).find('.gridline').css('background-color', '#ff9900');
-
-                                if ( ui.position.left - snapTolerance < closestGridline.position().left &&
-                                     ui.position.left + snapTolerance > closestGridline.position().left ) {
-
-                                    ui.position.left = closestGridline.position().left;
-
-                                    closestGridline.css('background-color', '#00ff00');
-
+                                if (!self.permanentFocusState) {
+                                    FrameTrail.module('CodeSnippetsController').codeSnippetInFocus = self;
                                 }
-                            }
 
-                            var HypervideoModel = FrameTrail.module('HypervideoModel'),
-                                videoDuration = HypervideoModel.duration,
-                                leftPercent   = 100 * (ui.helper.position().left / ui.helper.parent().width()),
-                                newStartValue = (leftPercent * (videoDuration / 100)) + HypervideoModel.offsetIn;
+                                // Capture old value for undo
+                                oldStart = self.data.start;
 
-                            FrameTrail.module('HypervideoController').currentTime = newStartValue;
+                                e.target.dataset.ftX    = e.target.offsetLeft;
+                                e.target.dataset.ftRawX = e.target.offsetLeft;
+                                e.target.style.left     = e.target.offsetLeft + 'px';
+                                e.target.classList.add('ui-draggable-dragging');
 
-                        },
+                            },
 
-                        start: function(event, ui) {
+                            move: function(e) {
 
-                            if (!self.permanentFocusState) {
-                                FrameTrail.module('CodeSnippetsController').codeSnippetInFocus = self;
-                            }
+                                var rawX = parseFloat(e.target.dataset.ftRawX) + e.dx;
+                                e.target.dataset.ftRawX = rawX;
+                                var x           = rawX;
+                                var parentWidth = e.target.parentElement.offsetWidth;
+                                var elWidth     = e.target.offsetWidth;
 
-                            // Capture old value for undo
-                            oldStart = self.data.start;
+                                var closestGridline = FrameTrail.module('ViewVideo').closestToOffset(
+                                    $(FrameTrail.getState('target')).find('.gridline'),
+                                    { left: x, top: 0 }
+                                );
+                                var snapTolerance = 10;
 
-                        },
+                                if (closestGridline) {
+                                    $(FrameTrail.getState('target')).find('.gridline').css('background-color', '#ff9900');
+                                    var glLeft = closestGridline.position().left;
+                                    if (x - snapTolerance < glLeft && x + snapTolerance > glLeft) {
+                                        x = glLeft;
+                                        closestGridline.css('background-color', '#00ff00');
+                                    }
+                                }
 
-                        stop: function(event, ui) {
+                                x = Math.max(0, Math.min(parentWidth - elWidth, x));
 
-                            if (!self.permanentFocusState) {
-                                FrameTrail.module('CodeSnippetsController').codeSnippetInFocus = null;
-                            }
+                                e.target.style.left  = x + 'px';
+                                e.target.dataset.ftX = x;
 
+                                var HypervideoModel = FrameTrail.module('HypervideoModel'),
+                                    videoDuration = HypervideoModel.duration,
+                                    leftPercent   = 100 * (x / parentWidth),
+                                    newStartValue = (leftPercent * (videoDuration / 100)) + HypervideoModel.offsetIn;
 
-                            var HypervideoModel = FrameTrail.module('HypervideoModel'),
-                                videoDuration = HypervideoModel.duration,
-                                leftPercent   = 100 * (ui.helper.position().left / ui.helper.parent().width());
+                                FrameTrail.module('HypervideoController').currentTime = newStartValue;
 
-                            var newStart = (leftPercent * (videoDuration / 100)) + HypervideoModel.offsetIn;
-                            self.data.start = newStart;
+                            },
 
-                            self.updateTimelineElement();
+                            end: function(e) {
 
-                            FrameTrail.module('CodeSnippetsController').stackTimelineView();
+                                if (!self.permanentFocusState) {
+                                    FrameTrail.module('CodeSnippetsController').codeSnippetInFocus = null;
+                                }
 
-                            FrameTrail.module('HypervideoModel').newUnsavedChange('codeSnippets');
+                                e.target.classList.remove('ui-draggable-dragging');
 
-                            // Register undo command for timeline drag
-                            (function(codeSnippetId, capturedOldStart, capturedNewStart) {
-                                var findCodeSnippet = function() {
-                                    var codeSnippets = FrameTrail.module('HypervideoModel').codeSnippets;
-                                    for (var i = 0; i < codeSnippets.length; i++) {
-                                        if (codeSnippets[i].data.created === codeSnippetId) {
-                                            return codeSnippets[i];
+                                var x           = parseFloat(e.target.dataset.ftX);
+                                var parentWidth = e.target.parentElement.offsetWidth;
+
+                                var HypervideoModel = FrameTrail.module('HypervideoModel'),
+                                    videoDuration = HypervideoModel.duration,
+                                    leftPercent   = 100 * (x / parentWidth);
+
+                                var newStart = (leftPercent * (videoDuration / 100)) + HypervideoModel.offsetIn;
+                                self.data.start = newStart;
+
+                                self.updateTimelineElement();
+
+                                FrameTrail.module('CodeSnippetsController').stackTimelineView();
+
+                                FrameTrail.module('HypervideoModel').newUnsavedChange('codeSnippets');
+
+                                // Register undo command for timeline drag
+                                (function(codeSnippetId, capturedOldStart, capturedNewStart) {
+                                    var findCodeSnippet = function() {
+                                        var codeSnippets = FrameTrail.module('HypervideoModel').codeSnippets;
+                                        for (var i = 0; i < codeSnippets.length; i++) {
+                                            if (codeSnippets[i].data.created === codeSnippetId) {
+                                                return codeSnippets[i];
+                                            }
                                         }
-                                    }
-                                    return null;
-                                };
-                                FrameTrail.module('UndoManager').register({
-                                    category: 'codeSnippets',
-                                    description: self.labels['SidebarCustomCode'] + ' Move',
-                                    undo: function() {
-                                        var codeSnippet = findCodeSnippet();
-                                        if (!codeSnippet) return;
-                                        codeSnippet.data.start = capturedOldStart;
-                                        codeSnippet.updateTimelineElement();
-                                        FrameTrail.module('CodeSnippetsController').stackTimelineView();
-                                        FrameTrail.module('HypervideoModel').newUnsavedChange('codeSnippets');
-                                    },
-                                    redo: function() {
-                                        var codeSnippet = findCodeSnippet();
-                                        if (!codeSnippet) return;
-                                        codeSnippet.data.start = capturedNewStart;
-                                        codeSnippet.updateTimelineElement();
-                                        FrameTrail.module('CodeSnippetsController').stackTimelineView();
-                                        FrameTrail.module('HypervideoModel').newUnsavedChange('codeSnippets');
-                                    }
-                                });
-                            })(self.data.created, oldStart, newStart);
+                                        return null;
+                                    };
+                                    FrameTrail.module('UndoManager').register({
+                                        category: 'codeSnippets',
+                                        description: self.labels['SidebarCustomCode'] + ' Move',
+                                        undo: function() {
+                                            var codeSnippet = findCodeSnippet();
+                                            if (!codeSnippet) return;
+                                            codeSnippet.data.start = capturedOldStart;
+                                            codeSnippet.updateTimelineElement();
+                                            FrameTrail.module('CodeSnippetsController').stackTimelineView();
+                                            FrameTrail.module('HypervideoModel').newUnsavedChange('codeSnippets');
+                                        },
+                                        redo: function() {
+                                            var codeSnippet = findCodeSnippet();
+                                            if (!codeSnippet) return;
+                                            codeSnippet.data.start = capturedNewStart;
+                                            codeSnippet.updateTimelineElement();
+                                            FrameTrail.module('CodeSnippetsController').stackTimelineView();
+                                            FrameTrail.module('HypervideoModel').newUnsavedChange('codeSnippets');
+                                        }
+                                    });
+                                })(self.data.created, oldStart, newStart);
 
+                            }
                         }
                     });
 

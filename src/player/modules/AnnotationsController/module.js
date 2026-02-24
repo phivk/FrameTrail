@@ -145,13 +145,13 @@
 
         var scroller = ViewVideo.AnnotationTimeline.find('.timelineScroller');
         if (scroller.length) {
-            scroller.CollisionDetection({spacing:0, includeVerticalMargins: true, exclude: '.timelinePlayhead', containerPadding: 4});
+            CollisionDetection(scroller[0], {spacing:0, includeVerticalMargins: true, exclude: '.timelinePlayhead', containerPadding: 4});
             ViewVideo.AnnotationTimeline.css({
                 height: scroller.css('height'),
                 'flex-basis': scroller.css('flex-basis')
             });
         } else {
-            ViewVideo.AnnotationTimeline.CollisionDetection({spacing:0, includeVerticalMargins: true});
+            CollisionDetection(ViewVideo.AnnotationTimeline[0], {spacing:0, includeVerticalMargins: true});
         }
         ViewVideo.adjustLayout();
         ViewVideo.adjustHypervideo();
@@ -528,30 +528,40 @@
                 + '                  <div class="resourceTitle">'+ labels['ResourceCustomTextHTML'] +'</div>'
                 + '              </div>');
 
-        textElement.draggable({
-            containment:    '.mainContainer',
-            helper:         'clone',
-            revert:         'invalid',
-            revertDuration: 100,
-            appendTo:       'body',
-            distance:       10,
-            zIndex:         1000,
-
-            start: function( event, ui ) {
-                ui.helper.css({
-                    top: $(event.currentTarget).offset().top + "px",
-                    left: $(event.currentTarget).offset().left + "px",
-                    width: $(event.currentTarget).width() + "px",
-                    height: $(event.currentTarget).height() + "px"
-                });
-                $(event.currentTarget).addClass('dragPlaceholder');
-            },
-
-            stop: function( event, ui ) {
-                $(event.target).removeClass('dragPlaceholder');
-            }
-
-        });
+        (function() {
+            var dragClone = null;
+            interact(textElement[0]).draggable({
+                listeners: {
+                    start: function(e) {
+                        var rect = e.target.getBoundingClientRect();
+                        dragClone = e.target.cloneNode(true);
+                        dragClone.style.cssText = 'position:fixed;z-index:1000;pointer-events:none;width:' + rect.width + 'px;left:' + rect.left + 'px;top:' + rect.top + 'px;';
+                        document.body.appendChild(dragClone);
+                        e.target.classList.add('dragPlaceholder');
+                        e.target.dataset.ftX = 0;
+                        e.target.dataset.ftY = 0;
+                    },
+                    move: function(e) {
+                        var x = (parseFloat(e.target.dataset.ftX) || 0) + e.dx;
+                        var y = (parseFloat(e.target.dataset.ftY) || 0) + e.dy;
+                        e.target.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+                        e.target.dataset.ftX = x;
+                        e.target.dataset.ftY = y;
+                        if (dragClone) {
+                            dragClone.style.left = (parseFloat(dragClone.style.left) + e.dx) + 'px';
+                            dragClone.style.top  = (parseFloat(dragClone.style.top)  + e.dy) + 'px';
+                        }
+                    },
+                    end: function(e) {
+                        e.target.style.transform = '';
+                        e.target.dataset.ftX = 0;
+                        e.target.dataset.ftY = 0;
+                        e.target.classList.remove('dragPlaceholder');
+                        if (dragClone) { dragClone.remove(); dragClone = null; }
+                    }
+                }
+            });
+        }());
 
         annotationsEditingOptions.find('#CustomAnnotation').append(textElement);
 
@@ -589,94 +599,73 @@
 
         if (droppable) {
 
-            ViewVideo.AnnotationTimeline.droppable({
-                accept:         '.resourceThumb, .compareTimelineElement',
-                classes:        { 'ui-droppable-active': 'droppableActive', 'ui-droppable-hover': 'droppableHover' },
-                tolerance:      'touch',
+            interact(ViewVideo.AnnotationTimeline[0]).dropzone({
+                accept:    '.resourceThumb, .compareTimelineElement',
+                overlap:   0.01,
+                ondropactivate:   function(e) { $(e.target).addClass('droppableActive'); },
+                ondropdeactivate: function(e) { $(e.target).removeClass('droppableActive droppableHover'); ViewVideo.PlayerProgress.find('.ui-slider-handle').removeClass('highlight'); },
+                ondragenter:      function(e) { $(e.target).addClass('droppableHover'); ViewVideo.PlayerProgress.find('.ui-slider-handle').addClass('highlight'); },
+                ondragleave:      function(e) { $(e.target).removeClass('droppableHover'); ViewVideo.PlayerProgress.find('.ui-slider-handle').removeClass('highlight'); },
+                ondrop: function(e) {
+                    var $dragged = $(e.relatedTarget);
 
-                over: function( event, ui ) {
-                    ViewVideo.PlayerProgress.find('.ui-slider-handle').addClass('highlight');
-                },
-
-                out: function( event, ui ) {
-                    ViewVideo.PlayerProgress.find('.ui-slider-handle').removeClass('highlight');
-                },
-
-                drop: function( event, ui ) {
-
-                    //console.log(ui);
                     try {
-                        if (TogetherJS && TogetherJS.running && !event.relatedTarget) {
+                        if (TogetherJS && TogetherJS.running) {
                             var elementFinder = TogetherJS.require("elementFinder");
-                            var location = elementFinder.elementLocation(ui.draggable[0]);
+                            var location = elementFinder.elementLocation(e.relatedTarget);
                             TogetherJS.send({
-                                type: "simulate-annotation-add", 
+                                type: "simulate-annotation-add",
                                 element: location,
                                 containerElement: '.annotationTimeline'
                             });
                         }
-                    } catch (e) {}
-                    
-                    var resourceID      = ui.helper.attr('data-resourceID'),
+                    } catch (ex) {}
+
+                    var resourceID      = $dragged.attr('data-resourceID'),
                         videoDuration   = FrameTrail.module('HypervideoModel').duration,
                         startTime,
                         endTime,
                         newAnnotation;
 
-                        if (ui.helper.hasClass('compareTimelineElement')) {
-
-                            startTime   = parseFloat(ui.helper.attr('data-start'));
-                            endTime     = parseFloat(ui.helper.attr('data-end'));
-
+                        if ($dragged.hasClass('compareTimelineElement')) {
+                            startTime = parseFloat($dragged.attr('data-start'));
+                            endTime   = parseFloat($dragged.attr('data-end'));
                         } else {
-
-                            startTime   = FrameTrail.module('HypervideoController').currentTime;
-                            endTime     = (startTime + 4 > videoDuration)
-                                            ? videoDuration
-                                            : startTime + 4;
+                            startTime = FrameTrail.module('HypervideoController').currentTime;
+                            endTime   = (startTime + 4 > videoDuration) ? videoDuration : startTime + 4;
                         }
 
-                        if (ui.helper.attr('data-type') == 'text') {
-
+                        if ($dragged.attr('data-type') == 'text') {
                             newAnnotation = FrameTrail.module('HypervideoModel').newAnnotation({
-                                "name":         labels['ResourceCustomTextHTML'],
-                                "type":         ui.helper.attr('data-type'),
-                                "start":        startTime,
-                                "end":          endTime,
-                                "attributes":   {
-                                    "text":         ""
-                                }
+                                "name":       labels['ResourceCustomTextHTML'],
+                                "type":       $dragged.attr('data-type'),
+                                "start":      startTime,
+                                "end":        endTime,
+                                "attributes": { "text": "" }
                             });
-
                         } else if (!resourceID) {
-
-                            var resourceData = ui.helper.data('originResourceData');
-
+                            var resourceData = $dragged.data('originResourceData');
                             newAnnotation = FrameTrail.module('HypervideoModel').newAnnotation({
-                                "name":         resourceData.name,
-                                "type":         resourceData.type,
-                                "src":          resourceData.src,
-                                "thumb":        resourceData.thumb,
-                                "start":        startTime,
-                                "end":          endTime,
-                                "attributes":   resourceData.attributes,
-                                "tags":         resourceData.tags
+                                "name":       resourceData.name,
+                                "type":       resourceData.type,
+                                "src":        resourceData.src,
+                                "thumb":      resourceData.thumb,
+                                "start":      startTime,
+                                "end":        endTime,
+                                "attributes": resourceData.attributes,
+                                "tags":       resourceData.tags
                             });
-
                         } else {
-
                             newAnnotation = FrameTrail.module('HypervideoModel').newAnnotation({
-                                "start":        startTime,
-                                "end":          endTime,
-                                "resourceId":   resourceID
+                                "start":      startTime,
+                                "end":        endTime,
+                                "resourceId": resourceID
                             });
-
                         }
 
                     newAnnotation.renderInDOM();
                     newAnnotation.startEditing();
                     updateStatesOfAnnotations(FrameTrail.module('HypervideoController').currentTime);
-
                     stackTimelineView();
                     FrameTrail.module('TimelineController').refreshMinimap();
 
@@ -696,9 +685,7 @@
                             description: labels['SidebarMyAnnotations'] + ' ' + labels['GenericAdd'],
                             undo: function() {
                                 var annotation = findAnnotation();
-                                if (annotation) {
-                                    deleteAnnotation(annotation, true);
-                                }
+                                if (annotation) { deleteAnnotation(annotation, true); }
                             },
                             redo: function() {
                                 var restoredAnnotation = FrameTrail.module('HypervideoModel').newAnnotation(annotationData, true);
@@ -712,17 +699,12 @@
                     })(JSON.parse(JSON.stringify(newAnnotation.data)));
 
                     ViewVideo.PlayerProgress.find('.ui-slider-handle').removeClass('highlight');
-
                 }
-
-
             });
 
         } else {
 
-            if (ViewVideo.AnnotationTimeline.hasClass('ui-droppable')) {
-                ViewVideo.AnnotationTimeline.droppable('destroy');
-            }
+            interact(ViewVideo.AnnotationTimeline[0]).unset();
 
         }
 
@@ -1214,10 +1196,10 @@
      * @param {Float} zoomLevel
      */
     function makeTimelinesSortable(containerElement) {
-        containerElement.sortable({
-            placeholder: 'ui-state-highlight',
-            items: '> .userTimelineWrapper',
-            axis: 'y'
+        Sortable.create(containerElement[0], {
+            draggable:  '.userTimelineWrapper',
+            ghostClass: 'sortable-placeholder',
+            animation:  100
         });
     }
 

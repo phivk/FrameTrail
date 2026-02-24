@@ -1030,7 +1030,7 @@
 	 */
 	function saveAs() {
 
-		var saveAsDialog = $('<div class="saveAsDialog" title="'+ labels['GenericSaveAs'] +'">'
+		var saveAsDialog = $('<div class="saveAsDialog">'
 			+ '<p>'+ labels['GenericSaveAs'] +'</p>'
 			+ '<div class="saveOptions"></div>'
 			+ '</div>');
@@ -1062,16 +1062,18 @@
 			+ '</button>'
 		);
 
+		var saveAsDialogCtrl;
+
 		saveAsDialog.find('.saveToServer').click(function() {
 			FrameTrail.module('StorageManager').switchToServer().then(function() {
-				saveAsDialog.dialog('close');
+				saveAsDialogCtrl.close();
 				save();
 			});
 		});
 
 		saveAsDialog.find('.saveToLocal').click(function() {
 			FrameTrail.module('StorageManager').switchToLocal().then(function() {
-				saveAsDialog.dialog('close');
+				saveAsDialogCtrl.close();
 				save();
 			}).catch(function(err) {
 				FrameTrail.module('InterfaceModal').showErrorMessage('Could not access folder: ' + err.message);
@@ -1082,14 +1084,16 @@
 			var downloadAdapter = FrameTrail.module('StorageManager').getDownloadAdapter();
 			var hvID = FrameTrail.module('RouteNavigation').hypervideoID;
 			downloadAdapter.showDownloadDialog(hvID, FrameTrail);
-			saveAsDialog.dialog('close');
+			saveAsDialogCtrl.close();
 		});
 
-		saveAsDialog.dialog({
-			modal: true,
-			width: 400,
+		saveAsDialogCtrl = FrameTrailDialog({
+			title:   labels['GenericSaveAs'],
+			content: saveAsDialog,
+			modal:   true,
+			width:   400,
 			close: function() {
-				$(this).remove();
+				saveAsDialogCtrl.destroy();
 			}
 		});
 
@@ -1109,16 +1113,18 @@
 
 		if (FrameTrail.getState('unsavedChanges')){
 
-				var confirmDialog = $('<div class="confirmSaveChanges" title="'+ labels['MessageSaveChangesQuestionShort'] +'">'
+				var confirmDialog = $('<div class="confirmSaveChanges">'
 									+ '    <div class="message active">'+ labels['MessageSaveChanges'] +'</div>'
 									+ '    <p>'+ labels['MessageSaveChangesQuestion'] +'</p>'
 									+ '</div>');
 
-				confirmDialog.dialog({
+				var confirmDialogCtrl = FrameTrailDialog({
+					title:     labels['MessageSaveChangesQuestionShort'],
+					content:   confirmDialog,
 					resizable: false,
-					modal: true,
+					modal:     true,
 					close: function() {
-					confirmDialog.remove();
+						confirmDialogCtrl.destroy();
 					},
 					buttons: [
 					  	{
@@ -1139,7 +1145,7 @@
 										action: 'EditEnd'
 									});
 
-									confirmDialog.dialog('close');
+									confirmDialogCtrl.close();
 
 									if (logoutAfterLeaving) {
 										FrameTrail.module('UserManagement').logout();
@@ -1163,7 +1169,7 @@
 							click: function() {
 
 								FrameTrail.changeState('unsavedChanges', false);
-								confirmDialog.dialog('close');
+								confirmDialogCtrl.close();
 
 								if (FrameTrail.module('RouteNavigation').environment.iframe) {
 						            FrameTrail.module('ViewVideo').toggleNativeFullscreenState(false, 'close');
@@ -1186,7 +1192,7 @@
 						{
 							text: labels['GenericCancel'],
 							click: function() {
-						  		confirmDialog.dialog('close');
+						  		confirmDialogCtrl.close();
 							}
 						}
 					]

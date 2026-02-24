@@ -41,6 +41,11 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 		muted 				   = false,
 		nullVideoStartDate     = 0,
 
+		sliderHandle           = null,
+		sliderRange            = null,
+		sliderMax              = 0,
+		sliderDragging         = false,
+
 		highPriorityInterval   = 25,
 		lowPriorityInterval    = 150,
 		nullVideoInterval      = 25,
@@ -737,48 +742,80 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 		ViewVideo.duration = formatTime(HypervideoModel.duration);
 		ViewVideo.durationFull = formatTime(HypervideoModel.durationFull, true);
 
-		ViewVideo.PlayerProgress.slider({
-			value: 0,
-			step: 0.01,
-			orientation: "horizontal",
-			range: "min",
-			max: HypervideoModel.duration,
-			animate: false,
+		sliderMax     = HypervideoModel.duration;
+		sliderDragging = false;
 
-			create: function(evt, ui) {
+		var progressEl = ViewVideo.PlayerProgress[0];
+		sliderHandle = progressEl.querySelector('.ui-slider-handle');
+		sliderRange  = progressEl.querySelector('.ui-slider-range');
+		progressEl.setAttribute('aria-valuemax', sliderMax);
 
-						var circle      = $('<div class="ui-slider-handle-circle"></div>'),
-							innerCircle = $('<div class="ui-slider-handle-circle-inner"></div>'),
-							_evtTarget  = $(evt.target);
+		// Initialize visual position
+		sliderHandle.style.left = '0%';
+		sliderRange.style.width = '0%';
 
-						innerCircle.appendTo(circle);
-						_evtTarget.children('.ui-slider-handle').append(circle);
+		function valueFromPointer(evt) {
+			var rect  = progressEl.getBoundingClientRect();
+			var ratio = (evt.clientX - rect.left) / rect.width;
+			var raw   = Math.max(0, Math.min(sliderMax, ratio * sliderMax));
+			// Snap to step of 0.01
+			return Math.round(raw * 100) / 100;
+		}
 
-						ViewVideo.adjustLayout();
-						ViewVideo.adjustHypervideo();
-
-					},
-
-			slide:  function(evt, ui) {
-						setCurrentTime(HypervideoModel.offsetIn+ui.value);
-					},
-
-			start: 	function(evt, ui) {
-						previousTime = currentTime;
-					},
-
-			stop: 	function(evt, ui) {
-						setCurrentTime(HypervideoModel.offsetIn+ui.value);
-
-						FrameTrail.triggerEvent('userAction', {
-							action: 'VideoJumpTime',
-							fromTime: previousTime,
-							toTime: ui.value
-						});
-					}
+		progressEl.addEventListener('pointerdown', function(evt) {
+			progressEl.setPointerCapture(evt.pointerId);
+			sliderDragging = true;
+			previousTime = currentTime;
+			var val = valueFromPointer(evt);
+			updateProgressBar(val, true);
+			setCurrentTime(HypervideoModel.offsetIn + val);
 		});
 
+		progressEl.addEventListener('pointermove', function(evt) {
+			if (!sliderDragging) { return; }
+			var val = valueFromPointer(evt);
+			updateProgressBar(val, true);
+			setCurrentTime(HypervideoModel.offsetIn + val);
+		});
 
+		progressEl.addEventListener('pointerup', function(evt) {
+			if (!sliderDragging) { return; }
+			sliderDragging = false;
+			var val = valueFromPointer(evt);
+			setCurrentTime(HypervideoModel.offsetIn + val);
+			FrameTrail.triggerEvent('userAction', {
+				action: 'VideoJumpTime',
+				fromTime: previousTime,
+				toTime: val
+			});
+		});
+
+		ViewVideo.adjustLayout();
+		ViewVideo.adjustHypervideo();
+
+	};
+
+	/**
+	 * I update the visual position of the progress bar slider.
+	 *
+	 * Called during video playback (from the high-priority updaters) and directly
+	 * during user drag (force=true bypasses the drag guard).
+	 *
+	 * @method updateProgressBar
+	 * @private
+	 * @param {Number} value  Time value in seconds (relative to offsetIn)
+	 * @param {Boolean} force  If true, update even while dragging
+	 */
+	function updateProgressBar(value, force) {
+		if (!sliderHandle) { return; }
+		if (sliderDragging && !force) { return; }
+		var pct = sliderMax > 0 ? (value / sliderMax) * 100 : 0;
+		pct = Math.max(0, Math.min(100, pct));
+		sliderHandle.style.left = pct + '%';
+		sliderRange.style.width = pct + '%';
+		if (sliderHandle.parentElement) {
+			sliderHandle.parentElement.setAttribute('aria-valuenow', Math.round(value * 100) / 100);
+		}
 	};
 
 
@@ -845,9 +882,7 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 		if (HypervideoModel.videoType == 'youtube') {
 			var lastYoutubePlayerID = FrameTrail.getState('lastYoutubePlayerID')
 			currentTime = window.player_youtube[lastYoutubePlayerID].getCurrentTime();
-			if (ViewVideo.PlayerProgress.data('ui-slider')) {
-				ViewVideo.PlayerProgress.slider('value', currentTime-HypervideoModel.offsetIn);
-			}
+			updateProgressBar(currentTime - HypervideoModel.offsetIn);
 
 			FrameTrail.triggerEvent('timeupdate', {});
 
@@ -857,9 +892,7 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 			if (window.player_vimeo[lastVimeoPlayerID]) {
 				window.player_vimeo[lastVimeoPlayerID].getCurrentTime().then(function(vimeo_currentTime) {
 					currentTime = vimeo_currentTime;
-					if (ViewVideo.PlayerProgress.data('ui-slider')) {
-						ViewVideo.PlayerProgress.slider('value', currentTime-HypervideoModel.offsetIn);
-					}
+					updateProgressBar(currentTime - HypervideoModel.offsetIn);
 
 					FrameTrail.triggerEvent('timeupdate', {});
 
@@ -868,9 +901,7 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 			}
 		} else {
 			currentTime = videoElement.currentTime;
-			if (ViewVideo.PlayerProgress.data('ui-slider')) {
-				ViewVideo.PlayerProgress.slider('value', currentTime-HypervideoModel.offsetIn);
-			}
+			updateProgressBar(currentTime - HypervideoModel.offsetIn);
 
 			FrameTrail.triggerEvent('timeupdate', {});
 
@@ -926,9 +957,7 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 	 */
 	function highPriorityUpdater_NullVideo() {
 
-		if (ViewVideo.PlayerProgress.data('ui-slider')) {
-			ViewVideo.PlayerProgress.slider('value', currentTime-HypervideoModel.offsetIn);
-		}
+		updateProgressBar(currentTime - HypervideoModel.offsetIn);
 
 		FrameTrail.triggerEvent('timeupdate', {});
 

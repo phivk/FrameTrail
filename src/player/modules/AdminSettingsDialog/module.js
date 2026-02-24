@@ -260,12 +260,14 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                     $('head link[href$="custom.css"]').remove();
                 });
             } else if ( $('head link[href$="custom.css"]').length != 0 ) {
-                $.get($('head link[href$="custom.css"]').attr('href'))
-                    .done(function (cssString) {
+                fetch($('head link[href$="custom.css"]').attr('href'))
+                    .then(function(r) { return r.text(); })
+                    .then(function(cssString) {
                         codeEditor.dispatch({ changes: { from: 0, to: codeEditor.state.doc.length, insert: cssString }, annotations: CM6.Transaction.userEvent.of('setValue') });
                         $('head').append('<style class="FrameTrailGlobalCustomCSS" type="text/css">'+ cssString +'</style>');
                         $('head link[href$="custom.css"]').remove();
-                    }).fail(function() {
+                    })
+                    .catch(function() {
                         console.log(labels['ErrorCouldNotRetrieveCustomCSS']);
                     });
             }
@@ -392,26 +394,27 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                 addLanguageRow('', '', '', false);
             });
 
-            dialogContent.dialog({
-                title: isNew ? labels['TagAddNew'] : labels['TagEdit'] + ': ' + tagId,
-                modal: true,
-                width: 500,
+            var tagDialogCtrl = FrameTrailDialog({
+                title:   isNew ? labels['TagAddNew'] : labels['TagEdit'] + ': ' + tagId,
+                content: dialogContent,
+                modal:   true,
+                width:   500,
                 buttons: [
                     {
                         text: labels['GenericCancel'],
-                        click: function() { $(this).dialog('close'); }
+                        click: function() { tagDialogCtrl.close(); }
                     },
                     {
                         text: labels['GenericSave'],
                         click: function() {
                             saveTag(dialogContent, isNew, existingLangs, function() {
-                                dialogContent.dialog('close');
+                                tagDialogCtrl.close();
                                 renderTagList(tagDefinitionsUI.find('.tagFilterInput').val());
                             });
                         }
                     }
                 ],
-                close: function() { $(this).dialog('destroy').remove(); }
+                close: function() { tagDialogCtrl.destroy(); }
             });
         }
 
@@ -512,18 +515,21 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                 }
             }
 
-            content.dialog({
-                title: labels['TagCannotDeleteTitle'],
-                modal: true,
-                width: 450,
+            var tagUsageDialogCtrl = FrameTrailDialog({
+                title:   labels['TagCannotDeleteTitle'],
+                content: content,
+                modal:   true,
+                width:   450,
                 buttons: [
-                    { text: labels['GenericOK'], click: function() { $(this).dialog('close'); } }
+                    { text: labels['GenericOK'], click: function() { tagUsageDialogCtrl.close(); } }
                 ],
-                close: function() { $(this).dialog('destroy').remove(); }
+                close: function() { tagUsageDialogCtrl.destroy(); }
             });
         }
 
-        adminDialog.dialog({
+        var adminDialogCtrl = FrameTrailDialog({
+            title:   labels['GenericAdministration'],
+            content: adminDialog,
             modal: true,
             resizable: false,
             width: 900,
@@ -531,13 +537,11 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
             close: function() {
                 // If closing without applying (X button or ESC), just remove dialog
                 // No changes are applied until "Apply" button is clicked
-                $(this).remove();
+                adminDialogCtrl.destroy();
             },
             buttons: [
                 { text: labels['GenericApply'] || labels['GenericSaveChanges'] || 'Apply',
                     click: function() {
-                        var dialog = $(this);
-                        
                         // Apply and save changes if any were made
                         if (configChanged || globalCSSChanged) {
                             FrameTrail.module('InterfaceModal').showStatusMessage(labels['MessageStateSaving'] || 'Saving...');
@@ -615,7 +619,7 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                                         // Reload config to ensure consistency
                                         FrameTrail.module('Database').loadConfigData(function(){}, function(){});
                                     }
-                                    dialog.dialog('close');
+                                    adminDialogCtrl.close();
                                 }
                             }
                             
@@ -641,13 +645,13 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                                 checkSaveComplete();
                             }
                         } else {
-                            dialog.dialog('close');
+                            adminDialogCtrl.close();
                         }
                     }
                 },
                 { text: labels['GenericCancel'],
                     click: function() {
-                        $(this).dialog('close');
+                        adminDialogCtrl.close();
                     }
                 }
             ]

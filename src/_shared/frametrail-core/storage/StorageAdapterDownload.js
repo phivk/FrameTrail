@@ -63,7 +63,7 @@ class StorageAdapterDownload extends StorageAdapter {
     showDownloadDialog(hypervideoID, frameTrailInstance) {
         this._frameTrailInstance = frameTrailInstance;
         var labels = frameTrailInstance.module('Localization').labels;
-        var dialog = $('<div class="downloadDialog" title="' + labels['DownloadProjectData'] + '">'
+        var dialog = $('<div class="downloadDialog">'
             + '<p>' + labels['DownloadWhatToInclude'] + '</p>'
             + '<div class="downloadOptions">'
             + '  <label><input type="checkbox" name="currentHv" checked> ' + labels['DownloadCurrentHypervideo'] + '</label>'
@@ -77,10 +77,12 @@ class StorageAdapterDownload extends StorageAdapter {
             + '</div>');
 
         var self = this;
-        dialog.dialog({
-            modal: true,
-            width: 400,
-            close: function() { $(this).remove(); },
+        var dlgCtrl = FrameTrailDialog({
+            title:   labels['DownloadProjectData'],
+            content: dialog,
+            modal:   true,
+            width:   400,
+            close: function() { dlgCtrl.destroy(); },
             buttons: [
                 {
                     text: labels['GenericDownload'],
@@ -92,13 +94,13 @@ class StorageAdapterDownload extends StorageAdapter {
                             config: dialog.find('[name="config"]').is(':checked')
                         };
                         self._performDownload(hypervideoID, options);
-                        $(this).dialog('close');
+                        dlgCtrl.close();
                     }
                 },
                 {
                     text: labels['GenericCancel'],
                     click: function() {
-                        $(this).dialog('close');
+                        dlgCtrl.close();
                     }
                 }
             ]

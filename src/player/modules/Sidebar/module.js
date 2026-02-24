@@ -72,28 +72,28 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
      * Add a hypervideo locally using the File System Access API adapter.
      * Replicates the server-side hypervideoAdd logic.
      */
-    function addHypervideoLocally(newDialog, validateFn, getDurationFn) {
+    function addHypervideoLocally(newDialogCtrl, validateFn, getDurationFn) {
         // Validation
-        newDialog.dialog('widget').find('.message.error').removeClass('active').html('');
+        newDialogCtrl.widget().find('.message.error').removeClass('active').html('');
         if (!validateFn()) {
-            var activeTab = newDialog.find('.videoSourceTabs').tabs('option', 'active');
+            var activeTab = newDialogCtrl.element.find('.videoSourceTabs').tabs('option', 'active');
             if (activeTab === 0) {
-                newDialog.dialog('widget').find('.message.error').addClass('active').html(labels['ErrorSelectVideoFromList']);
+                newDialogCtrl.widget().find('.message.error').addClass('active').html(labels['ErrorSelectVideoFromList']);
             } else if (activeTab === 1) {
-                newDialog.dialog('widget').find('.message.error').addClass('active').html(labels['ErrorDurationMinimum4Seconds']);
+                newDialogCtrl.widget().find('.message.error').addClass('active').html(labels['ErrorDurationMinimum4Seconds']);
             }
             return;
         }
 
         var formBuilder = FrameTrail.module('HypervideoFormBuilder');
-        var selectedResourcesID = newDialog.find('input[name="resourcesID"]').val() || '';
+        var selectedResourcesID = newDialogCtrl.element.find('input[name="resourcesID"]').val() || '';
         var adapter = FrameTrail.module('StorageManager').getAdapter();
         var userInfo = adapter.userInfo;
 
         var hypervideoData = {
             "meta": {
-                "name": newDialog.find('input[name="name"]').val(),
-                "description": newDialog.find('textarea[name="description"]').val(),
+                "name": newDialogCtrl.element.find('input[name="name"]').val(),
+                "description": newDialogCtrl.element.find('textarea[name="description"]').val(),
                 "thumb": (selectedResourcesID.length > 0) ? FrameTrail.module('Database').resources[parseInt(selectedResourcesID)].thumb : null,
                 "creator": userInfo.name || 'Local User',
                 "creatorId": userInfo.id || 'local',
@@ -105,9 +105,9 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                 "slidingTrigger": "key",
                 "theme": "",
                 "autohideControls": false,
-                "captionsVisible": newDialog.find('input[name="config[captionsVisible]"]').is(':checked'),
+                "captionsVisible": newDialogCtrl.element.find('input[name="config[captionsVisible]"]').is(':checked'),
                 "clipTimeVisible": false,
-                "hidden": newDialog.find('input[name="hidden"]').is(':checked'),
+                "hidden": newDialogCtrl.element.find('input[name="hidden"]').is(':checked'),
                 "layoutArea": {
                     "areaTop": [],
                     "areaBottom": [],
@@ -139,7 +139,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
 
         // Apply config overrides from form
         for (var configKey in hypervideoData.config) {
-            var newConfigVal = newDialog.find('input[data-configkey=' + configKey + ']').val();
+            var newConfigVal = newDialogCtrl.element.find('input[data-configkey=' + configKey + ']').val();
             newConfigVal = (newConfigVal === 'true')
                             ? true
                             : (newConfigVal === 'false')
@@ -151,7 +151,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
         }
 
         // Collect subtitle info
-        newDialog.find('.newSubtitlesContainer input[type=file]').each(function () {
+        newDialogCtrl.element.find('.newSubtitlesContainer input[type=file]').each(function () {
             var match = /subtitles\[(.+)\]/g.exec($(this).attr('name'));
             if (match) {
                 hypervideoData.subtitles.push({
@@ -205,7 +205,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                 ];
 
                 // Write subtitle files
-                newDialog.find('.newSubtitlesContainer input[type=file]').each(function () {
+                newDialogCtrl.element.find('.newSubtitlesContainer input[type=file]').each(function () {
                     var match = /subtitles\[(.+)\]/g.exec($(this).attr('name'));
                     if (match && this.files && this.files[0]) {
                         writeTasks.push(adapter.writeFile(basePath + '/subtitles/' + match[1] + '.vtt', this.files[0]));
@@ -215,7 +215,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                 return Promise.all(writeTasks);
             });
         }).then(function() {
-            newDialog.dialog('close');
+            newDialogCtrl.close();
             FrameTrail.module('Database').loadHypervideoData(
                 function() {
                     FrameTrail.module('ViewOverview').refreshList();
@@ -223,7 +223,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                 function() {}
             );
         }).catch(function(err) {
-            newDialog.dialog('widget').find('.message.error').addClass('active').html('Local save failed: ' + err.message);
+            newDialogCtrl.widget().find('.message.error').addClass('active').html('Local save failed: ' + err.message);
         });
     }
 
@@ -231,12 +231,12 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
      * Delete a hypervideo locally.
      * Validates name, removes directory and index entry.
      */
-    function deleteHypervideoLocally(deleteDialog, thisID) {
+    function deleteHypervideoLocally(deleteDialogCtrl, thisID) {
         var hypervideos = FrameTrail.module('Database').hypervideos;
-        var enteredName = deleteDialog.find('input[name="hypervideoName"]').val();
+        var enteredName = deleteDialogCtrl.element.find('input[name="hypervideoName"]').val();
 
         if (enteredName.toLowerCase() !== hypervideos[thisID].name.toLowerCase()) {
-            deleteDialog.find('.message.error').addClass('active').html(labels['ErrorHypervideoNameIncorrect']);
+            deleteDialogCtrl.element.find('.message.error').addClass('active').html(labels['ErrorHypervideoNameIncorrect']);
             return;
         }
 
@@ -244,7 +244,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
 
         adapter.readJSON('hypervideos/_index.json').then(function(hvi) {
             if (!hvi.hypervideos[thisID]) {
-                deleteDialog.find('.message.error').addClass('active').html(labels['ErrorHypervideoDoesNotExist']);
+                deleteDialogCtrl.element.find('.message.error').addClass('active').html(labels['ErrorHypervideoDoesNotExist']);
                 return Promise.reject();
             }
             var hvPath = 'hypervideos/' + hvi.hypervideos[thisID];
@@ -254,7 +254,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                 adapter.deleteDirectory(hvPath).catch(function() {})
             ]);
         }).then(function() {
-            deleteDialog.dialog('close');
+            deleteDialogCtrl.close();
             FrameTrail.module('Database').loadHypervideoData(
                 function() {
                     FrameTrail.module('ViewOverview').refreshList();
@@ -278,20 +278,20 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
      * Fork/clone a hypervideo locally.
      * Copies the entire hypervideo directory and updates the index.
      */
-    function forkHypervideoLocally(forkDialog, thisID) {
+    function forkHypervideoLocally(forkDialogCtrl, thisID) {
         var adapter = FrameTrail.module('StorageManager').getAdapter();
         var userInfo = adapter.userInfo;
 
         var currentData = FrameTrail.module('Database').convertToDatabaseFormat(thisID);
-        currentData.meta.name = forkDialog.find('input[name="name"]').val();
-        currentData.meta.description = forkDialog.find('textarea[name="description"]').val();
+        currentData.meta.name = forkDialogCtrl.element.find('input[name="name"]').val();
+        currentData.meta.description = forkDialogCtrl.element.find('textarea[name="description"]').val();
         currentData.meta.creator = userInfo.name || 'Local User';
         currentData.meta.creatorId = userInfo.id || 'local';
         currentData.meta.created = Date.now();
         currentData.meta.lastchanged = Date.now();
 
         if (!currentData.meta.name || currentData.meta.name.length < 3) {
-            forkDialog.find('.message.error').addClass('active').html(labels['ErrorGeneric']);
+            forkDialogCtrl.element.find('.message.error').addClass('active').html(labels['ErrorGeneric']);
             return;
         }
 
@@ -334,7 +334,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
             });
         }).then(function(newID) {
             var wasEditMode = FrameTrail.getState('editMode');
-            forkDialog.dialog('close');
+            forkDialogCtrl.close();
 
             FrameTrail.module('Database').loadHypervideoData(
                 function() {
@@ -351,7 +351,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                 function() {}
             );
         }).catch(function(err) {
-            forkDialog.find('.message.error').addClass('active').html('Local fork failed: ' + (err ? err.message : ''));
+            forkDialogCtrl.element.find('.message.error').addClass('active').html('Local fork failed: ' + (err ? err.message : ''));
         });
     }
 
@@ -360,7 +360,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
         var formBuilder = FrameTrail.module('HypervideoFormBuilder');
         var defaultHidden = FrameTrail.module('Database').config.defaultHypervideoHidden.toString() === "true";
 
-        var newDialog = $('<div class="newHypervideoDialog" title="'+ labels['HypervideoNew'] +'">'
+        var newDialog = $('<div class="newHypervideoDialog">'
                         + '    <form class="newHypervideoForm" method="post">'
                         + formBuilder.generateSettingsRow({ hidden: defaultHidden })
                         + '        <hr>'
@@ -413,7 +413,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
         function updateAddButtonState() {
             if (addHypervideoButton) {
                 var isValid = validateHypervideoForm();
-                addHypervideoButton.button(isValid ? 'enable' : 'disable');
+                addHypervideoButton[0].disabled = !isValid;
             }
         }
 
@@ -449,142 +449,133 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
             updateAddButtonState();
         });
 
-        newDialog.find('.newHypervideoForm').ajaxForm({
-            method:     'POST',
-            url:        '_server/ajaxServer.php',
-            beforeSubmit: function (array, form, options) {
+        var newDialogCtrl;
+        newDialog.find('.newHypervideoForm').on('submit', function(e) {
+            e.preventDefault();
+            var form = this;
 
-                var selectedResourcesID = $('.newHypervideoForm').find('input[name="resourcesID"]').val();
-                //console.log(FrameTrail.module('Database').resources[parseInt(selectedResourcesID)]);
+            // Validation
+            newDialogCtrl.widget().find('.message.error').removeClass('active').html('');
 
-                var hypervideoData = {
-                    "meta": {
-                        "name": $('.newHypervideoForm').find('input[name="name"]').val(),
-                        "description": $('.newHypervideoForm').find('textarea[name="description"]').val(),
-                        "thumb": (selectedResourcesID.length > 0) ? FrameTrail.module('Database').resources[parseInt(selectedResourcesID)].thumb : null,
-                        "creator": FrameTrail.module('Database').users[FrameTrail.module('UserManagement').userID].name,
-                        "creatorId": FrameTrail.module('UserManagement').userID,
-                        "created": Date.now(),
-                        "lastchanged": Date.now()
-                    },
-                    "config": {
-                        "slidingMode": "adjust",
-                        "slidingTrigger": "key",
-                        "theme": "",
-                        "autohideControls": false,
-                        "captionsVisible": $('.newHypervideoForm').find('input[name="config[captionsVisible]"]').is(':checked'),
-                        "clipTimeVisible": false,
-                        "hidden": $('.newHypervideoForm').find('input[name="hidden"]').is(':checked'),
-                        "layoutArea": {
-                            "areaTop": [],
-                            "areaBottom": [],
-                            "areaLeft": [],
-                            "areaRight": []
-                        }
-                    },
-                    "clips": [
-                        {
-                            "resourceId": (selectedResourcesID.length > 0) ? selectedResourcesID : null,
-                            "src": (selectedResourcesID.length > 0) ? FrameTrail.module('Database').resources[parseInt(selectedResourcesID)].src : null,
-                            "duration": (selectedResourcesID.length === 0) ? getDurationFromInputs() : 0,
-                            "start": 0,
-                            "end": 0,
-                            "in": 0,
-                            "out": 0
-                        }
-                    ],
-                    "globalEvents": {
-                        "onReady": "",
-                        "onPlay": "",
-                        "onPause": "",
-                        "onEnded": ""
-                    },
-                    "customCSS": "",
-                    "contents": [],
-                    "subtitles": []
-                };
+            if (!validateHypervideoForm()) {
+                var activeTab = newDialog.find('.videoSourceTabs').tabs('option', 'active');
+                var isChooseVideoTab = (activeTab === 0);
+                var isEmptyVideoTab = (activeTab === 1);
 
-                for (var configKey in hypervideoData.config) {
-                    var newConfigVal = $('.newHypervideoForm').find('input[data-configkey=' + configKey + ']').val();
-                    newConfigVal = (newConfigVal === 'true')
-                                    ? true
-                                    : (newConfigVal === 'false')
-                                        ? false
-                                        : (newConfigVal === undefined)
-                                            ? hypervideoData.config[configKey]
-                                            : newConfigVal;
-                    hypervideoData.config[configKey] = newConfigVal;
+                if (isChooseVideoTab) {
+                    newDialogCtrl.widget().find('.message.error').addClass('active').html(labels['ErrorSelectVideoFromList']);
+                } else if (isEmptyVideoTab) {
+                    newDialogCtrl.widget().find('.message.error').addClass('active').html(labels['ErrorDurationMinimum4Seconds']);
+                } else {
+                    newDialogCtrl.widget().find('.message.error').addClass('active').html(labels['ErrorChooseVideoOrSetDuration']);
+                }
+                return;
+            }
+
+            // Subtitles Validation
+            var err = 0;
+            newDialog.find('.subtitlesItem').each(function() {
+                $(this).css({'outline': ''});
+
+                if (($(this).find('input[type="file"]:first').attr('name') == 'subtitles[]') || ($(this).find('.subtitlesTmpKeySetter').first().val() == '') || ($(this).find('input[type="file"]:first').val().length == 0)) {
+                    $(this).css({'outline': '1px solid #cd0a0a'});
+                    newDialogCtrl.widget().find('.message.error').addClass('active').html(labels['ErrorSubtitlesEmptyFields']);
+                    err++;
+                } else if ( !(new RegExp('(' + ['.vtt'].join('|').replace(/\./g, '\\.') + ')$')).test($(this).find('input[type="file"]:first').val()) ) {
+                    $(this).css({'outline': '1px solid #cd0a0a'});
+                    newDialogCtrl.widget().find('.message.error').addClass('active').html(labels['ErrorSubtitlesWrongFormat']);
+                    err++;
                 }
 
-                $('.newHypervideoForm').find('.newSubtitlesContainer').find('input[type=file]').each(function () {
-
-                    var match = /subtitles\[(.+)\]/g.exec($(this).attr('name'));
-
-                    if (match) {
-                        hypervideoData.subtitles.push({
-                            "src": match[1] +".vtt",
-                            "srclang": match[1]
-                        });
-                    }
-                });
-
-                //console.log(hypervideoData);
-
-                array.push({ name: 'src', value: JSON.stringify(hypervideoData, null, 4) });
-
-            },
-            beforeSerialize: function() {
-
-                // Video/Empty Video Validation
-                newDialog.dialog('widget').find('.message.error').removeClass('active').html('');
-
-                if (!validateHypervideoForm()) {
-                    var activeTab = newDialog.find('.videoSourceTabs').tabs('option', 'active');
-                    var isChooseVideoTab = (activeTab === 0);
-                    var isEmptyVideoTab = (activeTab === 1);
-                    
-                    if (isChooseVideoTab) {
-                        newDialog.dialog('widget').find('.message.error').addClass('active').html(labels['ErrorSelectVideoFromList']);
-                    } else if (isEmptyVideoTab) {
-                        newDialog.dialog('widget').find('.message.error').addClass('active').html(labels['ErrorDurationMinimum4Seconds']);
-                    } else {
-                        newDialog.dialog('widget').find('.message.error').addClass('active').html(labels['ErrorChooseVideoOrSetDuration']);
-                    }
+                if (newDialog.find('.subtitlesItem input[type="file"][name="subtitles['+ $(this).find('.subtitlesTmpKeySetter:first').val() +']"]').length > 1 ) {
+                    newDialogCtrl.widget().find('.message.error').addClass('active').html(labels['ErrorSubtitlesLanguageDuplicate']);
                     return false;
                 }
+            });
+            if (err > 0) return;
 
-                // Subtitles Validation
-                var err = 0;
-                newDialog.find('.subtitlesItem').each(function() {
-                    $(this).css({'outline': ''});
+            // Build hypervideoData
+            var selectedResourcesID = newDialog.find('input[name="resourcesID"]').val() || '';
 
-                    if (($(this).find('input[type="file"]:first').attr('name') == 'subtitles[]') || ($(this).find('.subtitlesTmpKeySetter').first().val() == '') || ($(this).find('input[type="file"]:first').val().length == 0)) {
-                        $(this).css({'outline': '1px solid #cd0a0a'});
-                        newDialog.dialog('widget').find('.message.error').addClass('active').html(labels['ErrorSubtitlesEmptyFields']);
-                        err++;
-                    } else if ( !(new RegExp('(' + ['.vtt'].join('|').replace(/\./g, '\\.') + ')$')).test($(this).find('input[type="file"]:first').val()) ) {
-                        $(this).css({'outline': '1px solid #cd0a0a'});
-                        newDialog.dialog('widget').find('.message.error').addClass('active').html(labels['ErrorSubtitlesWrongFormat']);
-                        err++;
+            var hypervideoData = {
+                "meta": {
+                    "name": newDialog.find('input[name="name"]').val(),
+                    "description": newDialog.find('textarea[name="description"]').val(),
+                    "thumb": (selectedResourcesID.length > 0) ? FrameTrail.module('Database').resources[parseInt(selectedResourcesID)].thumb : null,
+                    "creator": FrameTrail.module('Database').users[FrameTrail.module('UserManagement').userID].name,
+                    "creatorId": FrameTrail.module('UserManagement').userID,
+                    "created": Date.now(),
+                    "lastchanged": Date.now()
+                },
+                "config": {
+                    "slidingMode": "adjust",
+                    "slidingTrigger": "key",
+                    "theme": "",
+                    "autohideControls": false,
+                    "captionsVisible": newDialog.find('input[name="config[captionsVisible]"]').is(':checked'),
+                    "clipTimeVisible": false,
+                    "hidden": newDialog.find('input[name="hidden"]').is(':checked'),
+                    "layoutArea": {
+                        "areaTop": [],
+                        "areaBottom": [],
+                        "areaLeft": [],
+                        "areaRight": []
                     }
-
-                    if (newDialog.find('.subtitlesItem input[type="file"][name="subtitles['+ $(this).find('.subtitlesTmpKeySetter:first').val() +']"]').length > 1 ) {
-                        newDialog.dialog('widget').find('.message.error').addClass('active').html(labels['ErrorSubtitlesLanguageDuplicate']);
-                        return false;
+                },
+                "clips": [
+                    {
+                        "resourceId": (selectedResourcesID.length > 0) ? selectedResourcesID : null,
+                        "src": (selectedResourcesID.length > 0) ? FrameTrail.module('Database').resources[parseInt(selectedResourcesID)].src : null,
+                        "duration": (selectedResourcesID.length === 0) ? getDurationFromInputs() : 0,
+                        "start": 0,
+                        "end": 0,
+                        "in": 0,
+                        "out": 0
                     }
+                ],
+                "globalEvents": {
+                    "onReady": "",
+                    "onPlay": "",
+                    "onPause": "",
+                    "onEnded": ""
+                },
+                "customCSS": "",
+                "contents": [],
+                "subtitles": []
+            };
 
-                });
-                if (err > 0) {
-                    return false;
+            for (var configKey in hypervideoData.config) {
+                var newConfigVal = newDialog.find('input[data-configkey=' + configKey + ']').val();
+                newConfigVal = (newConfigVal === 'true')
+                                ? true
+                                : (newConfigVal === 'false')
+                                    ? false
+                                    : (newConfigVal === undefined)
+                                        ? hypervideoData.config[configKey]
+                                        : newConfigVal;
+                hypervideoData.config[configKey] = newConfigVal;
+            }
+
+            newDialog.find('.newSubtitlesContainer input[type=file]').each(function () {
+                var match = /subtitles\[(.+)\]/g.exec($(this).attr('name'));
+                if (match) {
+                    hypervideoData.subtitles.push({
+                        "src": match[1] + ".vtt",
+                        "srclang": match[1]
+                    });
                 }
+            });
 
-            },
-            dataType:   'json',
-            data: {'a': 'hypervideoAdd'},
-            success: function(response) {
+            var formData = new FormData(form);
+            formData.set('a', 'hypervideoAdd');
+            formData.set('src', JSON.stringify(hypervideoData, null, 4));
+
+            fetch('_server/ajaxServer.php', { method: 'POST', body: formData })
+            .then(function(r) { return r.json(); })
+            .then(function(response) {
                 switch(response['code']) {
                     case 0:
-                        newDialog.dialog('close');
+                        newDialogCtrl.close();
                         FrameTrail.module('Database').loadHypervideoData(
                             function(){
                                 FrameTrail.module('ViewOverview').refreshList();
@@ -593,10 +584,10 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                         );
                         break;
                     default:
-                        newDialog.dialog('widget').find('.message.error').addClass('active').html(response['string']);
+                        newDialogCtrl.widget().find('.message.error').addClass('active').html(response['string']);
                         break;
                 }
-            }
+            });
         });
 
 
@@ -618,45 +609,40 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
         })
 
 
-        newDialog.dialog({
-            modal: true,
-            resizable: false,
-            width:      830,
-            height:     600,
-            create: function() {
-                newDialog.find('.message.error').appendTo($(this).dialog('widget').find('.ui-dialog-buttonpane'));
-                
-                // Store reference to the Add Hypervideo button and disable it initially
-                var buttonPane = $(this).dialog('widget').find('.ui-dialog-buttonpane');
-                addHypervideoButton = buttonPane.find('button').first();
-                addHypervideoButton.button('disable');
-            },
+        newDialogCtrl = FrameTrailDialog({
+            modal:    true,
+            width:    830,
+            height:   600,
+            content:  newDialog,
+            autoOpen: false,
             open: function() {
-                // Update button state when dialog opens (in case resources are already loaded)
+                newDialog.find('.message.error').appendTo(newDialogCtrl.widget().find('.ft-dialog-buttonpane'));
+                addHypervideoButton = newDialogCtrl.widget().find('.ft-dialog-buttonpane button').first();
+                addHypervideoButton[0].disabled = true;
                 updateAddButtonState();
             },
             close: function() {
                 $('body').off('click.hypervideoAddResourcesItem');
-                $(this).dialog('close');
-                $(this).remove();
+                newDialogCtrl.destroy();
             },
             buttons: [
                 { text: labels['HypervideoAdd'],
                     click: function() {
                         if (FrameTrail.getState('storageMode') === 'local') {
-                            addHypervideoLocally(newDialog, validateHypervideoForm, getDurationFromInputs);
+                            addHypervideoLocally(newDialogCtrl, validateHypervideoForm, getDurationFromInputs);
                         } else {
-                            $('.newHypervideoForm').submit();
+                            newDialog.find('.newHypervideoForm').submit();
                         }
                     }
                 },
                 { text: labels['GenericCancel'],
                     click: function() {
-                        $( this ).dialog( 'close' );
+                        newDialogCtrl.close();
                     }
                 }
             ]
         });
+        newDialogCtrl.open();
 
     });
 
@@ -707,7 +693,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
         var thisID = FrameTrail.module('RouteNavigation').hypervideoID,
             thisHypervideo = FrameTrail.module('Database').hypervideo;
 
-        var forkDialog = $('<div class="forkHypervideoDialog" title="'+ labels['GenericForkHypervideo'] +'">'
+        var forkDialog = $('<div class="forkHypervideoDialog">'
                          + '    <div class="message active">'+ labels['MessageForkHypervideo'] +'</div>'
                          + '    <form method="POST" class="forkHypervideoForm">'
                          + '        <input type="text" name="name" placeholder="" value="'+ thisHypervideo.name +'"><br>'
@@ -716,48 +702,44 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                          + '    </form>'
                          + '</div>');
 
-        forkDialog.find('.forkHypervideoForm').ajaxForm({
-            method:     'POST',
-            url:        '_server/ajaxServer.php',
-            dataType:   'json',
-            thisID: thisID,
-            data: {'a': 'hypervideoClone', 'hypervideoID': thisID},
-            beforeSubmit: function (array, form, options) {
+        var forkDialogCtrl;
+        forkDialog.find('.forkHypervideoForm').on('submit', function(e) {
+            e.preventDefault();
+            var form = this;
 
-                var currentData = FrameTrail.module("Database").convertToDatabaseFormat(thisID);
+            var currentData = FrameTrail.module("Database").convertToDatabaseFormat(thisID);
+            currentData.meta.name = forkDialog.find('input[name="name"]').val();
+            currentData.meta.description = forkDialog.find('textarea[name="description"]').val();
+            currentData.meta.creator = FrameTrail.module('Database').users[FrameTrail.module('UserManagement').userID].name;
+            currentData.meta.creatorId = FrameTrail.module('UserManagement').userID;
 
-                //console.log(currentData);
-                currentData.meta.name = $('.forkHypervideoForm').find('input[name="name"]').val();
-                currentData.meta.description = $('.forkHypervideoForm').find('textarea[name="description"]').val();
-                currentData.meta.creator = FrameTrail.module('Database').users[FrameTrail.module('UserManagement').userID].name;
-                currentData.meta.creatorId = FrameTrail.module('UserManagement').userID;
+            var formData = new FormData(form);
+            formData.set('a', 'hypervideoClone');
+            formData.set('hypervideoID', thisID);
+            formData.set('src', JSON.stringify(currentData, null, 4));
 
-                array.push({ name: 'src', value: JSON.stringify(currentData, null, 4) });
-
-            },
-            success: function(response) {
+            fetch('_server/ajaxServer.php', { method: 'POST', body: formData })
+            .then(function(r) { return r.json(); })
+            .then(function(response) {
                 switch(response['code']) {
                     case 0:
                         var wasEditMode = FrameTrail.getState('editMode');
 
-                        forkDialog.dialog('close');
+                        forkDialogCtrl.close();
                         FrameTrail.module('Database').loadHypervideoData(
                             function(){
                                 FrameTrail.module('ViewOverview').refreshList();
 
                                 var newHypervideoID = response['newHypervideoID'];
 
-                                // Update URL hash with new hypervideo ID
                                 history.pushState({
                                     editMode: wasEditMode
                                 }, "", "#hypervideo=" + newHypervideoID);
 
-                                // Exit edit mode if active (will be restored by updateHypervideo if wasEditMode is true)
                                 if (wasEditMode) {
                                     FrameTrail.changeState('editMode', false);
                                 }
 
-                                // Switch to the new hypervideo, restoring edit mode if it was active
                                 FrameTrail.module('HypervideoModel').updateHypervideo(newHypervideoID, wasEditMode, true);
                             },
                             function(){}
@@ -765,33 +747,31 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
 
                         break;
                     default:
-                        //TODO: push nice error texts into error box.
                         forkDialog.find('.message.error').addClass('active').html(labels['ErrorGeneric']);
                         break;
                 }
-            }
+            });
         });
 
-        forkDialog.dialog({
-            modal: true,
-            resizable: false,
+        forkDialogCtrl = FrameTrailDialog({
+            modal:   true,
+            content: forkDialog,
             close: function() {
-                $(this).dialog('close');
-                $(this).remove();
+                forkDialogCtrl.destroy();
             },
             buttons: [
                 { text: labels['GenericForkHypervideo'],
                     click: function() {
                         if (FrameTrail.getState('storageMode') === 'local') {
-                            forkHypervideoLocally(forkDialog, thisID);
+                            forkHypervideoLocally(forkDialogCtrl, thisID);
                         } else {
-                            $('.forkHypervideoForm').submit();
+                            forkDialog.find('.forkHypervideoForm').submit();
                         }
                     }
                 },
                 { text: labels['GenericCancel'],
                     click: function() {
-                        $( this ).dialog( 'close' );
+                        forkDialogCtrl.close();
                     }
                 }
             ]
@@ -811,7 +791,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
         var thisID = FrameTrail.module('RouteNavigation').hypervideoID,
             hypervideos = FrameTrail.module('Database').hypervideos;
 
-        var deleteDialog = $('<div class="deleteHypervideoDialog" title="'+ labels['GenericDeleteHypervideo'] +'">'
+        var deleteDialog = $('<div class="deleteHypervideoDialog">'
                            + '<div>'+ labels['MessageDeleteHypervideoQuestion'] +'</div>'
                            + '    <input class="thisHypervideoName" type="text" value="'+ hypervideos[thisID]['name'] +'" readonly>'
                            + '    <div class="message active">'+ labels['MessageDeleteHypervideoReEnter'] +':</div>'
@@ -822,38 +802,37 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                            + '</div>');
 
 
-        deleteDialog.find('.deleteHypervideoForm').ajaxForm({
-            method:     'POST',
-            url:        '_server/ajaxServer.php',
-            dataType:   'json',
-            thisID: thisID,
-            data: {a: 'hypervideoDelete', hypervideoID: thisID},
-            success: function(response) {
+        var deleteDialogCtrl;
+        deleteDialog.find('.deleteHypervideoForm').on('submit', function(e) {
+            e.preventDefault();
+            var form = this;
+
+            var formData = new FormData(form);
+            formData.set('a', 'hypervideoDelete');
+            formData.set('hypervideoID', thisID);
+
+            fetch('_server/ajaxServer.php', { method: 'POST', body: formData })
+            .then(function(r) { return r.json(); })
+            .then(function(response) {
                 switch(response['code']) {
                     case 0:
-                        deleteDialog.dialog('close');
+                        deleteDialogCtrl.close();
 
-                        // Refresh the hypervideo list to remove deleted entry
                         FrameTrail.module('Database').loadHypervideoData(
                             function(){
                                 FrameTrail.module('ViewOverview').refreshList();
 
-                                // Redirect to Overview when current Hypervideo has been deleted
                                 if ( thisID == FrameTrail.module('RouteNavigation').hypervideoID ) {
                                     alert(labels['MessageDeleteHypervideoRedirect']);
 
-                                    // Exit edit mode if active
                                     if (FrameTrail.getState('editMode')) {
                                         FrameTrail.changeState('editMode', false);
                                     }
 
-                                    // Clear the current hypervideo reference
                                     FrameTrail.module('RouteNavigation').hypervideoID = null;
 
-                                    // Hide the video mode button since no hypervideo is selected
                                     $('.titlebar button[data-viewmode="video"]').hide();
 
-                                    // Update URL and switch to overview
                                     window.location.hash = "#";
                                     FrameTrail.changeState('viewMode', 'overview');
                                 }
@@ -878,36 +857,34 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                         deleteDialog.find('.message.error').addClass('active').html(labels['ErrorHypervideoNameIncorrect']);
                     break;
                     case 6:
-                        //TODO push nice texts into error box.
                         deleteDialog.find('.message.error').addClass('active').html(labels['ErrorHypervideoPermissionDenied']);
                     break;
                 }
-            }
+            });
         });
 
-        deleteDialog.dialog({
-                modal: true,
-                resizable: false,
+        deleteDialogCtrl = FrameTrailDialog({
+                modal:   true,
+                content: deleteDialog,
                 open: function() {
                     deleteDialog.find('.thisHypervideoName').focus().select();
                 },
                 close: function() {
-                    $(this).dialog('close');
-                    $(this).remove();
+                    deleteDialogCtrl.destroy();
                 },
                 buttons: [
                     { text: labels['GenericDeleteHypervideo'],
                         click: function() {
                             if (FrameTrail.getState('storageMode') === 'local') {
-                                deleteHypervideoLocally(deleteDialog, thisID);
+                                deleteHypervideoLocally(deleteDialogCtrl, thisID);
                             } else {
-                                $('.deleteHypervideoForm').submit();
+                                deleteDialog.find('.deleteHypervideoForm').submit();
                             }
                         }
                     },
                     { text: labels['GenericCancel'],
                         click: function() {
-                            $( this ).dialog( 'close' );
+                            deleteDialogCtrl.close();
                         }
                     }
                 ]

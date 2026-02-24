@@ -446,90 +446,117 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
 
 		HypervideoLayoutContainer.append(domElement);
 
-		LayoutManagerOptions.find('.contentViewTemplate').draggable({
-			containment: domElement,
-			snapTolerance: 10,
-			appendTo: 		'body',
-			helper: 		'clone',
-			revert: 		'invalid',
-			revertDuration: 100,
-			distance: 		10,
-			zIndex: 		1000,
-			start: function(event, ui) {
-				ui.helper.width($(event.target).width());
+		// Layout template drag-and-drop via interact.js (clone helper pattern)
+		(function() {
+			var dragClone = null;
+
+			var draggableListeners = {
+			listeners: {
+				start: function(e) {
+					var el = e.target;
+					var rect = el.getBoundingClientRect();
+					dragClone = el.cloneNode(true);
+					dragClone.style.cssText = 'position:fixed;z-index:1000;pointer-events:none;width:' + rect.width + 'px;left:' + rect.left + 'px;top:' + rect.top + 'px;';
+					document.body.appendChild(dragClone);
+					el.dataset.ftX = 0;
+					el.dataset.ftY = 0;
+				},
+				move: function(e) {
+					var el = e.target;
+					var x = (parseFloat(el.dataset.ftX) || 0) + e.dx;
+					var y = (parseFloat(el.dataset.ftY) || 0) + e.dy;
+					el.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+					el.dataset.ftX = x;
+					el.dataset.ftY = y;
+					if (dragClone) {
+						dragClone.style.left = (parseFloat(dragClone.style.left) + e.dx) + 'px';
+						dragClone.style.top  = (parseFloat(dragClone.style.top)  + e.dy) + 'px';
+					}
+				},
+				end: function(e) {
+					var el = e.target;
+					el.style.transform = '';
+					el.dataset.ftX = 0;
+					el.dataset.ftY = 0;
+					if (dragClone) { dragClone.remove(); dragClone = null; }
+				}
 			}
-		});
+		};
+		LayoutManagerOptions.find('.contentViewTemplate').each(function() { interact(this).draggable(draggableListeners); });
 
-		LayoutManager.find('.layoutAreaContent').droppable({
-			accept: '.contentViewTemplate, .contentViewPreview',
-			classes: { 'ui-droppable-active': 'droppableActive', 'ui-droppable-hover': 'droppableHover' },
-			tolerance: 'pointer',
-			drop: function( event, ui ) {
+		var dropzoneOpts = {
+				accept: '.contentViewTemplate, .contentViewPreview',
+				overlap: 'pointer',
+				ondropactivate:   function(e) { $(e.target).addClass('droppableActive'); },
+				ondropdeactivate: function(e) { $(e.target).removeClass('droppableActive droppableHover'); },
+				ondragenter:      function(e) { $(e.target).addClass('droppableHover'); },
+				ondragleave:      function(e) { $(e.target).removeClass('droppableHover'); },
+				ondrop: function(e) {
+					var $orig = $(e.relatedTarget);
+					var layoutArea = $(e.target).parent().data('area'),
+						contentAxis = (layoutArea == 'areaTop' || layoutArea == 'areaBottom') ? 'x' : 'y',
+						templateContentViewData = {
+							'type': $orig.data('type'),
+							'name': '',
+							'description': '',
+							'cssClass': '',
+							'html': '',
+							'collectionFilter': {
+								'tags': [],
+								'types': [],
+								'text': '',
+								'users': []
+							},
+							'transcriptSource': '',
+							'mode': 'slide',
+							'axis': contentAxis,
+							'contentSize': $orig.data('size') || '',
+							'autoSync': false,
+							'onClickContentItem': ''
+						};
 
-				var layoutArea = $(event.target).parent().data('area'),
-					contentAxis = (layoutArea == 'areaTop' || layoutArea == 'areaBottom') ? 'x' : 'y',
-					templateContentViewData = {
-						'type': ui.helper.data('type'),
-						'name': '',
-						'description': '',
-						'cssClass': '',
-						'html': '',
-						'collectionFilter': {
-							'tags': [],
-							'types': [],
-							'text': '',
-							'users': []
-						},
-						'transcriptSource': '',
-						'mode': 'slide',
-						'axis': contentAxis,
-						'contentSize': ui.helper.data('size') || '',
-						'autoSync': false,
-						'onClickContentItem': ''
-					};
+					var whichArea = layoutArea.split('area')[1].toLowerCase(),
+						renderPreview = true;
 
-				var whichArea = layoutArea.split('area')[1].toLowerCase(),
-					renderPreview = true;
+					var newContentView = createContentView(whichArea, templateContentViewData, renderPreview);
 
-				var newContentView = createContentView(whichArea, templateContentViewData, renderPreview);
+					FrameTrail.module('HypervideoModel').newUnsavedChange('layout');
 
-				FrameTrail.module('HypervideoModel').newUnsavedChange('layout');
-
-				// Register undo command for adding content view
-				(function(areaName, viewData) {
-					var findContentView = function() {
-						var contentViewsArray = ({
-							'top': contentViewsTop,
-							'bottom': contentViewsBottom,
-							'left': contentViewsLeft,
-							'right': contentViewsRight
-						})[areaName];
-						for (var i = 0; i < contentViewsArray.length; i++) {
-							if (JSON.stringify(contentViewsArray[i].contentViewData) === JSON.stringify(viewData)) {
-								return contentViewsArray[i];
+					// Register undo command for adding content view
+					(function(areaName, viewData) {
+						var findContentView = function() {
+							var contentViewsArray = ({
+								'top': contentViewsTop,
+								'bottom': contentViewsBottom,
+								'left': contentViewsLeft,
+								'right': contentViewsRight
+							})[areaName];
+							for (var i = 0; i < contentViewsArray.length; i++) {
+								if (JSON.stringify(contentViewsArray[i].contentViewData) === JSON.stringify(viewData)) {
+									return contentViewsArray[i];
+								}
 							}
-						}
-						return null;
-					};
-					FrameTrail.module('UndoManager').register({
-						category: 'layout',
-						description: labels['SidebarLayout'] + ' ' + labels['GenericAdd'],
-						undo: function() {
-							var contentView = findContentView();
-							if (contentView) {
-								removeContentView(contentView, true);
+							return null;
+						};
+						FrameTrail.module('UndoManager').register({
+							category: 'layout',
+							description: labels['SidebarLayout'] + ' ' + labels['GenericAdd'],
+							undo: function() {
+								var contentView = findContentView();
+								if (contentView) {
+									removeContentView(contentView, true);
+								}
+							},
+							redo: function() {
+								createContentView(areaName, viewData, true, true);
+								FrameTrail.module('HypervideoModel').newUnsavedChange('layout');
 							}
-						},
-						redo: function() {
-							createContentView(areaName, viewData, true, true);
-							FrameTrail.module('HypervideoModel').newUnsavedChange('layout');
-						}
-					});
-				})(whichArea, JSON.parse(JSON.stringify(templateContentViewData)));
-
-			}
-
-		});
+						});
+					})(whichArea, JSON.parse(JSON.stringify(templateContentViewData)));
+				}
+		};
+		LayoutManager.find('.layoutAreaContent').each(function() { interact(this).dropzone(dropzoneOpts); });
+		}());
 
 		initLayoutAreaPreview(contentViewsTop);
 		initLayoutAreaPreview(contentViewsBottom);

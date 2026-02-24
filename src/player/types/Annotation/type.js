@@ -327,13 +327,12 @@ FrameTrail.defineType(
                  */
                 stopEditing: function () {
 
-                    if (this.timelineElement.data('ui-draggable')) {
-                        this.timelineElement.draggable('destroy');
+                    if (this.timelineElement[0]) {
+                        try { interact(this.timelineElement[0]).unset(); } catch (ex) {}
                     }
-                    if (this.timelineElement.data('ui-resizable')) {
-                        this.timelineElement.resizable('destroy');
-                    }
-                    
+                    this.timelineElement.removeClass('ui-draggable ui-draggable-dragging ui-resizable');
+                    this.timelineElement.find('.ui-resizable-handle').remove();
+
                     this.timelineElement.unbind('click');
 
                 },
@@ -352,144 +351,162 @@ FrameTrail.defineType(
                     var self = this,
                         oldAnnotationData;
 
-                    this.timelineElement.draggable({
-                        axis:        'x',
-                        containment: 'parent',
-                        snapTolerance: 10,
+                    var el = this.timelineElement[0];
+                    this.timelineElement.addClass('ui-draggable');
 
-                        drag: function(event, ui) {
+                    interact(el).draggable({
+                        ignoreFrom: '.ui-resizable-handle',
+                        listeners: {
+                            start: function(e) {
 
-                            var closestGridline = FrameTrail.module('ViewVideo').closestToOffset($(FrameTrail.getState('target')).find('.gridline'), {
-                                    left: ui.position.left,
-                                    top: ui.position.top
-                                }),
-                                snapTolerance = $(this).draggable('option', 'snapTolerance');
-
-                            if (closestGridline) {
-
-                                $(FrameTrail.getState('target')).find('.gridline').css('background-color', '#ff9900');
-
-                                if ( ui.position.left - snapTolerance < closestGridline.position().left &&
-                                     ui.position.left + snapTolerance > closestGridline.position().left ) {
-
-                                    ui.position.left = closestGridline.position().left;
-
-                                    closestGridline.css('background-color', '#00ff00');
-
+                                if (!self.permanentFocusState) {
+                                    FrameTrail.module('AnnotationsController').annotationInFocus = self;
                                 }
-                            }
 
-                            var HypervideoModel = FrameTrail.module('HypervideoModel'),
-                                videoDuration = HypervideoModel.duration,
-                                leftPercent   = 100 * (ui.helper.position().left / ui.helper.parent().width()),
-                                widthPercent  = 100 * (ui.helper.width() / ui.helper.parent().width()),
-                                newStartValue = (leftPercent * (videoDuration / 100)) + HypervideoModel.offsetIn,
-                                newEndValue   = ((leftPercent + widthPercent) * (videoDuration / 100)) + HypervideoModel.offsetIn;
+                                oldAnnotationData = jQuery.extend({}, self.data);
 
-                            FrameTrail.module('HypervideoController').currentTime = newStartValue;
-                            FrameTrail.module('AnnotationsController').updateControlsStart(newStartValue);
-                            FrameTrail.module('AnnotationsController').updateControlsEnd(newEndValue);
+                                e.target.dataset.ftX    = e.target.offsetLeft;
+                                e.target.dataset.ftRawX = e.target.offsetLeft;
+                                e.target.style.left     = e.target.offsetLeft + 'px';
+                                e.target.classList.add('ui-draggable-dragging');
 
-                        },
+                            },
 
-                        start: function(event, ui) {
+                            move: function(e) {
 
-                            if (!self.permanentFocusState) {
-                                FrameTrail.module('AnnotationsController').annotationInFocus = self;
-                            }
+                                var rawX = parseFloat(e.target.dataset.ftRawX) + e.dx;
+                                e.target.dataset.ftRawX = rawX;
+                                var x           = rawX;
+                                var parentWidth = e.target.parentElement.offsetWidth;
+                                var elWidth     = e.target.offsetWidth;
 
-                            oldAnnotationData = jQuery.extend({}, self.data);
+                                var closestGridline = FrameTrail.module('ViewVideo').closestToOffset(
+                                    $(FrameTrail.getState('target')).find('.gridline'),
+                                    { left: x, top: 0 }
+                                );
+                                var snapTolerance = 10;
 
-                        },
-
-                        stop: function(event, ui) {
-
-                            if (!self.permanentFocusState) {
-                                FrameTrail.module('AnnotationsController').annotationInFocus = null;
-                            }
-
-
-                            var HypervideoModel = FrameTrail.module('HypervideoModel'),
-                                videoDuration = HypervideoModel.duration,
-                                leftPercent   = 100 * (ui.helper.position().left / ui.helper.parent().width()),
-                                widthPercent  = 100 * (ui.helper.width() / ui.helper.parent().width());
-
-                            self.data.start = (leftPercent * (videoDuration / 100)) + HypervideoModel.offsetIn;
-                            self.data.end   = ((leftPercent + widthPercent) * (videoDuration / 100)) + HypervideoModel.offsetIn;
-
-                            try {
-                                if (TogetherJS && TogetherJS.running && !event.relatedTarget) {
-                                    var elementFinder = TogetherJS.require("elementFinder");
-                                    var location = elementFinder.elementLocation(ui.helper[0]);
-                                    TogetherJS.send({
-                                        type: "simulate-annotation-change", 
-                                        element: location,
-                                        containerElement: '.annotationTimeline',
-                                        resourceID: self.data.resourceId,
-                                        startTime: self.data.start,
-                                        endTime: self.data.end
-                                    });
-                                }
-                            } catch (e) {}
-
-                            self.updateTimelineElement();
-
-                            FrameTrail.module('AnnotationsController').stackTimelineView();
-
-                            FrameTrail.module('HypervideoModel').newUnsavedChange('annotations');
-
-                            FrameTrail.triggerEvent('userAction', {
-                                action: 'AnnotationChange',
-                                annotation: self.data,
-                                changes: [
-                                    {
-                                        property: 'start',
-                                        oldValue: oldAnnotationData.start,
-                                        newValue: self.data.start
-                                    },
-                                    {
-                                        property: 'end',
-                                        oldValue: oldAnnotationData.end,
-                                        newValue: self.data.end
+                                if (closestGridline) {
+                                    $(FrameTrail.getState('target')).find('.gridline').css('background-color', '#ff9900');
+                                    var glLeft = closestGridline.position().left;
+                                    if (x - snapTolerance < glLeft && x + snapTolerance > glLeft) {
+                                        x = glLeft;
+                                        closestGridline.css('background-color', '#00ff00');
                                     }
-                                ]
-                            });
+                                }
 
-                            // Register undo command for timeline drag
-                            (function(annotationId, capturedOldStart, capturedOldEnd, capturedNewStart, capturedNewEnd, labels) {
-                                var findAnnotation = function() {
-                                    var annotations = FrameTrail.module('HypervideoModel').annotations;
-                                    for (var i = 0; i < annotations.length; i++) {
-                                        if (annotations[i].data.created === annotationId) {
-                                            return annotations[i];
+                                x = Math.max(0, Math.min(parentWidth - elWidth, x));
+
+                                e.target.style.left  = x + 'px';
+                                e.target.dataset.ftX = x;
+
+                                var HypervideoModel = FrameTrail.module('HypervideoModel'),
+                                    videoDuration = HypervideoModel.duration,
+                                    leftPercent   = 100 * (x / parentWidth),
+                                    widthPercent  = 100 * (elWidth / parentWidth),
+                                    newStartValue = (leftPercent * (videoDuration / 100)) + HypervideoModel.offsetIn,
+                                    newEndValue   = ((leftPercent + widthPercent) * (videoDuration / 100)) + HypervideoModel.offsetIn;
+
+                                FrameTrail.module('HypervideoController').currentTime = newStartValue;
+                                FrameTrail.module('AnnotationsController').updateControlsStart(newStartValue);
+                                FrameTrail.module('AnnotationsController').updateControlsEnd(newEndValue);
+
+                            },
+
+                            end: function(e) {
+
+                                if (!self.permanentFocusState) {
+                                    FrameTrail.module('AnnotationsController').annotationInFocus = null;
+                                }
+
+                                e.target.classList.remove('ui-draggable-dragging');
+
+                                var x           = parseFloat(e.target.dataset.ftX);
+                                var parentWidth = e.target.parentElement.offsetWidth;
+                                var elWidth     = e.target.offsetWidth;
+
+                                var HypervideoModel = FrameTrail.module('HypervideoModel'),
+                                    videoDuration = HypervideoModel.duration,
+                                    leftPercent   = 100 * (x / parentWidth),
+                                    widthPercent  = 100 * (elWidth / parentWidth);
+
+                                self.data.start = (leftPercent * (videoDuration / 100)) + HypervideoModel.offsetIn;
+                                self.data.end   = ((leftPercent + widthPercent) * (videoDuration / 100)) + HypervideoModel.offsetIn;
+
+                                try {
+                                    if (TogetherJS && TogetherJS.running) {
+                                        var elementFinder = TogetherJS.require("elementFinder");
+                                        var location = elementFinder.elementLocation(e.target);
+                                        TogetherJS.send({
+                                            type: "simulate-annotation-change",
+                                            element: location,
+                                            containerElement: '.annotationTimeline',
+                                            resourceID: self.data.resourceId,
+                                            startTime: self.data.start,
+                                            endTime: self.data.end
+                                        });
+                                    }
+                                } catch (ex) {}
+
+                                self.updateTimelineElement();
+
+                                FrameTrail.module('AnnotationsController').stackTimelineView();
+
+                                FrameTrail.module('HypervideoModel').newUnsavedChange('annotations');
+
+                                FrameTrail.triggerEvent('userAction', {
+                                    action: 'AnnotationChange',
+                                    annotation: self.data,
+                                    changes: [
+                                        {
+                                            property: 'start',
+                                            oldValue: oldAnnotationData.start,
+                                            newValue: self.data.start
+                                        },
+                                        {
+                                            property: 'end',
+                                            oldValue: oldAnnotationData.end,
+                                            newValue: self.data.end
                                         }
-                                    }
-                                    return null;
-                                };
-                                FrameTrail.module('UndoManager').register({
-                                    category: 'annotations',
-                                    description: labels['SidebarMyAnnotations'] + ' Move',
-                                    undo: function() {
-                                        var annotation = findAnnotation();
-                                        if (!annotation) return;
-                                        annotation.data.start = capturedOldStart;
-                                        annotation.data.end = capturedOldEnd;
-                                        annotation.updateTimelineElement();
-                                        FrameTrail.module('AnnotationsController').stackTimelineView();
-                                        FrameTrail.module('HypervideoModel').newUnsavedChange('annotations');
-                                    },
-                                    redo: function() {
-                                        var annotation = findAnnotation();
-                                        if (!annotation) return;
-                                        annotation.data.start = capturedNewStart;
-                                        annotation.data.end = capturedNewEnd;
-                                        annotation.updateTimelineElement();
-                                        FrameTrail.module('AnnotationsController').stackTimelineView();
-                                        FrameTrail.module('HypervideoModel').newUnsavedChange('annotations');
-                                    }
+                                    ]
                                 });
-                            })(self.data.created, oldAnnotationData.start, oldAnnotationData.end, self.data.start, self.data.end, self.labels);
 
+                                // Register undo command for timeline drag
+                                (function(annotationId, capturedOldStart, capturedOldEnd, capturedNewStart, capturedNewEnd, labels) {
+                                    var findAnnotation = function() {
+                                        var annotations = FrameTrail.module('HypervideoModel').annotations;
+                                        for (var i = 0; i < annotations.length; i++) {
+                                            if (annotations[i].data.created === annotationId) {
+                                                return annotations[i];
+                                            }
+                                        }
+                                        return null;
+                                    };
+                                    FrameTrail.module('UndoManager').register({
+                                        category: 'annotations',
+                                        description: labels['SidebarMyAnnotations'] + ' Move',
+                                        undo: function() {
+                                            var annotation = findAnnotation();
+                                            if (!annotation) return;
+                                            annotation.data.start = capturedOldStart;
+                                            annotation.data.end = capturedOldEnd;
+                                            annotation.updateTimelineElement();
+                                            FrameTrail.module('AnnotationsController').stackTimelineView();
+                                            FrameTrail.module('HypervideoModel').newUnsavedChange('annotations');
+                                        },
+                                        redo: function() {
+                                            var annotation = findAnnotation();
+                                            if (!annotation) return;
+                                            annotation.data.start = capturedNewStart;
+                                            annotation.data.end = capturedNewEnd;
+                                            annotation.updateTimelineElement();
+                                            FrameTrail.module('AnnotationsController').stackTimelineView();
+                                            FrameTrail.module('HypervideoModel').newUnsavedChange('annotations');
+                                        }
+                                    });
+                                })(self.data.created, oldAnnotationData.start, oldAnnotationData.end, self.data.start, self.data.end, self.labels);
+
+                            }
                         }
                     });
 
@@ -510,165 +527,192 @@ FrameTrail.defineType(
                         endHandleGrabbed,
                         oldAnnotationData;
 
-                    this.timelineElement.resizable({
+                    var el = this.timelineElement[0];
 
-                        containment: 'parent',
-                        handles:     'e, w',
+                    // Inject resize handles if not yet present
+                    if (!el.querySelector('.ui-resizable-e')) {
+                        var handleE = document.createElement('div');
+                        handleE.className = 'ui-resizable-handle ui-resizable-e';
+                        el.appendChild(handleE);
+                    }
+                    if (!el.querySelector('.ui-resizable-w')) {
+                        var handleW = document.createElement('div');
+                        handleW.className = 'ui-resizable-handle ui-resizable-w';
+                        el.appendChild(handleW);
+                    }
+                    el.classList.add('ui-resizable');
 
-                        resize: function(event, ui) {
+                    interact(el).resizable({
+                        edges: { left: '.ui-resizable-w', right: '.ui-resizable-e' },
+                        listeners: {
+                            start: function(e) {
 
-                            var closestGridline = FrameTrail.module('ViewVideo').closestToOffset($(FrameTrail.getState('target')).find('.gridline'), {
-                                    left: (endHandleGrabbed ? (ui.position.left + ui.helper.width()) : ui.position.left),
-                                    top: ui.position.top
-                                }),
-                                snapTolerance = $(this).draggable('option', 'snapTolerance');
+                                endHandleGrabbed = !!e.edges.right;
 
-                            if (closestGridline) {
-
-                                $(FrameTrail.getState('target')).find('.gridline').css('background-color', '#ff9900');
-
-                                if ( !endHandleGrabbed &&
-                                     ui.position.left - snapTolerance < closestGridline.position().left &&
-                                     ui.position.left + snapTolerance > closestGridline.position().left ) {
-
-                                    ui.position.left = closestGridline.position().left;
-                                    ui.size.width = ( ui.helper.width() + ( ui.helper.position().left - ui.position.left ) );
-
-                                    closestGridline.css('background-color', '#00ff00');
-
-                                } else if ( endHandleGrabbed &&
-                                            ui.position.left + ui.helper.width() - snapTolerance < closestGridline.position().left &&
-                                            ui.position.left + ui.helper.width() + snapTolerance > closestGridline.position().left ) {
-
-                                    ui.helper.width(closestGridline.position().left - ui.position.left);
-
-                                    closestGridline.css('background-color', '#00ff00');
-
+                                if (!self.permanentFocusState) {
+                                    FrameTrail.module('AnnotationsController').annotationInFocus = self;
                                 }
-                            }
 
+                                oldAnnotationData = jQuery.extend({}, self.data);
 
-                            var HypervideoModel = FrameTrail.module('HypervideoModel'),
-                                videoDuration = HypervideoModel.duration,
-                                leftPercent   = 100 * (ui.position.left / ui.helper.parent().width()),
-                                widthPercent  = 100 * (ui.helper.width() / ui.helper.parent().width()),
-                                newValue;
+                                e.target.dataset.ftLeft  = e.target.offsetLeft;
+                                e.target.dataset.ftWidth = e.target.offsetWidth;
+                                e.target.style.left      = e.target.offsetLeft + 'px';
+                                e.target.style.width     = e.target.offsetWidth + 'px';
 
-                            if ( endHandleGrabbed ) {
+                            },
 
-                                newValue = ((leftPercent + widthPercent) * (videoDuration / 100)) + HypervideoModel.offsetIn;
-                                FrameTrail.module('HypervideoController').currentTime = newValue;
-                                FrameTrail.module('AnnotationsController').updateControlsEnd(newValue);
+                            move: function(e) {
 
-                            } else {
+                                var newLeft    = parseFloat(e.target.dataset.ftLeft)  + e.deltaRect.left;
+                                var newWidth   = parseFloat(e.target.dataset.ftWidth) + e.deltaRect.width;
+                                var parentWidth = e.target.parentElement.offsetWidth;
 
-                                newValue = (leftPercent * (videoDuration / 100)) + HypervideoModel.offsetIn;
-                                FrameTrail.module('HypervideoController').currentTime = newValue;
-                                FrameTrail.module('AnnotationsController').updateControlsStart(newValue);
+                                var checkLeft = endHandleGrabbed ? (newLeft + newWidth) : newLeft;
+                                var closestGridline = FrameTrail.module('ViewVideo').closestToOffset(
+                                    $(FrameTrail.getState('target')).find('.gridline'),
+                                    { left: checkLeft, top: 0 }
+                                );
+                                var snapTolerance = 10;
 
-                            }
-
-                        },
-
-                        start: function(event, ui) {
-
-                            if (!self.permanentFocusState) {
-                                FrameTrail.module('AnnotationsController').annotationInFocus = self;
-                            }
-
-                            endHandleGrabbed = $(event.originalEvent.target).hasClass('ui-resizable-e');
-
-                            oldAnnotationData = jQuery.extend({}, self.data);
-
-                        },
-
-                        stop: function(event, ui) {
-
-                            if (!self.permanentFocusState) {
-                                FrameTrail.module('AnnotationsController').annotationInFocus = null;
-                            }
-
-
-                            var HypervideoModel = FrameTrail.module('HypervideoModel'),
-                                videoDuration = HypervideoModel.duration,
-                                leftPercent  = 100 * (ui.helper.position().left / ui.helper.parent().width()),
-                                widthPercent = 100 * (ui.helper.width() / ui.helper.parent().width());
-
-
-                            self.data.start = (leftPercent * (videoDuration / 100)) + HypervideoModel.offsetIn;
-                            self.data.end   = ((leftPercent + widthPercent) * (videoDuration / 100)) + HypervideoModel.offsetIn;
-
-                            try {
-                                if (TogetherJS && TogetherJS.running && !event.relatedTarget) {
-                                    var elementFinder = TogetherJS.require("elementFinder");
-                                    var location = elementFinder.elementLocation(ui.helper[0]);
-                                    TogetherJS.send({
-                                        type: "simulate-annotation-change", 
-                                        element: location,
-                                        containerElement: '.annotationTimeline',
-                                        resourceID: self.data.resourceId,
-                                        startTime: self.data.start,
-                                        endTime: self.data.end
-                                    });
-                                }
-                            } catch (e) {}
-                            
-                            FrameTrail.module('AnnotationsController').stackTimelineView();
-
-                            FrameTrail.module('HypervideoModel').newUnsavedChange('annotations');
-
-                            FrameTrail.triggerEvent('userAction', {
-                                action: 'AnnotationChange',
-                                annotation: self.data,
-                                changes: [
-                                    {
-                                        property: 'start',
-                                        oldValue: oldAnnotationData.start,
-                                        newValue: self.data.start
-                                    },
-                                    {
-                                        property: 'end',
-                                        oldValue: oldAnnotationData.end,
-                                        newValue: self.data.end
+                                if (closestGridline) {
+                                    $(FrameTrail.getState('target')).find('.gridline').css('background-color', '#ff9900');
+                                    var glLeft = closestGridline.position().left;
+                                    if (!endHandleGrabbed &&
+                                        newLeft - snapTolerance < glLeft &&
+                                        newLeft + snapTolerance > glLeft) {
+                                        var diff = newLeft - glLeft;
+                                        newWidth += diff;
+                                        newLeft   = glLeft;
+                                        closestGridline.css('background-color', '#00ff00');
+                                    } else if (endHandleGrabbed &&
+                                               newLeft + newWidth - snapTolerance < glLeft &&
+                                               newLeft + newWidth + snapTolerance > glLeft) {
+                                        newWidth = glLeft - newLeft;
+                                        closestGridline.css('background-color', '#00ff00');
                                     }
-                                ]
-                            });
+                                }
 
-                            // Register undo command for timeline resize
-                            (function(annotationId, capturedOldStart, capturedOldEnd, capturedNewStart, capturedNewEnd, labels) {
-                                var findAnnotation = function() {
-                                    var annotations = FrameTrail.module('HypervideoModel').annotations;
-                                    for (var i = 0; i < annotations.length; i++) {
-                                        if (annotations[i].data.created === annotationId) {
-                                            return annotations[i];
+                                // Clamp to parent
+                                if (newLeft < 0)                      { newWidth += newLeft; newLeft = 0; }
+                                if (newLeft + newWidth > parentWidth) { newWidth = parentWidth - newLeft; }
+                                if (newWidth < 2)                     { newWidth = 2; }
+
+                                e.target.style.left      = newLeft + 'px';
+                                e.target.style.width     = newWidth + 'px';
+                                e.target.dataset.ftLeft  = newLeft;
+                                e.target.dataset.ftWidth = newWidth;
+
+                                var HypervideoModel = FrameTrail.module('HypervideoModel'),
+                                    videoDuration = HypervideoModel.duration,
+                                    leftPercent   = 100 * (newLeft  / parentWidth),
+                                    widthPercent  = 100 * (newWidth / parentWidth),
+                                    newValue;
+
+                                if (endHandleGrabbed) {
+                                    newValue = ((leftPercent + widthPercent) * (videoDuration / 100)) + HypervideoModel.offsetIn;
+                                    FrameTrail.module('HypervideoController').currentTime = newValue;
+                                    FrameTrail.module('AnnotationsController').updateControlsEnd(newValue);
+                                } else {
+                                    newValue = (leftPercent * (videoDuration / 100)) + HypervideoModel.offsetIn;
+                                    FrameTrail.module('HypervideoController').currentTime = newValue;
+                                    FrameTrail.module('AnnotationsController').updateControlsStart(newValue);
+                                }
+
+                            },
+
+                            end: function(e) {
+
+                                if (!self.permanentFocusState) {
+                                    FrameTrail.module('AnnotationsController').annotationInFocus = null;
+                                }
+
+                                var finalLeft   = parseFloat(e.target.dataset.ftLeft);
+                                var finalWidth  = parseFloat(e.target.dataset.ftWidth);
+                                var parentWidth = e.target.parentElement.offsetWidth;
+
+                                var HypervideoModel = FrameTrail.module('HypervideoModel'),
+                                    videoDuration = HypervideoModel.duration,
+                                    leftPercent   = 100 * (finalLeft  / parentWidth),
+                                    widthPercent  = 100 * (finalWidth / parentWidth);
+
+                                self.data.start = (leftPercent * (videoDuration / 100)) + HypervideoModel.offsetIn;
+                                self.data.end   = ((leftPercent + widthPercent) * (videoDuration / 100)) + HypervideoModel.offsetIn;
+
+                                try {
+                                    if (TogetherJS && TogetherJS.running) {
+                                        var elementFinder = TogetherJS.require("elementFinder");
+                                        var location = elementFinder.elementLocation(e.target);
+                                        TogetherJS.send({
+                                            type: "simulate-annotation-change",
+                                            element: location,
+                                            containerElement: '.annotationTimeline',
+                                            resourceID: self.data.resourceId,
+                                            startTime: self.data.start,
+                                            endTime: self.data.end
+                                        });
+                                    }
+                                } catch (ex) {}
+
+                                self.updateTimelineElement();
+
+                                FrameTrail.module('AnnotationsController').stackTimelineView();
+
+                                FrameTrail.module('HypervideoModel').newUnsavedChange('annotations');
+
+                                FrameTrail.triggerEvent('userAction', {
+                                    action: 'AnnotationChange',
+                                    annotation: self.data,
+                                    changes: [
+                                        {
+                                            property: 'start',
+                                            oldValue: oldAnnotationData.start,
+                                            newValue: self.data.start
+                                        },
+                                        {
+                                            property: 'end',
+                                            oldValue: oldAnnotationData.end,
+                                            newValue: self.data.end
                                         }
-                                    }
-                                    return null;
-                                };
-                                FrameTrail.module('UndoManager').register({
-                                    category: 'annotations',
-                                    description: labels['SidebarMyAnnotations'] + ' Resize',
-                                    undo: function() {
-                                        var annotation = findAnnotation();
-                                        if (!annotation) return;
-                                        annotation.data.start = capturedOldStart;
-                                        annotation.data.end = capturedOldEnd;
-                                        annotation.updateTimelineElement();
-                                        FrameTrail.module('AnnotationsController').stackTimelineView();
-                                        FrameTrail.module('HypervideoModel').newUnsavedChange('annotations');
-                                    },
-                                    redo: function() {
-                                        var annotation = findAnnotation();
-                                        if (!annotation) return;
-                                        annotation.data.start = capturedNewStart;
-                                        annotation.data.end = capturedNewEnd;
-                                        annotation.updateTimelineElement();
-                                        FrameTrail.module('AnnotationsController').stackTimelineView();
-                                        FrameTrail.module('HypervideoModel').newUnsavedChange('annotations');
-                                    }
+                                    ]
                                 });
-                            })(self.data.created, oldAnnotationData.start, oldAnnotationData.end, self.data.start, self.data.end, self.labels);
 
+                                // Register undo command for timeline resize
+                                (function(annotationId, capturedOldStart, capturedOldEnd, capturedNewStart, capturedNewEnd, labels) {
+                                    var findAnnotation = function() {
+                                        var annotations = FrameTrail.module('HypervideoModel').annotations;
+                                        for (var i = 0; i < annotations.length; i++) {
+                                            if (annotations[i].data.created === annotationId) {
+                                                return annotations[i];
+                                            }
+                                        }
+                                        return null;
+                                    };
+                                    FrameTrail.module('UndoManager').register({
+                                        category: 'annotations',
+                                        description: labels['SidebarMyAnnotations'] + ' Resize',
+                                        undo: function() {
+                                            var annotation = findAnnotation();
+                                            if (!annotation) return;
+                                            annotation.data.start = capturedOldStart;
+                                            annotation.data.end = capturedOldEnd;
+                                            annotation.updateTimelineElement();
+                                            FrameTrail.module('AnnotationsController').stackTimelineView();
+                                            FrameTrail.module('HypervideoModel').newUnsavedChange('annotations');
+                                        },
+                                        redo: function() {
+                                            var annotation = findAnnotation();
+                                            if (!annotation) return;
+                                            annotation.data.start = capturedNewStart;
+                                            annotation.data.end = capturedNewEnd;
+                                            annotation.updateTimelineElement();
+                                            FrameTrail.module('AnnotationsController').stackTimelineView();
+                                            FrameTrail.module('HypervideoModel').newUnsavedChange('annotations');
+                                        }
+                                    });
+                                })(self.data.created, oldAnnotationData.start, oldAnnotationData.end, self.data.start, self.data.end, self.labels);
+
+                            }
                         }
                     });
 
@@ -908,31 +952,40 @@ FrameTrail.defineType(
                     	}
                     }
 
-                    compareTimelineElement.draggable({
-                        containment:    '.mainContainer',
-                        axis:           'y',
-                        helper:         'clone',
-                        appendTo:       'body',
-                        zIndex:         1000,
+                    // Store origin data directly on element so drop handlers can read it
+                    compareTimelineElement.data('originResourceData', self.data);
 
-                        start: function( event, ui ) {
-                            ui.helper.css({
-                                left: $(event.currentTarget).offset().left + "px",
-                                width: $(event.currentTarget).width() + "px",
-                                height: $(event.currentTarget).height() + "px",
-                                backgroundColor: $(event.currentTarget).css('background-color')
-                            });
-
-                            ui.helper.data('originResourceData', self.data);
-                        },
-
-                        drag: function( event, ui ) {
-                            ui.helper.css({
-                                top: ui.position.top + ($(FrameTrail.getState('target')).find('.slideArea').css('margin-top')*2) + "px"
-                            });
-                        }
-
-                    });
+                    (function() {
+                        var dragClone = null;
+                        interact(compareTimelineElement[0]).draggable({
+                            listeners: {
+                                start: function(e) {
+                                    var rect = e.target.getBoundingClientRect();
+                                    dragClone = e.target.cloneNode(true);
+                                    dragClone.style.cssText = 'position:fixed;z-index:1000;pointer-events:none;'
+                                        + 'left:' + rect.left + 'px;top:' + rect.top + 'px;'
+                                        + 'width:' + rect.width + 'px;height:' + rect.height + 'px;'
+                                        + 'background-color:' + $(e.target).css('background-color') + ';';
+                                    document.body.appendChild(dragClone);
+                                    e.target.dataset.ftY = 0;
+                                },
+                                move: function(e) {
+                                    // y-axis only
+                                    var y = (parseFloat(e.target.dataset.ftY) || 0) + e.dy;
+                                    e.target.style.transform = 'translateY(' + y + 'px)';
+                                    e.target.dataset.ftY = y;
+                                    if (dragClone) {
+                                        dragClone.style.top = (parseFloat(dragClone.style.top) + e.dy) + 'px';
+                                    }
+                                },
+                                end: function(e) {
+                                    e.target.style.transform = '';
+                                    e.target.dataset.ftY = 0;
+                                    if (dragClone) { dragClone.remove(); dragClone = null; }
+                                }
+                            }
+                        });
+                    }());
 
                     compareTimelineElement.click(function() {
                         FrameTrail.module('HypervideoController').currentTime = parseFloat($(this).data('start')) + 0.05;

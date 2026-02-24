@@ -107,7 +107,7 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
             iframeUrl += 'hypervideo='+ RouteNavigation.hypervideoID;
         }
 
-        var shareDialog = $('<div class="shareDialog" title="'+ labels['GenericShareEmbed']+ '">'
+        var shareDialog = $('<div class="shareDialog">'
                         + '    <div>Link</div>'
                         + '    <input type="text" value="'+ url +'"/>'
                         + '    <div>Embed Code</div>'
@@ -119,19 +119,20 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
             $(this).select();
         });
 
-        shareDialog.dialog({
-            modal: true,
+        var shareDialogCtrl = FrameTrailDialog({
+            title:     labels['GenericShareEmbed'],
+            content:   shareDialog,
+            modal:     true,
             resizable: false,
-            width:      500,
-            height:     360,
+            width:     500,
+            height:    360,
             close: function() {
-                $(this).dialog('close');
-                $(this).remove();
+                shareDialogCtrl.destroy();
             },
             buttons: [
                 { text: 'OK',
                     click: function() {
-                        $( this ).dialog( 'close' );
+                        shareDialogCtrl.close();
                     }
                 }
             ]

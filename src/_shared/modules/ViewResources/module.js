@@ -75,7 +75,8 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
         deleteActive     = false,
 
         callback,
-        showAsDialog;
+        showAsDialog,
+        viewResourcesDialog;
 
 
 
@@ -135,19 +136,15 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
 
         if (showAsDialog) {
 
-            $(FrameTrail.getState('target')).find('.mainContainer').append(domElement);
-
-            domElement.dialog({
+            viewResourcesDialog = FrameTrailDialog({
+                title:    labels['ResourcesManage'],
+                content:  domElement,
                 autoOpen: false,
-                width: 954,
-                height: 600,
-                modal: true,
+                width:    954,
+                height:   600,
+                modal:    true,
                 close: function() {
-
-                    domElement.dialog('close');
-
                     callback && callback.call();
-
                 }
             });
 
@@ -301,7 +298,7 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
 
         if (showAsDialog) {
             callback = closeCallback;
-            domElement.dialog('open');
+            viewResourcesDialog.open();
         } else {
             domElement.removeAttr('title');
         }

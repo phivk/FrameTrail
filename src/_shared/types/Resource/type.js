@@ -65,30 +65,30 @@ FrameTrail.defineType(
                         width: 880 + 'px',
                         height: 480 + 'px'
                     }, 300, function() {
-                        var previewDialog   = $('<div class="resourcePreviewDialog" title="'+ ((self.resourceData.type == 'text') ? '' : self.resourceData.name) +'"></div>')
+                        var previewContent = $('<div class="resourcePreviewDialog"></div>')
                             .append(self.renderContent());
 
-                        previewDialog.dialog({
+                        var previewDialogCtrl = FrameTrailDialog({
+                            title:     (self.resourceData.type == 'text') ? '' : self.resourceData.name,
+                            content:   previewContent,
                             resizable: false,
-                            width: 880,
-                            height: 480,
-                            modal: true,
-                            draggable: false,
+                            width:     880,
+                            height:    480,
+                            modal:     true,
                             close: function() {
-                                
+
                                 try {
                                     if (TogetherJS && TogetherJS.running) {
                                         var elementFinder = TogetherJS.require("elementFinder");
                                         var location = elementFinder.elementLocation($(this)[0]);
                                         TogetherJS.send({
-                                            type: "simulate-dialog-close", 
+                                            type: "simulate-dialog-close",
                                             element: location
                                         });
                                     }
                                 } catch (e) {}
 
-                                $(this).dialog('close');
-                                $(this).remove();
+                                previewDialogCtrl.destroy();
                                 animationDiv.animate({
                                     top: originOffset.top + 'px',
                                     left: originOffset.left + 'px',
@@ -98,15 +98,10 @@ FrameTrail.defineType(
                                     $('.resourceAnimationDiv').remove();
                                 });
                             },
-                            closeOnEscape: true,
-                            open: function( event, ui ) {
+                            open: function() {
                                 if ($(this).find('.resourceDetail').data().map) {
                                     $(this).find('.resourceDetail').data().map.invalidateSize();
                                 }
-                                $('.ui-widget-overlay').click(function() {
-                                    previewDialog.dialog('close');
-                                });
-
                             }
                         });
                     });

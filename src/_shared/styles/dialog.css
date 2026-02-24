@@ -1,0 +1,98 @@
+/* ──────────────────────────────────────────────────────────────────────────
+   Native <dialog> wrapper  –  replaces jQuery UI .ui-dialog
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* ── Backdrop (native ::backdrop pseudo-element) ─────────────────────── */
+.ft-dialog::backdrop {
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+/* ── Dialog shell ────────────────────────────────────────────────────── */
+.ft-dialog {
+    /* Reset browser defaults */
+    border: none;
+    outline: none;
+    padding: 0;
+    overflow: visible;
+    background: var(--primary-fg-color);
+    color: var(--primary-bg-color);
+    border-radius: 4px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.7);
+    min-width: 280px;
+    max-width: 90vw;
+    max-height: 90vh;
+}
+
+/* display:flex only when open — must not override the UA's display:none on closed dialogs */
+.ft-dialog[open] {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Explicit hide guard in case a CSS reset sets dialog { display: block } */
+.ft-dialog:not([open]) {
+    display: none;
+}
+
+/* ── Title bar ───────────────────────────────────────────────────────── */
+.ft-dialog-titlebar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: var(--primary-bg-color);
+    color: var(--primary-fg-color);
+    border-radius: 4px 4px 0 0;
+    flex-shrink: 0;
+}
+
+.ft-dialog-title {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    flex: 1;
+    z-index: 2;;
+}
+
+.ft-dialog-titlebar-close {
+    background: none;
+    border: none;
+    color: var(--primary-fg-color, #eee);
+    cursor: pointer;
+    padding: 2px 4px;
+    margin-left: 8px;
+    opacity: 0.7;
+    line-height: 1;
+}
+
+.ft-dialog-titlebar-close:hover {
+    opacity: 1;
+}
+
+/* ── Content area ────────────────────────────────────────────────────── */
+.ft-dialog-content {
+    padding: 14px 16px;
+    overflow-y: auto;
+    flex: 1 1 auto;
+}
+
+/* ── Button pane ─────────────────────────────────────────────────────── */
+.ft-dialog-buttonpane {
+    display: flex;
+    justify-content: flex-start;
+    gap: 6px;
+    padding: 8px 12px;
+    flex-shrink: 0;
+    border-top: 1px solid var(--secondary-bg-color);
+}
+
+.ft-dialog-buttonpane:empty {
+    display: none;
+}
+
+/* ── Variant: no resizable handle needed (native <dialog> is not resizable) */
+
+/* ── quizDialog variant ──────────────────────────────────────────────── */
+.ft-dialog.quizDialog {
+    /* ResourceQuiz uses position: center */
+}

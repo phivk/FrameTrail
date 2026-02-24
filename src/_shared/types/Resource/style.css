@@ -221,41 +221,14 @@
 	color: var(--primary-bg-color);
 }
 
-.editPropertiesContainer .ui-spinner {
+.editPropertiesContainer .ft-spinner {
 	border: 1px solid var(--primary-bg-color);
-    margin-right: 0px;
-    padding: 0px;
-    width: 46px;
-    background: var(--primary-fg-color);
-}
-
-.editPropertiesContainer .ui-spinner input {
-	width: 31px;
+	background: var(--primary-fg-color);
 	margin: 3px 2px;
+	padding: 0;
+	width: 46px;
 	overflow: hidden;
-}
-
-.editPropertiesContainer .ui-spinner .ui-spinner-button {
-	background-color: var(--secondary-bg-color);
-}
-
-.editPropertiesContainer .ui-spinner .ui-spinner-button [class^="icon-"], .editPropertiesContainer .ui-spinner .ui-spinner-button [class*=" icon-"] {
-	overflow: visible;
-	line-height: 14px;
-}
-
-.editPropertiesContainer .ui-spinner .ui-spinner-button [class^="icon-"]::before, .editPropertiesContainer .ui-spinner .ui-spinner-button [class*=" icon-"]::before {
-	position: absolute;
-	left: 0px;
-	text-indent: 0;
-	color: var(--primary-fg-color);
-	font-size: 12px;
-	line-height: 15px;
-}
-
-.editPropertiesContainer .ui-spinner .ui-spinner-button:hover {
-	background-color: var(--primary-bg-color);
-	cursor: pointer;
+	box-sizing: border-box;
 }
 
 .editPropertiesContainer .timeControls {
@@ -265,16 +238,10 @@
 	margin-bottom: 14px;
 }
 
-.editPropertiesContainer .timeControls .ui-spinner {
-	width: 51px;
-	margin-left: 6px;
+.editPropertiesContainer .timeControls .ft-spinner {
+	width: 55px;
+	margin: 3px 2px 3px 6px;
 	float: left;
-}
-
-.editPropertiesContainer .timeControls .ui-spinner input {
-	width: 34px;
-	overflow: hidden;
-	padding: 0;
 }
 
 .editPropertiesContainer .timeControls label, 
@@ -324,7 +291,7 @@
 	right: 24px;
 }
 
-.editPropertiesContainer .positionControls .ui-spinner {
+.editPropertiesContainer .positionControls .ft-spinner {
 	float: right;
 	margin-right: 6px;
 }

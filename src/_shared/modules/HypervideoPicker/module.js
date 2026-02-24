@@ -28,7 +28,7 @@ FrameTrail.defineModule('HypervideoPicker', function(FrameTrail){
             currentHypervideoID = FrameTrail.module('RouteNavigation').hypervideoID;
 
         // Create dialog container
-        var pickerDialog = $('<div class="hypervideoPickerDialog" title="'+ labels['HypervideoPickerTitle'] +'">'
+        var pickerDialog = $('<div class="hypervideoPickerDialog">'
                             + '    <div class="hypervideoPickerList"></div>'
                             + '</div>'),
             pickerList = pickerDialog.find('.hypervideoPickerList');
@@ -42,6 +42,9 @@ FrameTrail.defineModule('HypervideoPicker', function(FrameTrail){
 
         // Clear any existing thumbs
         pickerList.find('.hypervideoThumb').remove();
+
+        // Declare ctrl before the loop so click handlers can reference it via closure
+        var pickerDialogCtrl;
 
         // Render hypervideo thumbs
         for (var id in hypervideos) {
@@ -60,16 +63,16 @@ FrameTrail.defineModule('HypervideoPicker', function(FrameTrail){
                 // Remove the default click behavior and add selection behavior
                 thumb.find('.hypervideoIcon').off('click');
                 thumb.find('.hypervideoIcon').css('cursor', 'pointer');
-                
+
                 thumb.click(function(evt) {
                     evt.preventDefault();
                     evt.stopPropagation();
 
                     var selectedHypervideoID = $(this).attr('data-hypervideoid');
-                    
+
                     // Close dialog
-                    pickerDialog.dialog('close');
-                    
+                    pickerDialogCtrl.close();
+
                     // Call callback with selected hypervideo ID
                     if (callback && typeof callback === 'function') {
                         callback(selectedHypervideoID);
@@ -81,13 +84,15 @@ FrameTrail.defineModule('HypervideoPicker', function(FrameTrail){
         }
 
         // Open dialog - CSS Grid handles responsive layout automatically
-        pickerDialog.dialog({
+        pickerDialogCtrl = FrameTrailDialog({
+            title:     labels['HypervideoPickerTitle'],
+            content:   pickerDialog,
             resizable: true,
-            width: 900,
-            height: 600,
-            modal: true,
+            width:     900,
+            height:    600,
+            modal:     true,
             close: function() {
-                pickerDialog.remove();
+                pickerDialogCtrl.destroy();
             }
         });
 

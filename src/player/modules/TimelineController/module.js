@@ -224,6 +224,12 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
      */
     function setupPreviewPopup(container, childSelector) {
 
+        // Track the element whose preview is currently detached to body.
+        // Needed because mouseenter on a new element can fire before mouseleave
+        // on the previous one (fast mouse movement), which would leave two
+        // previewPopupWrapper elements on the body simultaneously.
+        var currentDetachedEl = null;
+
         container.on('mouseenter.previewPopup', childSelector, function() {
             var el = $(this);
             var preview = el.find('.previewWrapper');
@@ -231,6 +237,15 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
 
             // Don't show during drag
             if (el.hasClass('ui-draggable-dragging')) return;
+
+            // If a different element's preview is still detached, return it first
+            if (currentDetachedEl && currentDetachedEl[0] !== el[0]) {
+                returnPreviewToElement(currentDetachedEl);
+                currentDetachedEl = null;
+            }
+
+            // Already showing this element's preview — nothing to do
+            if (el.data('previewDetached')) return;
 
             var rect = this.getBoundingClientRect();
             var previewWidth = 80;
@@ -270,10 +285,12 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
             $('body').append(wrapper);
 
             el.data('previewDetached', true);
+            currentDetachedEl = el;
         });
 
         container.on('mouseleave.previewPopup', childSelector, function() {
             returnPreviewToElement($(this));
+            currentDetachedEl = null;
         });
     }
 
@@ -708,23 +725,28 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
 
         minimapElement.append(track, minimapViewport);
 
-        // Make viewport draggable
-        minimapViewport.draggable({
-            axis: 'x',
-            containment: 'parent',
-            drag: function(event, ui) {
-                var parentWidth = minimapElement.width();
-                var viewportWidth = minimapViewport.outerWidth();
-                var maxLeft = parentWidth - viewportWidth;
-
-                if (maxLeft <= 0) return;
-
-                var scrollPercent = ui.position.left / maxLeft;
-                var scrollerWidth = containerWidth * zoomLevel;
-                var maxScroll = scrollerWidth - containerWidth;
-
-                scrollPosition = scrollPercent * maxScroll;
-                syncScroll();
+        // Make viewport draggable (interact.js, x-axis only)
+        interact(minimapViewport[0]).draggable({
+            listeners: {
+                start: function(e) {
+                    e.target.dataset.ftX = parseFloat(e.target.style.left) || e.target.offsetLeft || 0;
+                },
+                move: function(e) {
+                    var x = parseFloat(e.target.dataset.ftX) + e.dx;
+                    var parentWidth = minimapElement.width();
+                    var viewportWidth = minimapViewport.outerWidth();
+                    var maxLeft = parentWidth - viewportWidth;
+                    if (maxLeft < 0) { maxLeft = 0; }
+                    x = Math.max(0, Math.min(maxLeft, x));
+                    e.target.style.left = x + 'px';
+                    e.target.dataset.ftX = x;
+                    if (maxLeft <= 0) { return; }
+                    var scrollPercent = x / maxLeft;
+                    var scrollerWidth = containerWidth * zoomLevel;
+                    var maxScroll = scrollerWidth - containerWidth;
+                    scrollPosition = scrollPercent * maxScroll;
+                    syncScroll();
+                }
             }
         });
 
@@ -776,7 +798,7 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
         });
 
         // Use CollisionDetection to stack items (same mechanism as timelines)
-        track.CollisionDetection({ spacing: 0, includeVerticalMargins: true, containerPadding: 5 });
+        CollisionDetection(track[0], { spacing: 0, includeVerticalMargins: true, containerPadding: 5 });
 
         // CollisionDetection counts margin-bottom in height, which adds extra space
         // below the bottom row. Subtract it so top and bottom padding are equal.

@@ -51,20 +51,19 @@
             return;
         }
 
-        $.ajax({
-            type:     "GET",
-            url:      typeof tagInitOptions === 'string'
-                        ? tagInitOptions
-                        : '_data/tagdefinitions.json',
-            cache:    (config.allowCaching) ? config.allowCaching : false,
-            dataType: "json",
-            mimeType: "application/json"
-        }).done(function(data){
-            tags = data;
-            success();
-        }).fail(function(){
-            fail(labels['ErrorNoTagdefinitionsFile']);
-        });
+        var tagUrl = typeof tagInitOptions === 'string' ? tagInitOptions : '_data/tagdefinitions.json';
+        fetch(tagUrl, { cache: (config.allowCaching) ? 'default' : 'no-cache' })
+            .then(function(r) {
+                if (!r.ok) throw new Error('not found');
+                return r.json();
+            })
+            .then(function(data) {
+                tags = data;
+                success();
+            })
+            .catch(function() {
+                fail(labels['ErrorNoTagdefinitionsFile']);
+            });
 
     }
 
@@ -100,21 +99,13 @@
             return;
         }
 
-        $.ajax({
-            type:   'POST',
-            url:    '_server/ajaxServer.php',
-            cache:  (config.allowCaching) ? config.allowCaching : false,
-            data: {
-                a:              'tagSet',
-                tagName:        tagname,
-                lang:           language,
-                label:          label,
-                description:    description
-            }
-
-        }).done(function(data) {
-            updateTagModel(success, fail);
-        }).fail(fail);
+        fetch('_server/ajaxServer.php', {
+            method: 'POST',
+            cache: (config.allowCaching) ? 'default' : 'no-cache',
+            body: new URLSearchParams({ a: 'tagSet', tagName: tagname, lang: language, label: label, description: description })
+        })
+        .then(function() { updateTagModel(success, fail); })
+        .catch(fail);
 
     }
 
@@ -134,19 +125,13 @@
             return;
         }
 
-        $.ajax({
-            type:   'POST',
-            url:    '_server/ajaxServer.php',
-            cache:  (config.allowCaching) ? config.allowCaching : false,
-            data: {
-                a:              'tagLangDelete',
-                tagName:        tagname,
-                language:       language
-            }
-
-        }).done(function(data) {
-            updateTagModel(success, fail);
-        }).fail(fail);
+        fetch('_server/ajaxServer.php', {
+            method: 'POST',
+            cache: (config.allowCaching) ? 'default' : 'no-cache',
+            body: new URLSearchParams({ a: 'tagLangDelete', tagName: tagname, language: language })
+        })
+        .then(function() { updateTagModel(success, fail); })
+        .catch(fail);
 
     }
 
@@ -165,19 +150,13 @@
             return;
         }
 
-        $.ajax({
-            type:   'POST',
-            url:    '_server/ajaxServer.php',
-            cache:  (config.allowCaching) ? config.allowCaching : false,
-            data: {
-                a:              'tagDelete',
-                tagName:        tagname
-            }
-
-        }).done(function(data) {
-            if (typeof data === 'string') {
-                try { data = JSON.parse(data); } catch(e) {}
-            }
+        fetch('_server/ajaxServer.php', {
+            method: 'POST',
+            cache: (config.allowCaching) ? 'default' : 'no-cache',
+            body: new URLSearchParams({ a: 'tagDelete', tagName: tagname })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
             if (data && data.code === 0) {
                 updateTagModel(function() {
                     success(data);
@@ -185,7 +164,8 @@
             } else {
                 if (fail) fail(data);
             }
-        }).fail(fail);
+        })
+        .catch(fail);
 
     }
 

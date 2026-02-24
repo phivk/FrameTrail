@@ -30,50 +30,32 @@ class StorageAdapterServer extends StorageAdapter {
         }
 
         // Verify PHP backend is reachable
-        return new Promise(function(resolve, reject) {
-            $.ajax({
-                type: 'POST',
-                url: '_server/ajaxServer.php',
-                data: { a: 'userCheckLogin' },
-                dataType: 'json',
-                timeout: 5000
-            }).done(function() {
-                resolve(true);
-            }).fail(function() {
-                reject(new Error('PHP server not reachable'));
-            });
+        var resp = await fetch('_server/ajaxServer.php', {
+            method: 'POST',
+            cache: 'no-cache',
+            body: new URLSearchParams({ a: 'userCheckLogin' })
         });
+        if (!resp.ok) throw new Error('PHP server not reachable');
+        return true;
     }
 
     async readJSON(path) {
-        return new Promise(function(resolve, reject) {
-            $.ajax({
-                type: 'GET',
-                url: '_data/' + path,
-                cache: false,
-                dataType: 'json',
-                mimeType: 'application/json'
-            }).done(resolve).fail(function() {
-                reject(new Error('File not found: ' + path));
-            });
-        });
+        var resp = await fetch('_data/' + path, { cache: 'no-cache' });
+        if (!resp.ok) throw new Error('File not found: ' + path);
+        return resp.json();
     }
 
     async writeJSON(path, data) {
         var action = this._getActionForPath(path, data);
-        return new Promise(function(resolve, reject) {
-            $.ajax({
-                type: 'POST',
-                url: '_server/ajaxServer.php',
-                data: action.params
-            }).done(function(response) {
-                if (response.code === 0) {
-                    resolve();
-                } else {
-                    reject(new Error(response.string || 'Server error code ' + response.code));
-                }
-            }).fail(reject);
+        var resp = await fetch('_server/ajaxServer.php', {
+            method: 'POST',
+            body: new URLSearchParams(action.params)
         });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        var result = await resp.json();
+        if (result.code !== 0) {
+            throw new Error(result.string || 'Server error code ' + result.code);
+        }
     }
 
     async exists(path) {

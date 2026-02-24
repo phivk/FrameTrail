@@ -19,11 +19,12 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 
 	var labels = FrameTrail.module('Localization').labels;
 
-    var previewXHR,
+    var previewController,
         uploadQueue = [],
         completedUploads = [],
         isUploading = false,
         currentUploadDialog = null,
+        currentUploadDialogCtrl = null,
         currentSuccessCallback = null,
         serverCapabilities = {
             maxUploadBytes: 500 * 1024 * 1024,
@@ -164,9 +165,9 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
     //Check for Name Length
     $(document).on('change paste keyup input', '.resourceNameInput', function(evt) {
         if ( $(this).val().length > 2 ) {
-            $('.newResourceConfirm').button('enable');
+            $('.newResourceConfirm').prop('disabled', false);
         } else {
-            $('.newResourceConfirm').button('disable');
+            $('.newResourceConfirm').prop('disabled', true);
         }
         $('.resourceURLPreview .resourceTitle').text($(this).val());
         evt.stopPropagation();
@@ -403,14 +404,13 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 	 */
 	function finishBatchUpload() {
 		FrameTrail.module('Database').loadResourceData(function() {
-			if (currentUploadDialog) {
+			if (currentUploadDialog && currentUploadDialogCtrl) {
 				currentUploadDialog.find('.queueSummary').text('All uploads complete!');
 
-				// Update button text to "Close" using jQuery UI button API
-				var buttons = currentUploadDialog.dialog('option', 'buttons');
+				var buttons = currentUploadDialogCtrl.getButtons();
 				buttons[0].text = 'Close';
-				currentUploadDialog.dialog('option', 'buttons', buttons);
-				currentUploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', false);
+				currentUploadDialogCtrl.setButtons(buttons);
+				currentUploadDialogCtrl.widget().find('.newResourceConfirm').prop('disabled', false);
 
 				// Call success callback if provided
 				if (currentSuccessCallback) {
@@ -442,33 +442,25 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 			formData.append('thumb', thumbDataUrl);
 		}
 
-		$.ajax({
-			url: '_server/ajaxServer.php',
-			type: 'POST',
-			data: formData,
-			processData: false,
-			contentType: false,
-			xhr: function() {
-				var xhr = new XMLHttpRequest();
-				xhr.upload.addEventListener('progress', function(e) {
-					if (e.lengthComputable && currentUploadDialog) {
-						var pct = Math.round((e.loaded / e.total) * 100);
-						currentUploadDialog.find('.uploadProgressBar').css('width', pct + '%');
-					}
-				});
-				return xhr;
-			},
-			success: function(response) {
-				if (response.code === 0) {
-					callback(true);
-				} else {
-					callback(false, response.string || 'Upload failed');
-				}
-			},
-			error: function() {
-				callback(false, 'Network error');
+		var xhr = new XMLHttpRequest();
+		xhr.upload.addEventListener('progress', function(e) {
+			if (e.lengthComputable && currentUploadDialog) {
+				var pct = Math.round((e.loaded / e.total) * 100);
+				currentUploadDialog.find('.uploadProgressBar').css('width', pct + '%');
 			}
 		});
+		xhr.onload = function() {
+			var response;
+			try { response = JSON.parse(xhr.responseText); } catch(e) { callback(false, 'Network error'); return; }
+			if (response.code === 0) {
+				callback(true);
+			} else {
+				callback(false, response.string || 'Upload failed');
+			}
+		};
+		xhr.onerror = function() { callback(false, 'Network error'); };
+		xhr.open('POST', '_server/ajaxServer.php');
+		xhr.send(formData);
 	}
 
 	/**
@@ -494,7 +486,8 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 
                     var fileAccept = onlyVideo ? 'video/*' : '*/*';
 
-                    var uploadDialog = $('<div class="uploadDialog" title="'+ labels['ResourceAddNew'] +'">'
+                    var uploadDialogCtrl;
+                    var uploadDialog = $('<div class="uploadDialog">'
                                         + '    <div class="resourceInputTabContainer">'
                                         + '        <ul class="resourceInputTabList">'
                                         + (onlyVideo ? '' : '            <li data-type="url"><a href="#resourceInputTabURL">'+ labels['ResourcePasteURL'] +'</a></li>')
@@ -618,10 +611,10 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                             uploadDialog.find('.queueSummary').show();
                             updateQueueUI();
                             setTimeout(function() {
-                                var buttons = uploadDialog.dialog('option', 'buttons');
+                                var buttons = uploadDialogCtrl.getButtons();
                                 buttons[0].text = labels['ResourceUploadStart'] || 'Start Upload';
-                                uploadDialog.dialog('option', 'buttons', buttons);
-                                uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', false);
+                                uploadDialogCtrl.setButtons(buttons);
+                                uploadDialogCtrl.widget().find('.newResourceConfirm').prop('disabled', false);
                             }, 50);
                         }
                     }
@@ -646,7 +639,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                                             uploadDialog.find('input.BB4').val(d.boundingbox[3]);
                                             uploadDialog.find('input[name="name"]').val(d.display_name);
                                             uploadDialog.find('.locationSearchSuggestions').hide();
-                                            uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', false);
+                                            uploadDialogCtrl.widget().find('.newResourceConfirm').prop('disabled', false);
                                         })
                                         .appendTo(uploadDialog.find('.locationSearchSuggestions'));
                                 }
@@ -658,25 +651,25 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                         activate: function(e, ui) {
                             uploadDialog.find('.message.error').remove();
                             var tabType = $(ui.newTab[0]).data('type');
-                            var buttons = uploadDialog.dialog('option', 'buttons');
+                            var buttons = uploadDialogCtrl.getButtons();
                             if (tabType === 'url') {
                                 uploadDialog.find('.nameInputContainer').show();
                                 buttons[0].text = labels['ResourceAddNew'] || 'Add Resource';
-                                uploadDialog.dialog('option', 'buttons', buttons);
+                                uploadDialogCtrl.setButtons(buttons);
                                 var hasUrl = uploadDialog.find('.resourceInput[name="url"]').val().length > 3;
-                                uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', !hasUrl);
+                                uploadDialogCtrl.widget().find('.newResourceConfirm').prop('disabled', !hasUrl);
                             } else if (tabType === 'file') {
                                 uploadDialog.find('.nameInputContainer').hide();
                                 var hasQueue = uploadQueue.length > 0;
                                 buttons[0].text = hasQueue ? (labels['ResourceUploadStart'] || 'Start Upload') : (labels['ResourceAddNew'] || 'Add Resource');
-                                uploadDialog.dialog('option', 'buttons', buttons);
-                                uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', !hasQueue);
+                                uploadDialogCtrl.setButtons(buttons);
+                                uploadDialogCtrl.widget().find('.newResourceConfirm').prop('disabled', !hasQueue);
                             } else if (tabType === 'map') {
                                 uploadDialog.find('.nameInputContainer').show();
                                 buttons[0].text = labels['ResourceAddNew'] || 'Add Resource';
-                                uploadDialog.dialog('option', 'buttons', buttons);
+                                uploadDialogCtrl.setButtons(buttons);
                                 var hasCoords = uploadDialog.find('input[name="lat"]').val().length > 0;
-                                uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', !hasCoords);
+                                uploadDialogCtrl.widget().find('.newResourceConfirm').prop('disabled', !hasCoords);
                             }
                         },
                         create: function() {
@@ -712,41 +705,41 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                             return;
                         }
                         urlObj.name = resourceName;
-                        uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', true);
+                        uploadDialogCtrl.widget().find('.newResourceConfirm').prop('disabled', true);
 
                         if (isLocalMode) {
                             addResourceLocally(urlObj).then(function() {
                                 FrameTrail.module('Database').loadResourceData(function() {
-                                    uploadDialog.dialog('close');
+                                    uploadDialogCtrl.close();
                                     successCallback && successCallback.call();
                                 });
                             }).catch(function(err) {
                                 uploadDialog.find('.message.error').remove();
                                 uploadDialog.find('#resourceInputTabURL').append('<div class="message active error">' + err.message + '</div>');
-                                uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', false);
+                                uploadDialogCtrl.widget().find('.newResourceConfirm').prop('disabled', false);
                             });
                         } else {
-                            $.ajax({
-                                url: '_server/ajaxServer.php',
-                                type: 'POST',
-                                data: { a: 'fileUpload', type: 'url', name: resourceName, attributes: JSON.stringify(urlObj) },
-                                success: function(resp) {
-                                    if (resp.code === 0) {
-                                        FrameTrail.module('Database').loadResourceData(function() {
-                                            uploadDialog.dialog('close');
-                                            successCallback && successCallback.call();
-                                        });
-                                    } else {
-                                        uploadDialog.find('.message.error').remove();
-                                        uploadDialog.find('#resourceInputTabURL').append('<div class="message active error">'+ (resp.string || labels['ErrorGeneric']) +'</div>');
-                                        uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', false);
-                                    }
-                                },
-                                error: function() {
+                            fetch('_server/ajaxServer.php', {
+                                method: 'POST',
+                                body: new URLSearchParams({ a: 'fileUpload', type: 'url', name: resourceName, attributes: JSON.stringify(urlObj) })
+                            })
+                            .then(function(r) { return r.json(); })
+                            .then(function(resp) {
+                                if (resp.code === 0) {
+                                    FrameTrail.module('Database').loadResourceData(function() {
+                                        uploadDialogCtrl.close();
+                                        successCallback && successCallback.call();
+                                    });
+                                } else {
                                     uploadDialog.find('.message.error').remove();
-                                    uploadDialog.find('#resourceInputTabURL').append('<div class="message active error">'+ labels['ErrorGeneric'] +'</div>');
-                                    uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', false);
+                                    uploadDialog.find('#resourceInputTabURL').append('<div class="message active error">'+ (resp.string || labels['ErrorGeneric']) +'</div>');
+                                    uploadDialogCtrl.widget().find('.newResourceConfirm').prop('disabled', false);
                                 }
+                            })
+                            .catch(function() {
+                                uploadDialog.find('.message.error').remove();
+                                uploadDialog.find('#resourceInputTabURL').append('<div class="message active error">'+ labels['ErrorGeneric'] +'</div>');
+                                uploadDialogCtrl.widget().find('.newResourceConfirm').prop('disabled', false);
                             });
                         }
                     }
@@ -765,7 +758,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                             uploadDialog.find('#resourceInputTabMap').append('<div class="message active error">'+ labels['ErrorEmptyName'] +'</div>');
                             return;
                         }
-                        uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', true);
+                        uploadDialogCtrl.widget().find('.newResourceConfirm').prop('disabled', true);
                         var mapResource = {
                             src: '', type: 'location', name: resourceName,
                             attributes: {
@@ -782,80 +775,78 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                         if (isLocalMode) {
                             addResourceLocally(mapResource).then(function() {
                                 FrameTrail.module('Database').loadResourceData(function() {
-                                    uploadDialog.dialog('close');
+                                    uploadDialogCtrl.close();
                                     successCallback && successCallback.call();
                                 });
                             }).catch(function(err) {
                                 uploadDialog.find('.message.error').remove();
                                 uploadDialog.find('#resourceInputTabMap').append('<div class="message active error">' + err.message + '</div>');
-                                uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', false);
+                                uploadDialogCtrl.widget().find('.newResourceConfirm').prop('disabled', false);
                             });
                         } else {
-                            $.ajax({
-                                url: '_server/ajaxServer.php',
-                                type: 'POST',
-                                data: {
-                                    a: 'fileUpload', type: 'map', name: resourceName,
-                                    lat: lat, lon: lon,
-                                    'boundingBox[]': [
-                                        uploadDialog.find('input.BB1').val(),
-                                        uploadDialog.find('input.BB2').val(),
-                                        uploadDialog.find('input.BB3').val(),
-                                        uploadDialog.find('input.BB4').val()
-                                    ]
-                                },
-                                success: function(resp) {
-                                    if (resp.code === 0) {
-                                        FrameTrail.module('Database').loadResourceData(function() {
-                                            uploadDialog.dialog('close');
-                                            successCallback && successCallback.call();
-                                        });
-                                    } else {
-                                        uploadDialog.find('.message.error').remove();
-                                        uploadDialog.find('#resourceInputTabMap').append('<div class="message active error">'+ (resp.string || labels['ErrorGeneric']) +'</div>');
-                                        uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', false);
-                                    }
-                                },
-                                error: function() {
+                            var mapParams = new URLSearchParams({
+                                a: 'fileUpload', type: 'map', name: resourceName,
+                                lat: lat, lon: lon
+                            });
+                            mapParams.append('boundingBox[]', uploadDialog.find('input.BB1').val());
+                            mapParams.append('boundingBox[]', uploadDialog.find('input.BB2').val());
+                            mapParams.append('boundingBox[]', uploadDialog.find('input.BB3').val());
+                            mapParams.append('boundingBox[]', uploadDialog.find('input.BB4').val());
+                            fetch('_server/ajaxServer.php', { method: 'POST', body: mapParams })
+                            .then(function(r) { return r.json(); })
+                            .then(function(resp) {
+                                if (resp.code === 0) {
+                                    FrameTrail.module('Database').loadResourceData(function() {
+                                        uploadDialogCtrl.close();
+                                        successCallback && successCallback.call();
+                                    });
+                                } else {
                                     uploadDialog.find('.message.error').remove();
-                                    uploadDialog.find('#resourceInputTabMap').append('<div class="message active error">'+ labels['ErrorGeneric'] +'</div>');
-                                    uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', false);
+                                    uploadDialog.find('#resourceInputTabMap').append('<div class="message active error">'+ (resp.string || labels['ErrorGeneric']) +'</div>');
+                                    uploadDialogCtrl.widget().find('.newResourceConfirm').prop('disabled', false);
                                 }
+                            })
+                            .catch(function() {
+                                uploadDialog.find('.message.error').remove();
+                                uploadDialog.find('#resourceInputTabMap').append('<div class="message active error">'+ labels['ErrorGeneric'] +'</div>');
+                                uploadDialogCtrl.widget().find('.newResourceConfirm').prop('disabled', false);
                             });
                         }
                     }
 
                     function startBatchUpload() {
-                        var buttons = uploadDialog.dialog('option', 'buttons');
+                        var buttons = uploadDialogCtrl.getButtons();
                         buttons[0].text = labels['ResourceUploading'] || 'Uploading...';
-                        uploadDialog.dialog('option', 'buttons', buttons);
-                        uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', true);
+                        uploadDialogCtrl.setButtons(buttons);
+                        uploadDialogCtrl.widget().find('.newResourceConfirm').prop('disabled', true);
                         processUploadQueue();
                     }
 
                     function resetAndClose() {
-                        if (previewXHR) { previewXHR.abort(); }
+                        if (previewController) { previewController.abort(); previewController = null; }
                         uploadQueue = [];
                         completedUploads = [];
                         isUploading = false;
                         currentUploadDialog = null;
+                        currentUploadDialogCtrl = null;
                         currentSuccessCallback = null;
-                        uploadDialog.dialog('close');
                     }
 
-                    uploadDialog.dialog({
+                    uploadDialogCtrl = FrameTrailDialog({
+                        title: labels['ResourceAddNew'] || 'Add Resource',
                         resizable: false,
                         width: 680,
-                        height: 'auto',
                         modal: true,
                         closeOnEscape: false,
+                        content: uploadDialog,
                         close: function() {
                             resetAndClose();
-                            $(this).remove();
+                            uploadDialogCtrl.destroy();
                         },
                         buttons: [
                             {
                                 class: 'newResourceConfirm',
+                                disabled: true,
                                 text: labels['ResourceAddNew'] || 'Add Resource',
                                 click: function() {
                                     var tabType = getActiveTabType();
@@ -863,7 +854,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                                         submitURL();
                                     } else if (tabType === 'file') {
                                         if (completedUploads.length > 0 && uploadQueue.length === 0) {
-                                            resetAndClose();
+                                            uploadDialogCtrl.close();
                                         } else if (uploadQueue.length > 0) {
                                             startBatchUpload();
                                         }
@@ -874,13 +865,11 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                             },
                             {
                                 text: labels['Cancel'] || 'Cancel',
-                                click: function() { resetAndClose(); }
+                                click: function() { uploadDialogCtrl.close(); }
                             }
-                        ],
-                        open: function() {
-                            uploadDialog.closest('.ui-dialog').find('.newResourceConfirm').prop('disabled', true);
-                        }
+                        ]
                     });
+                    currentUploadDialogCtrl = uploadDialogCtrl;
 
             } // End of showUploadDialog
 
@@ -890,21 +879,20 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                 showUploadDialog();
             } else {
                 // Server mode: fetch capabilities with a single request
-                $.ajax({
-                    type: 'GET',
-                    url: '_server/ajaxServer.php',
-                    data: { a: 'fileGetCapabilities' }
-                }).done(function(resp) {
-                    if (resp && resp.code === 0) {
-                        serverCapabilities = {
-                            maxUploadBytes: resp.maxUploadBytes || (500 * 1024 * 1024),
-                            ffmpegAvailable: resp.ffmpegAvailable || false
-                        };
-                    }
-                    showUploadDialog();
-                }).fail(function() {
-                    showUploadDialog();
-                });
+                fetch('_server/ajaxServer.php?a=fileGetCapabilities')
+                    .then(function(r) { return r.json(); })
+                    .then(function(resp) {
+                        if (resp && resp.code === 0) {
+                            serverCapabilities = {
+                                maxUploadBytes: resp.maxUploadBytes || (500 * 1024 * 1024),
+                                ffmpegAvailable: resp.ffmpegAvailable || false
+                            };
+                        }
+                        showUploadDialog();
+                    })
+                    .catch(function() {
+                        showUploadDialog();
+                    });
             }
 
         });
@@ -1402,18 +1390,18 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 
         if ( uriValue.length > 3 ) {
 
-            if (previewXHR) { previewXHR.abort(); }
+            if (previewController) { previewController.abort(); }
+            previewController = new AbortController();
 
             if ((resourceType == 'webpage' || resourceType == 'wikipedia') && FrameTrail.getState('storageMode') !== 'local') {
-                previewXHR = $.ajax({
-                    type:   'POST',
-                    url:    '_server/ajaxServer.php',
-                    cache:  false,
-                    data: {
-                        a:          'fileGetUrlInfo',
-                        url: uriValue
-                    }
-                }).done(function(data) {
+                fetch('_server/ajaxServer.php', {
+                    method: 'POST',
+                    cache: 'no-cache',
+                    signal: previewController.signal,
+                    body: new URLSearchParams({ a: 'fileGetUrlInfo', url: uriValue })
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
 
                     //console.log(data);
                     if (data.code == 0) {
@@ -1431,7 +1419,8 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                         console.log(data.string);
                     }
 
-                });
+                })
+                .catch(function() { /* aborted or network error — ignore */ });
             } else {
                 renderResourcePreviewElement(resourceType, resourceObj.name, resourceObj.description, resourceObj.thumb);
             }
@@ -1555,15 +1544,13 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 			return;
 		}
 
-		$.ajax({
-			type:   'POST',
-			url:    '_server/ajaxServer.php',
-			cache:  false,
-			data: {
-				a: 			'fileDelete',
-				resourcesID: resourceID
-			}
-		}).done(function(data) {
+		fetch('_server/ajaxServer.php', {
+			method: 'POST',
+			cache: 'no-cache',
+			body: new URLSearchParams({ a: 'fileDelete', resourcesID: resourceID })
+		})
+		.then(function(r) { return r.json(); })
+		.then(function(data) {
 
 			if (data.code === 0) {
 				successCallback();
@@ -1721,36 +1708,27 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 			return;
 		}
 
-		$.ajax({
+		fetch('_server/ajaxServer.php', {
+			method: 'POST',
+			cache: 'no-cache',
+			body: new URLSearchParams({ a: 'fileGetByFilter', key: key, condition: condition, values: values })
+		})
+		.then(function(r) { return r.json(); })
+		.then(function(data) {
 
-            type:   'POST',
-            url:    '_server/ajaxServer.php',
-            cache:  false,
-
-            data: {
-            	a: 			'fileGetByFilter',
-            	key: 		key,
-            	condition: 	condition,
-            	values: 	values
-            }
-
-        }).done(function(data){
-
-        	if (data.code === 0) {
-
-        		renderResult(targetElement, data.result)
-
-        	}
+			if (data.code === 0) {
+				renderResult(targetElement, data.result);
+			}
 
 			targetElement.find('.loadingScreen').fadeOut(600, function() {
-                $(this).remove();
-            });
+				$(this).remove();
+			});
 
-
-		}).fail(function(errorMessage){
+		})
+		.catch(function() {
 
 			targetElement.find('.loadingScreen').remove();
-			targetElement.append('<div class="loadingErrorMessage"><div class="message error active">' + errorMessage + '</div></div>');
+			targetElement.append('<div class="loadingErrorMessage"><div class="message error active">' + labels['ErrorGeneric'] + '</div></div>');
 
 		});
 
@@ -1807,30 +1785,39 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 
 
 
-			resourceThumb.draggable({
-				containment: 	'.mainContainer',
-				helper: 		'clone',
-				revert: 		'invalid',
-				revertDuration: 100,
-				appendTo: 		'body',
-				distance: 		10,
-				zIndex: 		1000,
-
-				start: function( event, ui ) {
-					ui.helper.css({
-						top: $(event.currentTarget).offset().top + "px",
-						left: $(event.currentTarget).offset().left + "px",
-						width: $(event.currentTarget).width() + "px",
-						height: $(event.currentTarget).height() + "px"
-					});
-					$(event.currentTarget).addClass('dragPlaceholder');
-				},
-
-				stop: function( event, ui ) {
-					$(event.target).removeClass('dragPlaceholder');
-				}
-
-			});
+			(function(el) {
+				interact(el).draggable({
+					listeners: {
+						start: function(e) {
+							var rect = e.target.getBoundingClientRect();
+							window._ftCurrentDragClone = e.target.cloneNode(true);
+							window._ftCurrentDragClone.style.cssText = 'position:fixed;z-index:1000;pointer-events:none;width:' + rect.width + 'px;left:' + rect.left + 'px;top:' + rect.top + 'px;';
+							document.body.appendChild(window._ftCurrentDragClone);
+							e.target.classList.add('dragPlaceholder');
+							e.target.dataset.ftX = 0;
+							e.target.dataset.ftY = 0;
+						},
+						move: function(e) {
+							var x = (parseFloat(e.target.dataset.ftX) || 0) + e.dx;
+							var y = (parseFloat(e.target.dataset.ftY) || 0) + e.dy;
+							e.target.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+							e.target.dataset.ftX = x;
+							e.target.dataset.ftY = y;
+							if (window._ftCurrentDragClone) {
+								window._ftCurrentDragClone.style.left = (parseFloat(window._ftCurrentDragClone.style.left) + e.dx) + 'px';
+								window._ftCurrentDragClone.style.top  = (parseFloat(window._ftCurrentDragClone.style.top)  + e.dy) + 'px';
+							}
+						},
+						end: function(e) {
+							e.target.style.transform = '';
+							e.target.dataset.ftX = 0;
+							e.target.dataset.ftY = 0;
+							e.target.classList.remove('dragPlaceholder');
+							if (window._ftCurrentDragClone) { window._ftCurrentDragClone.remove(); window._ftCurrentDragClone = null; }
+						}
+					}
+				});
+			}(resourceThumb[0]));
 
 			resourceList.append(resourceThumb);
 

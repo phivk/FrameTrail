@@ -49,15 +49,20 @@
 	background-color: var(--primary-fg-color);
 	border: 2px solid #000;
 	border-radius: 3px;
-	display: none;
-}
-
-.overlayTimeline .timelineElement.ui-resizable:hover .ui-resizable-handle {
-	display: block;
 }
 
 .overlayTimeline .timelineElement.ui-resizable .ui-resizable-handle:hover {
 	background-color: var(--primary-fg-color);
+}
+
+.overlayTimeline .timelineElement.ui-resizable .ui-resizable-handle.ui-resizable-e {
+	right: -2px;
+	cursor: ew-resize;
+}
+
+.overlayTimeline .timelineElement.ui-resizable .ui-resizable-handle.ui-resizable-w {
+	left: -2px;
+	cursor: ew-resize;
 }
 
 .overlayTimeline .timelineElement.ui-resizable .ui-resizable-handle.ui-resizable-ne {

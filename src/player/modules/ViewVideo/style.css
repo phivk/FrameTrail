@@ -112,6 +112,7 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     z-index: 101;
     pointer-events: all;
     overflow: visible;
+    cursor: pointer;
 }
 
 .playerContainer.livestream .playerProgress {
@@ -135,8 +136,13 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
 }
 
 .playerContainer .playerProgress .ui-slider-range {
+    position: absolute;
+    left: 0;
+    width: 0;
     height: 100%;
     background: var(--primary-fg-color);
+    display: block;
+    pointer-events: none;
 }
 
 .playerContainer .playerProgress:hover .ui-slider-handle {

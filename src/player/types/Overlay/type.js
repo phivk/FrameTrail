@@ -674,19 +674,17 @@ FrameTrail.defineType(
                  */
                 stopEditing: function () {
 
-                    if (this.timelineElement.data('ui-draggable')) {
-                        this.timelineElement.draggable('destroy');
+                    if (this.timelineElement[0]) {
+                        try { interact(this.timelineElement[0]).unset(); } catch (ex) {}
                     }
-                    if (this.timelineElement.data('ui-resizable')) {
-                        this.timelineElement.resizable('destroy');
-                    }
+                    this.timelineElement.removeClass('ui-draggable ui-draggable-dragging ui-resizable');
+                    this.timelineElement.find('.ui-resizable-handle').remove();
 
-                    if (this.overlayElement.data('ui-draggable')) {
-                        this.overlayElement.draggable('destroy');
+                    if (this.overlayElement[0]) {
+                        try { interact(this.overlayElement[0]).unset(); } catch (ex) {}
                     }
-                    if (this.overlayElement.data('ui-resizable')) {
-                        this.overlayElement.resizable('destroy');
-                    }
+                    this.overlayElement.removeClass('ui-draggable ui-resizable');
+                    this.overlayElement.find('.ui-resizable-handle').remove();
 
                     this.timelineElement.unbind('click.edit');
                     this.overlayElement.unbind('click.edit');
@@ -709,122 +707,135 @@ FrameTrail.defineType(
                         oldStart,
                         oldEnd;
 
+                    var el = this.timelineElement[0];
+                    this.timelineElement.addClass('ui-draggable');
 
-                    this.timelineElement.draggable({
+                    interact(el).draggable({
+                        ignoreFrom: '.ui-resizable-handle',
+                        listeners: {
+                            start: function(e) {
 
-                        axis:        'x',
-                        containment: 'parent',
-                        snapTolerance: 10,
-
-                        drag: function(event, ui) {
-
-
-                            var closestGridline = FrameTrail.module('ViewVideo').closestToOffset($(FrameTrail.getState('target')).find('.gridline'), {
-                                    left: ui.position.left,
-                                    top: ui.position.top
-                                }),
-                                snapTolerance = $(this).draggable('option', 'snapTolerance');
-
-                            if (closestGridline) {
-
-                                $(FrameTrail.getState('target')).find('.gridline').css('background-color', '#ff9900');
-
-                                if ( ui.position.left - snapTolerance < closestGridline.position().left &&
-                                     ui.position.left + snapTolerance > closestGridline.position().left ) {
-
-                                    ui.position.left = closestGridline.position().left;
-
-                                    closestGridline.css('background-color', '#00ff00');
-
+                                if (!self.permanentFocusState) {
+                                    FrameTrail.module('OverlaysController').overlayInFocus = self;
                                 }
-                            }
 
-                            var HypervideoModel = FrameTrail.module('HypervideoModel'),
-                                videoDuration = HypervideoModel.duration,
-                                leftPercent   = 100 * (ui.helper.position().left / ui.helper.parent().width()),
-                                widthPercent  = 100 * (ui.helper.width() / ui.helper.parent().width()),
-                                newStartValue = (leftPercent * (videoDuration / 100)) + HypervideoModel.offsetIn,
-                                newEndValue   = ((leftPercent + widthPercent) * (videoDuration / 100)) + HypervideoModel.offsetIn;
+                                // Capture old values for undo
+                                oldStart = self.data.start;
+                                oldEnd   = self.data.end;
 
-                            FrameTrail.module('HypervideoController').currentTime = newStartValue;
-                            FrameTrail.module('OverlaysController').updateControlsStart(newStartValue);
-                            FrameTrail.module('OverlaysController').updateControlsEnd( newEndValue );
+                                e.target.dataset.ftX    = e.target.offsetLeft;
+                                e.target.dataset.ftRawX = e.target.offsetLeft;
+                                e.target.style.left     = e.target.offsetLeft + 'px';
+                                e.target.classList.add('ui-draggable-dragging');
 
+                            },
 
-                        },
+                            move: function(e) {
 
-                        start: function(event, ui) {
+                                var rawX = parseFloat(e.target.dataset.ftRawX) + e.dx;
+                                e.target.dataset.ftRawX = rawX;
+                                var x           = rawX;
+                                var parentWidth = e.target.parentElement.offsetWidth;
+                                var elWidth     = e.target.offsetWidth;
 
-                            if (!self.permanentFocusState) {
-                                FrameTrail.module('OverlaysController').overlayInFocus = self;
-                            }
+                                var closestGridline = FrameTrail.module('ViewVideo').closestToOffset(
+                                    $(FrameTrail.getState('target')).find('.gridline'),
+                                    { left: x, top: 0 }
+                                );
+                                var snapTolerance = 10;
 
-                            // Capture old values for undo
-                            oldStart = self.data.start;
-                            oldEnd = self.data.end;
+                                if (closestGridline) {
+                                    $(FrameTrail.getState('target')).find('.gridline').css('background-color', '#ff9900');
+                                    var glLeft = closestGridline.position().left;
+                                    if (x - snapTolerance < glLeft && x + snapTolerance > glLeft) {
+                                        x = glLeft;
+                                        closestGridline.css('background-color', '#00ff00');
+                                    }
+                                }
 
-                        },
+                                x = Math.max(0, Math.min(parentWidth - elWidth, x));
 
-                        stop: function(event, ui) {
+                                e.target.style.left  = x + 'px';
+                                e.target.dataset.ftX = x;
 
-                            if (!self.permanentFocusState) {
-                                FrameTrail.module('OverlaysController').overlayInFocus = null;
-                            }
+                                var HypervideoModel = FrameTrail.module('HypervideoModel'),
+                                    videoDuration = HypervideoModel.duration,
+                                    leftPercent   = 100 * (x / parentWidth),
+                                    widthPercent  = 100 * (elWidth / parentWidth),
+                                    newStartValue = (leftPercent * (videoDuration / 100)) + HypervideoModel.offsetIn,
+                                    newEndValue   = ((leftPercent + widthPercent) * (videoDuration / 100)) + HypervideoModel.offsetIn;
 
+                                FrameTrail.module('HypervideoController').currentTime = newStartValue;
+                                FrameTrail.module('OverlaysController').updateControlsStart(newStartValue);
+                                FrameTrail.module('OverlaysController').updateControlsEnd(newEndValue);
 
-                            var HypervideoModel = FrameTrail.module('HypervideoModel'),
-                                videoDuration = HypervideoModel.duration,
-                                leftPercent   = 100 * (ui.helper.position().left / ui.helper.parent().width()),
-                                widthPercent  = 100 * (ui.helper.width() / ui.helper.parent().width());
+                            },
 
-                            var newStart = (leftPercent * (videoDuration / 100)) + HypervideoModel.offsetIn;
-                            var newEnd = ((leftPercent + widthPercent) * (videoDuration / 100)) + HypervideoModel.offsetIn;
+                            end: function(e) {
 
-                            self.data.start = newStart;
-                            self.data.end = newEnd;
+                                if (!self.permanentFocusState) {
+                                    FrameTrail.module('OverlaysController').overlayInFocus = null;
+                                }
 
-                            self.updateTimelineElement();
+                                e.target.classList.remove('ui-draggable-dragging');
 
-                            FrameTrail.module('OverlaysController').stackTimelineView();
+                                var x           = parseFloat(e.target.dataset.ftX);
+                                var parentWidth = e.target.parentElement.offsetWidth;
+                                var elWidth     = e.target.offsetWidth;
 
-                            FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+                                var HypervideoModel = FrameTrail.module('HypervideoModel'),
+                                    videoDuration = HypervideoModel.duration,
+                                    leftPercent   = 100 * (x / parentWidth),
+                                    widthPercent  = 100 * (elWidth / parentWidth);
 
-                            // Register undo command for timeline drag
-                            (function(overlayId, capturedOldStart, capturedOldEnd, capturedNewStart, capturedNewEnd) {
-                                // Helper to find overlay by ID (in case it was deleted and restored)
-                                var findOverlay = function() {
-                                    var overlays = FrameTrail.module('HypervideoModel').overlays;
-                                    for (var i = 0; i < overlays.length; i++) {
-                                        if (overlays[i].data.created === overlayId) {
-                                            return overlays[i];
+                                var newStart = (leftPercent * (videoDuration / 100)) + HypervideoModel.offsetIn;
+                                var newEnd   = ((leftPercent + widthPercent) * (videoDuration / 100)) + HypervideoModel.offsetIn;
+
+                                self.data.start = newStart;
+                                self.data.end   = newEnd;
+
+                                self.updateTimelineElement();
+
+                                FrameTrail.module('OverlaysController').stackTimelineView();
+
+                                FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+
+                                // Register undo command for timeline drag
+                                (function(overlayId, capturedOldStart, capturedOldEnd, capturedNewStart, capturedNewEnd) {
+                                    var findOverlay = function() {
+                                        var overlays = FrameTrail.module('HypervideoModel').overlays;
+                                        for (var i = 0; i < overlays.length; i++) {
+                                            if (overlays[i].data.created === overlayId) {
+                                                return overlays[i];
+                                            }
                                         }
-                                    }
-                                    return null;
-                                };
-                                FrameTrail.module('UndoManager').register({
-                                    category: 'overlays',
-                                    description: self.labels['SidebarOverlays'] + ' Move',
-                                    undo: function() {
-                                        var overlay = findOverlay();
-                                        if (!overlay) return;
-                                        overlay.data.start = capturedOldStart;
-                                        overlay.data.end = capturedOldEnd;
-                                        overlay.updateTimelineElement();
-                                        FrameTrail.module('OverlaysController').stackTimelineView();
-                                        FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-                                    },
-                                    redo: function() {
-                                        var overlay = findOverlay();
-                                        if (!overlay) return;
-                                        overlay.data.start = capturedNewStart;
-                                        overlay.data.end = capturedNewEnd;
-                                        overlay.updateTimelineElement();
-                                        FrameTrail.module('OverlaysController').stackTimelineView();
-                                        FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-                                    }
-                                });
-                            })(self.data.created, oldStart, oldEnd, newStart, newEnd);
+                                        return null;
+                                    };
+                                    FrameTrail.module('UndoManager').register({
+                                        category: 'overlays',
+                                        description: self.labels['SidebarOverlays'] + ' Move',
+                                        undo: function() {
+                                            var overlay = findOverlay();
+                                            if (!overlay) return;
+                                            overlay.data.start = capturedOldStart;
+                                            overlay.data.end = capturedOldEnd;
+                                            overlay.updateTimelineElement();
+                                            FrameTrail.module('OverlaysController').stackTimelineView();
+                                            FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+                                        },
+                                        redo: function() {
+                                            var overlay = findOverlay();
+                                            if (!overlay) return;
+                                            overlay.data.start = capturedNewStart;
+                                            overlay.data.end = capturedNewEnd;
+                                            overlay.updateTimelineElement();
+                                            FrameTrail.module('OverlaysController').stackTimelineView();
+                                            FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+                                        }
+                                    });
+                                })(self.data.created, oldStart, oldEnd, newStart, newEnd);
 
+                            }
                         }
                     });
 
@@ -846,145 +857,171 @@ FrameTrail.defineType(
                         oldStart,
                         oldEnd;
 
+                    var el = this.timelineElement[0];
 
-                    this.timelineElement.resizable({
+                    // Inject resize handles if not yet present
+                    if (!el.querySelector('.ui-resizable-e')) {
+                        var handleE = document.createElement('div');
+                        handleE.className = 'ui-resizable-handle ui-resizable-e';
+                        el.appendChild(handleE);
+                    }
+                    if (!el.querySelector('.ui-resizable-w')) {
+                        var handleW = document.createElement('div');
+                        handleW.className = 'ui-resizable-handle ui-resizable-w';
+                        el.appendChild(handleW);
+                    }
+                    el.classList.add('ui-resizable');
 
-                        containment: 'parent',
-                        handles:     'e, w',
+                    interact(el).resizable({
+                        edges: { left: '.ui-resizable-w', right: '.ui-resizable-e' },
+                        listeners: {
+                            start: function(e) {
 
-                        resize: function(event, ui) {
+                                endHandleGrabbed = !!e.edges.right;
 
-                            var closestGridline = FrameTrail.module('ViewVideo').closestToOffset($(FrameTrail.getState('target')).find('.gridline'), {
-                                    left: (endHandleGrabbed ? (ui.position.left + ui.helper.width()) : ui.position.left),
-                                    top: ui.position.top
-                                }),
-                                snapTolerance = $(this).draggable('option', 'snapTolerance');
-
-                            if (closestGridline) {
-
-                                $(FrameTrail.getState('target')).find('.gridline').css('background-color', '#ff9900');
-
-                                if ( !endHandleGrabbed &&
-                                     ui.position.left - snapTolerance < closestGridline.position().left &&
-                                     ui.position.left + snapTolerance > closestGridline.position().left ) {
-
-                                    ui.position.left = closestGridline.position().left;
-                                    ui.size.width = ( ui.helper.width() + ( ui.helper.position().left - ui.position.left ) );
-
-                                    closestGridline.css('background-color', '#00ff00');
-
-                                } else if ( endHandleGrabbed &&
-                                            ui.position.left + ui.helper.width() - snapTolerance < closestGridline.position().left &&
-                                            ui.position.left + ui.helper.width() + snapTolerance > closestGridline.position().left ) {
-
-                                    ui.helper.width(closestGridline.position().left - ui.position.left);
-
-                                    closestGridline.css('background-color', '#00ff00');
-
+                                if (!self.permanentFocusState) {
+                                    FrameTrail.module('OverlaysController').overlayInFocus = self;
                                 }
-                            }
 
+                                // Capture old values for undo
+                                oldStart = self.data.start;
+                                oldEnd   = self.data.end;
 
-                            var HypervideoModel = FrameTrail.module('HypervideoModel'),
-                                videoDuration = HypervideoModel.duration,
-                                leftPercent   = 100 * (ui.position.left / ui.helper.parent().width()),
-                                widthPercent  = 100 * (ui.helper.width() / ui.helper.parent().width()),
-                                newValue;
+                                e.target.dataset.ftLeft  = e.target.offsetLeft;
+                                e.target.dataset.ftWidth = e.target.offsetWidth;
+                                e.target.style.left      = e.target.offsetLeft + 'px';
+                                e.target.style.width     = e.target.offsetWidth + 'px';
 
-                            if ( endHandleGrabbed ) {
+                            },
 
-                                newValue = ((leftPercent + widthPercent) * (videoDuration / 100)) + HypervideoModel.offsetIn;
-                                FrameTrail.module('HypervideoController').currentTime = newValue;
-                                FrameTrail.module('OverlaysController').updateControlsEnd( newValue );
+                            move: function(e) {
 
-                            } else {
+                                var newLeft    = parseFloat(e.target.dataset.ftLeft)  + e.deltaRect.left;
+                                var newWidth   = parseFloat(e.target.dataset.ftWidth) + e.deltaRect.width;
+                                var parentWidth = e.target.parentElement.offsetWidth;
 
-                                newValue = (leftPercent * (videoDuration / 100)) + HypervideoModel.offsetIn;
-                                FrameTrail.module('HypervideoController').currentTime = newValue;
-                                FrameTrail.module('OverlaysController').updateControlsStart(newValue);
+                                var checkLeft = endHandleGrabbed ? (newLeft + newWidth) : newLeft;
+                                var closestGridline = FrameTrail.module('ViewVideo').closestToOffset(
+                                    $(FrameTrail.getState('target')).find('.gridline'),
+                                    { left: checkLeft, top: 0 }
+                                );
+                                var snapTolerance = 10;
 
-                            }
+                                if (closestGridline) {
+                                    $(FrameTrail.getState('target')).find('.gridline').css('background-color', '#ff9900');
+                                    var glLeft = closestGridline.position().left;
+                                    if (!endHandleGrabbed &&
+                                        newLeft - snapTolerance < glLeft &&
+                                        newLeft + snapTolerance > glLeft) {
+                                        var diff = newLeft - glLeft;
+                                        newWidth += diff;
+                                        newLeft   = glLeft;
+                                        closestGridline.css('background-color', '#00ff00');
+                                    } else if (endHandleGrabbed &&
+                                               newLeft + newWidth - snapTolerance < glLeft &&
+                                               newLeft + newWidth + snapTolerance > glLeft) {
+                                        newWidth = glLeft - newLeft;
+                                        closestGridline.css('background-color', '#00ff00');
+                                    }
+                                }
 
-                            self.scaleOverlayElement();
+                                // Clamp to parent
+                                if (newLeft < 0)                      { newWidth += newLeft; newLeft = 0; }
+                                if (newLeft + newWidth > parentWidth) { newWidth = parentWidth - newLeft; }
+                                if (newWidth < 2)                     { newWidth = 2; }
 
+                                e.target.style.left      = newLeft + 'px';
+                                e.target.style.width     = newWidth + 'px';
+                                e.target.dataset.ftLeft  = newLeft;
+                                e.target.dataset.ftWidth = newWidth;
 
-                        },
+                                var HypervideoModel = FrameTrail.module('HypervideoModel'),
+                                    videoDuration = HypervideoModel.duration,
+                                    leftPercent   = 100 * (newLeft  / parentWidth),
+                                    widthPercent  = 100 * (newWidth / parentWidth),
+                                    newValue;
 
-                        start: function(event, ui) {
+                                if (endHandleGrabbed) {
+                                    newValue = ((leftPercent + widthPercent) * (videoDuration / 100)) + HypervideoModel.offsetIn;
+                                    FrameTrail.module('HypervideoController').currentTime = newValue;
+                                    FrameTrail.module('OverlaysController').updateControlsEnd(newValue);
+                                } else {
+                                    newValue = (leftPercent * (videoDuration / 100)) + HypervideoModel.offsetIn;
+                                    FrameTrail.module('HypervideoController').currentTime = newValue;
+                                    FrameTrail.module('OverlaysController').updateControlsStart(newValue);
+                                }
 
-                            if (!self.permanentFocusState) {
-                                FrameTrail.module('OverlaysController').overlayInFocus = self;
-                            }
+                                self.scaleOverlayElement();
 
-                            endHandleGrabbed = $(event.originalEvent.target).hasClass('ui-resizable-e');
+                            },
 
-                            // Capture old values for undo
-                            oldStart = self.data.start;
-                            oldEnd = self.data.end;
+                            end: function(e) {
 
-                        },
+                                if (!self.permanentFocusState) {
+                                    FrameTrail.module('OverlaysController').overlayInFocus = null;
+                                }
 
-                        stop: function(event, ui) {
+                                var finalLeft   = parseFloat(e.target.dataset.ftLeft);
+                                var finalWidth  = parseFloat(e.target.dataset.ftWidth);
+                                var parentWidth = e.target.parentElement.offsetWidth;
 
-                            if (!self.permanentFocusState) {
-                                FrameTrail.module('OverlaysController').overlayInFocus = null;
-                            }
+                                var HypervideoModel = FrameTrail.module('HypervideoModel'),
+                                    videoDuration = HypervideoModel.duration,
+                                    leftPercent   = 100 * (finalLeft  / parentWidth),
+                                    widthPercent  = 100 * (finalWidth / parentWidth);
 
+                                var newStart = (leftPercent * (videoDuration / 100)) + HypervideoModel.offsetIn;
+                                var newEnd   = ((leftPercent + widthPercent) * (videoDuration / 100)) + HypervideoModel.offsetIn;
 
-                            var HypervideoModel = FrameTrail.module('HypervideoModel'),
-                                videoDuration = HypervideoModel.duration,
-                                leftPercent  = 100 * (ui.helper.position().left / ui.helper.parent().width()),
-                                widthPercent = 100 * (ui.helper.width() / ui.helper.parent().width());
+                                self.data.start = newStart;
+                                self.data.end   = newEnd;
 
-                            var newStart = (leftPercent * (videoDuration / 100)) + HypervideoModel.offsetIn;
-                            var newEnd = ((leftPercent + widthPercent) * (videoDuration / 100)) + HypervideoModel.offsetIn;
+                                self.updateTimelineElement();
 
-                            self.data.start = newStart;
-                            self.data.end = newEnd;
+                                FrameTrail.module('OverlaysController').stackTimelineView();
 
-                            FrameTrail.module('OverlaysController').stackTimelineView();
+                                self.scaleOverlayElement();
 
-                            self.scaleOverlayElement();
+                                FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
 
-                            FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-
-                            // Register undo command for timeline resize
-                            (function(overlayId, capturedOldStart, capturedOldEnd, capturedNewStart, capturedNewEnd) {
-                                var findOverlay = function() {
-                                    var overlays = FrameTrail.module('HypervideoModel').overlays;
-                                    for (var i = 0; i < overlays.length; i++) {
-                                        if (overlays[i].data.created === overlayId) {
-                                            return overlays[i];
+                                // Register undo command for timeline resize
+                                (function(overlayId, capturedOldStart, capturedOldEnd, capturedNewStart, capturedNewEnd) {
+                                    var findOverlay = function() {
+                                        var overlays = FrameTrail.module('HypervideoModel').overlays;
+                                        for (var i = 0; i < overlays.length; i++) {
+                                            if (overlays[i].data.created === overlayId) {
+                                                return overlays[i];
+                                            }
                                         }
-                                    }
-                                    return null;
-                                };
-                                FrameTrail.module('UndoManager').register({
-                                    category: 'overlays',
-                                    description: self.labels['SidebarOverlays'] + ' Resize',
-                                    undo: function() {
-                                        var overlay = findOverlay();
-                                        if (!overlay) return;
-                                        overlay.data.start = capturedOldStart;
-                                        overlay.data.end = capturedOldEnd;
-                                        overlay.updateTimelineElement();
-                                        overlay.scaleOverlayElement();
-                                        FrameTrail.module('OverlaysController').stackTimelineView();
-                                        FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-                                    },
-                                    redo: function() {
-                                        var overlay = findOverlay();
-                                        if (!overlay) return;
-                                        overlay.data.start = capturedNewStart;
-                                        overlay.data.end = capturedNewEnd;
-                                        overlay.updateTimelineElement();
-                                        overlay.scaleOverlayElement();
-                                        FrameTrail.module('OverlaysController').stackTimelineView();
-                                        FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-                                    }
-                                });
-                            })(self.data.created, oldStart, oldEnd, newStart, newEnd);
+                                        return null;
+                                    };
+                                    FrameTrail.module('UndoManager').register({
+                                        category: 'overlays',
+                                        description: self.labels['SidebarOverlays'] + ' Resize',
+                                        undo: function() {
+                                            var overlay = findOverlay();
+                                            if (!overlay) return;
+                                            overlay.data.start = capturedOldStart;
+                                            overlay.data.end = capturedOldEnd;
+                                            overlay.updateTimelineElement();
+                                            overlay.scaleOverlayElement();
+                                            FrameTrail.module('OverlaysController').stackTimelineView();
+                                            FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+                                        },
+                                        redo: function() {
+                                            var overlay = findOverlay();
+                                            if (!overlay) return;
+                                            overlay.data.start = capturedNewStart;
+                                            overlay.data.end = capturedNewEnd;
+                                            overlay.updateTimelineElement();
+                                            overlay.scaleOverlayElement();
+                                            FrameTrail.module('OverlaysController').stackTimelineView();
+                                            FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+                                        }
+                                    });
+                                })(self.data.created, oldStart, oldEnd, newStart, newEnd);
 
+                            }
                         }
                     });
 
@@ -1005,106 +1042,127 @@ FrameTrail.defineType(
                     var self = this,
                         oldPosition;
 
-                    self.overlayElement.draggable({
+                    var el = this.overlayElement[0];
+                    this.overlayElement.addClass('ui-draggable');
 
-                        containment: 'parent',
+                    interact(el).draggable({
+                        ignoreFrom: '.ui-resizable-handle',
+                        listeners: {
+                            start: function(e) {
 
-                        drag: function(event, ui) {
+                                if (!self.permanentFocusState) {
+                                    FrameTrail.module('OverlaysController').overlayInFocus = self;
+                                }
 
-                            var parent =  ui.helper.parent();
-
-                            FrameTrail.module('OverlaysController').updateControlsDimensions({
-                                top:    ui.helper.position().top/parent.height()*100,
-                                left:   ui.helper.position().left/parent.width()*100,
-                                width:  ui.helper.width()/parent.width()*100,
-                                height: ui.helper.height()/parent.height()*100
-                            });
-
-                        },
-
-                        start: function(event, ui) {
-
-                            if (!self.permanentFocusState) {
-                                FrameTrail.module('OverlaysController').overlayInFocus = self;
-                            }
-
-                            // Capture old position for undo
-                            oldPosition = {
-                                top: self.data.position.top,
-                                left: self.data.position.left,
-                                width: self.data.position.width,
-                                height: self.data.position.height
-                            };
-
-                        },
-
-                        stop: function(event, ui) {
-
-                            if (!self.permanentFocusState) {
-                                FrameTrail.module('OverlaysController').overlayInFocus = null;
-                            }
-
-                            var parent = ui.helper.parent();
-
-                            var newPosition = {
-                                top:    ui.helper.position().top/parent.height()*100,
-                                left:   ui.helper.position().left/parent.width()*100,
-                                width:  ui.helper.width()/parent.width()*100,
-                                height: ui.helper.height()/parent.height()*100
-                            };
-
-                            self.data.position.top    = newPosition.top;
-                            self.data.position.left   = newPosition.left;
-                            self.data.position.width  = newPosition.width;
-                            self.data.position.height = newPosition.height;
-
-                            self.updateOverlayElement();
-
-                            FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-
-                            // Register undo command for overlay drag
-                            (function(overlayId, capturedOldPos, capturedNewPos) {
-                                var findOverlay = function() {
-                                    var overlays = FrameTrail.module('HypervideoModel').overlays;
-                                    for (var i = 0; i < overlays.length; i++) {
-                                        if (overlays[i].data.created === overlayId) {
-                                            return overlays[i];
-                                        }
-                                    }
-                                    return null;
+                                // Capture old position for undo
+                                oldPosition = {
+                                    top:    self.data.position.top,
+                                    left:   self.data.position.left,
+                                    width:  self.data.position.width,
+                                    height: self.data.position.height
                                 };
-                                FrameTrail.module('UndoManager').register({
-                                    category: 'overlays',
-                                    description: self.labels['SidebarOverlays'] + ' Move',
-                                    undo: function() {
-                                        var overlay = findOverlay();
-                                        if (!overlay) return;
-                                        overlay.data.position.top = capturedOldPos.top;
-                                        overlay.data.position.left = capturedOldPos.left;
-                                        overlay.data.position.width = capturedOldPos.width;
-                                        overlay.data.position.height = capturedOldPos.height;
-                                        // Clear any inline pixel styles set by jQuery UI
-                                        overlay.overlayElement.css({ top: '', left: '', width: '', height: '' });
-                                        overlay.updateOverlayElement();
-                                        overlay.scaleOverlayElement();
-                                        FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-                                    },
-                                    redo: function() {
-                                        var overlay = findOverlay();
-                                        if (!overlay) return;
-                                        overlay.data.position.top = capturedNewPos.top;
-                                        overlay.data.position.left = capturedNewPos.left;
-                                        overlay.data.position.width = capturedNewPos.width;
-                                        overlay.data.position.height = capturedNewPos.height;
-                                        // Clear any inline pixel styles set by jQuery UI
-                                        overlay.overlayElement.css({ top: '', left: '', width: '', height: '' });
-                                        overlay.updateOverlayElement();
-                                        overlay.scaleOverlayElement();
-                                        FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-                                    }
-                                });
-                            })(self.data.created, oldPosition, newPosition);
 
+                                // Convert % positioning to px for interaction
+                                e.target.dataset.ftX = e.target.offsetLeft;
+                                e.target.dataset.ftY = e.target.offsetTop;
+                                e.target.style.left  = e.target.offsetLeft + 'px';
+                                e.target.style.top   = e.target.offsetTop  + 'px';
+
+                            },
+
+                            move: function(e) {
+
+                                var x = parseFloat(e.target.dataset.ftX) + e.dx;
+                                var y = parseFloat(e.target.dataset.ftY) + e.dy;
+                                var parent = e.target.parentElement;
+                                var maxX = parent.offsetWidth  - e.target.offsetWidth;
+                                var maxY = parent.offsetHeight - e.target.offsetHeight;
+
+                                x = Math.max(0, Math.min(maxX, x));
+                                y = Math.max(0, Math.min(maxY, y));
+
+                                e.target.style.left  = x + 'px';
+                                e.target.style.top   = y + 'px';
+                                e.target.dataset.ftX = x;
+                                e.target.dataset.ftY = y;
+
+                                FrameTrail.module('OverlaysController').updateControlsDimensions({
+                                    top:    y / parent.offsetHeight * 100,
+                                    left:   x / parent.offsetWidth  * 100,
+                                    width:  e.target.offsetWidth  / parent.offsetWidth  * 100,
+                                    height: e.target.offsetHeight / parent.offsetHeight * 100
+                                });
+
+                            },
+
+                            end: function(e) {
+
+                                if (!self.permanentFocusState) {
+                                    FrameTrail.module('OverlaysController').overlayInFocus = null;
+                                }
+
+                                var x = parseFloat(e.target.dataset.ftX);
+                                var y = parseFloat(e.target.dataset.ftY);
+                                var parent = e.target.parentElement;
+
+                                var newPosition = {
+                                    top:    y / parent.offsetHeight * 100,
+                                    left:   x / parent.offsetWidth  * 100,
+                                    width:  e.target.offsetWidth  / parent.offsetWidth  * 100,
+                                    height: e.target.offsetHeight / parent.offsetHeight * 100
+                                };
+
+                                self.data.position.top    = newPosition.top;
+                                self.data.position.left   = newPosition.left;
+                                self.data.position.width  = newPosition.width;
+                                self.data.position.height = newPosition.height;
+
+                                self.updateOverlayElement();
+
+                                FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+
+                                // Register undo command for overlay drag
+                                (function(overlayId, capturedOldPos, capturedNewPos) {
+                                    var findOverlay = function() {
+                                        var overlays = FrameTrail.module('HypervideoModel').overlays;
+                                        for (var i = 0; i < overlays.length; i++) {
+                                            if (overlays[i].data.created === overlayId) {
+                                                return overlays[i];
+                                            }
+                                        }
+                                        return null;
+                                    };
+                                    FrameTrail.module('UndoManager').register({
+                                        category: 'overlays',
+                                        description: self.labels['SidebarOverlays'] + ' Move',
+                                        undo: function() {
+                                            var overlay = findOverlay();
+                                            if (!overlay) return;
+                                            overlay.data.position.top    = capturedOldPos.top;
+                                            overlay.data.position.left   = capturedOldPos.left;
+                                            overlay.data.position.width  = capturedOldPos.width;
+                                            overlay.data.position.height = capturedOldPos.height;
+                                            overlay.overlayElement.css({ top: '', left: '', width: '', height: '' });
+                                            overlay.updateOverlayElement();
+                                            overlay.scaleOverlayElement();
+                                            FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+                                        },
+                                        redo: function() {
+                                            var overlay = findOverlay();
+                                            if (!overlay) return;
+                                            overlay.data.position.top    = capturedNewPos.top;
+                                            overlay.data.position.left   = capturedNewPos.left;
+                                            overlay.data.position.width  = capturedNewPos.width;
+                                            overlay.data.position.height = capturedNewPos.height;
+                                            overlay.overlayElement.css({ top: '', left: '', width: '', height: '' });
+                                            overlay.updateOverlayElement();
+                                            overlay.scaleOverlayElement();
+                                            FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+                                        }
+                                    });
+                                })(self.data.created, oldPosition, newPosition);
+
+                            }
                         }
                     });
 
@@ -1124,108 +1182,156 @@ FrameTrail.defineType(
                     var self = this,
                         oldPosition;
 
-                    self.overlayElement.resizable({
+                    var el = this.overlayElement[0];
+                    this.overlayElement.addClass('ui-resizable');
 
-                        containment: 'parent',
-                        handles: 'ne, se, sw, nw',
+                    // Inject corner handles if not yet present
+                    ['ne', 'se', 'sw', 'nw'].forEach(function(dir) {
+                        if (!el.querySelector('.ui-resizable-' + dir)) {
+                            var h = document.createElement('div');
+                            h.className = 'ui-resizable-handle ui-resizable-' + dir;
+                            el.appendChild(h);
+                        }
+                    });
 
-                        resize: function(event, ui) {
-
-                            var parent =  ui.helper.parent();
-
-                            FrameTrail.module('OverlaysController').updateControlsDimensions({
-                                top:    ui.helper.position().top/parent.height()*100,
-                                left:   ui.helper.position().left/parent.width()*100,
-                                width:  ui.helper.width()/parent.width()*100,
-                                height: ui.helper.height()/parent.height()*100
-                            })
-
+                    interact(el).resizable({
+                        edges: {
+                            top:    '.ui-resizable-nw, .ui-resizable-ne',
+                            right:  '.ui-resizable-ne, .ui-resizable-se',
+                            bottom: '.ui-resizable-se, .ui-resizable-sw',
+                            left:   '.ui-resizable-sw, .ui-resizable-nw'
                         },
+                        listeners: {
+                            start: function(e) {
 
-                        start: function(event, ui) {
+                                if (!self.permanentFocusState) {
+                                    FrameTrail.module('OverlaysController').overlayInFocus = self;
+                                }
 
-                            if (!self.permanentFocusState) {
-                                FrameTrail.module('OverlaysController').overlayInFocus = self;
-                            }
-
-                            // Capture old position for undo
-                            oldPosition = {
-                                top: self.data.position.top,
-                                left: self.data.position.left,
-                                width: self.data.position.width,
-                                height: self.data.position.height
-                            };
-
-                        },
-
-                        stop: function(event, ui) {
-
-                            if (!self.permanentFocusState) {
-                                FrameTrail.module('OverlaysController').overlayInFocus = null;
-                            }
-
-
-                            var parent = ui.helper.parent();
-
-                            var newPosition = {
-                                top:    ui.helper.position().top/parent.height()*100,
-                                left:   ui.helper.position().left/parent.width()*100,
-                                width:  ui.helper.width()/parent.width()*100,
-                                height: ui.helper.height()/parent.height()*100
-                            };
-
-                            self.data.position.top    = newPosition.top;
-                            self.data.position.left   = newPosition.left;
-                            self.data.position.width  = newPosition.width;
-                            self.data.position.height = newPosition.height;
-
-                            self.updateOverlayElement();
-
-                            FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-
-                            // Register undo command for overlay resize
-                            (function(overlayId, capturedOldPos, capturedNewPos) {
-                                var findOverlay = function() {
-                                    var overlays = FrameTrail.module('HypervideoModel').overlays;
-                                    for (var i = 0; i < overlays.length; i++) {
-                                        if (overlays[i].data.created === overlayId) {
-                                            return overlays[i];
-                                        }
-                                    }
-                                    return null;
+                                // Capture old position for undo
+                                oldPosition = {
+                                    top:    self.data.position.top,
+                                    left:   self.data.position.left,
+                                    width:  self.data.position.width,
+                                    height: self.data.position.height
                                 };
-                                FrameTrail.module('UndoManager').register({
-                                    category: 'overlays',
-                                    description: self.labels['SidebarOverlays'] + ' Resize',
-                                    undo: function() {
-                                        var overlay = findOverlay();
-                                        if (!overlay) return;
-                                        overlay.data.position.top = capturedOldPos.top;
-                                        overlay.data.position.left = capturedOldPos.left;
-                                        overlay.data.position.width = capturedOldPos.width;
-                                        overlay.data.position.height = capturedOldPos.height;
-                                        // Clear any inline pixel styles set by jQuery UI
-                                        overlay.overlayElement.css({ top: '', left: '', width: '', height: '' });
-                                        overlay.updateOverlayElement();
-                                        overlay.scaleOverlayElement();
-                                        FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-                                    },
-                                    redo: function() {
-                                        var overlay = findOverlay();
-                                        if (!overlay) return;
-                                        overlay.data.position.top = capturedNewPos.top;
-                                        overlay.data.position.left = capturedNewPos.left;
-                                        overlay.data.position.width = capturedNewPos.width;
-                                        overlay.data.position.height = capturedNewPos.height;
-                                        // Clear any inline pixel styles set by jQuery UI
-                                        overlay.overlayElement.css({ top: '', left: '', width: '', height: '' });
-                                        overlay.updateOverlayElement();
-                                        overlay.scaleOverlayElement();
-                                        FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-                                    }
-                                });
-                            })(self.data.created, oldPosition, newPosition);
 
+                                // Convert % positioning to px for interaction
+                                e.target.dataset.ftLeft   = e.target.offsetLeft;
+                                e.target.dataset.ftTop    = e.target.offsetTop;
+                                e.target.dataset.ftWidth  = e.target.offsetWidth;
+                                e.target.dataset.ftHeight = e.target.offsetHeight;
+                                e.target.style.left   = e.target.offsetLeft   + 'px';
+                                e.target.style.top    = e.target.offsetTop    + 'px';
+                                e.target.style.width  = e.target.offsetWidth  + 'px';
+                                e.target.style.height = e.target.offsetHeight + 'px';
+
+                            },
+
+                            move: function(e) {
+
+                                var newLeft   = parseFloat(e.target.dataset.ftLeft)   + e.deltaRect.left;
+                                var newTop    = parseFloat(e.target.dataset.ftTop)    + e.deltaRect.top;
+                                var newWidth  = parseFloat(e.target.dataset.ftWidth)  + e.deltaRect.width;
+                                var newHeight = parseFloat(e.target.dataset.ftHeight) + e.deltaRect.height;
+                                var parent    = e.target.parentElement;
+
+                                // Clamp to parent
+                                if (newLeft < 0)                        { newWidth  += newLeft;  newLeft = 0; }
+                                if (newTop  < 0)                        { newHeight += newTop;   newTop  = 0; }
+                                if (newLeft + newWidth  > parent.offsetWidth)  { newWidth  = parent.offsetWidth  - newLeft; }
+                                if (newTop  + newHeight > parent.offsetHeight) { newHeight = parent.offsetHeight - newTop;  }
+                                if (newWidth  < 5) { newWidth  = 5; }
+                                if (newHeight < 5) { newHeight = 5; }
+
+                                e.target.style.left   = newLeft   + 'px';
+                                e.target.style.top    = newTop    + 'px';
+                                e.target.style.width  = newWidth  + 'px';
+                                e.target.style.height = newHeight + 'px';
+                                e.target.dataset.ftLeft   = newLeft;
+                                e.target.dataset.ftTop    = newTop;
+                                e.target.dataset.ftWidth  = newWidth;
+                                e.target.dataset.ftHeight = newHeight;
+
+                                FrameTrail.module('OverlaysController').updateControlsDimensions({
+                                    top:    newTop    / parent.offsetHeight * 100,
+                                    left:   newLeft   / parent.offsetWidth  * 100,
+                                    width:  newWidth  / parent.offsetWidth  * 100,
+                                    height: newHeight / parent.offsetHeight * 100
+                                });
+
+                            },
+
+                            end: function(e) {
+
+                                if (!self.permanentFocusState) {
+                                    FrameTrail.module('OverlaysController').overlayInFocus = null;
+                                }
+
+                                var finalLeft   = parseFloat(e.target.dataset.ftLeft);
+                                var finalTop    = parseFloat(e.target.dataset.ftTop);
+                                var finalWidth  = parseFloat(e.target.dataset.ftWidth);
+                                var finalHeight = parseFloat(e.target.dataset.ftHeight);
+                                var parent      = e.target.parentElement;
+
+                                var newPosition = {
+                                    top:    finalTop    / parent.offsetHeight * 100,
+                                    left:   finalLeft   / parent.offsetWidth  * 100,
+                                    width:  finalWidth  / parent.offsetWidth  * 100,
+                                    height: finalHeight / parent.offsetHeight * 100
+                                };
+
+                                self.data.position.top    = newPosition.top;
+                                self.data.position.left   = newPosition.left;
+                                self.data.position.width  = newPosition.width;
+                                self.data.position.height = newPosition.height;
+
+                                self.updateOverlayElement();
+
+                                FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+
+                                // Register undo command for overlay resize
+                                (function(overlayId, capturedOldPos, capturedNewPos) {
+                                    var findOverlay = function() {
+                                        var overlays = FrameTrail.module('HypervideoModel').overlays;
+                                        for (var i = 0; i < overlays.length; i++) {
+                                            if (overlays[i].data.created === overlayId) {
+                                                return overlays[i];
+                                            }
+                                        }
+                                        return null;
+                                    };
+                                    FrameTrail.module('UndoManager').register({
+                                        category: 'overlays',
+                                        description: self.labels['SidebarOverlays'] + ' Resize',
+                                        undo: function() {
+                                            var overlay = findOverlay();
+                                            if (!overlay) return;
+                                            overlay.data.position.top    = capturedOldPos.top;
+                                            overlay.data.position.left   = capturedOldPos.left;
+                                            overlay.data.position.width  = capturedOldPos.width;
+                                            overlay.data.position.height = capturedOldPos.height;
+                                            overlay.overlayElement.css({ top: '', left: '', width: '', height: '' });
+                                            overlay.updateOverlayElement();
+                                            overlay.scaleOverlayElement();
+                                            FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+                                        },
+                                        redo: function() {
+                                            var overlay = findOverlay();
+                                            if (!overlay) return;
+                                            overlay.data.position.top    = capturedNewPos.top;
+                                            overlay.data.position.left   = capturedNewPos.left;
+                                            overlay.data.position.width  = capturedNewPos.width;
+                                            overlay.data.position.height = capturedNewPos.height;
+                                            overlay.overlayElement.css({ top: '', left: '', width: '', height: '' });
+                                            overlay.updateOverlayElement();
+                                            overlay.scaleOverlayElement();
+                                            FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+                                        }
+                                    });
+                                })(self.data.created, oldPosition, newPosition);
+
+                            }
                         }
                     });
 

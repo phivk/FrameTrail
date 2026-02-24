@@ -1726,19 +1726,19 @@ FrameTrail.defineType(
 
 
                         var dialogTitle = (isNew) ? self.labels['SettingsContentViewNew'] : self.labels['SettingsContentViewEdit'],
-                            editDialog = $('<div class="editContentViewDialog" title="'+ dialogTitle +'"></div>');
+                            editDialog = $('<div class="editContentViewDialog"></div>');
 
                         editDialog.append(self.renderContentViewPreviewEditingUI());
 
-                        editDialog.dialog({
+                        var editDialogCtrl = FrameTrailDialog({
+                            title:     dialogTitle,
+                            content:   editDialog,
                             resizable: false,
-                            draggable: false,
-                            width: 814,
-                            height: 600,
-                            modal: true,
+                            width:     814,
+                            height:    600,
+                            modal:     true,
                             close: function() {
-                                $(this).dialog('close');
-                                $(this).remove();
+                                editDialogCtrl.destroy();
                                 animationDiv.animate({
                                     top: originOffset.top + 'px',
                                     left: originOffset.left + 'px',
@@ -1748,12 +1748,8 @@ FrameTrail.defineType(
                                     $('.contentViewAnimationDiv').remove();
                                 });
                             },
-                            closeOnEscape: true,
-                            open: function( event, ui ) {
-                                $('.ui-widget-overlay').click(function() {
-                                    editDialog.dialog('close');
-                                });
-                                editDialog.find('.cm6-wrapper').each(function() {
+                            open: function() {
+                                $(this).find('.cm6-wrapper').each(function() {
                                     if (this._cm6view) { this._cm6view.requestMeasure(); }
                                 });
                             },
@@ -1797,7 +1793,7 @@ FrameTrail.defineType(
                                             });
                                         })(self, oldContentViewData, JSON.parse(JSON.stringify(newContentViewData)), self.labels);
 
-                                        $(this).dialog( 'close' );
+                                        editDialogCtrl.close();
 
                                         var currentTime = FrameTrail.module('HypervideoController').currentTime;
                                         self.updateTimedStateOfContentViews(currentTime);
@@ -1805,7 +1801,7 @@ FrameTrail.defineType(
                                 },
                                 { text: self.labels['GenericCancel'],
                                     click: function() {
-                                        $(this).dialog( 'close' );
+                                        editDialogCtrl.close();
                                     }
                                 }
                             ]

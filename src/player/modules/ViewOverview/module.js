@@ -138,16 +138,18 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
 
                         if ( FrameTrail.getState('editMode') && FrameTrail.getState('unsavedChanges') ) {
 
-                            var confirmDialog = $('<div class="confirmSaveChanges" title="'+ labels['MessageSaveChangesQuestionShort'] +'">'
+                            var confirmDialog = $('<div class="confirmSaveChanges">'
                                                 + '    <div class="message active">'+ labels['MessageSaveChanges'] +'</div>'
                                                 + '    <p>'+ labels['MessageSaveChangesQuestion'] +'</p>'
                                                 + '</div>');
 
-                            confirmDialog.dialog({
+                            var confirmDialogCtrl = FrameTrailDialog({
+                              title:     labels['MessageSaveChangesQuestionShort'],
+                              content:   confirmDialog,
                               resizable: false,
-                              modal: true,
+                              modal:     true,
                               close: function() {
-                                confirmDialog.remove();
+                                confirmDialogCtrl.destroy();
                               },
                               buttons: {
                                 'Yes': function() {
@@ -162,7 +164,7 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
 
                                         FrameTrail.changeState('editMode', false);
 
-                                        confirmDialog.dialog('close');
+                                        confirmDialogCtrl.close();
 
                                         OverviewList.find('.hypervideoThumb.activeHypervideo').removeClass('activeHypervideo');
                                         OverviewList.find('.hypervideoThumb[data-hypervideoid="'+ newHypervideoID +'"]').addClass('activeHypervideo');
@@ -176,14 +178,14 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
 
                                     FrameTrail.changeState('unsavedChanges', false);
 
-                                    confirmDialog.dialog('close');
+                                    confirmDialogCtrl.close();
 
                                     // TODO: Reload new hypervideo
                                     window.location.reload();
 
                                 },
                                 Cancel: function() {
-                                  confirmDialog.dialog('close');
+                                  confirmDialogCtrl.close();
                                 }
                               }
                             });
