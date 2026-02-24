@@ -76,6 +76,90 @@
      * @param {Function} success
      * @param {Function} fail
      */
+
+
+    /**
+     * Parse the start time from a W3C media fragment selector value (e.g. "t=1.5,3.2").
+     * @private
+     */
+    function _parseTimeStart(selectorValue) {
+        var m = /t=([\d.]+)/.exec(selectorValue);
+        return m ? parseFloat(m[1]) : 0;
+    }
+
+    /**
+     * Parse the end time from a W3C media fragment selector value (e.g. "t=1.5,3.2").
+     * @private
+     */
+    function _parseTimeEnd(selectorValue) {
+        var m = /t=[\d.]+,([\d.]+)/.exec(selectorValue);
+        return m ? parseFloat(m[1]) : 0;
+    }
+
+    /**
+     * Parse xywh=percent spatial selector into {left, top, width, height}.
+     * Returns {} on failure.
+     * @private
+     */
+    function _parseSpatialSelector(selectorValue) {
+        try {
+            var m = /xywh=percent:([\d.]+),([\d.]+),([\d.]+),([\d.]+)/.exec(selectorValue);
+            return { left: parseFloat(m[1]), top: parseFloat(m[2]), width: parseFloat(m[3]), height: parseFloat(m[4]) };
+        } catch (_) { return {}; }
+    }
+
+    /**
+     * Normalise a single W3C annotation object into the internal FrameTrail format.
+     * @param  {Object} item    Raw W3C annotation object
+     * @param  {Object} source  Source descriptor { frametrail, url }
+     * @return {Object}         Internal annotation object
+     * @private
+     */
+    function _normalizeAnnotation(item, source) {
+        var annotation = {
+            "name":       item.body['frametrail:name'],
+            "creator":    item.creator.nickname,
+            "creatorId":  item.creator.id,
+            "created":    (new Date(item.created)).getTime(),
+            "type":       item.body['frametrail:type'],
+            "uri": (function () {
+                        if (item["frametrail:uri"]) { return item["frametrail:uri"]; }
+                        else if (item.body["frametrail:type"] == 'entity') { return item.body.source; }
+                        else { return null; }
+                    })(),
+            "src": (function () {
+                        if (item.body["frametrail:type"] === 'location') { return null; }
+                        return (['codesnippet', 'text', 'quiz', 'entity', 'webpage', 'wikipedia'].indexOf(item.body["frametrail:type"]) >= 0)
+                                ? item.body.value
+                                : item.body.source;
+                    })(),
+            "thumb":      item.body['frametrail:thumb'],
+            "start":      _parseTimeStart(item.target.selector.value),
+            "end":        _parseTimeEnd(item.target.selector.value),
+            "resourceId": item.body["frametrail:resourceId"],
+            "attributes": item.body['frametrail:attributes'] || {},
+            "tags":       item['frametrail:tags'],
+            "source":     source,
+            "graphData":  item['frametrail:graphdata']     || null,
+            "graphDataType": item['frametrail:graphdatatype'] || null
+        };
+
+        if (annotation.type === 'location') {
+            annotation.attributes.lat         = parseFloat(item.body['frametrail:attributes'].lat);
+            annotation.attributes.lon         = parseFloat(item.body['frametrail:attributes'].lon);
+            annotation.attributes.boundingBox = item.body['frametrail:attributes'].boundingBox;
+        }
+
+        if (annotation.type === 'video') {
+            annotation.startOffset = (item.body.selector && item.body.selector.value)
+                                     ? _parseTimeStart(item.body.selector.value) : 0;
+            annotation.endOffset   = (item.body.selector && item.body.selector.value)
+                                     ? _parseTimeEnd(item.body.selector.value)   : 0;
+        }
+
+        return annotation;
+    }
+
     function loadConfigData(success, fail) {
 
         var configInitOptions = FrameTrail.getState('config');
@@ -634,28 +718,16 @@
                             "type": contentItem.body['frametrail:type'],
                             "src":    contentItem.body.source
                                    || contentItem.body.value,
-                            "start": parseFloat(/t=(\d+\.?\d*),(\d+\.?\d*)/g.exec(contentItem.target.selector.value)[1]),
-                            "end": parseFloat(/t=(\d+\.?\d*),(\d+\.?\d*)/g.exec(contentItem.target.selector.value)[2]),
+                            "start": _parseTimeStart(contentItem.target.selector.value),
+                            "end": _parseTimeEnd(contentItem.target.selector.value),
                             "startOffset": (contentItem.body.selector && contentItem.body.selector.value)
-                                            ? parseFloat(/t=(\d+\.?\d*),(\d+\.?\d*)/g.exec(contentItem.body.selector.value)[1])
+                                            ? _parseTimeStart(contentItem.body.selector.value)
                                             : 0,
                             "endOffset": (contentItem.body.selector && contentItem.body.selector.value)
-                                            ? parseFloat(/t=(\d+\.?\d*),(\d+\.?\d*)/g.exec(contentItem.body.selector.value)[2])
+                                            ? _parseTimeEnd(contentItem.body.selector.value)
                                             : 0,
                             "attributes": (contentItem.body["frametrail:attributes"]) ? contentItem.body["frametrail:attributes"] : contentItem["frametrail:attributes"],
-                            "position": (function () {
-                                if (!contentItem.target.selector) { return {}; }
-                                try {
-                                    var match = /xywh=percent:(\d+\.?\d*),(\d+\.?\d*),(\d+\.?\d*),(\d+\.?\d*)/g
-                                                .exec(contentItem.target.selector.value);
-                                    return {
-                                        "top": parseFloat(match[2]),
-                                        "left": parseFloat(match[1]),
-                                        "width": parseFloat(match[3]),
-                                        "height": parseFloat(match[4])
-                                    };
-                                } catch (_) { return {}; }
-                            })(),
+                            "position": _parseSpatialSelector(contentItem.target.selector.value),
                             "events": contentItem["frametrail:events"],
                             "tags": contentItem["frametrail:tags"]
                         });
@@ -673,7 +745,7 @@
                             "creatorId": contentItem.creator.id,
                             "created": (new Date(contentItem.created)).getTime(),
                             "snippet": contentItem.body.value,
-                            "start": parseFloat(/t=(\d+\.?\d*)/g.exec(contentItem.target.selector.value)[1]),
+                            "start": _parseTimeStart(contentItem.target.selector.value),
                             "attributes": (contentItem.body['frametrail:attributes']) ? contentItem.body['frametrail:attributes'] : contentItem['frametrail:attributes'],
                             "tags": contentItem['frametrail:tags']
                         });
@@ -767,59 +839,7 @@
                 }, function (data) {
 
                     for (var i in data) {
-
-                        annotations.push({
-                            "name": data[i].body['frametrail:name'],
-                            "creator": data[i].creator.nickname,
-                            "creatorId": data[i].creator.id,
-                            "created": (new Date(data[i].created)).getTime(),
-                            "type": data[i].body['frametrail:type'],
-                            "uri": (function () {
-                                        if (data[i]["frametrail:uri"]) { 
-                                            return data[i]["frametrail:uri"]; 
-                                        } else if (data[i].body["frametrail:type"] == 'entity') {
-                                            return data[i].body.source
-                                        } else {
-                                            return null;
-                                        }
-                                    })(),
-                            "src": (function () {
-                                        if (data[i].body["frametrail:type"] === 'location') { return null; }
-                                        return (['codesnippet', 'text', 'quiz', 'entity', 'webpage', 'wikipedia'].indexOf( data[i].body["frametrail:type"] ) >= 0)
-                                                ? data[i].body.value
-                                                : data[i].body.source
-                                    })(),
-                            "thumb": data[i].body['frametrail:thumb'],
-                            "start": parseFloat(/t=(\d+\.?\d*)/g.exec(data[i].target.selector.value)[1]),
-                            "end": parseFloat(/t=(\d+\.?\d*),(\d+\.?\d*)/g.exec(data[i].target.selector.value)[2]),
-                            "resourceId": data[i].body["frametrail:resourceId"],
-                            "attributes": data[i].body['frametrail:attributes'] || {},
-                            "tags": data[i]['frametrail:tags'],
-                            "source": {
-                                frametrail: true,
-                                url: url
-                            },
-                            "graphData": (data[i]['frametrail:graphdata']) ? data[i]['frametrail:graphdata'] : null,
-                            "graphDataType": (data[i]['frametrail:graphdatatype']) ? data[i]['frametrail:graphdatatype'] : null,
-                        });
-
-                        if (annotations[annotations.length-1].type === 'location') {
-                            var locationAttributes = annotations[annotations.length-1].attributes;
-                            locationAttributes.lat = parseFloat(data[i].body['frametrail:attributes'].lat);
-                            locationAttributes.lon = parseFloat(data[i].body['frametrail:attributes'].lon);
-                            locationAttributes.boundingBox = data[i].body['frametrail:attributes'].boundingBox;
-                        }
-
-                        if (annotations[annotations.length-1].type === 'video') {
-                            var annotationItem = annotations[annotations.length-1];
-                            annotationItem.startOffset = (data[i].body.selector && data[i].body.selector.value)
-                                                         ? parseFloat(/t=(\d+)/g.exec(data[i].body.selector.value)[1])
-                                                         : 0;
-                            annotationItem.endOffset = (data[i].body.selector && data[i].body.selector.value)
-                                                        ? parseFloat(/t=(\d+\.?\d*)/g.exec(data[i].body.selector.value)[2])
-                                                        : 0;
-                        }
-
+                        annotations.push(_normalizeAnnotation(data[i], { frametrail: true, url: url }));
                     }
 
 
@@ -881,59 +901,7 @@
                 }, function (data) {
 
                     for (var i in data) {
-
-                        annotations.push({
-                            "name": data[i].body['frametrail:name'],
-                            "creator": data[i].creator.nickname,
-                            "creatorId": data[i].creator.id,
-                            "created": (new Date(data[i].created)).getTime(),
-                            "type": data[i].body['frametrail:type'],
-                            "uri": (function () {
-                                        if (data[i]["frametrail:uri"]) { 
-                                            return data[i]["frametrail:uri"]; 
-                                        } else if (data[i].body["frametrail:type"] == 'entity') {
-                                            return data[i].body.source
-                                        } else {
-                                            return null;
-                                        }
-                                    })(),
-                            "src": (function () {
-                                        if (data[i].body["frametrail:type"] === 'location') { return null; }
-                                        return (['codesnippet', 'text', 'quiz', 'entity', 'webpage', 'wikipedia',].indexOf( data[i].body["frametrail:type"] ) >= 0)
-                                                ? data[i].body.value
-                                                : data[i].body.source
-                                    })(),
-                            "thumb": data[i].body['frametrail:thumb'],
-                            "start": parseFloat(/t=(\d+\.?\d*)/g.exec(data[i].target.selector.value)[1]),
-                            "end": parseFloat(/t=(\d+\.?\d*),(\d+\.?\d*)/g.exec(data[i].target.selector.value)[2]),
-                            "resourceId": data[i].body["frametrail:resourceId"],
-                            "attributes": data[i].body['frametrail:attributes'] || {},
-                            "tags": data[i]['frametrail:tags'],
-                            "source": {
-                                frametrail: false,
-                                url: initAnnotations[i]
-                            },
-                            "graphData": (data[i]['frametrail:graphdata']) ? data[i]['frametrail:graphdata'] : null,
-                            "graphDataType": (data[i]['frametrail:graphdatatype']) ? data[i]['frametrail:graphdatatype'] : null
-                        });
-
-                        if (annotations[annotations.length-1].type === 'location') {
-                            var locationAttributes = annotations[annotations.length-1].attributes;
-                            locationAttributes.lat = parseFloat(data[i].body['frametrail:attributes'].lat);
-                            locationAttributes.lon = parseFloat(data[i].body['frametrail:attributes'].lon);
-                            locationAttributes.boundingBox = data[i].body['frametrail:attributes'].boundingBox;
-                        }
-
-                        if (annotations[annotations.length-1].type === 'video') {
-                            var annotationItem = annotations[annotations.length-1];
-                            annotationItem.startOffset = (data[i].body.selector && data[i].body.selector.value)
-                                                         ? parseFloat(/t=(\d+)/g.exec(data[i].body.selector.value)[1])
-                                                         : 0;
-                            annotationItem.endOffset = (data[i].body.selector && data[i].body.selector.value)
-                                                        ? parseFloat(/t=(\d+\.?\d*)/g.exec(data[i].body.selector.value)[2])
-                                                        : 0;
-                        }
-
+                        annotations.push(_normalizeAnnotation(data[i], { frametrail: false, url: initAnnotations[i] }));
                     }
 
                     ready();
@@ -962,57 +930,7 @@
 
                     //console.log('ORIGINAL 2: ', originalAnnoObject.body);
 
-                    annotations.push({
-                        "name": initAnnotations[i].body['frametrail:name'],
-                        "creator": initAnnotations[i].creator.nickname,
-                        "creatorId": initAnnotations[i].creator.id,
-                        "created": (new Date(initAnnotations[i].created)).getTime(),
-                        "type": initAnnotations[i].body['frametrail:type'],
-                        "uri": (function () {
-                                        if (initAnnotations[i]["frametrail:uri"]) { 
-                                            return initAnnotations[i]["frametrail:uri"]; 
-                                        } else if (initAnnotations[i].body["frametrail:type"] == 'entity') {
-                                            return initAnnotations[i].body.source
-                                        } else {
-                                            return null;
-                                        }
-                                    })(),
-                        "src": (function () {
-                                    if (initAnnotations[i].body["frametrail:type"] === 'location') { return null; }
-                                    return (['codesnippet', 'text', 'quiz', 'entity', 'webpage', 'wikipedia',].indexOf( initAnnotations[i].body["frametrail:type"] ) >= 0)
-                                            ? initAnnotations[i].body.value
-                                            : initAnnotations[i].body.source
-                                })(),
-                        "thumb": initAnnotations[i].body['frametrail:thumb'],
-                        "start": parseFloat(/t=(\d+\.?\d*)/g.exec(initAnnotations[i].target.selector.value)[1]),
-                        "end": parseFloat(/t=(\d+\.?\d*),(\d+\.?\d*)/g.exec(initAnnotations[i].target.selector.value)[2]),
-                        "resourceId": initAnnotations[i].body["frametrail:resourceId"],
-                        "attributes": initAnnotations[i].body['frametrail:attributes'] || {},
-                        "tags": initAnnotations[i]['frametrail:tags'],
-                        "source": {
-                            frametrail: false,
-                            url: originalAnnoObject
-                        },
-                        "graphData": (initAnnotations[i]['frametrail:graphdata']) ? initAnnotations[i]['frametrail:graphdata'] : null,
-                        "graphDataType": (initAnnotations[i]['frametrail:graphdatatype']) ? initAnnotations[i]['frametrail:graphdatatype'] : null
-                    });
-
-                    if (annotations[annotations.length-1].type === 'location') {
-                        var locationAttributes = annotations[annotations.length-1].attributes;
-                        locationAttributes.lat = parseFloat(initAnnotations[i].body['frametrail:attributes'].lat);
-                        locationAttributes.lon = parseFloat(initAnnotations[i].body['frametrail:attributes'].lon);
-                        locationAttributes.boundingBox = initAnnotations[i].body['frametrail:attributes'].boundingBox;
-                    }
-
-                    if (annotations[annotations.length-1].type === 'video') {
-                        var annotationItem = annotations[annotations.length-1];
-                        annotationItem.startOffset = (initAnnotations[i].body.selector && initAnnotations[i].body.selector.value)
-                                                     ? parseFloat(/t=(\d+)/g.exec(initAnnotations[i].body.selector.value)[1])
-                                                     : 0;
-                        annotationItem.endOffset = (initAnnotations[i].body.selector && initAnnotations[i].body.selector.value)
-                                                    ? parseFloat(/t=(\d+\.?\d*)/g.exec(initAnnotations[i].body.selector.value)[2])
-                                                    : 0;
-                    }
+                    annotations.push(_normalizeAnnotation(initAnnotations[i], { frametrail: false, url: originalAnnoObject }));
 
                     ready();
 
@@ -1056,51 +974,7 @@
             adapter.readJSON('hypervideos/' + hypervideoID + '/annotations/' + id + '.json')
                 .then(function(data) {
                     for (var i in data) {
-                        annotations.push({
-                            "name": data[i].body['frametrail:name'],
-                            "creator": data[i].creator.nickname,
-                            "creatorId": data[i].creator.id,
-                            "created": (new Date(data[i].created)).getTime(),
-                            "type": data[i].body['frametrail:type'],
-                            "uri": (function () {
-                                        if (data[i]["frametrail:uri"]) { return data[i]["frametrail:uri"]; }
-                                        else if (data[i].body["frametrail:type"] == 'entity') { return data[i].body.source; }
-                                        else { return null; }
-                                    })(),
-                            "src": (function () {
-                                        if (data[i].body["frametrail:type"] === 'location') { return null; }
-                                        return (['codesnippet', 'text', 'quiz', 'entity', 'webpage', 'wikipedia'].indexOf(data[i].body["frametrail:type"]) >= 0)
-                                                ? data[i].body.value
-                                                : data[i].body.source;
-                                    })(),
-                            "thumb": data[i].body['frametrail:thumb'],
-                            "start": parseFloat(/t=(\d+\.?\d*)/g.exec(data[i].target.selector.value)[1]),
-                            "end": parseFloat(/t=(\d+\.?\d*),(\d+\.?\d*)/g.exec(data[i].target.selector.value)[2]),
-                            "resourceId": data[i].body["frametrail:resourceId"],
-                            "attributes": data[i].body['frametrail:attributes'] || {},
-                            "tags": data[i]['frametrail:tags'],
-                            "source": {
-                                frametrail: true,
-                                url: 'local'
-                            },
-                            "graphData": data[i]['frametrail:graphdata'] || null,
-                            "graphDataType": data[i]['frametrail:graphdatatype'] || null
-                        });
-
-                        if (annotations[annotations.length-1].type === 'location') {
-                            var locationAttributes = annotations[annotations.length-1].attributes;
-                            locationAttributes.lat = parseFloat(data[i].body['frametrail:attributes'].lat);
-                            locationAttributes.lon = parseFloat(data[i].body['frametrail:attributes'].lon);
-                            locationAttributes.boundingBox = data[i].body['frametrail:attributes'].boundingBox;
-                        }
-
-                        if (annotations[annotations.length-1].type === 'video') {
-                            var annotationItem = annotations[annotations.length-1];
-                            annotationItem.startOffset = (data[i].body.selector && data[i].body.selector.value)
-                                                         ? parseFloat(/t=(\d+)/g.exec(data[i].body.selector.value)[1]) : 0;
-                            annotationItem.endOffset = (data[i].body.selector && data[i].body.selector.value)
-                                                        ? parseFloat(/t=(\d+\.?\d*)/g.exec(data[i].body.selector.value)[2]) : 0;
-                        }
+                        annotations.push(_normalizeAnnotation(data[i], { frametrail: true, url: 'local' }));
                     }
 
                     annotationsCount--;

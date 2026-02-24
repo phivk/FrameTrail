@@ -141,6 +141,11 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 
 	/* Administration Box */
 
+
+	function _serverPost(body) {
+		return fetch('_server/ajaxServer.php', { method: 'POST', body: body })
+			.then(function(r) { return r.json(); });
+	}
 	domElement.find('.userTabs').tabs({
         heightStyle: "fill"
     });
@@ -149,8 +154,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 	domElement.find('.registrationForm').on('submit', function(e) {
 		e.preventDefault();
 		var _form = this;
-		fetch('_server/ajaxServer.php', { method: 'POST', body: new FormData(_form) })
-		.then(function(r) { return r.json(); })
+		_serverPost(new FormData(_form))
 		.then(function(response) {
 			switch(response.code){
 				case 0:
@@ -173,8 +177,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 	domElement.find('.settingsForm').on('submit', function(e) {
 		e.preventDefault();
 		var _form = this;
-		fetch('_server/ajaxServer.php', { method: 'POST', body: new FormData(_form) })
-		.then(function(r) { return r.json(); })
+		_serverPost(new FormData(_form))
 		.then(function(response) {
 			switch(response.code){
 				case 0:
@@ -277,8 +280,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 	domElement.find(".administrationForm").on('submit', function(e) {
 		e.preventDefault();
 		var _form = this;
-		fetch('_server/ajaxServer.php', { method: 'POST', body: new FormData(_form) })
-		.then(function(r) { return r.json(); })
+		_serverPost(new FormData(_form))
 		.then(function(response) {
 			// TODO: Update client userData Object if Admin edited himself via this view instead of "Settings" Tab
 			refreshAdministrationForm();
@@ -424,8 +426,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
     loginBox.find('.loginForm').on('submit', function(e) {
 		e.preventDefault();
 		var _form = this;
-		fetch('_server/ajaxServer.php', { method: 'POST', body: new FormData(_form) })
-		.then(function(r) { return r.json(); })
+		_serverPost(new FormData(_form))
 		.then(function(response) {
 			//console.log(response);
 			switch(response.code){
@@ -469,8 +470,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 	loginBox.find('.userRegistrationForm').on('submit', function(e) {
 		e.preventDefault();
 		var _form = this;
-		fetch('_server/ajaxServer.php', { method: 'POST', body: new FormData(_form) })
-		.then(function(r) { return r.json(); })
+		_serverPost(new FormData(_form))
 		.then(function(response) {
 			switch(response.code){
 				case 0:

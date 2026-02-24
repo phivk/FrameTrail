@@ -981,29 +981,25 @@ FrameTrail.defineType(
                 },
 
                 renderSoundwave: function(soundwaveDataString) {
-                	
+
     				var graphDataElem = $('<div class="graphDataContainer"></div>');
 
 					var width = 8000,
 						height = 60,
+						max_val = 100,
 						data = soundwaveDataString.split(" "),
-						node = d3.select(graphDataElem[0]).append("canvas")
-							.attr("width", width)
-							.attr("height", height);
+						canvas = $('<canvas>').attr('width', width).attr('height', height)[0];
 
-						var y = d3.scaleLinear().range([0, height]);
-						var max_val = 100;
-						y.domain([0, max_val]);
-						var x = d3.scaleLinear().domain([0, data.length]);
+						graphDataElem.append(canvas);
+
 						var bar_width = width / data.length;
-
-						var chart = node;
-						var context = chart.node().getContext("2d");
+						var context = canvas.getContext("2d");
 
 						data.forEach(function(d, i) {
-							var thisY = height - Math.abs(y(d)/2) - height/2 + 2;
+							var scaled = d * height / max_val;
+							var thisY = height - Math.abs(scaled / 2) - height / 2 + 2;
 							var thisX = i * bar_width;
-							var thisHeight = Math.abs(y(d)) + 2;
+							var thisHeight = Math.abs(scaled) + 2;
 
 							context.beginPath();
 							context.rect(thisX, thisY, bar_width, thisHeight);
@@ -1016,11 +1012,12 @@ FrameTrail.defineType(
                 },
 
                 renderBarchart: function(barchartDataString) {
-                	
+
     				var graphDataElem = $('<div class="graphDataContainer"></div>');
 
                     var width = 30000,
                         height = 60,
+                        max_val = 100,
                         data = barchartDataString.split(" ");
 
                     var i,
@@ -1032,35 +1029,31 @@ FrameTrail.defineType(
                         finalChunkSize = data.length / numberOfChunks;
 
                     for (i=0,j=data.length; i<j; i+=finalChunkSize) {
-                        
                         dataChunk = data.slice(i,i+finalChunkSize);
-                        
-                        var node = d3.select(graphDataElem[0]).append("canvas")
-                            .attr("width", width)
-                            .attr("height", height)
-                            .attr("style", "width: "+ canvasPercentWidth +"%;");
 
-                        var y = d3.scaleLinear().range([0, height]);
-                        var max_val = 100;
-                        y.domain([0, max_val]);
-                        var x = d3.scaleLinear().domain([0, dataChunk.length]);
+                        var canvas = $('<canvas>')
+                            .attr('width', width)
+                            .attr('height', height)
+                            .attr('style', 'width: ' + canvasPercentWidth + '%;')[0];
+
+                        graphDataElem.append(canvas);
+
                         var bar_width = width / dataChunk.length;
-
-                        var chart = node;
-                        var context = chart.node().getContext("2d");
+                        var context = canvas.getContext("2d");
 
                         dataChunk.forEach(function(d, c) {
-                            var thisY = height - Math.abs(y(d));
+                            var scaled = d * height / max_val;
+                            var thisY = height - Math.abs(scaled);
                             var thisX = c * bar_width;
-                            var thisHeight = Math.abs(y(d));
-                            
+                            var thisHeight = Math.abs(scaled);
+
                             context.beginPath();
                             context.rect(thisX, thisY, bar_width, thisHeight);
                             context.fillStyle="#333333";
                             context.fill();
                             context.closePath();
                         });
-                    }    
+                    }
 
                     return graphDataElem;
                 },

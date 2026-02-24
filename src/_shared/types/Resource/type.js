@@ -360,122 +360,40 @@ FrameTrail.defineType(
                         }
                     });
 
-                    (function() {
-                        var $pt = controlsContainer.find('.positionTop');
-                        $pt.parent().attr('data-input-id', 'PositionTop');
-                        oldOverlayData = jQuery.extend({}, overlay.data);
-                        $pt.on('input', function(evt) {
-                            if(manualInputMode){
-                                overlay.data.position.top = parseFloat(this.value);
+                    function bindPositionInput(selector, prop, inputId) {
+                        var $elem = controlsContainer.find(selector);
+                        $elem.parent().attr('data-input-id', inputId);
+                        $elem.on('input', function(evt) {
+                            if (manualInputMode) {
+                                overlay.data.position[prop] = parseFloat(this.value);
                                 overlay.updateOverlayElement();
                                 FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
                                 FrameTrail.triggerEvent('userAction', {
                                     action: 'OverlayChange',
                                     overlay: overlay.data,
-                                    changes: [{ property: 'position.top', oldValue: oldOverlayData.position.top, newValue: overlay.data.position.top }]
+                                    changes: [{ property: 'position.' + prop, oldValue: oldOverlayData.position[prop], newValue: overlay.data.position[prop] }]
                                 });
                             }
                         });
-                        $pt.on('change', function(evt) {
-                            if(manualInputMode){
-                                overlay.data.position.top = parseFloat($(evt.target).val());
+                        $elem.on('change', function(evt) {
+                            if (manualInputMode) {
+                                overlay.data.position[prop] = parseFloat($(evt.target).val());
                                 overlay.updateOverlayElement();
                                 FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
                                 FrameTrail.triggerEvent('userAction', {
                                     action: 'OverlayChange',
                                     overlay: overlay.data,
-                                    changes: [{ property: 'position.top', oldValue: oldOverlayData.position.top, newValue: overlay.data.position.top }]
+                                    changes: [{ property: 'position.' + prop, oldValue: oldOverlayData.position[prop], newValue: overlay.data.position[prop] }]
                                 });
                             }
                         });
-                    }());
+                    }
 
-                    (function() {
-                        var $pl = controlsContainer.find('.positionLeft');
-                        $pl.parent().attr('data-input-id', 'PositionLeft');
-                        $pl.on('input', function(evt) {
-                            if(manualInputMode){
-                                overlay.data.position.left = parseFloat(this.value);
-                                overlay.updateOverlayElement();
-                                FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-                                FrameTrail.triggerEvent('userAction', {
-                                    action: 'OverlayChange',
-                                    overlay: overlay.data,
-                                    changes: [{ property: 'position.left', oldValue: oldOverlayData.position.left, newValue: overlay.data.position.left }]
-                                });
-                            }
-                        });
-                        $pl.on('change', function(evt) {
-                            if(manualInputMode){
-                                overlay.data.position.left = parseFloat($(evt.target).val());
-                                overlay.updateOverlayElement();
-                                FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-                                FrameTrail.triggerEvent('userAction', {
-                                    action: 'OverlayChange',
-                                    overlay: overlay.data,
-                                    changes: [{ property: 'position.left', oldValue: oldOverlayData.position.left, newValue: overlay.data.position.left }]
-                                });
-                            }
-                        });
-                    }());
-
-                    (function() {
-                        var $pw = controlsContainer.find('.positionWidth');
-                        $pw.parent().attr('data-input-id', 'PositionWidth');
-                        $pw.on('input', function(evt) {
-                            if(manualInputMode){
-                                overlay.data.position.width = parseFloat(this.value);
-                                overlay.updateOverlayElement();
-                                FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-                                FrameTrail.triggerEvent('userAction', {
-                                    action: 'OverlayChange',
-                                    overlay: overlay.data,
-                                    changes: [{ property: 'position.width', oldValue: oldOverlayData.position.width, newValue: overlay.data.position.width }]
-                                });
-                            }
-                        });
-                        $pw.on('change', function(evt) {
-                            if(manualInputMode){
-                                overlay.data.position.width = parseFloat($(evt.target).val());
-                                overlay.updateOverlayElement();
-                                FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-                                FrameTrail.triggerEvent('userAction', {
-                                    action: 'OverlayChange',
-                                    overlay: overlay.data,
-                                    changes: [{ property: 'position.width', oldValue: oldOverlayData.position.width, newValue: overlay.data.position.width }]
-                                });
-                            }
-                        });
-                    }());
-
-                    (function() {
-                        var $ph = controlsContainer.find('.positionHeight');
-                        $ph.parent().attr('data-input-id', 'PositionHeight');
-                        $ph.on('input', function(evt) {
-                            if(manualInputMode){
-                                overlay.data.position.height = parseFloat(this.value);
-                                overlay.updateOverlayElement();
-                                FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-                                FrameTrail.triggerEvent('userAction', {
-                                    action: 'OverlayChange',
-                                    overlay: overlay.data,
-                                    changes: [{ property: 'position.height', oldValue: oldOverlayData.position.height, newValue: overlay.data.position.height }]
-                                });
-                            }
-                        });
-                        $ph.on('change', function(evt) {
-                            if(manualInputMode){
-                                overlay.data.position.height = parseFloat($(evt.target).val());
-                                overlay.updateOverlayElement();
-                                FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-                                FrameTrail.triggerEvent('userAction', {
-                                    action: 'OverlayChange',
-                                    overlay: overlay.data,
-                                    changes: [{ property: 'position.height', oldValue: oldOverlayData.position.height, newValue: overlay.data.position.height }]
-                                });
-                            }
-                        });
-                    }());
+                    oldOverlayData = jQuery.extend({}, overlay.data);
+                    bindPositionInput('.positionTop',    'top',    'PositionTop');
+                    bindPositionInput('.positionLeft',   'left',   'PositionLeft');
+                    bindPositionInput('.positionWidth',  'width',  'PositionWidth');
+                    bindPositionInput('.positionHeight', 'height', 'PositionHeight');
 
                     // Add undo support for position spinners
                     var positionBeforeEdit = {};

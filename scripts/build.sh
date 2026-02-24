@@ -110,13 +110,8 @@ JS_FILES=(
     "_lib/quill/quill.min.js"
     "_lib/leaflet/leaflet.js"
     "_lib/collisiondetection/collisiondetection.js"
-    "_lib/animejs/anime.min.js"
-    "_lib/codemirror6/jshint.js"
-    "_lib/codemirror6/csslint.js"
-    "_lib/codemirror6/htmlhint.js"
     "_lib/codemirror6/cm6.bundle.js"
     "_lib/codemirror6/cm6linters.js"
-    "_lib/d3/d3.min.js"
 
     # FrameTrail Core (must come before any defineModule/defineType calls)
     "_shared/frametrail-core/frametrail-core.js"

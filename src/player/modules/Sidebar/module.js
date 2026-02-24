@@ -14,6 +14,10 @@
 
 FrameTrail.defineModule('Sidebar', function(FrameTrail){
 
+    function _serverPost(body) {
+        return fetch('_server/ajaxServer.php', { method: 'POST', body: body }).then(function(r) { return r.json(); });
+    }
+
     var labels = FrameTrail.module('Localization').labels;
 
     var domElement  = $(      '<div class="sidebar">'
@@ -570,8 +574,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
             formData.set('a', 'hypervideoAdd');
             formData.set('src', JSON.stringify(hypervideoData, null, 4));
 
-            fetch('_server/ajaxServer.php', { method: 'POST', body: formData })
-            .then(function(r) { return r.json(); })
+            _serverPost(formData)
             .then(function(response) {
                 switch(response['code']) {
                     case 0:
@@ -718,8 +721,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
             formData.set('hypervideoID', thisID);
             formData.set('src', JSON.stringify(currentData, null, 4));
 
-            fetch('_server/ajaxServer.php', { method: 'POST', body: formData })
-            .then(function(r) { return r.json(); })
+            _serverPost(formData)
             .then(function(response) {
                 switch(response['code']) {
                     case 0:
@@ -811,8 +813,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
             formData.set('a', 'hypervideoDelete');
             formData.set('hypervideoID', thisID);
 
-            fetch('_server/ajaxServer.php', { method: 'POST', body: formData })
-            .then(function(r) { return r.json(); })
+            _serverPost(formData)
             .then(function(response) {
                 switch(response['code']) {
                     case 0:

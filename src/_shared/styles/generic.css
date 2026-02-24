@@ -440,7 +440,6 @@ details[open] > summary {
   right: 0;
   bottom: 0;
   background-color: #ccc;
-  -webkit-transition: .4s;
   transition: .4s;
 }
 
@@ -452,7 +451,6 @@ details[open] > summary {
   left: 2px;
   bottom: 2px;
   background-color: white;
-  -webkit-transition: .4s;
   transition: .4s;
 }
 
@@ -465,8 +463,6 @@ input:focus + .slider {
 }
 
 input:checked + .slider:before {
-  -webkit-transform: translateX(13px);
-  -ms-transform: translateX(13px);
   transform: translateX(13px);
 }
 
@@ -589,15 +585,8 @@ input:checked + .slider:before {
     border-radius: 50%;
     transform-origin: center;
     background: var(--primary-fg-color);
-    background: -moz-linear-gradient(left, var(--primary-fg-color) 10%, transparent 42%);
-    background: -webkit-linear-gradient(left, var(--primary-fg-color) 10%, transparent 42%);
-    background: -o-linear-gradient(left, var(--primary-fg-color) 10%, transparent 42%);
-    background: -ms-linear-gradient(left, var(--primary-fg-color) 10%, transparent 42%);
     background: linear-gradient(to right, var(--primary-fg-color) 10%, transparent 42%);
-    -webkit-animation: loading 1.4s infinite linear;
     animation: loading 1s infinite linear;
-    -webkit-transform: translateZ(0);
-    -ms-transform: translateZ(0);
     transform: translateZ(0);
     mask-image: radial-gradient(transparent 65%, #000 66%);
     -webkit-mask-image: radial-gradient(transparent 65%, #000 66%);
@@ -630,10 +619,6 @@ input:checked + .slider:before {
 
 .workingSpinner.dark {
     background: var(--primary-fg-color);
-    background: -moz-linear-gradient(left, var(--primary-bg-color) 10%, transparent 42%);
-    background: -webkit-linear-gradient(left, var(--primary-bg-color) 10%, transparent 42%);
-    background: -o-linear-gradient(left, var(--primary-bg-color) 10%, transparent 42%);
-    background: -ms-linear-gradient(left, var(--primary-bg-color) 10%, transparent 42%);
     background: linear-gradient(to right, var(--primary-bg-color) 10%, transparent 42%);
 }
 
@@ -641,24 +626,11 @@ input:checked + .slider:before {
     background: var(--primary-bg-color);
 }
 
-@-webkit-keyframes loading {
-    0% {
-        -webkit-transform: rotate(0deg);
-        transform: rotate(0deg);
-    }
-    100% {
-        -webkit-transform: rotate(360deg);
-        transform: rotate(360deg);
-    }
-}
-
 @keyframes loading {
     0% {
-        -webkit-transform: rotate(0deg);
         transform: rotate(0deg);
     }
     100% {
-        -webkit-transform: rotate(360deg);
         transform: rotate(360deg);
     }
 }

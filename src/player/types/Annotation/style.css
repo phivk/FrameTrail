@@ -5,14 +5,7 @@
 	height: 100%;
 	background: var(--semi-transparent-fg-color);
 	pointer-events: all;
-	-moz-transition-duration: 0.2s;
-    -moz-transition-property: bottom;
-	-webkit-transition-duration: 0.2s;
-    -webkit-transition-property: bottom;
-    -o-transition-duration: 0.2s;
-    -o-transition-property: bottom;
-	transition-duration: 0.2s;
-    transition-property: bottom;
+	transition: bottom 0.2s;
 }
 
 .annotationTimeline .timelineElement.active {
@@ -202,7 +195,6 @@
 }
 
 .timelineList .userTimelineWrapper:hover {
-	/*box-shadow: 0px 0px 2px 0px var(--primary-fg-color);*/
 }
 
 .timelineList .userTimelineWrapper.sortable-chosen {
@@ -297,8 +289,6 @@
 .timelineList .userTimeline .compareTimelineElement .graphDataContainer canvas {
 	width: 100%;
 	height: 100%;
-	image-rendering: -moz-crisp-edges;
-	image-rendering: -webkit-crisp-edges;
 	image-rendering: pixelated;
 	image-rendering: crisp-edges;
 }
@@ -435,8 +425,6 @@ body > .timelineElement .previewWrapper .resourceThumb .resourceTitle {
 	font-size: 11px;
 	padding: 0 3px 3px 3px;
 	color: var(--primary-fg-color);
-	-moz-box-sizing: border-box;
-	-webkit-box-sizing: border-box;
 	box-sizing: border-box;
 }
 

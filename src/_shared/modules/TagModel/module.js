@@ -14,6 +14,14 @@
 
  FrameTrail.defineModule('TagModel', function(FrameTrail){
 
+    function _serverPost(body) {
+        return fetch('_server/ajaxServer.php', {
+            method: 'POST',
+            cache: (config.allowCaching) ? 'default' : 'no-cache',
+            body: body
+        });
+    }
+
     var labels = FrameTrail.module('Localization').labels;
     
     var tags        = {},
@@ -99,11 +107,7 @@
             return;
         }
 
-        fetch('_server/ajaxServer.php', {
-            method: 'POST',
-            cache: (config.allowCaching) ? 'default' : 'no-cache',
-            body: new URLSearchParams({ a: 'tagSet', tagName: tagname, lang: language, label: label, description: description })
-        })
+        _serverPost(new URLSearchParams({ a: 'tagSet', tagName: tagname, lang: language, label: label, description: description }))
         .then(function() { updateTagModel(success, fail); })
         .catch(fail);
 
@@ -125,11 +129,7 @@
             return;
         }
 
-        fetch('_server/ajaxServer.php', {
-            method: 'POST',
-            cache: (config.allowCaching) ? 'default' : 'no-cache',
-            body: new URLSearchParams({ a: 'tagLangDelete', tagName: tagname, language: language })
-        })
+        _serverPost(new URLSearchParams({ a: 'tagLangDelete', tagName: tagname, language: language }))
         .then(function() { updateTagModel(success, fail); })
         .catch(fail);
 
@@ -150,11 +150,7 @@
             return;
         }
 
-        fetch('_server/ajaxServer.php', {
-            method: 'POST',
-            cache: (config.allowCaching) ? 'default' : 'no-cache',
-            body: new URLSearchParams({ a: 'tagDelete', tagName: tagname })
-        })
+        _serverPost(new URLSearchParams({ a: 'tagDelete', tagName: tagname }))
         .then(function(r) { return r.json(); })
         .then(function(data) {
             if (data && data.code === 0) {
