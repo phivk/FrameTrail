@@ -20,7 +20,7 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
                         +  '</div>'),
 
         OverviewList          = domElement.find('.overviewList'),
-        overviewScrollbar     = null,
+
         animationElement      = null,
         lastSelectedThumb     = null;
 
@@ -39,11 +39,6 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
         toggleViewMode(FrameTrail.getState('viewMode'));
         toggleEditMode(FrameTrail.getState('editMode'));
 
-        overviewScrollbar = new PerfectScrollbar(OverviewList[0], {
-            wheelSpeed: 4,
-            suppressScrollX: true,
-            wheelPropagation: true
-        });
 
     };
 
@@ -265,8 +260,7 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
 
         if ( FrameTrail.getState('viewMode') != 'overview' ) return;
 
-        // Height is now set via CSS (100%), just update perfectScrollbar
-        if (overviewScrollbar) overviewScrollbar.update();
+
 
     };
 

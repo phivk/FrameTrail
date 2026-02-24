@@ -167,11 +167,6 @@ FrameTrail.defineType(
                                 FrameTrail.module('HypervideoController').currentTime = parseFloat($(evt.target).attr('data-start')) + 0.05;
                             });
 
-                            transcriptContainer.data('ps', new PerfectScrollbar(transcriptContainer[0], {
-                                wheelSpeed: 4,
-                                suppressScrollX: true,
-                                wheelPropagation: true
-                            }));
 
                             break;
 
@@ -603,10 +598,7 @@ FrameTrail.defineType(
                         }
                     }
 
-                    if ( self.contentViewData.type == 'Transcript' ) {
-                        var ps = self.contentViewContainer.find('.transcriptContainer').data('ps');
-                        if (ps) ps.update();
-                    }
+
 
                     if ( self.contentViewData.type == 'Timelines' ) {
                         self.updateCompareTimelineItems();

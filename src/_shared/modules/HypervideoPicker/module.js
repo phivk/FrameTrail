@@ -33,13 +33,6 @@ FrameTrail.defineModule('HypervideoPicker', function(FrameTrail){
                             + '</div>'),
             pickerList = pickerDialog.find('.hypervideoPickerList');
 
-        // Initialize perfect scrollbar
-        var pickerScrollbar = new PerfectScrollbar(pickerList[0], {
-            wheelSpeed: 4,
-            suppressScrollX: true,
-            wheelPropagation: true
-        });
-
         // Clear any existing thumbs
         pickerList.find('.hypervideoThumb').remove();
 
@@ -96,10 +89,7 @@ FrameTrail.defineModule('HypervideoPicker', function(FrameTrail){
             }
         });
 
-        // Update scrollbar after dialog is shown
-        setTimeout(function() {
-            pickerScrollbar.update();
-        }, 100);
+
     }
 
     return {

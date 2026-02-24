@@ -61,10 +61,6 @@ FrameTrail.defineType(
                         + '    <div class="resourceTooltip"></div>'
                         + '</div>'
                     );
-                    new PerfectScrollbar(resourceElement[0], {
-                        wheelSpeed: 4,
-                        suppressScrollX: true
-                    });
 
                     if (this.resourceData.start) {
                         var jumpToTimeButton = $('<button class="button btn btn-sm" data-start="'+ this.resourceData.start +'" data-end="'+ this.resourceData.end +'"><span class="icon-play-1"></span></button>');

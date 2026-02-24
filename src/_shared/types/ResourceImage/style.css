@@ -1,5 +1,7 @@
 .resourceDetail[data-type="image"] {
-	
+	overflow-y: auto;
+	overflow-x: hidden;
+	scrollbar-width: thin;
 }
 
 .resourceDetail[data-type="image"] img {

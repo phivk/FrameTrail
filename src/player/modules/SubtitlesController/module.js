@@ -60,7 +60,7 @@ FrameTrail.defineModule('SubtitlesController', function(FrameTrail){
 
         } else {
 
-            if (!!screenfull) {
+            if (!!document.fullscreenEnabled) {
                 
                 for (var s = 0; s < subtitleFiles.length; s++) {
                     var captionSelect = $('<div class="captionSelect" data-lang="'+ subtitleFiles[s].srclang +'" data-config="hv_config_captionsVisible">'+ FrameTrail.module('Database').subtitles[subtitleFiles[s].srclang].label +'</div>')

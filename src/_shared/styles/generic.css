@@ -1,5 +1,12 @@
 /* Generic Application CSS */
 
+/* Native thin scrollbars */
+.overviewList,
+.transcriptContainer,
+.hypervideoPickerList {
+    scrollbar-width: thin;
+}
+
 /* Minimal CSS Reset (replaces html5reset) */
 
 html, body, div, span, object, iframe,

@@ -264,6 +264,8 @@
 	box-sizing: border-box;
 	position: relative;
 	padding: 10px;
+	overflow-y: auto;
+	overflow-x: hidden;
 }
 
 .layoutArea .contentViewContainer .contentViewContents .transcriptContainer span {

@@ -192,21 +192,10 @@ FrameTrail.defineType(
 
                 /**
                  * I am called when the mouse pointer is hovering over one of my two DOM elements.
-                 *
-                 * I use the Raphael.js library to draw connecting lines betweem my tileElement and my timelineElement.
-                 *
                  * @method brushIn
                  */
                 brushIn: function () {
-
                     this.timelineElement.addClass('brushed');
-                    //this.tileElement.addClass('brushed');
-
-                    if ( FrameTrail.getState('editMode') == false || FrameTrail.getState('editMode') == 'preview' ) {
-                        clearRaphael();
-                        //drawConnections( this.tileElement, this.timelineElement, 10, {stroke: "#6B7884"} );
-                    }
-
                 },
 
 
@@ -215,14 +204,7 @@ FrameTrail.defineType(
                  * @method brushOut
                  */
                 brushOut: function () {
-
                     this.timelineElement.removeClass('brushed');
-                    //this.tileElement.removeClass('brushed');
-
-                    if ( (FrameTrail.getState('editMode') ==  false || FrameTrail.getState('editMode') ==  'preview') ) {
-                        clearRaphael();
-                    }
-
                 },
 
 

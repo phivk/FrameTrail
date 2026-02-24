@@ -29,7 +29,6 @@ echo "  Output:  $BUILD_DIR"
 
 CSS_FILES=(
     # Library CSS
-    "_lib/perfectscrollbar/perfect-scrollbar.min.css"
     "_lib/quill/quill.snow.css"
     "_lib/leaflet/leaflet.css"
     # FrameTrail base styles
@@ -104,12 +103,10 @@ CSS_FILES=(
 
 JS_FILES=(
     # Libraries (order from index.html <head>)
-    "_lib/screenfull/screenfull.min.js"
     "_lib/hlsjs/hls.min.js"
     "_lib/parsers/vtt.min.js"
     "_lib/jquery/jquery-3.7.1.min.js"
     "_lib/interactjs/interact.min.js"
-    "_lib/perfectscrollbar/perfect-scrollbar.min.js"
     "_lib/quill/quill.min.js"
     "_lib/leaflet/leaflet.js"
     "_lib/jquery.collisiondetection/jquery.collisiondetection.js"

@@ -19,7 +19,8 @@
 
 .viewOverview .overviewList {
 	position: relative;
-	overflow: hidden;
+	overflow-y: auto;
+	overflow-x: hidden;
 	width: 100%;
 	height: 100%;
 	display: grid;
