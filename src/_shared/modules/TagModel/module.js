@@ -62,14 +62,14 @@
         var tagUrl = typeof tagInitOptions === 'string' ? tagInitOptions : '_data/tagdefinitions.json';
         fetch(tagUrl, { cache: (config.allowCaching) ? 'default' : 'no-cache' })
             .then(function(r) {
-                if (!r.ok) throw new Error('not found');
+                if (!r.ok) throw new Error('HTTP ' + r.status);
                 return r.json();
             })
             .then(function(data) {
                 tags = data;
                 success();
             })
-            .catch(function() {
+            .catch(function(err) {
                 fail(labels['ErrorNoTagdefinitionsFile']);
             });
 

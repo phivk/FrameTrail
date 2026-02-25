@@ -133,7 +133,8 @@
             }
 
     		// TODO: Check if this belongs here
-            $(resolvedTarget).addClass('frametrail-body');
+            var _targetEl = (typeof resolvedTarget === 'string') ? document.querySelector(resolvedTarget) : resolvedTarget;
+            if (_targetEl) _targetEl.classList.add('frametrail-body');
 
             state = {
                 target:             resolvedTarget || 'body',
@@ -162,19 +163,8 @@
                 unsavedChanges:     false
             };
 
-            // If a serverPath is provided (e.g. '../' when FrameTrail is loaded from
-            // a subdirectory), prepend it to all relative _server/ and _data/ AJAX
-            // URLs so that FrameTrail's internal calls resolve correctly without
-            // needing a <base href> on the host page.
-            if (options.serverPath) {
-                var _sp = options.serverPath;
-                $.ajaxPrefilter(function(ajaxOptions) {
-                    if (typeof ajaxOptions.url === 'string' &&
-                        /^(_server|_data)\//.test(ajaxOptions.url)) {
-                        ajaxOptions.url = _sp + ajaxOptions.url;
-                    }
-                });
-            }
+            // serverPath is stored in state; Database._ajax() applies it when prefixing
+            // relative _server/ and _data/ fetch URLs (see Database module).
 
     		if (appName) {
                 _initModule(appName);

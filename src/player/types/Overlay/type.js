@@ -48,8 +48,11 @@ FrameTrail.defineType(
                 }
 
 
-                this.timelineElement = $('<div class="timelineElement" data-type="'+ this.data.type +'"><div class="timelineElementIcon"></div><div class="timelineElementLabel"></div><div class="previewWrapper"></div></div>');
-                this.overlayElement  = $('<div class="overlayElement"></div>');
+                var _teWrapper = document.createElement('div');
+                _teWrapper.innerHTML = '<div class="timelineElement" data-type="'+ this.data.type +'"><div class="timelineElementIcon"></div><div class="timelineElementLabel"></div><div class="previewWrapper"></div></div>';
+                this.timelineElement = _teWrapper.firstElementChild;
+                this.overlayElement = document.createElement('div');
+                this.overlayElement.className = 'overlayElement';
 
 
             },
@@ -98,16 +101,16 @@ FrameTrail.defineType(
                 permanentFocusState:    false,
 
                 /**
-                 * I hold the timelineElement (a jquery-enabled HTMLElement), which indicates my start and end time.
+                 * I hold the timelineElement (a plain HTMLElement), which indicates my start and end time.
                  * @attribute timelineElement
                  * @type HTMLElement
                  */
                 timelineElement:        null,
 
                 /**
-                 * I hold the overlayElement (a jquery-enabled HTMLElement), which displays my content on top of the video.
+                 * I hold the overlayElement (a plain HTMLElement), which displays my content on top of the video.
                  * @attribute overlayElement
-                 * @type {}
+                 * @type HTMLElement
                  */
                 overlayElement:         null,
 
@@ -124,25 +127,23 @@ FrameTrail.defineType(
 
                     var ViewVideo = FrameTrail.module('ViewVideo');
 
-                    var timelineTarget = ViewVideo.OverlayTimeline.find('.timelineScroller');
-                    (timelineTarget.length ? timelineTarget : ViewVideo.OverlayTimeline).append(this.timelineElement);
-                    ViewVideo.OverlayContainer.append(this.overlayElement);
+                    var timelineScroller = ViewVideo.OverlayTimeline.querySelector('.timelineScroller');
+                    (timelineScroller || ViewVideo.OverlayTimeline).appendChild(this.timelineElement);
+                    ViewVideo.OverlayContainer.appendChild(this.overlayElement);
 
-                    this.timelineElement.find('.previewWrapper').empty().append(
-                        this.resourceItem.renderThumb()
-                    );
+                    var previewWrapper = this.timelineElement.querySelector('.previewWrapper');
+                    previewWrapper.innerHTML = '';
+                    previewWrapper.append(this.resourceItem.renderThumb());
 
                     // Set icon from resourceItem
-                    this.timelineElement.find('.timelineElementIcon').html(
-                        '<span class="' + this.resourceItem.iconClass + '"></span>'
-                    );
+                    this.timelineElement.querySelector('.timelineElementIcon').innerHTML =
+                        '<span class="' + this.resourceItem.iconClass + '"></span>';
 
                     // Set label from resourceItem
-                    this.timelineElement.find('.timelineElementLabel').text(
-                        this.resourceItem.getDisplayLabel()
-                    );
+                    this.timelineElement.querySelector('.timelineElementLabel').textContent =
+                        this.resourceItem.getDisplayLabel();
 
-                    var newOverlayContent = this.resourceItem.renderContent()
+                    var newOverlayContent = this.resourceItem.renderContent();
                     this.overlayElement.append(newOverlayContent);
 
                     this.updateTimelineElement();
@@ -153,10 +154,13 @@ FrameTrail.defineType(
                         this.setSyncedMedia(true);
                     }
 
-                    var newOverlayMediaElement = newOverlayContent.find('video, audio').eq(0);
+                    // newOverlayContent may be a DOM element — use querySelector
+                    var newOverlayMediaElement = (newOverlayContent && typeof newOverlayContent.querySelector === 'function')
+                        ? newOverlayContent.querySelector('video, audio')
+                        : null;
 
                     if (   this.syncedMedia
-                        && newOverlayMediaElement.get(0) instanceof HTMLMediaElement) {
+                        && newOverlayMediaElement instanceof HTMLMediaElement) {
 
                         this.prepareSyncedHTML5Media(newOverlayMediaElement);
 
@@ -164,8 +168,12 @@ FrameTrail.defineType(
 
 
 
-                    this.timelineElement.hover(this.brushIn.bind(this), this.brushOut.bind(this));
-                    this.overlayElement.hover(this.brushIn.bind(this), this.brushOut.bind(this));
+                    this._brushInHandler  = this.brushIn.bind(this);
+                    this._brushOutHandler = this.brushOut.bind(this);
+                    this.timelineElement.addEventListener('mouseenter', this._brushInHandler);
+                    this.timelineElement.addEventListener('mouseleave', this._brushOutHandler);
+                    this.overlayElement.addEventListener('mouseenter', this._brushInHandler);
+                    this.overlayElement.addEventListener('mouseleave', this._brushOutHandler);
 
                     if (this.data.events.onReady) {
                         try {
@@ -177,16 +185,16 @@ FrameTrail.defineType(
                         }
                     }
 
-                    this.overlayElement.click({overlayObject: this}, function(evt) {
-
-                        var self = evt.data.overlayObject;
+                    var _self = this;
+                    this.overlayElement.addEventListener('click', function(evt) {
+                        var self = _self;
                         if (self.data.events.onClick && FrameTrail.getState('editMode') != 'overlays') {
                             try {
                                 var clickEvent = new Function('FrameTrail', self.data.events.onClick);
                                 clickEvent.call(self, FrameTrail);
                             } catch (exception) {
                                 // could not parse and compile JS code!
-                                console.warn(this.labels['MessageEventHandlerContainsErrors']+ ': '+ exception.message);
+                                console.warn(self.labels['MessageEventHandlerContainsErrors']+ ': '+ exception.message);
                             }
                         }
 
@@ -201,7 +209,7 @@ FrameTrail.defineType(
                  * I prepare the event listeners for a synced HTML5 video or audio used as overlay.
                  *
                  * @method prepareSyncedHTML5Media
-                 * @param {jQuery} newOverlayMedia
+                 * @param {HTMLMediaElement} newOverlayMedia
                  */
                 prepareSyncedHTML5Media: function (newOverlayMedia) {
 
@@ -209,30 +217,36 @@ FrameTrail.defineType(
                         HypervideoController = FrameTrail.module('HypervideoController'),
                         timeout = null;
 
-                    newOverlayMedia.on('loadstart', function(evt) {
+                    newOverlayMedia.addEventListener('loadstart', function(evt) {
                         // load start
                         //console.log('loadstart');
                     });
 
-                    newOverlayMedia.on('loadedmetadata', function(evt) {
+                    newOverlayMedia.addEventListener('loadedmetadata', function(evt) {
                         FrameTrail.changeState('videoWorking', false);
-                        newOverlayMedia.on('waiting', checkForStall);
-                        newOverlayMedia.on('seeking', function(evt) {
+                        newOverlayMedia.addEventListener('waiting', checkForStall);
+                        newOverlayMedia.addEventListener('seeking', function(evt) {
                             FrameTrail.changeState('videoWorking', true);
                         });
-                        newOverlayMedia.on('seeked play pause', function(evt) {
+                        newOverlayMedia.addEventListener('seeked', function(evt) {
+                            FrameTrail.changeState('videoWorking', false);
+                        });
+                        newOverlayMedia.addEventListener('play', function(evt) {
+                            FrameTrail.changeState('videoWorking', false);
+                        });
+                        newOverlayMedia.addEventListener('pause', function(evt) {
                             FrameTrail.changeState('videoWorking', false);
                         });
                     });
 
-                    newOverlayMedia.attr('preload', 'none');
-        			//newOverlayMedia.get(0).load();
+                    newOverlayMedia.setAttribute('preload', 'none');
+        			//newOverlayMedia.load();
 
                     function checkForStall() {
-                        
+
                         if (self.activeState) {
 
-                			if (newOverlayMedia.get(0).readyState > 0) {
+                			if (newOverlayMedia.readyState > 0) {
                 				HypervideoController.playbackStalled(false, self);
                 			} else {
                                 HypervideoController.playbackStalled(true, self);
@@ -279,19 +293,17 @@ FrameTrail.defineType(
                         positionLeft    = 100 * ((this.data.start - HypervideoModel.offsetIn) / videoDuration),
                         width           = 100 * ((this.data.end - this.data.start) / videoDuration);
 
-                    this.timelineElement.css({
-                        top: '',
-                        left:  positionLeft + '%',
-                        right: '',
-                        width: width + '%'
-                    });
+                    this.timelineElement.style.top   = '';
+                    this.timelineElement.style.left  = positionLeft + '%';
+                    this.timelineElement.style.right = '';
+                    this.timelineElement.style.width = width + '%';
 
-                    this.timelineElement.removeClass('previewPositionLeft previewPositionRight');
+                    this.timelineElement.classList.remove('previewPositionLeft', 'previewPositionRight');
 
                     if (positionLeft < 10 && width < 10) {
-                        this.timelineElement.addClass('previewPositionLeft');
+                        this.timelineElement.classList.add('previewPositionLeft');
                     } else if (positionLeft > 90) {
-                        this.timelineElement.addClass('previewPositionRight');
+                        this.timelineElement.classList.add('previewPositionRight');
                     }
 
                 },
@@ -304,19 +316,19 @@ FrameTrail.defineType(
                  */
                 updateOverlayElement: function () {
 
-                    this.overlayElement.css({
-                        top:    this.data.position.top + '%',
-                        left:   this.data.position.left + '%',
-                        width:  this.data.position.width + '%',
-                        height: this.data.position.height + '%'
-                    });
+                    this.overlayElement.style.top    = this.data.position.top    + '%';
+                    this.overlayElement.style.left   = this.data.position.left   + '%';
+                    this.overlayElement.style.width  = this.data.position.width  + '%';
+                    this.overlayElement.style.height = this.data.position.height + '%';
 
-                    this.overlayElement.children('.resourceDetail').css({
-                        opacity: (this.data.attributes.opacity || 1)
-                    });
+                    var _rdChild = this.overlayElement.querySelector('.resourceDetail');
+                    if (_rdChild) {
+                        _rdChild.style.opacity = (this.data.attributes.opacity || 1);
+                    }
 
-                    if (this.overlayElement.find('.resourceDetail').data().map) {
-                        this.overlayElement.find('.resourceDetail').data().map.invalidateSize();
+                    var _rd = this.overlayElement.querySelector('.resourceDetail');
+                    if (_rd && _rd._leafletMap) {
+                        _rd._leafletMap.invalidateSize();
                     }
 
                 },
@@ -331,33 +343,31 @@ FrameTrail.defineType(
 
                     if (this.data.type == 'wikipedia' || this.data.type == 'webpage' || this.data.type == 'text' || this.data.type == 'quiz' || this.data.type == 'bluesky' || this.data.type == 'mastodon') {
 
-                        var elementToScale = this.overlayElement.children('.resourceDetail'),
+                        var elementToScale = this.overlayElement ? this.overlayElement.querySelector('.resourceDetail') : null,
                             wrapperElement = this.overlayElement,
                             scaleBase = (this.data.type == 'text') ? 800 : 400;
 
-                        if (scaleBase / wrapperElement.width() < 1 && this.data.type != 'text') {
-                            elementToScale.css({
-                                top: 0,
-                                left: 0,
-                                height: '',
-                                width: '',
-                                transform: "none"
-                            });
+                        if (!elementToScale) { return; }
+
+                        if (scaleBase / wrapperElement.offsetWidth < 1 && this.data.type != 'text') {
+                            elementToScale.style.top       = '';
+                            elementToScale.style.left      = '';
+                            elementToScale.style.height    = '';
+                            elementToScale.style.width     = '';
+                            elementToScale.style.transform = 'none';
                             return;
                         }
 
-                        var referenceWidth = (this.data.type == 'text') ? FrameTrail.module('ViewVideo').OverlayContainer.width() : wrapperElement.width();
+                        var referenceWidth = (this.data.type == 'text') ? FrameTrail.module('ViewVideo').OverlayContainer.offsetWidth : wrapperElement.offsetWidth;
                             scale = referenceWidth / scaleBase,
                             negScale = 1/scale,
-                            newWidth = (this.data.type == 'text') ? wrapperElement.width() * negScale : scaleBase;
+                            newWidth = (this.data.type == 'text') ? wrapperElement.offsetWidth * negScale : scaleBase;
 
-                        elementToScale.css({
-                            top: 50 + '%',
-                            left: 50 + '%',
-                            width: newWidth + 'px',
-                            height: wrapperElement.height() * negScale + 'px',
-                            transform: "translate(-50%, -50%) scale(" + scale + ")"
-                        });
+                        elementToScale.style.top       = '50%';
+                        elementToScale.style.left      = '50%';
+                        elementToScale.style.width     = newWidth + 'px';
+                        elementToScale.style.height    = wrapperElement.offsetHeight * negScale + 'px';
+                        elementToScale.style.transform = 'translate(-50%, -50%) scale(' + scale + ')';
 
                     }
 
@@ -383,10 +393,11 @@ FrameTrail.defineType(
                 setSyncedMedia: function (synced) {
 
                     if (synced) {
-                        if (this.overlayElement.find('.resourceDetail audio').length != 0) {
-                            this.mediaElement = this.overlayElement.find('.resourceDetail audio')[0]
+                        var audioEl = this.overlayElement.querySelector('.resourceDetail audio');
+                        if (audioEl !== null) {
+                            this.mediaElement = audioEl;
                         } else {
-                            this.mediaElement = this.overlayElement.find('.resourceDetail video')[0]
+                            this.mediaElement = this.overlayElement.querySelector('.resourceDetail video');
                         }
 
                         this.mediaElement.removeAttribute('controls');
@@ -422,11 +433,11 @@ FrameTrail.defineType(
                  * @method clearAnimationClasses
                  */
                 clearAnimationClasses: function() {
-                    this.overlayElement.removeClass(
-                        'anim-in-none anim-in-fade anim-in-slideLeft anim-in-slideRight '
-                        + 'anim-in-slideUp anim-in-slideDown anim-in-zoom '
-                        + 'anim-out-fade anim-out-slideLeft anim-out-slideRight '
-                        + 'anim-out-slideUp anim-out-slideDown anim-out-zoom animating-out'
+                    this.overlayElement.classList.remove(
+                        'anim-in-none', 'anim-in-fade', 'anim-in-slideLeft', 'anim-in-slideRight',
+                        'anim-in-slideUp', 'anim-in-slideDown', 'anim-in-zoom',
+                        'anim-out-fade', 'anim-out-slideLeft', 'anim-out-slideRight',
+                        'anim-out-slideUp', 'anim-out-slideDown', 'anim-out-zoom', 'animating-out'
                     );
                 },
 
@@ -438,7 +449,7 @@ FrameTrail.defineType(
                 setActive: function (onlyTimelineElement) {
 
                     if (!onlyTimelineElement) {
-                        if (!this.overlayElement.hasClass('active')) {
+                        if (!this.overlayElement.classList.contains('active')) {
                             var self = this;
                             var animIn = this.data.attributes.animationIn || 'none';
                             var duration = this.data.attributes.animationDuration || 300;
@@ -446,31 +457,32 @@ FrameTrail.defineType(
                             this.clearAnimationClasses();
 
                             if (animIn !== 'none') {
-                                this.overlayElement[0].style.setProperty('--overlay-anim-duration', duration + 'ms');
-                                this.overlayElement.addClass('anim-in-' + animIn);
+                                this.overlayElement.style.setProperty('--overlay-anim-duration', duration + 'ms');
+                                this.overlayElement.classList.add('anim-in-' + animIn);
 
                                 // After entrance animation completes, clean up so it can't replay
                                 var onEntranceEnd = function(e) {
-                                    if (e.target === self.overlayElement[0]) {
-                                        self.overlayElement.off('animationend', onEntranceEnd);
+                                    if (e.target === self.overlayElement) {
+                                        self.overlayElement.removeEventListener('animationend', onEntranceEnd);
                                         self.clearAnimationClasses();
-                                        self.overlayElement[0].style.opacity = '1';
+                                        self.overlayElement.style.opacity = '1';
                                     }
                                 };
-                                this.overlayElement.on('animationend', onEntranceEnd);
+                                this.overlayElement.addEventListener('animationend', onEntranceEnd);
                             } else {
-                                this.overlayElement[0].style.opacity = '1';
+                                this.overlayElement.style.opacity = '1';
                             }
                         }
-                        this.overlayElement.addClass('active');
+                        this.overlayElement.classList.add('active');
 
-                        if (this.overlayElement.find('.resourceDetail').data().map) {
-                            this.overlayElement.find('.resourceDetail').data().map.invalidateSize();
+                        var _rd = this.overlayElement.querySelector('.resourceDetail');
+                        if (_rd && _rd._leafletMap) {
+                            _rd._leafletMap.invalidateSize();
                         }
 
                     }
 
-                    this.timelineElement.addClass('active');
+                    this.timelineElement.classList.add('active');
 
                     if (this.syncedMedia) {
 
@@ -498,10 +510,10 @@ FrameTrail.defineType(
                  */
                 setInactive: function () {
 
-                    this.timelineElement.removeClass('active');
+                    this.timelineElement.classList.remove('active');
 
                     if (!this.activeState) {
-                        this.overlayElement.removeClass('active');
+                        this.overlayElement.classList.remove('active');
                         return;
                     }
 
@@ -528,36 +540,36 @@ FrameTrail.defineType(
                     // Only play exit animation if the overlay element is visually active.
                     // When only timeline-activated via setActive(true), the overlay element
                     // never got 'active' class, so skip the animation to avoid flicker.
-                    var isVisuallyActive = this.overlayElement.hasClass('active');
+                    var isVisuallyActive = this.overlayElement.classList.contains('active');
 
                     if (animOut === 'none' || !isVisuallyActive) {
                         this.clearAnimationClasses();
-                        this.overlayElement[0].style.opacity = '';
-                        this.overlayElement.removeClass('active');
+                        this.overlayElement.style.opacity = '';
+                        this.overlayElement.classList.remove('active');
                     } else {
-                        this.overlayElement.addClass('animating-out');
+                        this.overlayElement.classList.add('animating-out');
                         this.clearAnimationClasses();
-                        this.overlayElement[0].style.opacity = '';
-                        this.overlayElement[0].style.setProperty('--overlay-anim-duration', duration + 'ms');
-                        this.overlayElement.addClass('anim-out-' + animOut);
-                        this.overlayElement.addClass('animating-out');
+                        this.overlayElement.style.opacity = '';
+                        this.overlayElement.style.setProperty('--overlay-anim-duration', duration + 'ms');
+                        this.overlayElement.classList.add('anim-out-' + animOut);
+                        this.overlayElement.classList.add('animating-out');
 
                         var onAnimEnd = function(e) {
-                            if (e.target === self.overlayElement[0]) {
-                                self.overlayElement.off('animationend', onAnimEnd);
+                            if (e.target === self.overlayElement) {
+                                self.overlayElement.removeEventListener('animationend', onAnimEnd);
                                 self.clearAnimationClasses();
-                                self.overlayElement.removeClass('active');
+                                self.overlayElement.classList.remove('active');
                             }
                         };
 
-                        this.overlayElement.on('animationend', onAnimEnd);
+                        this.overlayElement.addEventListener('animationend', onAnimEnd);
 
                         // Fallback timeout in case animationend doesn't fire
                         setTimeout(function() {
-                            self.overlayElement.off('animationend', onAnimEnd);
-                            if (self.overlayElement.hasClass('animating-out')) {
+                            self.overlayElement.removeEventListener('animationend', onAnimEnd);
+                            if (self.overlayElement.classList.contains('animating-out')) {
                                 self.clearAnimationClasses();
-                                self.overlayElement.removeClass('active');
+                                self.overlayElement.classList.remove('active');
                             }
                         }, duration + 50);
                     }
@@ -576,8 +588,8 @@ FrameTrail.defineType(
                  */
                 gotInFocus: function () {
 
-                    this.timelineElement.addClass('highlighted');
-                    this.overlayElement.addClass('highlighted');
+                    this.timelineElement.classList.add('highlighted');
+                    this.overlayElement.classList.add('highlighted');
 
                     FrameTrail.module('OverlaysController').renderPropertiesControls(
                         this.resourceItem.renderPropertiesControls(this)
@@ -597,8 +609,8 @@ FrameTrail.defineType(
                  */
                 removedFromFocus: function () {
 
-                    this.timelineElement.removeClass('highlighted');
-                    this.overlayElement.removeClass('highlighted');
+                    this.timelineElement.classList.remove('highlighted');
+                    this.overlayElement.classList.remove('highlighted');
 
                 },
 
@@ -608,8 +620,8 @@ FrameTrail.defineType(
                  */
                 brushIn: function () {
 
-                    this.timelineElement.addClass('brushed');
-                    this.overlayElement.addClass('brushed');
+                    this.timelineElement.classList.add('brushed');
+                    this.overlayElement.classList.add('brushed');
 
                 },
 
@@ -619,8 +631,8 @@ FrameTrail.defineType(
                  */
                 brushOut: function () {
 
-                    this.timelineElement.removeClass('brushed');
-                    this.overlayElement.removeClass('brushed');
+                    this.timelineElement.classList.remove('brushed');
+                    this.overlayElement.classList.remove('brushed');
 
                 },
 
@@ -648,10 +660,7 @@ FrameTrail.defineType(
                         self.makeOverlayElementResizeable();
                     }, 50);
 
-                    this.timelineElement.on('click.edit', putInFocus);
-                    this.overlayElement.on('click.edit', putInFocus);
-
-                    function putInFocus() {
+                    this._editClickHandlerTimeline = this._editClickHandlerOverlay = function putInFocus() {
 
                         if (OverlaysController.overlayInFocus === self){
                             return OverlaysController.overlayInFocus = null;
@@ -662,7 +671,10 @@ FrameTrail.defineType(
 
                         FrameTrail.module('HypervideoController').currentTime = self.data.start + 0.01;
 
-                    }
+                    };
+
+                    this.timelineElement.addEventListener('click', this._editClickHandlerTimeline);
+                    this.overlayElement.addEventListener('click', this._editClickHandlerOverlay);
 
                 },
 
@@ -674,20 +686,20 @@ FrameTrail.defineType(
                  */
                 stopEditing: function () {
 
-                    if (this.timelineElement[0]) {
-                        try { interact(this.timelineElement[0]).unset(); } catch (ex) {}
+                    if (this.timelineElement) {
+                        try { interact(this.timelineElement).unset(); } catch (ex) {}
                     }
-                    this.timelineElement.removeClass('ui-draggable ui-draggable-dragging ui-resizable');
-                    this.timelineElement.find('.ui-resizable-handle').remove();
+                    this.timelineElement.classList.remove('ui-draggable', 'ui-draggable-dragging', 'ui-resizable');
+                    this.timelineElement.querySelectorAll('.ui-resizable-handle').forEach(function(e) { e.remove(); });
 
-                    if (this.overlayElement[0]) {
-                        try { interact(this.overlayElement[0]).unset(); } catch (ex) {}
+                    if (this.overlayElement) {
+                        try { interact(this.overlayElement).unset(); } catch (ex) {}
                     }
-                    this.overlayElement.removeClass('ui-draggable ui-resizable');
-                    this.overlayElement.find('.ui-resizable-handle').remove();
+                    this.overlayElement.classList.remove('ui-draggable', 'ui-resizable');
+                    this.overlayElement.querySelectorAll('.ui-resizable-handle').forEach(function(e) { e.remove(); });
 
-                    this.timelineElement.unbind('click.edit');
-                    this.overlayElement.unbind('click.edit');
+                    this.timelineElement.removeEventListener('click', this._editClickHandlerTimeline);
+                    this.overlayElement.removeEventListener('click', this._editClickHandlerOverlay);
 
                 },
 
@@ -707,8 +719,8 @@ FrameTrail.defineType(
                         oldStart,
                         oldEnd;
 
-                    var el = this.timelineElement[0];
-                    this.timelineElement.addClass('ui-draggable');
+                    var el = this.timelineElement;
+                    this.timelineElement.classList.add('ui-draggable');
 
                     interact(el).draggable({
                         ignoreFrom: '.ui-resizable-handle',
@@ -738,18 +750,19 @@ FrameTrail.defineType(
                                 var parentWidth = e.target.parentElement.offsetWidth;
                                 var elWidth     = e.target.offsetWidth;
 
+                                var gridlines = Array.from(document.querySelectorAll(FrameTrail.getState('target') + ' .gridline'));
                                 var closestGridline = FrameTrail.module('ViewVideo').closestToOffset(
-                                    $(FrameTrail.getState('target')).find('.gridline'),
+                                    gridlines,
                                     { left: x, top: 0 }
                                 );
                                 var snapTolerance = 10;
 
                                 if (closestGridline) {
-                                    $(FrameTrail.getState('target')).find('.gridline').css('background-color', '#ff9900');
-                                    var glLeft = closestGridline.position().left;
+                                    gridlines.forEach(function(gl) { gl.style.backgroundColor = '#ff9900'; });
+                                    var glLeft = closestGridline.getBoundingClientRect().left - closestGridline.parentElement.getBoundingClientRect().left;
                                     if (x - snapTolerance < glLeft && x + snapTolerance > glLeft) {
                                         x = glLeft;
-                                        closestGridline.css('background-color', '#00ff00');
+                                        closestGridline.style.backgroundColor = '#00ff00';
                                     }
                                 }
 
@@ -857,7 +870,7 @@ FrameTrail.defineType(
                         oldStart,
                         oldEnd;
 
-                    var el = this.timelineElement[0];
+                    var el = this.timelineElement;
 
                     // Inject resize handles if not yet present
                     if (!el.querySelector('.ui-resizable-e')) {
@@ -901,27 +914,28 @@ FrameTrail.defineType(
                                 var parentWidth = e.target.parentElement.offsetWidth;
 
                                 var checkLeft = endHandleGrabbed ? (newLeft + newWidth) : newLeft;
+                                var gridlines = Array.from(document.querySelectorAll(FrameTrail.getState('target') + ' .gridline'));
                                 var closestGridline = FrameTrail.module('ViewVideo').closestToOffset(
-                                    $(FrameTrail.getState('target')).find('.gridline'),
+                                    gridlines,
                                     { left: checkLeft, top: 0 }
                                 );
                                 var snapTolerance = 10;
 
                                 if (closestGridline) {
-                                    $(FrameTrail.getState('target')).find('.gridline').css('background-color', '#ff9900');
-                                    var glLeft = closestGridline.position().left;
+                                    gridlines.forEach(function(gl) { gl.style.backgroundColor = '#ff9900'; });
+                                    var glLeft = closestGridline.getBoundingClientRect().left - closestGridline.parentElement.getBoundingClientRect().left;
                                     if (!endHandleGrabbed &&
                                         newLeft - snapTolerance < glLeft &&
                                         newLeft + snapTolerance > glLeft) {
                                         var diff = newLeft - glLeft;
                                         newWidth += diff;
                                         newLeft   = glLeft;
-                                        closestGridline.css('background-color', '#00ff00');
+                                        closestGridline.style.backgroundColor = '#00ff00';
                                     } else if (endHandleGrabbed &&
                                                newLeft + newWidth - snapTolerance < glLeft &&
                                                newLeft + newWidth + snapTolerance > glLeft) {
                                         newWidth = glLeft - newLeft;
-                                        closestGridline.css('background-color', '#00ff00');
+                                        closestGridline.style.backgroundColor = '#00ff00';
                                     }
                                 }
 
@@ -1042,8 +1056,8 @@ FrameTrail.defineType(
                     var self = this,
                         oldPosition;
 
-                    var el = this.overlayElement[0];
-                    this.overlayElement.addClass('ui-draggable');
+                    var el = this.overlayElement;
+                    this.overlayElement.classList.add('ui-draggable');
 
                     interact(el).draggable({
                         ignoreFrom: '.ui-resizable-handle',
@@ -1142,7 +1156,10 @@ FrameTrail.defineType(
                                             overlay.data.position.left   = capturedOldPos.left;
                                             overlay.data.position.width  = capturedOldPos.width;
                                             overlay.data.position.height = capturedOldPos.height;
-                                            overlay.overlayElement.css({ top: '', left: '', width: '', height: '' });
+                                            overlay.overlayElement.style.top    = '';
+                                            overlay.overlayElement.style.left   = '';
+                                            overlay.overlayElement.style.width  = '';
+                                            overlay.overlayElement.style.height = '';
                                             overlay.updateOverlayElement();
                                             overlay.scaleOverlayElement();
                                             FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
@@ -1154,7 +1171,10 @@ FrameTrail.defineType(
                                             overlay.data.position.left   = capturedNewPos.left;
                                             overlay.data.position.width  = capturedNewPos.width;
                                             overlay.data.position.height = capturedNewPos.height;
-                                            overlay.overlayElement.css({ top: '', left: '', width: '', height: '' });
+                                            overlay.overlayElement.style.top    = '';
+                                            overlay.overlayElement.style.left   = '';
+                                            overlay.overlayElement.style.width  = '';
+                                            overlay.overlayElement.style.height = '';
                                             overlay.updateOverlayElement();
                                             overlay.scaleOverlayElement();
                                             FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
@@ -1182,8 +1202,8 @@ FrameTrail.defineType(
                     var self = this,
                         oldPosition;
 
-                    var el = this.overlayElement[0];
-                    this.overlayElement.addClass('ui-resizable');
+                    var el = this.overlayElement;
+                    this.overlayElement.classList.add('ui-resizable');
 
                     // Inject corner handles if not yet present
                     ['ne', 'se', 'sw', 'nw'].forEach(function(dir) {
@@ -1311,7 +1331,10 @@ FrameTrail.defineType(
                                             overlay.data.position.left   = capturedOldPos.left;
                                             overlay.data.position.width  = capturedOldPos.width;
                                             overlay.data.position.height = capturedOldPos.height;
-                                            overlay.overlayElement.css({ top: '', left: '', width: '', height: '' });
+                                            overlay.overlayElement.style.top    = '';
+                                            overlay.overlayElement.style.left   = '';
+                                            overlay.overlayElement.style.width  = '';
+                                            overlay.overlayElement.style.height = '';
                                             overlay.updateOverlayElement();
                                             overlay.scaleOverlayElement();
                                             FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
@@ -1323,7 +1346,10 @@ FrameTrail.defineType(
                                             overlay.data.position.left   = capturedNewPos.left;
                                             overlay.data.position.width  = capturedNewPos.width;
                                             overlay.data.position.height = capturedNewPos.height;
-                                            overlay.overlayElement.css({ top: '', left: '', width: '', height: '' });
+                                            overlay.overlayElement.style.top    = '';
+                                            overlay.overlayElement.style.left   = '';
+                                            overlay.overlayElement.style.width  = '';
+                                            overlay.overlayElement.style.height = '';
                                             overlay.updateOverlayElement();
                                             overlay.scaleOverlayElement();
                                             FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
@@ -1363,7 +1389,6 @@ FrameTrail.defineType(
 
                     return this._activeStateInContentView.indexOf(contentView) >= 0;
                 }
-
 
 
 

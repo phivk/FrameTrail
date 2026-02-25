@@ -51,24 +51,27 @@ FrameTrail.defineType(
                         downloadButton = '<a download class="button" href="'+ FrameTrail.module('RouteNavigation').getResourceURL(this.resourceData.src) +'" data-tooltip-right="'+ this.labels['GenericDownload'] +'"><span class="icon-download"></span></a>';
                     }
 
-                    var resourceElement = $(
-                          '<div class="resourceDetail" data-type="'+ this.resourceData.type +'">'
-                        + '    <img src="'+ FrameTrail.module('RouteNavigation').getResourceURL(this.resourceData.src) +'">'
-                        + '    <div class="resourceOptions">'
-                        + '        <div class="licenseInformation">'+ licenseString +'</div>'
-                        + '        <div class="resourceButtons">'+ downloadButton +'</div>'
-                        + '    </div>'
-                        + '    <div class="resourceTooltip"></div>'
+                    var _wrapper = document.createElement('div');
+                    _wrapper.innerHTML = '<div class="resourceDetail" data-type="'+ this.resourceData.type +'">'
+                        + '<img src="'+ FrameTrail.module('RouteNavigation').getResourceURL(this.resourceData.src) +'">'
+                        + '<div class="resourceOptions">'
+                        + '    <div class="licenseInformation">'+ licenseString +'</div>'
+                        + '    <div class="resourceButtons">'+ downloadButton +'</div>'
                         + '</div>'
-                    );
+                        + '<div class="resourceTooltip"></div>'
+                        + '</div>';
+                    var resourceElement = _wrapper.firstElementChild;
 
                     if (this.resourceData.start) {
-                        var jumpToTimeButton = $('<button class="button btn btn-sm" data-start="'+ this.resourceData.start +'" data-end="'+ this.resourceData.end +'"><span class="icon-play-1"></span></button>');
-                        jumpToTimeButton.click(function(){
-                            var time = $(this).attr('data-start');
-                            FrameTrail.module('HypervideoController').currentTime = time;
+                        var jumpToTimeButton = document.createElement('button');
+                        jumpToTimeButton.className = 'button btn btn-sm';
+                        jumpToTimeButton.setAttribute('data-start', this.resourceData.start);
+                        jumpToTimeButton.setAttribute('data-end', this.resourceData.end);
+                        jumpToTimeButton.innerHTML = '<span class="icon-play-1"></span>';
+                        jumpToTimeButton.addEventListener('click', function(){
+                            FrameTrail.module('HypervideoController').currentTime = this.getAttribute('data-start');
                         });
-                        resourceElement.find('.resourceButtons').append(jumpToTimeButton);
+                        resourceElement.querySelector('.resourceButtons').append(jumpToTimeButton);
                     }
 
                     return resourceElement;
@@ -102,16 +105,19 @@ FrameTrail.defineType(
 
                     var tagList = (this.resourceData.tags ? this.resourceData.tags.join(' ') : '');
                     
-                    var thumbElement = $('<div class="resourceThumb '+ tagList +'" data-license-type="'+ this.resourceData.licenseType +'" data-resourceID="'+ trueID +'" data-type="'+ this.resourceData.type +'" style="background-image:url('+ thumbUrl +');">'
-                        + '                  <div class="resourceOverlay">'
-                        + '                      <div class="resourceIcon"><span class="icon-picture"></span></div>'
-                        + '                  </div>'
-                        + '                  <div class="resourceTitle">'+ this.resourceData.name +'</div>'
-                        + '              </div>');
+                    var _thumbWrapper = document.createElement('div');
+                    _thumbWrapper.innerHTML = '<div class="resourceThumb '+ tagList +'" data-license-type="'+ this.resourceData.licenseType +'" data-resourceID="'+ trueID +'" data-type="'+ this.resourceData.type +'" style="background-image:url('+ thumbUrl +');">'
+                        + '<div class="resourceOverlay"><div class="resourceIcon"><span class="icon-picture"></span></div></div>'
+                        + '<div class="resourceTitle">'+ this.resourceData.name +'</div>'
+                        + '</div>';
+                    var thumbElement = _thumbWrapper.firstElementChild;
 
-                    var previewButton = $('<div class="resourcePreviewButton"><span class="icon-eye"></span></div>').click(function(evt) {
+                    var previewButton = document.createElement('div');
+                    previewButton.className = 'resourcePreviewButton';
+                    previewButton.innerHTML = '<span class="icon-eye"></span>';
+                    previewButton.addEventListener('click', function(evt) {
                         // call the openPreview method (defined in abstract type: Resource)
-                        self.openPreview( $(this).parent() );
+                        self.openPreview(this.parentElement);
                         evt.stopPropagation();
                         evt.preventDefault();
                     });

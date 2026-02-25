@@ -96,11 +96,11 @@
         ViewVideo = FrameTrail.module('ViewVideo');
 
         // Remove only timeline elements, preserving the scroller and playhead
-        var scrollerTarget = ViewVideo.AnnotationTimeline.find('.timelineScroller');
-        if (scrollerTarget.length) {
-            scrollerTarget.children('.timelineElement').remove();
+        var scrollerTarget = ViewVideo.AnnotationTimeline.querySelector('.timelineScroller');
+        if (scrollerTarget) {
+            scrollerTarget.querySelectorAll('.timelineElement').forEach(function(el) { el.remove(); });
         } else {
-            ViewVideo.AnnotationTimeline.children('.timelineElement').remove();
+            ViewVideo.AnnotationTimeline.querySelectorAll('.timelineElement').forEach(function(el) { el.remove(); });
         }
 
         for (var i = 0; i < selectedAnnotations.length; i++) {
@@ -143,22 +143,23 @@
      */
     function stackTimelineView() {
 
-        var scroller = ViewVideo.AnnotationTimeline.find('.timelineScroller');
-        if (scroller.length) {
+        var scroller = ViewVideo.AnnotationTimeline.querySelector('.timelineScroller');
+        if (scroller) {
             // Reset inline heights first so elements resolve to their CSS-defined height
             // (avoids circular dependency: elements height:100% → scroller min-height:100% → inflated)
-            scroller.css({ height: '', 'flex-basis': '' });
-            ViewVideo.AnnotationTimeline.css({ height: '', 'min-height': '', 'flex-basis': '' });
-            CollisionDetection(scroller[0], {spacing:0, includeVerticalMargins: true, exclude: '.timelinePlayhead', containerPadding: 4});
+            scroller.style.height = '';
+            scroller.style.flexBasis = '';
+            ViewVideo.AnnotationTimeline.style.height = '';
+            ViewVideo.AnnotationTimeline.style.minHeight = '';
+            ViewVideo.AnnotationTimeline.style.flexBasis = '';
+            CollisionDetection(scroller, {spacing:0, includeVerticalMargins: true, exclude: '.timelinePlayhead', containerPadding: 4});
             // Read the inline value CollisionDetection just wrote (not .css() which is affected by CSS min-height:100%)
-            var stackedHeight = scroller[0].style.height;
-            ViewVideo.AnnotationTimeline.css({
-                height:        stackedHeight,
-                'flex-basis':  stackedHeight,
-                'flex-shrink': '0'
-            });
+            var stackedHeight = scroller.style.height;
+            ViewVideo.AnnotationTimeline.style.height = stackedHeight;
+            ViewVideo.AnnotationTimeline.style.flexBasis = stackedHeight;
+            ViewVideo.AnnotationTimeline.style.flexShrink = '0';
         } else {
-            CollisionDetection(ViewVideo.AnnotationTimeline[0], {spacing:0, includeVerticalMargins: true});
+            CollisionDetection(ViewVideo.AnnotationTimeline, {spacing:0, includeVerticalMargins: true});
         }
         ViewVideo.adjustLayout();
         ViewVideo.adjustHypervideo();
@@ -180,16 +181,21 @@
      */
     function resetTimelineView() {
 
-        ViewVideo.AnnotationTimeline.css({ height: '', 'min-height': '', 'flex-basis': '', 'flex-shrink': '' });
-        var target = ViewVideo.AnnotationTimeline.find('.timelineScroller');
-        if (target.length) {
-            target.css({ height: '', 'flex-basis': '' });
+        ViewVideo.AnnotationTimeline.style.height = '';
+        ViewVideo.AnnotationTimeline.style.minHeight = '';
+        ViewVideo.AnnotationTimeline.style.flexBasis = '';
+        ViewVideo.AnnotationTimeline.style.flexShrink = '';
+        var target = ViewVideo.AnnotationTimeline.querySelector('.timelineScroller');
+        if (target) {
+            target.style.height = '';
+            target.style.flexBasis = '';
         }
-        (target.length ? target : ViewVideo.AnnotationTimeline).children('.timelineElement').css({
-            top:    '',
-            right:  '',
-            bottom: '',
-            height: ''
+        var _timelineSource = target || ViewVideo.AnnotationTimeline;
+        _timelineSource.querySelectorAll('.timelineElement').forEach(function(el) {
+            el.style.top = '';
+            el.style.right = '';
+            el.style.bottom = '';
+            el.style.height = '';
         });
 
     }
@@ -259,24 +265,27 @@
 
         for (var idx in annotations) {
 
-            annotations[idx].annotationElement.removeClass('open previous next');
-            annotations[idx].timelineElement.removeClass('open');
-            annotations[idx].tileElement.removeClass('open');
+            if (annotations[idx].annotationElement) { annotations[idx].annotationElement.classList.remove('open', 'previous', 'next'); }
+            annotations[idx].timelineElement.classList.remove('open');
+            if (annotations[idx].tileElement) { annotations[idx].tileElement.classList.remove('open'); }
 
         }
 
         if (annotation) {
 
-            annotation.annotationElement.addClass('open');
-            annotation.annotationElement.prev().addClass('previous');
-            annotation.annotationElement.next().addClass('next');
+            if (annotation.annotationElement) {
+                annotation.annotationElement.classList.add('open');
+                if (annotation.annotationElement.previousElementSibling) { annotation.annotationElement.previousElementSibling.classList.add('previous'); }
+                if (annotation.annotationElement.nextElementSibling) { annotation.annotationElement.nextElementSibling.classList.add('next'); }
+            }
 
             updateAnnotationSlider();
 
             ViewVideo.shownDetails = 'bottom';
 
-            if ( annotation.data.type == 'location' && annotation.annotationElement.children('.resourceDetail').data('map') ) {
-                annotation.annotationElement.children('.resourceDetail').data('map').invalidateSize();
+            if ( annotation.data.type == 'location' && annotation.annotationElement ) {
+                var _rd = annotation.annotationElement.querySelector('.resourceDetail');
+                if (_rd && _rd._leafletMap) { _rd._leafletMap.invalidateSize(); }
             }
 
         } else {
@@ -385,15 +394,18 @@
      */
     function renderPropertiesControls(propertiesControlsInterface) {
 
-        ViewVideo.EditPropertiesContainer.empty().addClass('active').append( propertiesControlsInterface.controlsContainer );
+        ViewVideo.EditPropertiesContainer.innerHTML = '';
+        ViewVideo.EditPropertiesContainer.classList.add('active');
+        ViewVideo.EditPropertiesContainer.appendChild( propertiesControlsInterface.controlsContainer );
 
         updateControlsStart        = propertiesControlsInterface.changeStart;
         updateControlsEnd          = propertiesControlsInterface.changeEnd;
 
         ViewVideo.switchInfoTab('properties');
-        ViewVideo.EditPropertiesContainer.find('.annotationOptionsTabs').tabs('refresh');
+        var _atabs = ViewVideo.EditPropertiesContainer.querySelector('.annotationOptionsTabs');
+        if (_atabs) { FTTabs(_atabs, 'refresh'); } // Phase 2 bridge
 
-        var cm6Wrapper = ViewVideo.EditPropertiesContainer.find('.cm6-wrapper')[0];
+        var cm6Wrapper = ViewVideo.EditPropertiesContainer.querySelector('.cm6-wrapper');
         if ( cm6Wrapper && cm6Wrapper._cm6view ) { cm6Wrapper._cm6view.requestMeasure(); }
 
     }
@@ -410,7 +422,7 @@
         updateControlsStart      = function(){};
         updateControlsEnd        = function(){};
 
-        ViewVideo.EditPropertiesContainer.removeClass('active').empty();
+        ViewVideo.EditPropertiesContainer.classList.remove('active'); ViewVideo.EditPropertiesContainer.innerHTML = '';
         ViewVideo.switchInfoTab('add');
 
     }
@@ -500,44 +512,49 @@
      */
     function initEditOptions() {
 
-        ViewVideo.EditingOptions.empty();
+        ViewVideo.EditingOptions.innerHTML = '';
 
-        ViewVideo.EditingOptions.append(
-            '<div class="message active"><span class="icon-annotations"></span> '+ labels['MessageHintDragAnnotations'] +'</div>'
-        );
+        var _hint = document.createElement('div');
+        _hint.className = 'message active';
+        _hint.innerHTML = '<span class="icon-annotations"></span> ' + labels['MessageHintDragAnnotations'];
+        ViewVideo.EditingOptions.appendChild(_hint);
 
-        var annotationsEditingOptions = $('<div class="overlayEditingTabs">'
-                                  +   '    <ul>'
-                                  +   '        <li><a href="#CustomAnnotation">'+ labels['ResourceAddCustomAnnotation'] +'</a></li>'
-                                  +   '        <li><a href="#ResourceList">'+ labels['ResourceChoose'] +'</a></li>'
-                                  +   '    </ul>'
-                                  +   '    <div id="CustomAnnotation"></div>'
-                                  +   '    <div id="ResourceList"></div>'
-                                  +   '</div>')
-                                  .tabs({
-                                      heightStyle: "fill"
-                                  });
+        var _aew = document.createElement('div');
+        _aew.innerHTML = '<div class="overlayEditingTabs">'
+                       +   '    <ul>'
+                       +   '        <li><a href="#CustomAnnotation">'+ labels['ResourceAddCustomAnnotation'] +'</a></li>'
+                       +   '        <li><a href="#ResourceList">'+ labels['ResourceChoose'] +'</a></li>'
+                       +   '    </ul>'
+                       +   '    <div id="CustomAnnotation"></div>'
+                       +   '    <div id="ResourceList"></div>'
+                       +   '</div>';
+        var annotationsEditingOptions = _aew.firstElementChild;
+        FTTabs(annotationsEditingOptions, {
+            heightStyle: "fill"
+        }); // Phase 2 bridge
 
 
 
-        ViewVideo.EditingOptions.append(annotationsEditingOptions);
+        ViewVideo.EditingOptions.appendChild(annotationsEditingOptions);
 
         FrameTrail.module('ResourceManager').renderResourcePicker(
-            annotationsEditingOptions.find('#ResourceList')
+            annotationsEditingOptions.querySelector('#ResourceList')
         );
 
         /* Append custom text resource to 'Add Custom Annotation' tab */
         // TODO: Move to separate function
-        var textElement = $('<div class="resourceThumb" data-type="text">'
+        var _tew = document.createElement('div');
+        _tew.innerHTML = '<div class="resourceThumb" data-type="text">'
                 + '                  <div class="resourceOverlay">'
                 + '                      <div class="resourceIcon"></div>'
                 + '                  </div>'
                 + '                  <div class="resourceTitle">'+ labels['ResourceCustomTextHTML'] +'</div>'
-                + '              </div>');
+                + '              </div>';
+        var textElement = _tew.firstElementChild;
 
         (function() {
             var dragClone = null;
-            interact(textElement[0]).draggable({
+            interact(textElement).draggable({
                 listeners: {
                     start: function(e) {
                         var rect = e.target.getBoundingClientRect();
@@ -570,22 +587,24 @@
             });
         }());
 
-        annotationsEditingOptions.find('#CustomAnnotation').append(textElement);
+        annotationsEditingOptions.querySelector('#CustomAnnotation').appendChild(textElement);
 
         /* Render other users' annotation timelines in the main view container */
         var otherUsersContainer = ViewVideo.OtherUsersContainer;
-        otherUsersContainer.empty();
-        otherUsersContainer.append(
+        otherUsersContainer.innerHTML = '';
+        otherUsersContainer.insertAdjacentHTML('beforeend',
             '<div class="message active">'+ labels['MessageDragAnnotationsIntoTimeline'] +'</div>'
         );
-        var timelineList = $('<div class="timelineList" data-zoom-level="1"></div>');
-        otherUsersContainer.append(timelineList);
+        var timelineList = document.createElement('div');
+        timelineList.className = 'timelineList';
+        timelineList.dataset.zoomLevel = '1';
+        otherUsersContainer.appendChild(timelineList);
         renderAnnotationTimelines(annotations, timelineList, 'creatorId', 'label', false);
 
         // Register the timeline zoom wrapper as a follower to sync zoom/scroll with main timelines
-        var timelineZoomWrapper = timelineList.find('.timelineZoomWrapper');
-        var timelineZoomScroller = timelineList.find('.timelineZoomScroller');
-        if (timelineZoomWrapper.length && timelineZoomScroller.length) {
+        var timelineZoomWrapper = timelineList.querySelector('.timelineZoomWrapper');
+        var timelineZoomScroller = timelineList.querySelector('.timelineZoomScroller');
+        if (timelineZoomWrapper && timelineZoomScroller) {
             FrameTrail.module('TimelineController').registerFollowerTimeline(timelineZoomWrapper, timelineZoomScroller);
         }
 
@@ -606,15 +625,15 @@
 
         if (droppable) {
 
-            interact(ViewVideo.AnnotationTimeline[0]).dropzone({
+            interact(ViewVideo.AnnotationTimeline).dropzone({
                 accept:    '.resourceThumb, .compareTimelineElement',
                 overlap:   'pointer',
-                ondropactivate:   function(e) { $(e.target).addClass('droppableActive'); },
-                ondropdeactivate: function(e) { $(e.target).removeClass('droppableActive droppableHover'); ViewVideo.PlayerProgress.find('.ui-slider-handle').removeClass('highlight'); },
-                ondragenter:      function(e) { $(e.target).addClass('droppableHover'); ViewVideo.PlayerProgress.find('.ui-slider-handle').addClass('highlight'); },
-                ondragleave:      function(e) { $(e.target).removeClass('droppableHover'); ViewVideo.PlayerProgress.find('.ui-slider-handle').removeClass('highlight'); },
+                ondropactivate:   function(e) { e.target.classList.add('droppableActive'); },
+                ondropdeactivate: function(e) { e.target.classList.remove('droppableActive', 'droppableHover'); var _sh = ViewVideo.PlayerProgress.querySelector('.ui-slider-handle'); if (_sh) _sh.classList.remove('highlight'); },
+                ondragenter:      function(e) { e.target.classList.add('droppableHover'); var _sh = ViewVideo.PlayerProgress.querySelector('.ui-slider-handle'); if (_sh) _sh.classList.add('highlight'); },
+                ondragleave:      function(e) { e.target.classList.remove('droppableHover'); var _sh = ViewVideo.PlayerProgress.querySelector('.ui-slider-handle'); if (_sh) _sh.classList.remove('highlight'); },
                 ondrop: function(e) {
-                    var $dragged = $(e.relatedTarget);
+                    var dragged = e.relatedTarget;
 
                     try {
                         if (TogetherJS && TogetherJS.running) {
@@ -628,30 +647,30 @@
                         }
                     } catch (ex) {}
 
-                    var resourceID      = $dragged.attr('data-resourceID'),
+                    var resourceID      = dragged.getAttribute('data-resourceID'),
                         videoDuration   = FrameTrail.module('HypervideoModel').duration,
                         startTime,
                         endTime,
                         newAnnotation;
 
-                        if ($dragged.hasClass('compareTimelineElement')) {
-                            startTime = parseFloat($dragged.attr('data-start'));
-                            endTime   = parseFloat($dragged.attr('data-end'));
+                        if (dragged.classList.contains('compareTimelineElement')) {
+                            startTime = parseFloat(dragged.getAttribute('data-start'));
+                            endTime   = parseFloat(dragged.getAttribute('data-end'));
                         } else {
                             startTime = FrameTrail.module('HypervideoController').currentTime;
                             endTime   = (startTime + 4 > videoDuration) ? videoDuration : startTime + 4;
                         }
 
-                        if ($dragged.attr('data-type') == 'text') {
+                        if (dragged.getAttribute('data-type') == 'text') {
                             newAnnotation = FrameTrail.module('HypervideoModel').newAnnotation({
                                 "name":       labels['ResourceCustomTextHTML'],
-                                "type":       $dragged.attr('data-type'),
+                                "type":       dragged.getAttribute('data-type'),
                                 "start":      startTime,
                                 "end":        endTime,
                                 "attributes": { "text": "" }
                             });
                         } else if (!resourceID) {
-                            var resourceData = $dragged.data('originResourceData');
+                            var resourceData = dragged._originResourceData;
                             newAnnotation = FrameTrail.module('HypervideoModel').newAnnotation({
                                 "name":       resourceData.name,
                                 "type":       resourceData.type,
@@ -705,13 +724,13 @@
                         });
                     })(JSON.parse(JSON.stringify(newAnnotation.data)));
 
-                    ViewVideo.PlayerProgress.find('.ui-slider-handle').removeClass('highlight');
+                    var _sh2 = ViewVideo.PlayerProgress.querySelector('.ui-slider-handle'); if (_sh2) _sh2.classList.remove('highlight');
                 }
             });
 
         } else {
 
-            interact(ViewVideo.AnnotationTimeline[0]).unset();
+            interact(ViewVideo.AnnotationTimeline).unset();
 
         }
 
@@ -946,38 +965,47 @@
             });
         }
 
-        var timelineZoomWrapper = $('<div class="timelineZoomWrapper"></div>'),
-            timelineZoomScroller = $('<div class="timelineZoomScroller"></div>');
+        var timelineZoomWrapper = document.createElement('div');
+        timelineZoomWrapper.className = 'timelineZoomWrapper';
+        var timelineZoomScroller = document.createElement('div');
+        timelineZoomScroller.className = 'timelineZoomScroller';
 
-        timelineZoomScroller.appendTo(timelineZoomWrapper);
+        timelineZoomWrapper.appendChild(timelineZoomScroller);
 
         // Keep userLabels visible when scrolling horizontally
-        timelineZoomWrapper.on('scroll', function(evt) {
-            var scrollLeftVal = $(this).scrollLeft();
-            $(this).find('.userLabel').css('left', scrollLeftVal + 'px');
+        timelineZoomWrapper.addEventListener('scroll', function(evt) {
+            var scrollLeftVal = this.scrollLeft;
+            this.querySelectorAll('.userLabel').forEach(function(el) { el.style.left = scrollLeftVal + 'px'; });
         });
 
         if (zoomControls) {
 
-            var zoomControlsWrapper = $('<div class="zoomControlsWrapper"></div>'),
-                zoomMinus = $('<button class="button zoomMinus"><span class="icon-zoom-out"></span></button>'),
-                zoomPlus = $('<button class="button zoomPlus"><span class="icon-zoom-in"></span></button>');
+            var zoomControlsWrapper = document.createElement('div');
+            zoomControlsWrapper.className = 'zoomControlsWrapper';
+            var zoomMinus = document.createElement('button');
+            zoomMinus.className = 'button zoomMinus';
+            zoomMinus.innerHTML = '<span class="icon-zoom-out"></span>';
+            var zoomPlus = document.createElement('button');
+            zoomPlus.className = 'button zoomPlus';
+            zoomPlus.innerHTML = '<span class="icon-zoom-in"></span>';
             
-            zoomMinus.click(function() {
-                var currentZoomLevel = parseFloat($(this).parent().parent().attr('data-zoom-level'));
+            zoomMinus.addEventListener('click', function() {
+                var currentZoomLevel = parseFloat(this.parentElement.parentElement.dataset.zoomLevel);
                 zoomTimelines(timelineZoomWrapper, currentZoomLevel-0.5 );
             });
-            zoomPlus.click(function() {
-                var currentZoomLevel = parseFloat($(this).parent().parent().attr('data-zoom-level'));
+            zoomPlus.addEventListener('click', function() {
+                var currentZoomLevel = parseFloat(this.parentElement.parentElement.dataset.zoomLevel);
                 zoomTimelines(timelineZoomWrapper, currentZoomLevel+0.5);
                 //console.log(currentZoomLevel);
             });
             zoomControlsWrapper.append(zoomPlus, zoomMinus);
 
-            targetElement.append(zoomControlsWrapper);
+            targetElement.appendChild(zoomControlsWrapper);
 
-            var timelineProgress = $('<div class="timelineProgressWrapper"><div class="timelineProgressRange"></div></div>');
-            timelineZoomScroller.append(timelineProgress);
+            var timelineProgress = document.createElement('div');
+            timelineProgress.className = 'timelineProgressWrapper';
+            timelineProgress.innerHTML = '<div class="timelineProgressRange"></div>';
+            timelineZoomScroller.appendChild(timelineProgress);
 
             var leftStart;
         }
@@ -1005,47 +1033,63 @@
             var exportData = getAnnotationDataAsCSV(collectedAnnotationsPerAspectData[i].annotations);
             var exportButtonString = '<a class="exportTimelineDataButton" title="'+ labels['MessageAnnotationExportAsCSV'] +'" download="'+ exportFileName +'.csv" href="'+ exportData +'">'+ labels['GenericExportData'] +'</a>';
 
-            var userTimelineWrapper = $(    '<div class="userTimelineWrapper">'
-                                        +   '    <div class="userLabel" style="color: '+ aspectColor +'">'
-                                        +   '        <span class="'+ iconClass +'"></span>'
-                                        +   '        <span>'+ aspectLabel + '</span>'+exportButtonString
-                                        +   '        <div class="timelineValues"></div>'
-                                        +   '    </div>'
-                                        +   '    <div class="userTimeline"></div>'
-                                        +   '</div>'),
-                legendContainer = userTimelineWrapper.find('.timelineValues'),
-                userTimeline = userTimelineWrapper.find('.userTimeline');
+            var _utw = document.createElement('div');
+            _utw.innerHTML = '<div class="userTimelineWrapper">'
+                            +   '    <div class="userLabel" style="color: '+ aspectColor +'">'
+                            +   '        <span class="'+ iconClass +'"></span>'
+                            +   '        <span>'+ aspectLabel + '</span>'+exportButtonString
+                            +   '        <div class="timelineValues"></div>'
+                            +   '    </div>'
+                            +   '    <div class="userTimeline"></div>'
+                            +   '</div>';
+            var userTimelineWrapper = _utw.firstElementChild,
+                legendContainer = userTimelineWrapper.querySelector('.timelineValues'),
+                userTimeline = userTimelineWrapper.querySelector('.userTimeline');
 
             if (aspectValues && aspectValues.values.length != 0) {
                 
-                var evolvingValuesLegendElement = $('<span class="timelineLegendLabel" data-origin-type="ao:EvolvingValuesAnnotationType" title="Evolving Values" style="color: #777;">TO</span>'),
-                    contrastingValuesLegendElement = $('<span class="timelineLegendLabel" data-origin-type="ao:ContrastingValuesAnnotationType" title="Contrasting Values" style="color: #777;">VS</span>');
+                var evolvingValuesLegendElement = document.createElement('span');
+                evolvingValuesLegendElement.className = 'timelineLegendLabel';
+                evolvingValuesLegendElement.setAttribute('data-origin-type', 'ao:EvolvingValuesAnnotationType');
+                evolvingValuesLegendElement.title = 'Evolving Values';
+                evolvingValuesLegendElement.style.color = '#777';
+                evolvingValuesLegendElement.textContent = 'TO';
+                var contrastingValuesLegendElement = document.createElement('span');
+                contrastingValuesLegendElement.className = 'timelineLegendLabel';
+                contrastingValuesLegendElement.setAttribute('data-origin-type', 'ao:ContrastingValuesAnnotationType');
+                contrastingValuesLegendElement.title = 'Contrasting Values';
+                contrastingValuesLegendElement.style.color = '#777';
+                contrastingValuesLegendElement.textContent = 'VS';
 
-                evolvingValuesLegendElement.hover(function(evt) {
-                    var thisOriginType = $(this).attr('data-origin-type');
-                    $(this).siblings().css('opacity', 0.2);
-                    $(this).css('opacity', 1);
-                    $(this).parents('.userLabel').next('.userTimeline').find('.compareTimelineElement:not([data-origin-type]), [data-timeline-color]').removeClass('opaque');
-                    $(this).parents('.userLabel').next('.userTimeline').find('.compareTimelineElement:not([data-origin-type])').addClass('transparentBackground');
-                    $(this).parents('.userLabel').next('.userTimeline').find('.compareTimelineElement[data-origin-type]:not([data-origin-type="'+ thisOriginType +'"]), [data-origin-type]:not([data-origin-type="'+ thisOriginType +'"])').addClass('opaque');
-                }, function(evt) {
-                    $(this).siblings().css('opacity', '');
-                    $(this).css('opacity', '');
-                    $(this).parents('.userLabel').next('.userTimeline').find('.compareTimelineElement:not([data-origin-type]), [data-origin-type]').removeClass('opaque');
-                    $(this).parents('.userLabel').next('.userTimeline').find('.compareTimelineElement:not([data-origin-type])').removeClass('transparentBackground');
+                evolvingValuesLegendElement.addEventListener('mouseenter', function(evt) {
+                    var thisOriginType = this.getAttribute('data-origin-type');
+                    Array.from(this.parentElement.children).forEach(function(c) { c.style.opacity = '0.2'; });
+                    this.style.opacity = '1';
+                    var _tl = this.closest('.userLabel').nextElementSibling;
+                    _tl.querySelectorAll('.compareTimelineElement:not([data-origin-type]), [data-timeline-color]').forEach(function(el) { el.classList.remove('opaque'); });
+                    _tl.querySelectorAll('.compareTimelineElement:not([data-origin-type])').forEach(function(el) { el.classList.add('transparentBackground'); });
+                    _tl.querySelectorAll('.compareTimelineElement[data-origin-type]:not([data-origin-type="'+ thisOriginType +'"]), [data-origin-type]:not([data-origin-type="'+ thisOriginType +'"])').forEach(function(el) { el.classList.add('opaque'); });
                 });
-                contrastingValuesLegendElement.hover(function(evt) {
-                    var thisOriginType = $(this).attr('data-origin-type');
-                    $(this).siblings().css('opacity', 0.2);
-                    $(this).css('opacity', 1);
-                    $(this).parents('.userLabel').next('.userTimeline').find('.compareTimelineElement:not([data-origin-type]), [data-timeline-color]').removeClass('opaque');
-                    $(this).parents('.userLabel').next('.userTimeline').find('.compareTimelineElement:not([data-origin-type])').addClass('transparentBackground');
-                    $(this).parents('.userLabel').next('.userTimeline').find('.compareTimelineElement[data-origin-type]:not([data-origin-type="'+ thisOriginType +'"]), [data-origin-type]:not([data-origin-type="'+ thisOriginType +'"])').addClass('opaque');
-                }, function(evt) {
-                    $(this).siblings().css('opacity', '');
-                    $(this).css('opacity', '');
-                    $(this).parents('.userLabel').next('.userTimeline').find('.compareTimelineElement:not([data-origin-type]), [data-origin-type]').removeClass('opaque');
-                    $(this).parents('.userLabel').next('.userTimeline').find('.compareTimelineElement:not([data-origin-type])').removeClass('transparentBackground');
+                evolvingValuesLegendElement.addEventListener('mouseleave', function(evt) {
+                    Array.from(this.parentElement.children).forEach(function(c) { c.style.opacity = ''; });
+                    var _tl = this.closest('.userLabel').nextElementSibling;
+                    _tl.querySelectorAll('.compareTimelineElement:not([data-origin-type]), [data-origin-type]').forEach(function(el) { el.classList.remove('opaque'); });
+                    _tl.querySelectorAll('.compareTimelineElement:not([data-origin-type])').forEach(function(el) { el.classList.remove('transparentBackground'); });
+                });
+                contrastingValuesLegendElement.addEventListener('mouseenter', function(evt) {
+                    var thisOriginType = this.getAttribute('data-origin-type');
+                    Array.from(this.parentElement.children).forEach(function(c) { c.style.opacity = '0.2'; });
+                    this.style.opacity = '1';
+                    var _tl = this.closest('.userLabel').nextElementSibling;
+                    _tl.querySelectorAll('.compareTimelineElement:not([data-origin-type]), [data-timeline-color]').forEach(function(el) { el.classList.remove('opaque'); });
+                    _tl.querySelectorAll('.compareTimelineElement:not([data-origin-type])').forEach(function(el) { el.classList.add('transparentBackground'); });
+                    _tl.querySelectorAll('.compareTimelineElement[data-origin-type]:not([data-origin-type="'+ thisOriginType +'"]), [data-origin-type]:not([data-origin-type="'+ thisOriginType +'"])').forEach(function(el) { el.classList.add('opaque'); });
+                });
+                contrastingValuesLegendElement.addEventListener('mouseleave', function(evt) {
+                    Array.from(this.parentElement.children).forEach(function(c) { c.style.opacity = ''; });
+                    var _tl = this.closest('.userLabel').nextElementSibling;
+                    _tl.querySelectorAll('.compareTimelineElement:not([data-origin-type]), [data-origin-type]').forEach(function(el) { el.classList.remove('opaque'); });
+                    _tl.querySelectorAll('.compareTimelineElement:not([data-origin-type])').forEach(function(el) { el.classList.remove('transparentBackground'); });
                 });
                 legendContainer.append(evolvingValuesLegendElement, contrastingValuesLegendElement);
 
@@ -1054,24 +1098,26 @@
                         relativeHeight = 100 * (numericRatio),
                         timelineColor = (aspectValues.maxNumericValue) ? Math.round(numericRatio * 12) : v*1 + 1;
                     if (aspectLabel.indexOf('Colour Range') != -1 || aspectLabel.indexOf('Colour Accent') != -1) {
-                        var valueLegendElement = $('<span class="timelineLegendLabel" data-numeric-value="'+ aspectValues.values[v].elementNumericValue +'" data-timeline-color="'+ aspectValues.values[v].name +'" style="color: '+ aspectValues.values[v].name +';">'+ aspectValues.values[v].name +'</span>');
+                        var _vlw = document.createElement('div'); _vlw.innerHTML = '<span class="timelineLegendLabel" data-numeric-value="'+ aspectValues.values[v].elementNumericValue +'" data-timeline-color="'+ aspectValues.values[v].name +'" style="color: '+ aspectValues.values[v].name +';">'+ aspectValues.values[v].name +'</span>'; var valueLegendElement = _vlw.firstElementChild;
                     } else {
-                        var valueLegendElement = $('<span class="timelineLegendLabel" data-numeric-value="'+ aspectValues.values[v].elementNumericValue +'" data-timeline-color="'+ timelineColor +'">'+ aspectValues.values[v].name +'</span>');
+                        var _vlw = document.createElement('div'); _vlw.innerHTML = '<span class="timelineLegendLabel" data-numeric-value="'+ aspectValues.values[v].elementNumericValue +'" data-timeline-color="'+ timelineColor +'">'+ aspectValues.values[v].name +'</span>'; var valueLegendElement = _vlw.firstElementChild;
                     }
-                    valueLegendElement.hover(function(evt) {
-                        var thisColor = $(this).attr('data-timeline-color');
-                        $(this).siblings().css('opacity', 0.2);
-                        $(this).css('opacity', 1);
-                        $(this).parents('.userLabel').next('.userTimeline').find('.compareTimelineElement:not([data-timeline-color]), [data-timeline-color]').removeClass('opaque');
-                        $(this).parents('.userLabel').next('.userTimeline').find('.compareTimelineElement:not([data-timeline-color])').addClass('transparentBackground');
-                        $(this).parents('.userLabel').next('.userTimeline').find('.compareTimelineElement[data-timeline-color]:not([data-timeline-color="'+ thisColor +'"]), [data-timeline-color]:not([data-timeline-color="'+ thisColor +'"])').addClass('opaque');
-                    }, function(evt) {
-                        $(this).siblings().css('opacity', '');
-                        $(this).css('opacity', '');
-                        $(this).parents('.userLabel').next('.userTimeline').find('.compareTimelineElement:not([data-timeline-color]), [data-timeline-color]').removeClass('opaque');
-                        $(this).parents('.userLabel').next('.userTimeline').find('.compareTimelineElement:not([data-timeline-color])').removeClass('transparentBackground');
+                    valueLegendElement.addEventListener('mouseenter', function(evt) {
+                        var thisColor = this.getAttribute('data-timeline-color');
+                        Array.from(this.parentElement.children).forEach(function(c) { c.style.opacity = '0.2'; });
+                        this.style.opacity = '1';
+                        var _tl = this.closest('.userLabel').nextElementSibling;
+                        _tl.querySelectorAll('.compareTimelineElement:not([data-timeline-color]), [data-timeline-color]').forEach(function(el) { el.classList.remove('opaque'); });
+                        _tl.querySelectorAll('.compareTimelineElement:not([data-timeline-color])').forEach(function(el) { el.classList.add('transparentBackground'); });
+                        _tl.querySelectorAll('.compareTimelineElement[data-timeline-color]:not([data-timeline-color="'+ thisColor +'"]), [data-timeline-color]:not([data-timeline-color="'+ thisColor +'"])').forEach(function(el) { el.classList.add('opaque'); });
                     });
-                    legendContainer.append(valueLegendElement);
+                    valueLegendElement.addEventListener('mouseleave', function(evt) {
+                        Array.from(this.parentElement.children).forEach(function(c) { c.style.opacity = ''; });
+                        var _tl = this.closest('.userLabel').nextElementSibling;
+                        _tl.querySelectorAll('.compareTimelineElement:not([data-timeline-color]), [data-timeline-color]').forEach(function(el) { el.classList.remove('opaque'); });
+                        _tl.querySelectorAll('.compareTimelineElement:not([data-timeline-color])').forEach(function(el) { el.classList.remove('transparentBackground'); });
+                    });
+                    legendContainer.appendChild(valueLegendElement);
                 }
             }
 
@@ -1082,41 +1128,42 @@
                 //console.log(gridLevels);
                 for (var gl=1; gl<timelineMaxValue; gl++) {
                     var bottomValue = 100 * (gl / timelineMaxValue);
-                    userTimeline.append('<div class="horizontalGridLine" style="bottom: '+ bottomValue +'%;"></div>');
+                    userTimeline.insertAdjacentHTML('beforeend', '<div class="horizontalGridLine" style="bottom: '+ bottomValue +'%;"></div>');
                 }
             }
 
-            userTimelineWrapper.attr('data-timeline-max-value', timelineMaxValue);
-            userTimelineWrapper.attr('data-type-label', aspectLabel);
+            userTimelineWrapper.dataset.timelineMaxValue = timelineMaxValue;
+            userTimelineWrapper.dataset.typeLabel = aspectLabel;
             
             var overlapLeft = false,
                 overlapRight = false;
 
             for (var idx in collectedAnnotationsPerAspectData[i].annotations) {
                 var compareTimelineItem = collectedAnnotationsPerAspectData[i].annotations[idx].renderCompareTimelineItem();
-                if (compareTimelineItem.hasClass('overlapLeft')) overlapLeft = true;
-                if (compareTimelineItem.hasClass('overlapRight')) overlapRight = true;
+                if (compareTimelineItem.classList.contains('overlapLeft')) overlapLeft = true;
+                if (compareTimelineItem.classList.contains('overlapRight')) overlapRight = true;
                 //TODO: Fix conflict between aspectColor and value (in same element)
-                compareTimelineItem.css('background-color', aspectColor);
-                if (compareTimelineItem.attr('data-origin-type') == 'ao:EvolvingValuesAnnotationType') {
-                    compareTimelineItem.find('path').attr('fill', aspectColor);
+                compareTimelineItem.style.backgroundColor = aspectColor;
+                if (compareTimelineItem.getAttribute('data-origin-type') == 'ao:EvolvingValuesAnnotationType') {
+                    var _path = compareTimelineItem.querySelector('path');
+                    if (_path) { _path.setAttribute('fill', aspectColor); }
                 }
 
-                userTimeline.append(compareTimelineItem);
+                userTimeline.appendChild(compareTimelineItem);
             }
 
             if (overlapLeft) {
-                userTimeline.append('<div class="overlapIndicatorLeft"><span class="icon-angle-double-left"></span></div>');
+                userTimeline.insertAdjacentHTML('beforeend', '<div class="overlapIndicatorLeft"><span class="icon-angle-double-left"></span></div>');
             }
             if (overlapRight) {
-                userTimeline.append('<div class="overlapIndicatorRight"><span class="icon-angle-double-right"></span></div>');
+                userTimeline.insertAdjacentHTML('beforeend', '<div class="overlapIndicatorRight"><span class="icon-angle-double-right"></span></div>');
             }
 
-            timelineZoomScroller.append(userTimelineWrapper);
+            timelineZoomScroller.appendChild(userTimelineWrapper);
 
         }
 
-        targetElement.append(timelineZoomWrapper);
+        targetElement.appendChild(timelineZoomWrapper);
 
         makeTimelinesSortable(timelineZoomScroller);
 
@@ -1133,7 +1180,13 @@
         for (var i = 0; i < annotationData.length; i++) {
             var annotationContent = annotationData[i].data.name;
             if (annotationData[i].data.type == 'text') {
-                annotationContent = (annotationData[i].data.attributes.text.length != 0) ? $.parseHTML(annotationData[i].data.attributes.text)[0].data : '';
+                if (annotationData[i].data.attributes.text.length != 0) {
+                    var _t = document.createElement('div');
+                    _t.innerHTML = annotationData[i].data.attributes.text;
+                    annotationContent = _t.textContent;
+                } else {
+                    annotationContent = '';
+                }
             }
             if (annotationData[i].data.source.url.target && annotationData[i].data.source.url.target.selector["advene:end"]) {
                 var startTime = annotationData[i].data.source.url.target.selector["advene:begin"],
@@ -1163,11 +1216,11 @@
         }
 
         var zoomPercent = zoomLevel*100,
-            currentLeft = parseInt(targetElement.eq(0).scrollLeft()),
-            currentWidth = targetElement.find('.timelineZoomScroller').eq(0).width(),
+            currentLeft = parseInt(targetElement.scrollLeft),
+            currentWidth = targetElement.querySelector('.timelineZoomScroller').offsetWidth,
             focusPoint = 2,
-            positionLeft = (targetElement.width() * (zoomLevel/focusPoint)) + (targetElement.width()/focusPoint),
-            currentOffset = currentLeft + (currentLeft + currentWidth - targetElement.width());
+            positionLeft = (targetElement.offsetWidth * (zoomLevel/focusPoint)) + (targetElement.offsetWidth/focusPoint),
+            currentOffset = currentLeft + (currentLeft + currentWidth - targetElement.offsetWidth);
 
         /*
         console.log('Left: '+ currentLeft);
@@ -1181,18 +1234,16 @@
             positionLeft = 0;
         }
 
-        if ( (targetElement.width()*zoomLevel) - targetElement.width() + currentOffset < 0  ) {
-            positionLeft = (targetElement.width()*zoomLevel) - targetElement.width();
+        if ( (targetElement.offsetWidth*zoomLevel) - targetElement.offsetWidth + currentOffset < 0  ) {
+            positionLeft = (targetElement.offsetWidth*zoomLevel) - targetElement.offsetWidth;
         }
 
-        targetElement.find('.timelineZoomScroller').css({
-            width: zoomPercent + '%'
-        });
+        targetElement.querySelector('.timelineZoomScroller').style.width = zoomPercent + '%';
 
         //TODO: FIX POSITIONING
         //targetElement.scrollLeft(positionLeft);
 
-        targetElement.parent().attr('data-zoom-level', zoomLevel);
+        targetElement.parentElement.dataset.zoomLevel = zoomLevel;
 
     }
 
@@ -1203,7 +1254,7 @@
      * @param {Float} zoomLevel
      */
     function makeTimelinesSortable(containerElement) {
-        Sortable.create(containerElement[0], {
+        Sortable.create(containerElement, {
             draggable:  '.userTimelineWrapper',
             ghostClass: 'sortable-placeholder',
             filter:     '.compareTimelineElement',

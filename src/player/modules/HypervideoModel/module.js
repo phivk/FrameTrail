@@ -95,10 +95,10 @@
 		// Apply per-hypervideo theme (falls back to global theme)
 		var hvTheme = hypervideo.config.theme;
 		if (hvTheme) {
-			$(FrameTrail.getState('target')).attr('data-frametrail-theme', hvTheme);
+			document.querySelector(FrameTrail.getState('target')).setAttribute('data-frametrail-theme', hvTheme);
 		} else {
 			var globalTheme = database.config.theme || '';
-			$(FrameTrail.getState('target')).attr('data-frametrail-theme', globalTheme);
+			document.querySelector(FrameTrail.getState('target')).setAttribute('data-frametrail-theme', globalTheme);
 		}
 
 		/**
@@ -157,7 +157,7 @@
 
 
 		// Show warning if user tries to leave the page without having saved changes
-		$(window).on('beforeunload', function(e) {
+		window.addEventListener('beforeunload', function(e) {
 			if ( FrameTrail.getState('unsavedChanges') ) {
 				// This message is not actually shown to the user in most cases, but the browser needs a return value
 				var message = labels['MessageUnsavedChanges'];
@@ -284,7 +284,7 @@
 
 		if (subtitles['en']) {
 			selectedLang = 'en';
-		} else if ( !$.isEmptyObject(database.subtitles) ) {
+		} else if ( Object.keys(database.subtitles).length > 0 ) {
 			for (first in database.subtitles) break;
 				selectedLang = first;
 		}
@@ -1030,16 +1030,18 @@
 	 */
 	function saveAs() {
 
-		var saveAsDialog = $('<div class="saveAsDialog">'
+		var _saveAsWrapper = document.createElement('div');
+		_saveAsWrapper.innerHTML = '<div class="saveAsDialog">'
 			+ '<p>'+ labels['GenericSaveAs'] +'</p>'
 			+ '<div class="saveOptions"></div>'
-			+ '</div>');
+			+ '</div>';
+		var saveAsDialog = _saveAsWrapper.firstElementChild;
 
-		var options = saveAsDialog.find('.saveOptions');
+		var options = saveAsDialog.querySelector('.saveOptions');
 
 		// Server option (if available and logged in)
 		if (FrameTrail.module('StorageManager').canSaveToServer()) {
-			options.append(
+			options.insertAdjacentHTML('beforeend',
 				'<button class="saveToServer" style="display:block; width:100%; margin:5px 0; padding:10px;">'
 				+ '<span class="icon-cloud-upload"></span> '+ labels['SaveToServer']
 				+ '</button>'
@@ -1048,7 +1050,7 @@
 
 		// Local folder option (if File System Access API supported)
 		if (FrameTrail.module('StorageManager').canSaveToLocal()) {
-			options.append(
+			options.insertAdjacentHTML('beforeend',
 				'<button class="saveToLocal" style="display:block; width:100%; margin:5px 0; padding:10px;">'
 				+ '<span class="icon-folder"></span> '+ labels['SaveToLocalFolder']
 				+ '</button>'
@@ -1056,7 +1058,7 @@
 		}
 
 		// Download option (always available)
-		options.append(
+		options.insertAdjacentHTML('beforeend',
 			'<button class="saveToDownload" style="display:block; width:100%; margin:5px 0; padding:10px;">'
 			+ '<span class="icon-download"></span> '+ labels['SaveAsDownload']
 			+ '</button>'
@@ -1064,23 +1066,29 @@
 
 		var saveAsDialogCtrl;
 
-		saveAsDialog.find('.saveToServer').click(function() {
-			FrameTrail.module('StorageManager').switchToServer().then(function() {
-				saveAsDialogCtrl.close();
-				save();
+		var saveToServerBtn = saveAsDialog.querySelector('.saveToServer');
+		if (saveToServerBtn) {
+			saveToServerBtn.addEventListener('click', function() {
+				FrameTrail.module('StorageManager').switchToServer().then(function() {
+					saveAsDialogCtrl.close();
+					save();
+				});
 			});
-		});
+		}
 
-		saveAsDialog.find('.saveToLocal').click(function() {
-			FrameTrail.module('StorageManager').switchToLocal().then(function() {
-				saveAsDialogCtrl.close();
-				save();
-			}).catch(function(err) {
-				FrameTrail.module('InterfaceModal').showErrorMessage('Could not access folder: ' + err.message);
+		var saveToLocalBtn = saveAsDialog.querySelector('.saveToLocal');
+		if (saveToLocalBtn) {
+			saveToLocalBtn.addEventListener('click', function() {
+				FrameTrail.module('StorageManager').switchToLocal().then(function() {
+					saveAsDialogCtrl.close();
+					save();
+				}).catch(function(err) {
+					FrameTrail.module('InterfaceModal').showErrorMessage('Could not access folder: ' + err.message);
+				});
 			});
-		});
+		}
 
-		saveAsDialog.find('.saveToDownload').click(function() {
+		saveAsDialog.querySelector('.saveToDownload').addEventListener('click', function() {
 			var downloadAdapter = FrameTrail.module('StorageManager').getDownloadAdapter();
 			var hvID = FrameTrail.module('RouteNavigation').hypervideoID;
 			downloadAdapter.showDownloadDialog(hvID, FrameTrail);
@@ -1113,10 +1121,12 @@
 
 		if (FrameTrail.getState('unsavedChanges')){
 
-				var confirmDialog = $('<div class="confirmSaveChanges">'
+				var _confirmWrapper = document.createElement('div');
+				_confirmWrapper.innerHTML = '<div class="confirmSaveChanges">'
 									+ '    <div class="message active">'+ labels['MessageSaveChanges'] +'</div>'
 									+ '    <p>'+ labels['MessageSaveChangesQuestion'] +'</p>'
-									+ '</div>');
+									+ '</div>';
+				var confirmDialog = _confirmWrapper.firstElementChild;
 
 				var confirmDialogCtrl = Dialog({
 					title:     labels['MessageSaveChangesQuestionShort'],
@@ -1246,7 +1256,7 @@
 			clearTimeout(i);
 		}
 
-		$(FrameTrail.getState('target')).find('.viewVideo').remove();
+		document.querySelector(FrameTrail.getState('target')).querySelectorAll('.viewVideo').forEach(function(el) { el.remove(); });
 		FrameTrail.changeState('viewMode', 'video');
 
 		FrameTrail.module('RouteNavigation').hypervideoID = newHypervideoID;
@@ -1287,7 +1297,8 @@
 					FrameTrail.module('ViewLayout').create();
 					FrameTrail.module('ViewOverview').refreshList();
 					FrameTrail.module('ViewVideo').create();
-					$(FrameTrail.getState('target')).find('.videoStartOverlay').hide();
+					var vsOverlay = document.querySelector(FrameTrail.getState('target') + ' .videoStartOverlay');
+				if (vsOverlay) { vsOverlay.style.display = 'none'; }
 
 					FrameTrail.module('HypervideoController').initController(
 
@@ -1303,9 +1314,10 @@
 
 							window.setTimeout(function() {
 								//FrameTrail.changeState('viewSize', FrameTrail.getState('viewSize'));
-								$(window).resize();
+								window.dispatchEvent(new Event('resize'));
 
-								$(FrameTrail.getState('target')).find('.hypervideo video.video').removeClass('nocolor dark');
+								var hvVideo = document.querySelector(FrameTrail.getState('target') + ' .hypervideo video.video');
+								if (hvVideo) { hvVideo.classList.remove('nocolor', 'dark'); }
 
 							}, 300);
 

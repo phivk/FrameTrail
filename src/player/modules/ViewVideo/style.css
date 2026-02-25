@@ -646,6 +646,11 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     position: relative;
 }
 
+.hypervideoContainer .infoAreaRight .editPropertiesContainer.active {
+    display: flex;
+    flex-direction: column;
+}
+
 /* Video Container */
 
 .hypervideoContainer .videoContainer {

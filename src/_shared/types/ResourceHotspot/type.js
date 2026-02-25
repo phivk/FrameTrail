@@ -77,16 +77,18 @@ FrameTrail.defineType(
                         elementAttrs += ' target="_blank"';
                     }
 
-                    var resourceDetail = $('<div class="resourceDetail" data-type="hotspot" style="width: 100%; height: 100%; position: relative; display: flex; align-items: center; justify-content: center;">'
+                    var _rdw = document.createElement('div');
+                    _rdw.innerHTML = '<div class="resourceDetail" data-type="hotspot" style="width: 100%; height: 100%; position: relative; display: flex; align-items: center; justify-content: center;">'
                                         +  '    <div class="hotspot-container">'
                                         +  '        <div class="hotspot-square-wrapper">'
                                         +  '            <a class="hotspot-element"' + elementAttrs + ' style="border-radius: ' + borderRadiusValue + '; border-color: ' + color + '; text-decoration: none; display: block;"></a>'
                                         +  '            <div class="hotspot-pulse" style="border-color: ' + color + '; border-radius: ' + borderRadiusValue + ';"></div>'
                                         +  '        </div>'
                                         +  '    </div>'
-                                        +  '</div>');
+                                        +  '</div>';
+                    var resourceDetail = _rdw.firstElementChild;
 
-                    var hotspotElement = resourceDetail.find('.hotspot-element');
+                    var hotspotElement = resourceDetail.querySelector('.hotspot-element');
                     
                     // Helper function to convert hex color to rgba
                     var hexToRgba = function(hex, alpha) {
@@ -101,52 +103,52 @@ FrameTrail.defineType(
                         if (percentage <= 0) return 0;
                         // Wait for element to be in DOM to get dimensions
                         setTimeout(function() {
-                            var width = element.width();
-                            var height = element.height();
+                            var width = element.offsetWidth;
+                            var height = element.offsetHeight;
                             var smaller = Math.min(width, height);
                             var actualWidth = (smaller * percentage) / 100;
-                            element.css('border-width', actualWidth + 'px');
+                            element.style.borderWidth = actualWidth + 'px';
                         }, 0);
                         return 0; // Initial value
                     };
                     
                     // Set initial border width
                     calculateBorderWidth(hotspotElement, borderWidth);
-                    hotspotElement.css({
-                        'background-color': 'transparent',
-                        'border-style': 'solid',
-                        'border-color': color
-                    });
+                    hotspotElement.style.backgroundColor = 'transparent';
+                    hotspotElement.style.borderStyle = 'solid';
+                    hotspotElement.style.borderColor = color;
                     
                     // Add hover effect: make background semi-transparent
                     if (borderWidth > 0) {
                         var hoverColor = hexToRgba(color, 0.3);
-                        hotspotElement.on('mouseenter', function() {
-                            $(this).css('background-color', hoverColor);
+                        hotspotElement.addEventListener('mouseenter', function() {
+                            this.style.backgroundColor = hoverColor;
                         });
                         
-                        hotspotElement.on('mouseleave', function() {
-                            $(this).css('background-color', 'transparent');
+                        hotspotElement.addEventListener('mouseleave', function() {
+                            this.style.backgroundColor = 'transparent';
                         });
                     }
                     
                     // Prevent navigation when link is empty (href="#")
                     if (!linkUrl) {
-                        hotspotElement.on('click', function(e) {
+                        hotspotElement.addEventListener('click', function(e) {
                             e.preventDefault();
                             e.stopPropagation();
                         });
                     }
 
-                    resourceDetail.append('<div class="resourceOptions"><div class="licenseInformation">'+ licenseString +'</div><div class="resourceButtons"></div>');
+                    resourceDetail.insertAdjacentHTML('beforeend', '<div class="resourceOptions"><div class="licenseInformation">'+ licenseString +'</div><div class="resourceButtons"></div>');
 
                     if (this.resourceData.start) {
-                        var jumpToTimeButton = $('<button class="button btn btn-sm" data-start="'+ this.resourceData.start +'" data-end="'+ this.resourceData.end +'"><span class="icon-play-1"></span></button>');
-                        jumpToTimeButton.click(function(){
-                            var time = $(this).attr('data-start');
+                        var _jtbw = document.createElement('div');
+                        _jtbw.innerHTML = '<button class="button btn btn-sm" data-start="'+ this.resourceData.start +'" data-end="'+ this.resourceData.end +'"><span class="icon-play-1"></span></button>';
+                        var jumpToTimeButton = _jtbw.firstElementChild;
+                        jumpToTimeButton.addEventListener('click', function(){
+                            var time = this.dataset.start;
                             FrameTrail.module('HypervideoController').currentTime = time;
                         });
-                        resourceDetail.find('.resourceButtons').append(jumpToTimeButton);
+                        resourceDetail.querySelector('.resourceButtons').appendChild(jumpToTimeButton);
                     }
 
                 	return resourceDetail;
@@ -167,20 +169,25 @@ FrameTrail.defineType(
 
                     var tagList = (this.resourceData.tags ? this.resourceData.tags.join(' ') : '');
 
-                    var thumbElement = $('<div class="resourceThumb '+ tagList +'" data-license-type="'+ this.resourceData.licenseType +'" data-type="'+ this.resourceData.type +'">'
+                    var _tew = document.createElement('div');
+                    _tew.innerHTML = '<div class="resourceThumb '+ tagList +'" data-license-type="'+ this.resourceData.licenseType +'" data-type="'+ this.resourceData.type +'">'
                         + '                  <div class="resourceOverlay">'
                         + '                      <div class="resourceIcon"><span class="icon-link"></span></div>'
                         + '                  </div>'
                         + '                  <div class="resourceTitle">Hotspot / Link</div>'
-                        + '              </div>');
+                        + '              </div>';
+                    var thumbElement = _tew.firstElementChild;
 
-                    var previewButton = $('<div class="resourcePreviewButton"><span class="icon-eye"></span></div>').click(function(evt) {
+                    var previewButton = document.createElement('div');
+                    previewButton.className = 'resourcePreviewButton';
+                    previewButton.innerHTML = '<span class="icon-eye"></span>';
+                    previewButton.addEventListener('click', function(evt) {
                         // call the openPreview method (defined in abstract type: Resource)
-                        self.openPreview( $(this).parent() );
+                        self.openPreview( this.parentElement );
                         evt.stopPropagation();
                         evt.preventDefault();
                     });
-                    thumbElement.append(previewButton);
+                    thumbElement.appendChild(previewButton);
 
                     return thumbElement;
 
@@ -197,7 +204,7 @@ FrameTrail.defineType(
 
                     var basicControls = this.renderBasicPropertiesControls(overlay);
 
-                    basicControls.controlsContainer.find('#OverlayOptions').prepend(this.renderHotspotEditor(overlay));
+                    basicControls.controlsContainer.querySelector('#OverlayOptions').prepend(this.renderHotspotEditor(overlay));
 
 
                     return basicControls;
@@ -215,7 +222,7 @@ FrameTrail.defineType(
 
                     var timeControls = this.renderBasicTimeControls(annotation);
 
-                    timeControls.controlsContainer.find('#AnnotationOptions').append(this.renderHotspotEditor(annotation));
+                    timeControls.controlsContainer.querySelector('#AnnotationOptions').append(this.renderHotspotEditor(annotation));
 
                     return timeControls;
 
@@ -249,16 +256,17 @@ FrameTrail.defineType(
                         currentAttributes.borderRadius = 10;
                     }
 
-                    var hotspotEditorContainer = $('<div class="hotspotEditorContainer"></div>');
+                    var hotspotEditorContainer = document.createElement('div');
+                    hotspotEditorContainer.className = 'hotspotEditorContainer';
 
                     // Helper to sync editor UI controls from current data attributes
                     var syncHotspotUI = function(a) {
-                        var c = $('.hotspotEditorContainer');
-                        if (!c.length) return;
-                        c.find('.hotspotPropShape').val(a.shape || 'circle');
-                        c.find('.hotspotPropColor').val(a.color || '#0096ff');
-                        c.find('.hotspotPropBorderWidth').val(a.borderWidth !== undefined ? a.borderWidth : 5);
-                        c.find('.hotspotPropBorderRadius').val(a.borderRadius !== undefined ? a.borderRadius : 10);
+                        var c = document.querySelector('.hotspotEditorContainer');
+                        if (!c) return;
+                        c.querySelector('.hotspotPropShape').value = a.shape || 'circle';
+                        c.querySelector('.hotspotPropColor').value = a.color || '#0096ff';
+                        c.querySelector('.hotspotPropBorderWidth').value = a.borderWidth !== undefined ? a.borderWidth : 5;
+                        c.querySelector('.hotspotPropBorderRadius').value = a.borderRadius !== undefined ? a.borderRadius : 10;
                     };
 
                     // Helper function to convert hex color to rgba
@@ -270,11 +278,14 @@ FrameTrail.defineType(
                     };
 
                     // Create layout row container for all columns
-                    var layoutRow = $('<div class="layoutRow"></div>');
+                    var layoutRow = document.createElement('div');
+                    layoutRow.className = 'layoutRow';
                     
                     // Shape and Color columns
-                    var shapeColumn = $('<div class="column-3"></div>');
-                    var colorColumn = $('<div class="column-3"></div>');
+                    var shapeColumn = document.createElement('div');
+                    shapeColumn.className = 'column-3';
+                    var colorColumn = document.createElement('div');
+                    colorColumn.className = 'column-3';
 
                     // Helper function to apply shape, border-radius, and border-width changes
                     var applyShapeChanges = function(overlayOrAnnotation, shape, borderRadius, borderWidth, color) {
@@ -296,70 +307,60 @@ FrameTrail.defineType(
                         // Helper to calculate actual border width in pixels
                         var calculateBorderWidth = function(element, percentage) {
                             if (percentage <= 0) return 0;
-                            var width = element.width();
-                            var height = element.height();
+                            var width = element.offsetWidth;
+                            var height = element.offsetHeight;
                             var smaller = Math.min(width, height);
                             return (smaller * percentage) / 100;
                         };
                         
                         if (overlayOrAnnotation.overlayElement) {
-                            var hotspotElement = overlayOrAnnotation.overlayElement.find('.hotspot-element');
-                            var hotspotPulse = overlayOrAnnotation.overlayElement.find('.hotspot-pulse');
+                            var hotspotElement = overlayOrAnnotation.overlayElement.querySelector('.hotspot-element');
+                            var hotspotPulse = overlayOrAnnotation.overlayElement.querySelector('.hotspot-pulse');
                             
                             // Calculate actual border width in pixels
                             var actualBorderWidth = calculateBorderWidth(hotspotElement, borderWidth);
                             
-                            hotspotElement.css({
-                                'border-radius': borderRadiusValue,
-                                'border-width': actualBorderWidth + 'px',
-                                'border-color': color,
-                                'background-color': 'transparent'
-                            });
-                            hotspotPulse.css({
-                                'border-radius': borderRadiusValue,
-                                'border-color': color
-                            });
+                            hotspotElement.style.borderRadius = borderRadiusValue;
+                            hotspotElement.style.borderWidth = actualBorderWidth + 'px';
+                            hotspotElement.style.borderColor = color;
+                            hotspotElement.style.backgroundColor = 'transparent';
+                            hotspotPulse.style.borderRadius = borderRadiusValue;
+                            hotspotPulse.style.borderColor = color;
                             
                             // Update hover handlers
-                            hotspotElement.off('mouseenter mouseleave');
+                            if (hotspotElement._enterFn) { hotspotElement.removeEventListener('mouseenter', hotspotElement._enterFn); hotspotElement._enterFn = null; }
+                            if (hotspotElement._leaveFn) { hotspotElement.removeEventListener('mouseleave', hotspotElement._leaveFn); hotspotElement._leaveFn = null; }
                             if (borderWidth > 0) {
-                                hotspotElement.on('mouseenter', function() {
-                                    $(this).css('background-color', hoverColor);
-                                });
-                                hotspotElement.on('mouseleave', function() {
-                                    $(this).css('background-color', 'transparent');
-                                });
+                                hotspotElement._enterFn = function() { this.style.backgroundColor = hoverColor; };
+                                hotspotElement._leaveFn = function() { this.style.backgroundColor = 'transparent'; };
+                                hotspotElement.addEventListener('mouseenter', hotspotElement._enterFn);
+                                hotspotElement.addEventListener('mouseleave', hotspotElement._leaveFn);
                             }
                             
                             FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
                         } else {
                             // Update annotation elements in dom
-                            $(overlayOrAnnotation.contentViewDetailElements).each(function() {
-                                var hotspotElement = $(this).find('.hotspot-element');
-                                var hotspotPulse = $(this).find('.hotspot-pulse');
+                            overlayOrAnnotation.contentViewDetailElements.forEach(function(el) {
+                                var hotspotElement = el.querySelector('.hotspot-element');
+                                var hotspotPulse = el.querySelector('.hotspot-pulse');
                                 
                                 // Calculate actual border width in pixels
                                 var actualBorderWidth = calculateBorderWidth(hotspotElement, borderWidth);
                                 
-                                hotspotElement.css({
-                                    'border-radius': borderRadiusValue,
-                                    'border-width': actualBorderWidth + 'px',
-                                    'border-color': color,
-                                    'background-color': 'transparent'
-                                });
-                                hotspotPulse.css({
-                                    'border-radius': borderRadiusValue,
-                                    'border-color': color
-                                });
+                                hotspotElement.style.borderRadius = borderRadiusValue;
+                                hotspotElement.style.borderWidth = actualBorderWidth + 'px';
+                                hotspotElement.style.borderColor = color;
+                                hotspotElement.style.backgroundColor = 'transparent';
+                                hotspotPulse.style.borderRadius = borderRadiusValue;
+                                hotspotPulse.style.borderColor = color;
                                 
-                                hotspotElement.off('mouseenter mouseleave');
+                                if (hotspotElement._enterFn) { hotspotElement.removeEventListener('mouseenter', hotspotElement._enterFn); hotspotElement._enterFn = null; }
+                                if (hotspotElement._leaveFn) { hotspotElement.removeEventListener('mouseleave', hotspotElement._leaveFn); hotspotElement._leaveFn = null; }
                                 if (borderWidth > 0) {
-                                    hotspotElement.on('mouseenter', function() {
-                                        $(this).css('background-color', hoverColor);
-                                    });
-                                    hotspotElement.on('mouseleave', function() {
-                                        $(this).css('background-color', 'transparent');
-                                    });
+                                    hotspotElement._enterFn = function() { this.style.backgroundColor = hoverColor; };
+                                    hotspotElement._leaveFn = function() { this.style.backgroundColor = 'transparent'; };
+                                    hotspotElement.addEventListener('mouseenter', hotspotElement._enterFn);
+                                    hotspotElement.addEventListener('mouseleave', hotspotElement._leaveFn);
                                 }
                             });
                             FrameTrail.module('HypervideoModel').newUnsavedChange('annotations');
@@ -367,27 +368,28 @@ FrameTrail.defineType(
                     };
 
                     // Shape selector column
-                    shapeColumn.append('<label>'+ this.labels['SettingsHotspotShape'] +'</label>');
-                    var shapeSelect = $('<select class="hotspotPropShape"></select>');
-                    shapeSelect.append('<option value="circle"' + (currentAttributes.shape === 'circle' ? ' selected' : '') + '>'+ this.labels['SettingsHotspotShapeCircle'] +'</option>');
-                    shapeSelect.append('<option value="rectangle"' + (currentAttributes.shape === 'rectangle' ? ' selected' : '') + '>'+ this.labels['SettingsHotspotShapeRectangle'] +'</option>');
-                    shapeSelect.append('<option value="rounded"' + (currentAttributes.shape === 'rounded' ? ' selected' : '') + '>'+ this.labels['SettingsHotspotShapeRounded'] +'</option>');
+                    shapeColumn.insertAdjacentHTML('beforeend', '<label>'+ this.labels['SettingsHotspotShape'] +'</label>');
+                    var shapeSelect = document.createElement('select');
+                    shapeSelect.className = 'hotspotPropShape';
+                    shapeSelect.insertAdjacentHTML('beforeend', '<option value="circle"' + (currentAttributes.shape === 'circle' ? ' selected' : '') + '>'+ this.labels['SettingsHotspotShapeCircle'] +'</option>');
+                    shapeSelect.insertAdjacentHTML('beforeend', '<option value="rectangle"' + (currentAttributes.shape === 'rectangle' ? ' selected' : '') + '>'+ this.labels['SettingsHotspotShapeRectangle'] +'</option>');
+                    shapeSelect.insertAdjacentHTML('beforeend', '<option value="rounded"' + (currentAttributes.shape === 'rounded' ? ' selected' : '') + '>'+ this.labels['SettingsHotspotShapeRounded'] +'</option>');
                     
                     var shapeBeforeChange = currentAttributes.shape || 'circle';
-                    shapeSelect.on('focus', function() {
+                    shapeSelect.addEventListener('focus', function() {
                         shapeBeforeChange = overlayOrAnnotation.data.attributes.shape || 'circle';
                     });
                     
-                    shapeSelect.on('change', function() {
-                        var newShape = $(this).val();
+                    shapeSelect.addEventListener('change', function() {
+                        var newShape = this.value;
                         var oldShape = shapeBeforeChange;
                         overlayOrAnnotation.data.attributes.shape = newShape;
                         
                         // Show/hide border radius column based on shape
                         if (newShape === 'rounded') {
-                            borderRadiusColumn.show();
+                            borderRadiusColumn.style.display = '';
                         } else {
-                            borderRadiusColumn.hide();
+                            borderRadiusColumn.style.display = 'none';
                         }
                         
                         // Apply shape changes
@@ -444,35 +446,38 @@ FrameTrail.defineType(
                         shapeBeforeChange = newShape;
                     });
                     
-                    var shapeWrapper = $('<div class="custom-select"></div>');
-                    shapeWrapper.append(shapeSelect);
-                    shapeColumn.append(shapeWrapper);
+                    var shapeWrapper = document.createElement('div');
+                    shapeWrapper.className = 'custom-select';
+                    shapeWrapper.appendChild(shapeSelect);
+                    shapeColumn.appendChild(shapeWrapper);
 
                     // Color picker column
-                    colorColumn.append('<label>'+ this.labels['SettingsHotspotColor'] +'</label>');
-                    var colorInput = $('<input type="color" class="hotspotPropColor" value="' + currentAttributes.color + '"/>');
+                    colorColumn.insertAdjacentHTML('beforeend', '<label>'+ this.labels['SettingsHotspotColor'] +'</label>');
+                    var colorInput = document.createElement('input');
+                    colorInput.type = 'color';
+                    colorInput.className = 'hotspotPropColor';
+                    colorInput.value = currentAttributes.color;
 
                     // Helper function to update color visually
                     var updateColor = function(newColor, trackChange) {
                         overlayOrAnnotation.data.attributes.color = newColor;
 
                         if (overlayOrAnnotation.overlayElement) {
-                            var hotspotElement = overlayOrAnnotation.overlayElement.find('.hotspot-element');
-                            var hotspotPulse = overlayOrAnnotation.overlayElement.find('.hotspot-pulse');
-                            hotspotElement.css('border-color', newColor);
-                            hotspotPulse.css('border-color', newColor);
+                            var hotspotElement = overlayOrAnnotation.overlayElement.querySelector('.hotspot-element');
+                            var hotspotPulse = overlayOrAnnotation.overlayElement.querySelector('.hotspot-pulse');
+                            hotspotElement.style.borderColor = newColor;
+                            hotspotPulse.style.borderColor = newColor;
                             
                             // Update hover color if border width > 0
                             var borderWidth = overlayOrAnnotation.data.attributes.borderWidth || 5;
                             if (borderWidth > 0) {
                                 var hoverColor = hexToRgba(newColor, 0.3);
-                                hotspotElement.off('mouseenter mouseleave');
-                                hotspotElement.on('mouseenter', function() {
-                                    $(this).css('background-color', hoverColor);
-                                });
-                                hotspotElement.on('mouseleave', function() {
-                                    $(this).css('background-color', 'transparent');
-                                });
+                                if (hotspotElement._enterFn) { hotspotElement.removeEventListener('mouseenter', hotspotElement._enterFn); hotspotElement._enterFn = null; }
+                                if (hotspotElement._leaveFn) { hotspotElement.removeEventListener('mouseleave', hotspotElement._leaveFn); hotspotElement._leaveFn = null; }
+                                hotspotElement._enterFn = function() { this.style.backgroundColor = hoverColor; };
+                                hotspotElement._leaveFn = function() { this.style.backgroundColor = 'transparent'; };
+                                hotspotElement.addEventListener('mouseenter', hotspotElement._enterFn);
+                                hotspotElement.addEventListener('mouseleave', hotspotElement._leaveFn);
                             }
                             
                             if (trackChange) {
@@ -480,23 +485,22 @@ FrameTrail.defineType(
                             }
                         } else {
                             // Update annotation elements in dom
-                            $(overlayOrAnnotation.contentViewDetailElements).each(function() {
-                                var hotspotElement = $(this).find('.hotspot-element');
-                                var hotspotPulse = $(this).find('.hotspot-pulse');
-                                hotspotElement.css('border-color', newColor);
-                                hotspotPulse.css('border-color', newColor);
+                            overlayOrAnnotation.contentViewDetailElements.forEach(function(el) {
+                                var hotspotElement = el.querySelector('.hotspot-element');
+                                var hotspotPulse = el.querySelector('.hotspot-pulse');
+                                hotspotElement.style.borderColor = newColor;
+                                hotspotPulse.style.borderColor = newColor;
                                 
                                 // Update hover color if border width > 0
                                 var borderWidth = overlayOrAnnotation.data.attributes.borderWidth || 5;
                                 if (borderWidth > 0) {
                                     var hoverColor = hexToRgba(newColor, 0.3);
-                                    hotspotElement.off('mouseenter mouseleave');
-                                    hotspotElement.on('mouseenter', function() {
-                                        $(this).css('background-color', hoverColor);
-                                    });
-                                    hotspotElement.on('mouseleave', function() {
-                                        $(this).css('background-color', 'transparent');
-                                    });
+                                    if (hotspotElement._enterFn) { hotspotElement.removeEventListener('mouseenter', hotspotElement._enterFn); hotspotElement._enterFn = null; }
+                                    if (hotspotElement._leaveFn) { hotspotElement.removeEventListener('mouseleave', hotspotElement._leaveFn); hotspotElement._leaveFn = null; }
+                                    hotspotElement._enterFn = function() { this.style.backgroundColor = hoverColor; };
+                                    hotspotElement._leaveFn = function() { this.style.backgroundColor = 'transparent'; };
+                                    hotspotElement.addEventListener('mouseenter', hotspotElement._enterFn);
+                                    hotspotElement.addEventListener('mouseleave', hotspotElement._leaveFn);
                                 }
                             });
                             if (trackChange) {
@@ -507,18 +511,18 @@ FrameTrail.defineType(
 
                     // Update color in real-time as user interacts with picker
                     var colorBeforeChange = currentAttributes.color || '#0096ff';
-                    colorInput.on('focus', function() {
+                    colorInput.addEventListener('focus', function() {
                         colorBeforeChange = overlayOrAnnotation.data.attributes.color || '#0096ff';
                     });
                     
-                    colorInput.on('input', function() {
-                        var newColor = $(this).val();
+                    colorInput.addEventListener('input', function() {
+                        var newColor = this.value;
                         updateColor(newColor, false);
                     });
 
                     // Track change when picker is closed
-                    colorInput.on('change', function() {
-                        var newColor = $(this).val();
+                    colorInput.addEventListener('change', function() {
+                        var newColor = this.value;
                         updateColor(newColor, true);
                         
                         // Register undo for color change
@@ -570,29 +574,37 @@ FrameTrail.defineType(
                         colorBeforeChange = newColor;
                     });
 
-                    colorColumn.append(colorInput);
+                    colorColumn.appendChild(colorInput);
 
                     // Border Width and Border Radius columns
-                    var borderWidthColumn = $('<div class="column-3"></div>');
-                    var borderRadiusColumn = $('<div class="column-3"></div>');
+                    var borderWidthColumn = document.createElement('div');
+                    borderWidthColumn.className = 'column-3';
+                    var borderRadiusColumn = document.createElement('div');
+                    borderRadiusColumn.className = 'column-3';
 
                     // Border width control column
-                    borderWidthColumn.append('<label>'+ this.labels['SettingsHotspotBorderWidth'] +'</label>');
-                    var borderWidthInput = $('<input type="number" class="hotspotPropBorderWidth" min="0" max="50" step="0.5" value="' + currentAttributes.borderWidth + '"/>');
-                    var borderWidthLabel = $('<span>%</span>');
-                    var borderWidthWrapper = $('<div class="innerSizeWrapper"></div>');
+                    borderWidthColumn.insertAdjacentHTML('beforeend', '<label>'+ this.labels['SettingsHotspotBorderWidth'] +'</label>');
+                    var borderWidthInput = document.createElement('input');
+                    borderWidthInput.type = 'number';
+                    borderWidthInput.className = 'hotspotPropBorderWidth';
+                    borderWidthInput.min = '0'; borderWidthInput.max = '50'; borderWidthInput.step = '0.5';
+                    borderWidthInput.value = currentAttributes.borderWidth;
+                    var borderWidthLabel = document.createElement('span');
+                    borderWidthLabel.textContent = '%';
+                    var borderWidthWrapper = document.createElement('div');
+                    borderWidthWrapper.className = 'innerSizeWrapper';
                     borderWidthWrapper.append(borderWidthInput, borderWidthLabel);
 
                     var borderWidthBeforeChange = currentAttributes.borderWidth;
-                    borderWidthInput.on('focus', function() {
+                    borderWidthInput.addEventListener('focus', function() {
                         borderWidthBeforeChange = overlayOrAnnotation.data.attributes.borderWidth;
                     });
                     
-                    borderWidthInput.on('change', function() {
-                        var newWidth = parseFloat($(this).val());
+                    borderWidthInput.addEventListener('change', function() {
+                        var newWidth = parseFloat(this.value);
                         if (isNaN(newWidth) || newWidth < 0) newWidth = 0;
                         if (newWidth > 50) newWidth = 50;
-                        $(this).val(newWidth);
+                        this.value = newWidth;
                         var oldWidth = borderWidthBeforeChange;
                         overlayOrAnnotation.data.attributes.borderWidth = newWidth;
                         
@@ -653,30 +665,36 @@ FrameTrail.defineType(
                         borderWidthBeforeChange = newWidth;
                     });
 
-                    borderWidthColumn.append(borderWidthWrapper);
+                    borderWidthColumn.appendChild(borderWidthWrapper);
 
                     // Border radius input column (only visible for rounded rectangles)
-                    borderRadiusColumn.append('<label>'+ this.labels['SettingsHotspotBorderRadius'] +'</label>');
-                    var borderRadiusInput = $('<input type="number" class="hotspotPropBorderRadius" min="0" max="100" step="1" value="' + currentAttributes.borderRadius + '"/>');
-                    var borderRadiusLabel = $('<span>px</span>');
-                    var borderRadiusWrapper = $('<div class="innerSizeWrapper"></div>');
+                    borderRadiusColumn.insertAdjacentHTML('beforeend', '<label>'+ this.labels['SettingsHotspotBorderRadius'] +'</label>');
+                    var borderRadiusInput = document.createElement('input');
+                    borderRadiusInput.type = 'number';
+                    borderRadiusInput.className = 'hotspotPropBorderRadius';
+                    borderRadiusInput.min = '0'; borderRadiusInput.max = '100'; borderRadiusInput.step = '1';
+                    borderRadiusInput.value = currentAttributes.borderRadius;
+                    var borderRadiusLabel = document.createElement('span');
+                    borderRadiusLabel.textContent = 'px';
+                    var borderRadiusWrapper = document.createElement('div');
+                    borderRadiusWrapper.className = 'innerSizeWrapper';
                     borderRadiusWrapper.append(borderRadiusInput, borderRadiusLabel);
                     
                     // Hide border radius if shape is not rounded
                     if (currentAttributes.shape !== 'rounded') {
-                        borderRadiusColumn.hide();
+                        borderRadiusColumn.style.display = 'none';
                     }
                     
                     var borderRadiusBeforeChange = currentAttributes.borderRadius || 10;
-                    borderRadiusInput.on('focus', function() {
+                    borderRadiusInput.addEventListener('focus', function() {
                         borderRadiusBeforeChange = overlayOrAnnotation.data.attributes.borderRadius || 10;
                     });
                     
-                    borderRadiusInput.on('change', function() {
-                        var newRadius = parseFloat($(this).val());
+                    borderRadiusInput.addEventListener('change', function() {
+                        var newRadius = parseFloat(this.value);
                         if (isNaN(newRadius) || newRadius < 0) newRadius = 0;
                         if (newRadius > 100) newRadius = 100;
-                        $(this).val(newRadius);
+                        this.value = newRadius;
                         var oldRadius = borderRadiusBeforeChange;
                         overlayOrAnnotation.data.attributes.borderRadius = newRadius;
                         
@@ -734,59 +752,54 @@ FrameTrail.defineType(
                         borderRadiusBeforeChange = newRadius;
                     });
 
-                    borderRadiusColumn.append(borderRadiusWrapper);
+                    borderRadiusColumn.appendChild(borderRadiusWrapper);
 
                     // Append all columns to layoutRow, then layoutRow to container
                     layoutRow.append(shapeColumn, colorColumn, borderWidthColumn, borderRadiusColumn);
-                    hotspotEditorContainer.append(layoutRow);
+                    hotspotEditorContainer.appendChild(layoutRow);
 
                     // Link URL input row with picker and delete buttons
-                    var linkLabel = $('<hr><label>'+ this.labels['SettingsHotspotLink'] +'</label>');
-                    hotspotEditorContainer.append(linkLabel);
+                    hotspotEditorContainer.insertAdjacentHTML('beforeend', '<hr><label>'+ this.labels['SettingsHotspotLink'] +'</label>');
                     
                     // Helper function to update link URL and trigger change
                     // Always uses <a> tag, just updates href attribute (same as renderContent)
                     var updateLinkUrl = function(newUrl) {
                         overlayOrAnnotation.data.attributes.linkUrl = newUrl;
-                        linkInput.val(newUrl);
+                        linkInput.value = newUrl;
                         
                         // Use '#' if empty, same as renderContent
                         var href = newUrl || '#';
 
                         if (overlayOrAnnotation.overlayElement) {
-                            var hotspotElement = overlayOrAnnotation.overlayElement.find('.hotspot-element');
-                            hotspotElement.attr('href', href);
+                            var hotspotElement = overlayOrAnnotation.overlayElement.querySelector('.hotspot-element');
+                            hotspotElement.setAttribute('href', href);
                             if (newUrl && (newUrl.startsWith('http://') || newUrl.startsWith('https://'))) {
-                                hotspotElement.attr('target', '_blank');
+                                hotspotElement.setAttribute('target', '_blank');
                             } else {
-                                hotspotElement.removeAttr('target');
+                                hotspotElement.removeAttribute('target');
                             }
                             // Prevent navigation when link is empty (same as renderContent)
-                            hotspotElement.off('click');
+                            if (hotspotElement._clickFn) { hotspotElement.removeEventListener('click', hotspotElement._clickFn); hotspotElement._clickFn = null; }
                             if (!newUrl) {
-                                hotspotElement.on('click', function(e) {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                });
+                                hotspotElement._clickFn = function(e) { e.preventDefault(); e.stopPropagation(); };
+                                hotspotElement.addEventListener('click', hotspotElement._clickFn);
                             }
                             FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
                         } else {
                             // Update annotation elements in dom
-                            $(overlayOrAnnotation.contentViewDetailElements).each(function() {
-                                var hotspotElement = $(this).find('.hotspot-element');
-                                hotspotElement.attr('href', href);
+                            overlayOrAnnotation.contentViewDetailElements.forEach(function(el) {
+                                var hotspotElement = el.querySelector('.hotspot-element');
+                                hotspotElement.setAttribute('href', href);
                                 if (newUrl && (newUrl.startsWith('http://') || newUrl.startsWith('https://'))) {
-                                    hotspotElement.attr('target', '_blank');
+                                    hotspotElement.setAttribute('target', '_blank');
                                 } else {
-                                    hotspotElement.removeAttr('target');
+                                    hotspotElement.removeAttribute('target');
                                 }
                                 // Prevent navigation when link is empty (same as renderContent)
-                                hotspotElement.off('click');
+                                if (hotspotElement._clickFn) { hotspotElement.removeEventListener('click', hotspotElement._clickFn); hotspotElement._clickFn = null; }
                                 if (!newUrl) {
-                                    hotspotElement.on('click', function(e) {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                    });
+                                    hotspotElement._clickFn = function(e) { e.preventDefault(); e.stopPropagation(); };
+                                    hotspotElement.addEventListener('click', hotspotElement._clickFn);
                                 }
                             });
                             FrameTrail.module('HypervideoModel').newUnsavedChange('annotations');
@@ -794,17 +807,22 @@ FrameTrail.defineType(
                     };
                     
                     // Create row container for link input with buttons
-                    var linkInputRow = $('<div class="linkInputRow"></div>');
+                    var linkInputRow = document.createElement('div');
+                    linkInputRow.className = 'linkInputRow';
                     
                     // Text input (stretches to fill remaining width)
-                    var linkInput = $('<input type="text" class="linkInput" placeholder="https://example.com" value="' + currentAttributes.linkUrl + '"/>');
+                    var linkInput = document.createElement('input');
+                    linkInput.type = 'text';
+                    linkInput.className = 'linkInput';
+                    linkInput.placeholder = 'https://example.com';
+                    linkInput.value = currentAttributes.linkUrl;
                     
                     var linkBeforeEdit = '';
-                    linkInput.on('focus', function() {
+                    linkInput.addEventListener('focus', function() {
                         linkBeforeEdit = overlayOrAnnotation.data.attributes.linkUrl || '';
                     });
                     
-                    linkInput.on('blur', function() {
+                    linkInput.addEventListener('blur', function() {
                         var newLink = overlayOrAnnotation.data.attributes.linkUrl || '';
                         if (linkBeforeEdit !== newLink) {
                             var isOverlay = !!overlayOrAnnotation.overlayElement;
@@ -843,25 +861,29 @@ FrameTrail.defineType(
                         }
                     });
                     
-                    linkInput.on('keyup', function(evt) {
-                        if (!evt.originalEvent.metaKey && evt.originalEvent.key != 'Meta') {
-                            var newUrl = $(this).val();
+                    linkInput.addEventListener('keyup', function(evt) {
+                        if (!evt.metaKey && evt.key != 'Meta') {
+                            var newUrl = this.value;
                             updateLinkUrl(newUrl);
                         }
                     });
                     
                     // Delete button (icon only)
-                    var deleteButton = $('<button type="button" class="button btn btn-sm linkDeleteButton" title="'+ this.labels['GenericDelete'] +'"><span class="icon-cancel"></span></button>');
-                    deleteButton.click(function(evt) {
+                    var _dbw = document.createElement('div');
+                    _dbw.innerHTML = '<button type="button" class="button btn btn-sm linkDeleteButton" title="'+ this.labels['GenericDelete'] +'"><span class="icon-cancel"></span></button>';
+                    var deleteButton = _dbw.firstElementChild;
+                    deleteButton.addEventListener('click', function(evt) {
                         evt.preventDefault();
                         evt.stopPropagation();
                         updateLinkUrl('');
                     });
                     
                     // Picker button (variable size depending on language)
-                    var pickerButton = $('<button type="button" class="button btn btn-sm hypervideoPickerButton" title="'+ this.labels['SettingsHotspotPickHypervideo'] +'"><span class="icon-hypervideo" style="margin-right: 8px;"></span>'+ this.labels['SettingsHotspotPickHypervideo'] +'</button>');
+                    var _pbw = document.createElement('div');
+                    _pbw.innerHTML = '<button type="button" class="button btn btn-sm hypervideoPickerButton" title="'+ this.labels['SettingsHotspotPickHypervideo'] +'"><span class="icon-hypervideo" style="margin-right: 8px;"></span>'+ this.labels['SettingsHotspotPickHypervideo'] +'</button>';
+                    var pickerButton = _pbw.firstElementChild;
                     
-                    pickerButton.click(function(evt) {
+                    pickerButton.addEventListener('click', function(evt) {
                         evt.preventDefault();
                         evt.stopPropagation();
                         
@@ -879,11 +901,11 @@ FrameTrail.defineType(
                     });
                     
                     // Append elements in order: input, delete button, picker button (from left to right)
-                    linkInputRow.append(linkInput);
-                    linkInputRow.append(deleteButton);
-                    linkInputRow.append(pickerButton);
+                    linkInputRow.appendChild(linkInput);
+                    linkInputRow.appendChild(deleteButton);
+                    linkInputRow.appendChild(pickerButton);
                     
-                    hotspotEditorContainer.append(linkInputRow);
+                    hotspotEditorContainer.appendChild(linkInputRow);
 
                     return hotspotEditorContainer;
 

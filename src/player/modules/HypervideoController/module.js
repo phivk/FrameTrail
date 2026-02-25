@@ -75,8 +75,7 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 	function initController(callback, failCallback, update) {
 
 		var RouteNavigation = FrameTrail.module('RouteNavigation'),
-			hypervideoID    = RouteNavigation.hypervideoID,
-			_video		    = $(videoElement);
+			hypervideoID    = RouteNavigation.hypervideoID;
 
 		HypervideoModel     = FrameTrail.module('HypervideoModel');
 
@@ -89,7 +88,8 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 
 		updateDescriptions();
 
-		_video.width(1920).height(1080);
+		videoElement.style.width = '1920px';
+		videoElement.style.height = '1080px';
 
 		if (HypervideoModel.videoType == 'native') {
 
@@ -119,7 +119,7 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 				// Note: it would be more normal to wait on the 'canplay' event below however on Safari (where you are most likely to find built-in HLS support) the video.src URL must be on the user-driven
 				// white-list before a 'canplay' event will be emitted; the last video event that can be reliably listened-for when the URL is not on the white-list is 'loadedmetadata'.
 				else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
-					_video.append('<source src="'+ FrameTrail.module('RouteNavigation').getResourceURL(HypervideoModel.sourcePath)  +'" type="video/mp4"></source>');
+					videoElement.insertAdjacentHTML('beforeend', '<source src="'+ FrameTrail.module('RouteNavigation').getResourceURL(HypervideoModel.sourcePath)  +'" type="video/mp4"></source>');
 					/*
 					videoElement.addEventListener('loadedmetadata',function() {
 						//videoElement.play();
@@ -127,29 +127,29 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 					*/
 				}
 			} else {
-				_video.append('<source src="'+ FrameTrail.module('RouteNavigation').getResourceURL(HypervideoModel.sourcePath)  +'" type="video/mp4"></source>');
+				videoElement.insertAdjacentHTML('beforeend', '<source src="'+ FrameTrail.module('RouteNavigation').getResourceURL(HypervideoModel.sourcePath)  +'" type="video/mp4"></source>');
 			}
 
-			_video.on('play',  _play);
-			_video.on('pause', _pause);
+			videoElement.addEventListener('play',  _play);
+			videoElement.addEventListener('pause', _pause);
 
-			_video.on('seeking', function() {
+			videoElement.addEventListener('seeking', function() {
 				FrameTrail.changeState('videoWorking', true);
 			});
 
-			_video.on('waiting', function() {
+			videoElement.addEventListener('waiting', function() {
 				FrameTrail.changeState('videoWorking', true);
 			});
 
-			_video.on('canplaythrough', function() {
+			videoElement.addEventListener('canplaythrough', function() {
 				FrameTrail.changeState('videoWorking', false);
 			});
 
-			_video.on('seeked', function() {
+			videoElement.addEventListener('seeked', function() {
 				FrameTrail.changeState('videoWorking', false);
 			});
 
-			_video.on('ended', function() {
+			videoElement.addEventListener('ended', function() {
 				
 				FrameTrail.triggerEvent('ended', {});
 
@@ -165,7 +165,7 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 
 			});
 
-			_video.attr('preload', 'metadata');
+			videoElement.setAttribute('preload', 'metadata');
 			videoElement.load();
 
 			initVideo(
@@ -225,9 +225,16 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 			var lastYoutubePlayerID = 'yt_' + Date.now();
 			FrameTrail.changeState('lastYoutubePlayerID', lastYoutubePlayerID);
 			var yt_options = 'autoplay=0&controls=0&rel=0&disablekb=1&enablejsapi=1&fs=0&modestbranding=1&playsinline=1&color=white&origin='+ window.location.origin;
-			var yt_iframe = $('<iframe id="'+ lastYoutubePlayerID +'" class="player_youtube" type="text/html" width="720" height="405" src="https:'+ HypervideoModel.sourcePath +'?'+ yt_options +'" frameborder="0" allowfullscreen>');
-						
-			_video.after(yt_iframe);
+			var yt_iframe = document.createElement('iframe');
+			yt_iframe.id = lastYoutubePlayerID;
+			yt_iframe.className = 'player_youtube';
+			yt_iframe.setAttribute('type', 'text/html');
+			yt_iframe.width = '720';
+			yt_iframe.height = '405';
+			yt_iframe.src = 'https:'+ HypervideoModel.sourcePath +'?'+ yt_options;
+			yt_iframe.setAttribute('frameborder', '0');
+			yt_iframe.allowFullscreen = true;
+			videoElement.insertAdjacentElement('afterend', yt_iframe);
 
 			if (!window.YT) {
 				var tag = document.createElement('script');
@@ -364,9 +371,17 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 			var lastVimeoPlayerID = 'vm_' + Date.now();
 			FrameTrail.changeState('lastVimeoPlayerID', lastVimeoPlayerID);
 			var vm_options = 'color=ffffff&portrait=0&byline=0&title=0&badge=0&controls=0&autoplay=1&autopause=0&dnt=1';
-			var vm_iframe = $('<iframe id="'+ lastVimeoPlayerID +'" class="player_vimeo" type="text/html" width="720" height="405" src="https:'+ HypervideoModel.sourcePath +'?'+ vm_options +'" frameborder="0" allowfullscreen allow="autoplay">');
-			
-			_video.after(vm_iframe);
+			var vm_iframe = document.createElement('iframe');
+			vm_iframe.id = lastVimeoPlayerID;
+			vm_iframe.className = 'player_vimeo';
+			vm_iframe.setAttribute('type', 'text/html');
+			vm_iframe.width = '720';
+			vm_iframe.height = '405';
+			vm_iframe.src = 'https:'+ HypervideoModel.sourcePath +'?'+ vm_options;
+			vm_iframe.setAttribute('frameborder', '0');
+			vm_iframe.allowFullscreen = true;
+			vm_iframe.allow = 'autoplay';
+			videoElement.insertAdjacentElement('afterend', vm_iframe);
 
 			if (!window.Vimeo) {
 				var tag = document.createElement('script');
@@ -397,7 +412,7 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 							//console.log('Player READY', vimeo_duration);
 							window.player_vimeo[lastVimeoPlayerID].pause();
 							if (vimeo_duration != 0) {
-								ViewVideo.OverlayContainer.show();
+								ViewVideo.OverlayContainer.style.display = '';
 								initVimeoDuration(vimeo_duration);
 							}
 						});
@@ -438,16 +453,16 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 							case 'PasswordError':
 								// The video is password-protected
 								FrameTrail.module('InterfaceModal').showErrorMessage('Vimeo '+ labels['ErrorVideoIsPasswordProtected']);
-								ViewVideo.VideoStartOverlay.addClass('inactive').hide();
-								ViewVideo.OverlayContainer.hide();
+								ViewVideo.VideoStartOverlay.classList.add('inactive'); ViewVideo.VideoStartOverlay.style.display = 'none';
+								ViewVideo.OverlayContainer.style.display = 'none';
 								FrameTrail.changeState('videoWorking', false);
 							break;
 
 							case 'PrivacyError':
 								// The video is private
 								FrameTrail.module('InterfaceModal').showErrorMessage('Vimeo '+ labels['ErrorVideoNotFoundOrPrivate']);
-								ViewVideo.VideoStartOverlay.addClass('inactive').hide();
-								ViewVideo.OverlayContainer.hide();
+								ViewVideo.VideoStartOverlay.classList.add('inactive'); ViewVideo.VideoStartOverlay.style.display = 'none';
+								ViewVideo.OverlayContainer.style.display = 'none';
 								FrameTrail.changeState('videoWorking', false);
 							break;
 
@@ -489,16 +504,16 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 								case 'PasswordError':
 									// The video is password-protected
 									FrameTrail.module('InterfaceModal').showErrorMessage('Vimeo '+ labels['ErrorVideoIsPasswordProtected']);
-									ViewVideo.VideoStartOverlay.addClass('inactive').hide();
-									ViewVideo.OverlayContainer.hide();
+									ViewVideo.VideoStartOverlay.classList.add('inactive'); ViewVideo.VideoStartOverlay.style.display = 'none';
+									ViewVideo.OverlayContainer.style.display = 'none';
 									FrameTrail.changeState('videoWorking', false);
 								break;
 
 								case 'PrivacyError':
 									// The video is private
 									FrameTrail.module('InterfaceModal').showErrorMessage('Vimeo '+ labels['ErrorVideoNotFoundOrPrivate']);
-									ViewVideo.VideoStartOverlay.addClass('inactive').hide();
-									ViewVideo.OverlayContainer.hide();
+									ViewVideo.VideoStartOverlay.classList.add('inactive'); ViewVideo.VideoStartOverlay.style.display = 'none';
+									ViewVideo.OverlayContainer.style.display = 'none';
 									FrameTrail.changeState('videoWorking', false);
 								break;
 
@@ -696,29 +711,29 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 
 		var ViewVideo = FrameTrail.module('ViewVideo');
 
-		ViewVideo.PlayButton.off('click').on('click', function(){
+		ViewVideo.PlayButton.onclick = function(){
 			if ( isPlaying ) {
 				pause();
 			} else {
 				play();
 			}
-		});
+		};
 
-		ViewVideo.OverlayContainer.off('click').on('click', function(evt){
-			if ($(evt.target).hasClass('overlayContainer')) {
+		ViewVideo.OverlayContainer.onclick = function(evt){
+			if (evt.target.classList.contains('overlayContainer')) {
 				if ( isPlaying ) {
 					pause();
 				} else {
 					play();
 				}
 			}
-		});
+		};
 
-		ViewVideo.VideoStartOverlay.off('click').on('click', function(){
+		ViewVideo.VideoStartOverlay.onclick = function(){
 			if ( !isPlaying ) {
 				play();
 			}
-		});
+		};
 
 	};
 
@@ -745,7 +760,7 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 		sliderMax     = HypervideoModel.duration;
 		sliderDragging = false;
 
-		var progressEl = ViewVideo.PlayerProgress[0];
+		var progressEl = ViewVideo.PlayerProgress;
 		sliderHandle = progressEl.querySelector('.ui-slider-handle');
 		sliderRange  = progressEl.querySelector('.ui-slider-range');
 		progressEl.setAttribute('aria-valuemax', sliderMax);
@@ -1095,8 +1110,9 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 		}
 
 		function onPlaySuccess() {
-			if ( !ViewVideo.VideoStartOverlay.hasClass('inactive') ) {
-				ViewVideo.VideoStartOverlay.addClass('inactive').fadeOut();
+			if ( !ViewVideo.VideoStartOverlay.classList.contains('inactive') ) {
+				ViewVideo.VideoStartOverlay.classList.add('inactive');
+				ViewVideo.VideoStartOverlay.style.display = 'none';
 			}
 
 			FrameTrail.triggerEvent('play', {});
@@ -1210,7 +1226,7 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 			nullVideoIntervalID = window.setInterval(nullVideoUpdater,  nullVideoInterval);
 		}
 
-		ViewVideo.PlayButton.addClass('playing');
+		ViewVideo.PlayButton.classList.add('playing');
 
 		isPlaying = true;
 
@@ -1239,7 +1255,7 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 			window.clearInterval(nullVideoIntervalID);
 		}
 
-		ViewVideo.PlayButton.removeClass('playing');
+		ViewVideo.PlayButton.classList.remove('playing');
 
 		isPlaying = false;
 

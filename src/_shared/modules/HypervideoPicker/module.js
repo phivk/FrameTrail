@@ -28,13 +28,10 @@ FrameTrail.defineModule('HypervideoPicker', function(FrameTrail){
             currentHypervideoID = FrameTrail.module('RouteNavigation').hypervideoID;
 
         // Create dialog container
-        var pickerDialog = $('<div class="hypervideoPickerDialog">'
-                            + '    <div class="hypervideoPickerList"></div>'
-                            + '</div>'),
-            pickerList = pickerDialog.find('.hypervideoPickerList');
-
-        // Clear any existing thumbs
-        pickerList.find('.hypervideoThumb').remove();
+        var pickerDialog = document.createElement('div');
+        pickerDialog.className = 'hypervideoPickerDialog';
+        pickerDialog.innerHTML = '<div class="hypervideoPickerList"></div>';
+        var pickerList = pickerDialog.querySelector('.hypervideoPickerList');
 
         // Declare ctrl before the loop so click handlers can reference it via closure
         var pickerDialogCtrl;
@@ -49,19 +46,18 @@ FrameTrail.defineModule('HypervideoPicker', function(FrameTrail){
                 var thumb = hypervideo.renderThumb();
 
                 // Mark current hypervideo
-                if (thumb.attr('data-hypervideoid') == currentHypervideoID) {
-                    thumb.addClass('activeHypervideo');
+                if (thumb.dataset.hypervideoid == currentHypervideoID) {
+                    thumb.classList.add('activeHypervideo');
                 }
 
-                // Remove the default click behavior and add selection behavior
-                thumb.find('.hypervideoIcon').off('click');
-                thumb.find('.hypervideoIcon').css('cursor', 'pointer');
+                // Add selection behavior (hypervideoIcon has no listeners in vanilla renderThumb)
+                thumb.querySelector('.hypervideoIcon').style.cursor = 'pointer';
 
-                thumb.click(function(evt) {
+                thumb.addEventListener('click', function(evt) {
                     evt.preventDefault();
                     evt.stopPropagation();
 
-                    var selectedHypervideoID = $(this).attr('data-hypervideoid');
+                    var selectedHypervideoID = this.dataset.hypervideoid;
 
                     // Close dialog
                     pickerDialogCtrl.close();

@@ -16,7 +16,8 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
 
 	var labels = FrameTrail.module('Localization').labels;
 
-    var domElement = $(    '<div class="viewResources" title="'+ labels['ResourcesManage'] +'">'
+    var _vrWrapper = document.createElement('div');
+    _vrWrapper.innerHTML = '<div class="viewResources" title="'+ labels['ResourcesManage'] +'">'
                         +  '    <div class="resourcesControls">'
                         +  '        <button class="resourceUpload"><span class="icon-doc-new"></span>'+ labels['GenericAddNew'] +'</button>'
                         +  '        <button class="resourceDelete"><span class="icon-trash"></span>'+ labels['GenericDelete'] +'</button>'
@@ -62,17 +63,18 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
                         +  '        </div>'
                         +  '    </div>'
                         +  '    <div class="resourcesList view-grid-medium"></div>'
-                        +  '</div>'),
+                        +  '</div>';
+    var domElement = _vrWrapper.firstElementChild,
 
-
-        ResourcesControls      = domElement.find('.resourcesControls'),
-        ResourcesFilter        = domElement.find('.resourcesFilter'),
-        ResourcesList          = domElement.find('.resourcesList'),
-        ResourceUpload         = domElement.find('.resourceUpload'),
-        ResourceDelete         = domElement.find('.resourceDelete'),
-        ResourceDeleteConfirm  = domElement.find('.resourceDeleteConfirm'),
+        ResourcesControls      = domElement.querySelector('.resourcesControls'),
+        ResourcesFilter        = domElement.querySelector('.resourcesFilter'),
+        ResourcesList          = domElement.querySelector('.resourcesList'),
+        ResourceUpload         = domElement.querySelector('.resourceUpload'),
+        ResourceDelete         = domElement.querySelector('.resourceDelete'),
+        ResourceDeleteConfirm  = domElement.querySelector('.resourceDeleteConfirm'),
 
         deleteActive     = false,
+        _thumbClickHandler = null,
 
         callback,
         showAsDialog,
@@ -80,44 +82,46 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
 
 
 
-    ResourceUpload.click(function(){
+    ResourceUpload.addEventListener('click', function(){
         FrameTrail.module('ResourceManager').uploadResource(updateList);
     });
 
-    ResourceDelete.click(toggleDeleteMode);
+    ResourceDelete.addEventListener('click', toggleDeleteMode);
 
-    ResourceDeleteConfirm.hide();
-    ResourceDeleteConfirm.click(function(){
+    ResourceDeleteConfirm.style.display = 'none';
+    ResourceDeleteConfirm.addEventListener('click', function(){
         executeDelete();
     });
 
-    domElement.find('select[name=ResourceFilterType]').change(updateList);
+    domElement.querySelector('select[name=ResourceFilterType]').addEventListener('change', updateList);
 
-    domElement.find('input[name=onlyCC]').change( function (evt) {
-     if ($(this).is(':checked')) {
-        ResourcesList.addClass('onlyCC');
+    domElement.querySelector('input[name=onlyCC]').addEventListener('change', function (evt) {
+     if (this.checked) {
+        ResourcesList.classList.add('onlyCC');
      } else {
-        ResourcesList.removeClass('onlyCC');
+        ResourcesList.classList.remove('onlyCC');
      }
     });
 
     // View toggle functionality
-    domElement.find('.viewToggle').click(function() {
-        var viewMode = $(this).data('view');
+    domElement.querySelectorAll('.viewToggle').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var viewMode = this.dataset.view;
 
-        // Remove all view classes
-        ResourcesList.removeClass('view-grid-small view-grid-medium view-grid-large view-list');
+            // Remove all view classes
+            ResourcesList.classList.remove('view-grid-small', 'view-grid-medium', 'view-grid-large', 'view-list');
 
-        // Add selected view class
-        ResourcesList.addClass('view-' + viewMode);
+            // Add selected view class
+            ResourcesList.classList.add('view-' + viewMode);
 
-        // Update active state on buttons
-        domElement.find('.viewToggle').removeClass('active');
-        $(this).addClass('active');
+            // Update active state on buttons
+            domElement.querySelectorAll('.viewToggle').forEach(function(b) { b.classList.remove('active'); });
+            this.classList.add('active');
+        });
     });
 
     // Set initial active state for grid view button
-    domElement.find('.viewToggle[data-view="grid-medium"]').addClass('active');
+    domElement.querySelector('.viewToggle[data-view="grid-medium"]').classList.add('active');
 
 
 
@@ -150,10 +154,10 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
 
         } else {
             
-            var wrapperElem = $('<div class="resourceManagerContent"></div>');
-            
-            wrapperElem.append(domElement)
-            $(FrameTrail.getState('target')).find('.mainContainer').append(wrapperElem);
+            var wrapperElem = document.createElement('div');
+            wrapperElem.className = 'resourceManagerContent';
+            wrapperElem.append(domElement);
+            document.querySelector(FrameTrail.getState('target')).querySelector('.mainContainer').append(wrapperElem);
         }
 
         FrameTrail.changeState('viewSize', FrameTrail.getState('viewSize'));
@@ -169,7 +173,7 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
      */
     function updateList() {
 
-        var type = domElement.find('select[name=ResourceFilterType]').val();
+        var type = domElement.querySelector('select[name=ResourceFilterType]').value;
 
         if (type === 'ALL') {
 
@@ -198,23 +202,31 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
 
         if (deleteActive) {
 
-            ResourceDelete.html('<span class="icon-trash"></span>'+ labels['GenericDelete']).removeClass('active');
-            ResourceDeleteConfirm.hide();
-            ResourcesList.children('.resourceThumb').removeClass('markedForDeletion').unbind('click');
+            ResourceDelete.innerHTML = '<span class="icon-trash"></span>'+ labels['GenericDelete'];
+            ResourceDelete.classList.remove('active');
+            ResourceDeleteConfirm.style.display = 'none';
+            ResourcesList.querySelectorAll('.resourceThumb').forEach(function(t) { t.classList.remove('markedForDeletion'); });
+            ResourcesList.removeEventListener('click', _thumbClickHandler);
             deleteActive = false;
 
-            ResourcesControls.find('.message').text('').removeClass('active');
+            ResourcesControls.querySelector('.message').textContent = '';
+            ResourcesControls.querySelector('.message').classList.remove('active');
 
         } else {
 
-            ResourceDelete.html(labels['GenericCancel']).addClass('active');
-            ResourceDeleteConfirm.show();
-            ResourcesList.children('.resourceThumb').click(function(evt){
-                $(evt.currentTarget).toggleClass('markedForDeletion');
-            });
+            ResourceDelete.textContent = labels['GenericCancel'];
+            ResourceDelete.classList.add('active');
+            ResourceDeleteConfirm.style.display = '';
+            _thumbClickHandler = function(evt) {
+                var thumb = evt.target.closest('.resourceThumb');
+                if (thumb) { thumb.classList.toggle('markedForDeletion'); }
+            };
+            ResourcesList.addEventListener('click', _thumbClickHandler);
             deleteActive = true;
 
-            ResourcesControls.find('.message').text(labels['MessageSelectResourcesToDelete']).removeClass('error').addClass('active');
+            ResourcesControls.querySelector('.message').textContent = labels['MessageSelectResourcesToDelete'];
+            ResourcesControls.querySelector('.message').classList.remove('error');
+            ResourcesControls.querySelector('.message').classList.add('active');
 
         }
 
@@ -228,13 +240,13 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
 
         FrameTrail.module('UserManagement').ensureAuthenticated(function(){
 
-            ResourcesControls.find('.message').text('').removeClass('active');
+            ResourcesControls.querySelector('.message').textContent = '';
+            ResourcesControls.querySelector('.message').classList.remove('active');
 
             var deleteCollection   = [],
                 callbackCollection = [];
-            ResourcesList.children('.resourceThumb.markedForDeletion').each(function(){
-				deleteCollection.push(this.getAttribute('data-resourceid'));
-				//deleteCollection.push($(this).data('resourceId'));
+            ResourcesList.querySelectorAll('.resourceThumb.markedForDeletion').forEach(function(t){
+                deleteCollection.push(t.getAttribute('data-resourceid'));
             });
 
             for (var i in deleteCollection) {
@@ -245,7 +257,8 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
                         deletionFinished();
                     },
                     function(data){
-                        ResourcesControls.find('.message').addClass('error active').text(data.string);
+                        ResourcesControls.querySelector('.message').classList.add('error', 'active');
+                        ResourcesControls.querySelector('.message').textContent = data.string;
                         callbackCollection.push(false);
                         deletionFinished();
                     }
@@ -281,8 +294,8 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
      */
     function updateButtonStates() {
         var canSave = FrameTrail.module('StorageManager').canSave();
-        ResourceUpload.prop('disabled', !canSave);
-        ResourceDelete.prop('disabled', !canSave);
+        ResourceUpload.disabled = !canSave;
+        ResourceDelete.disabled = !canSave;
     }
 
 
@@ -300,7 +313,7 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
             callback = closeCallback;
             viewResourcesDialog.open();
         } else {
-            domElement.removeAttr('title');
+            domElement.removeAttribute('title');
         }
 
         FrameTrail.changeState('viewSize', FrameTrail.getState('viewSize'));

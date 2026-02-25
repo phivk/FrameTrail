@@ -44,7 +44,9 @@ FrameTrail.defineType(
                  */
                 renderContent: function() {
 
-                	var resourceDetail = $('<div class="resourceDetail" data-type="'+ this.resourceData.type +'"></div>');
+                    var resourceDetail = document.createElement('div');
+                    resourceDetail.className = 'resourceDetail';
+                    resourceDetail.dataset.type = this.resourceData.type;
 
                     var documentSource = (this.resourceData.src.indexOf('//') != -1) ? this.resourceData.src.replace('http:', 'https:') : FrameTrail.module('RouteNavigation').getResourceURL(this.resourceData.src);
 
@@ -56,38 +58,41 @@ FrameTrail.defineType(
                         downloadButton = '<a download class="button" href="'+ documentSource +'" data-tooltip-right="'+ this.labels['GenericDownload'] +'"><span class="icon-download"></span></a>';
                     }
 
-                    var pdfDocument = $(
-                        '<object'
-                    +   ' data="'+ documentSource +'"'
-                    +   ' type="application/pdf"'
-                    +   ' width="100%"'
-                    +   ' height="100%">'
-                    +   ' <iframe webkitAllowFullScreen mozallowfullscreen allowFullScreen '
-                    +   ' src="'+ documentSource +'"'
-                    +   ' width="100%"'
-                    +   ' height="100%"'
-                    +   ' sandbox="allow-same-origin allow-scripts allow-popups allow-forms"'
-                    +   ' frameborder="0"'
-                    +   ' style="border: none;">'
-                    +   ' <p>Your browser does not support PDFs.'
-                    +   ' <a href="'+ documentSource +'">'+ this.labels['GenericDownload'] +'</a>.</p>'
-                    +   ' </iframe>'
-                    +   '</object>');
+                    var _pdfWrapper = document.createElement('div');
+                    _pdfWrapper.innerHTML = '<object'
+                        + ' data="'+ documentSource +'"'
+                        + ' type="application/pdf"'
+                        + ' width="100%"'
+                        + ' height="100%">'
+                        + ' <iframe webkitAllowFullScreen mozallowfullscreen allowFullScreen '
+                        + ' src="'+ documentSource +'"'
+                        + ' width="100%"'
+                        + ' height="100%"'
+                        + ' sandbox="allow-same-origin allow-scripts allow-popups allow-forms"'
+                        + ' frameborder="0"'
+                        + ' style="border: none;">'
+                        + ' <p>Your browser does not support PDFs.'
+                        + ' <a href="'+ documentSource +'">'+ this.labels['GenericDownload'] +'</a>.</p>'
+                        + ' </iframe>'
+                        + '</object>';
+                    resourceDetail.append(_pdfWrapper.firstElementChild);
 
-                    resourceDetail.append(pdfDocument);
-
-                    resourceDetail.append('<div class="resourceOptions">'
-                                       +  '    <div class="licenseInformation">'+ licenseString +'</div>'
-                                       +  '    <div class="resourceButtons">'+ downloadButton +'</div>'
-                                       +  '</div>');
+                    resourceDetail.insertAdjacentHTML('beforeend',
+                        '<div class="resourceOptions">'
+                        + '<div class="licenseInformation">'+ licenseString +'</div>'
+                        + '<div class="resourceButtons">'+ downloadButton +'</div>'
+                        + '</div>');
 
                     if (this.resourceData.start) {
-                        var jumpToTimeButton = $('<button class="button btn btn-sm" data-start="'+ this.resourceData.start +'" data-end="'+ this.resourceData.end +'"><span class="icon-play-1"></span></button>');
-                        jumpToTimeButton.click(function(){
-                            var time = $(this).attr('data-start');
-                            FrameTrail.module('HypervideoController').currentTime = time;
+                        var jumpToTimeButton = document.createElement('button');
+                        jumpToTimeButton.className = 'button btn btn-sm';
+                        jumpToTimeButton.setAttribute('data-start', this.resourceData.start);
+                        jumpToTimeButton.setAttribute('data-end', this.resourceData.end);
+                        jumpToTimeButton.innerHTML = '<span class="icon-play-1"></span>';
+                        jumpToTimeButton.addEventListener('click', function(){
+                            FrameTrail.module('HypervideoController').currentTime = this.getAttribute('data-start');
                         });
-                        resourceDetail.find('.resourceButtons').append(jumpToTimeButton);
+                        resourceDetail.querySelector('.resourceButtons').append(jumpToTimeButton);
                     }
 
                     return resourceDetail;
@@ -121,16 +126,19 @@ FrameTrail.defineType(
 
                     var tagList = (this.resourceData.tags ? this.resourceData.tags.join(' ') : '');
                     
-                    var thumbElement = $('<div class="resourceThumb '+ tagList +'" data-license-type="'+ this.resourceData.licenseType +'" data-resourceID="'+ trueID +'" data-type="'+ this.resourceData.type +'" style="'+ thumbBackground +'">'
-                        + '                  <div class="resourceOverlay">'
-                        + '                      <div class="resourceIcon"><span class="icon-file-pdf"></span></div>'
-                        + '                  </div>'
-                        + '                  <div class="resourceTitle">'+ this.resourceData.name +'</div>'
-                        + '              </div>');
+                    var _thumbWrapper = document.createElement('div');
+                    _thumbWrapper.innerHTML = '<div class="resourceThumb '+ tagList +'" data-license-type="'+ this.resourceData.licenseType +'" data-resourceID="'+ trueID +'" data-type="'+ this.resourceData.type +'" style="'+ thumbBackground +'">'
+                        + '<div class="resourceOverlay"><div class="resourceIcon"><span class="icon-file-pdf"></span></div></div>'
+                        + '<div class="resourceTitle">'+ this.resourceData.name +'</div>'
+                        + '</div>';
+                    var thumbElement = _thumbWrapper.firstElementChild;
 
-                    var previewButton = $('<div class="resourcePreviewButton"><span class="icon-eye"></span></div>').click(function(evt) {
+                    var previewButton = document.createElement('div');
+                    previewButton.className = 'resourcePreviewButton';
+                    previewButton.innerHTML = '<span class="icon-eye"></span>';
+                    previewButton.addEventListener('click', function(evt) {
                         // call the openPreview method (defined in abstract type: Resource)
-                        self.openPreview( $(this).parent() );
+                        self.openPreview(this.parentElement);
                         evt.stopPropagation();
                         evt.preventDefault();
                     });

@@ -31,11 +31,14 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
         var configChanged = false;
         var globalCSSChanged = false;
         var initialConfig = JSON.parse(JSON.stringify(database.config));
-        var initialCSS = ($('head > style.FrameTrailGlobalCustomCSS').length != 0) ? $('head > style.FrameTrailGlobalCustomCSS').html() : '';
+        var initialCSS = document.head.querySelector('style.FrameTrailGlobalCustomCSS') ? document.head.querySelector('style.FrameTrailGlobalCustomCSS').innerHTML : '';
 
-        var adminDialog = $('<div class="adminSettingsDialog" title="'+ labels['GenericAdministration'] +'"></div>');
+        var adminDialog = document.createElement('div');
+        adminDialog.className = 'adminSettingsDialog';
+        adminDialog.title = labels['GenericAdministration'];
 
-        var adminTabs = $('<div class="adminSettingsTabs">'
+        var _atw = document.createElement('div');
+        _atw.innerHTML = '<div class="adminSettingsTabs">'
                         + '    <ul>'
                         + '        <li>'
                         + '            <a href="#Configuration">'+ labels['SettingsConfigurationOptions'] +'</a>'
@@ -54,20 +57,22 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                         + '    <div id="ChangeTheme"></div>'
                         + '    <div id="ChangeGlobalCSS"></div>'
                         + '    <div id="TagDefinitions"></div>'
-                        + '</div>');
+                        + '</div>';
+        var adminTabs = _atw.firstElementChild;
 
-        adminDialog.append(adminTabs);
+        adminDialog.appendChild(adminTabs);
 
-        adminTabs.tabs({
+        FTTabs(adminTabs, {
             activate: function(event, ui) {
-                var cm6Wrapper = ui.newPanel.find('.cm6-wrapper')[0];
+                var cm6Wrapper = ui.newPanel.querySelector('.cm6-wrapper');
                 if (cm6Wrapper && cm6Wrapper._cm6view) { cm6Wrapper._cm6view.requestMeasure(); }
             }
         });
 
         /* Configuration Editing UI */
-        var configData = database.config,
-            configurationUI = $('<div class="configEditingForm layoutRow">'
+        var configData = database.config;
+        var _cuw = document.createElement('div');
+        _cuw.innerHTML = '<div class="configEditingForm layoutRow">'
                             +   '    <div class="column-3">'
                             +   '        <input type="checkbox" name="userNeedsConfirmation" id="userNeedsConfirmation" value="userNeedsConfirmation" '+((configData.userNeedsConfirmation && configData.userNeedsConfirmation.toString() == "true") ? "checked" : "")+'>'
                             +   '        <label for="userNeedsConfirmation" data-tooltip-bottom-left="'+ labels['MessageUserRequireConfirmation'] +'">'+ labels['SettingsOnlyConfirmedUsers'] +'</label>'
@@ -97,27 +102,29 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                             +   '        <label for="userTracesEndAction" data-tooltip-right="'+ labels['MessageUserTracesStartAction'] +'">'+ labels['SettingsUserTracesEndAction'] +'</label>'
                             +   '        <input type="text" style="margin-top: 0px; margin-bottom: 2px;" name="userTracesEndAction" id="userTracesEndAction" placeholder="'+ labels['SettingsUserTracesEndAction'] +'" value="'+ (configData.userTracesEndAction || '') +'">'
                             +   '    </div>'
-                            +   '</div>');
+                            +   '</div>';
+        var configurationUI = _cuw.firstElementChild;
 
-        adminTabs.find('#Configuration').append(configurationUI);
+        adminTabs.querySelector('#Configuration').appendChild(configurationUI);
 
         // Track changes but don't apply them until save
-        configurationUI.find('input[type="text"]').on('keydown', function(evt) {
-            if (!evt.originalEvent.metaKey && evt.originalEvent.key != 'Meta') {
+        configurationUI.querySelectorAll('input[type="text"]').forEach(function(el) { el.addEventListener('keydown', function(evt) {
+            if (!evt.metaKey && evt.key != 'Meta') {
                 configChanged = true;
             }
-        });
+        }); });
 
-        configurationUI.find('input[type="checkbox"]').on('change', function(evt) {
+        configurationUI.querySelectorAll('input[type="checkbox"]').forEach(function(el) { el.addEventListener('change', function(evt) {
             configChanged = true;
-        });
+        }); });
 
-        configurationUI.find('input[type="radio"]').on('change', function(evt) {
+        configurationUI.querySelectorAll('input[type="radio"]').forEach(function(el) { el.addEventListener('change', function(evt) {
             configChanged = true;
-        });
+        }); });
 
         /* Change Theme UI */
-        var ChangeThemeUI = $('<div class="themeContainer">'
+        var _ctw = document.createElement('div');
+        _ctw.innerHTML = '<div class="themeContainer">'
                             + '    <div class="message active">'+ labels['SettingsSelectColorTheme'] +'</div>'
                             + '    <div class="themeItem" data-theme="default">'
                             + '        <div class="themeName">'+ labels['GenericDefault'] +'</div>'
@@ -175,43 +182,51 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                             + '            <div class="secondary-fg-color"></div>'
                             + '        </div>'
                             + '    </div>'
-                            + '</div>');
+                            + '</div>';
+        var ChangeThemeUI = _ctw.firstElementChild;
 
-        ChangeThemeUI.find('.themeItem').each(function() {
-            if (database.config.theme == $(this).attr('data-theme')) {
-                $(this).addClass('active');
+        ChangeThemeUI.querySelectorAll('.themeItem').forEach(function(item) {
+            if (database.config.theme == item.getAttribute('data-theme')) {
+                item.classList.add('active');
             }
-            if (!database.config.theme && $(this).attr('data-theme') == 'default') {
-                $(this).addClass('active');
+            if (!database.config.theme && item.getAttribute('data-theme') == 'default') {
+                item.classList.add('active');
             }
         });
 
-        adminTabs.find('#ChangeTheme').append(ChangeThemeUI);
+        adminTabs.querySelector('#ChangeTheme').appendChild(ChangeThemeUI);
 
         var selectedThemeValue = database.config.theme || 'default';
-        ChangeThemeUI.find('.themeItem').click(function() {
-            $(this).siblings('.themeItem').removeClass('active');
-            $(this).addClass('active');
+        ChangeThemeUI.querySelectorAll('.themeItem').forEach(function(item) {
+            item.addEventListener('click', function() {
+                ChangeThemeUI.querySelectorAll('.themeItem').forEach(function(t) { t.classList.remove('active'); });
+                this.classList.add('active');
 
-            selectedThemeValue = $(this).attr('data-theme');
-            configChanged = true;
+                selectedThemeValue = this.dataset.theme;
+                configChanged = true;
+            });
         });
 
         /* Global CSS Editing UI */
-        var cssText = ($('head > style.FrameTrailGlobalCustomCSS').length != 0) ? $('head > style.FrameTrailGlobalCustomCSS').html() : '';
+        var cssText = document.head.querySelector('style.FrameTrailGlobalCustomCSS') ? document.head.querySelector('style.FrameTrailGlobalCustomCSS').innerHTML : '';
 
-        var globalCSSEditingUI = $('<div class="globalCSSEditingUI" style="height: 400px;">'
-                                 + '    <textarea class="globalCSS">'+ cssText +'</textarea>'
-                                 + '</div>');
+        var _gcw = document.createElement('div');
+        _gcw.innerHTML = '<div class="globalCSSEditingUI" style="height: 400px;">'
+                        + '    <textarea class="globalCSS">'+ cssText +'</textarea>'
+                        + '</div>';
+        var globalCSSEditingUI = _gcw.firstElementChild;
 
-        adminTabs.find('#ChangeGlobalCSS').append(globalCSSEditingUI);
+        adminTabs.querySelector('#ChangeGlobalCSS').appendChild(globalCSSEditingUI);
 
         // Init CodeMirror 6 editor for CSS Variables
-        var textarea = adminTabs.find('.globalCSS');
+        var textarea = adminTabs.querySelector('.globalCSS');
         var CM6 = window.FrameTrailCM6;
 
-        var cm6Wrapper = $('<div class="cm6-wrapper" style="height: 100%;"></div>');
-        textarea.after(cm6Wrapper).hide();
+        var cm6Wrapper = document.createElement('div');
+        cm6Wrapper.className = 'cm6-wrapper';
+        cm6Wrapper.style.height = '100%';
+        textarea.after(cm6Wrapper);
+        textarea.style.display = 'none';
 
         var cssEditorValue = cssText;
 
@@ -242,30 +257,30 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                     })
                 ]
             }),
-            parent: cm6Wrapper[0]
+            parent: cm6Wrapper
         });
-        cm6Wrapper[0]._cm6view = codeEditor;
+        cm6Wrapper._cm6view = codeEditor;
 
         // this is necessary to be able to manipulate the css live
-        if ( $('head > style.FrameTrailGlobalCustomCSS').length == 0 ) {
+        if ( !document.head.querySelector('style.FrameTrailGlobalCustomCSS') ) {
             if (FrameTrail.getState('storageMode') === 'local') {
                 var adapter = FrameTrail.module('StorageManager').getAdapter();
                 adapter.readText('custom.css').then(function(cssString) {
                     codeEditor.dispatch({ changes: { from: 0, to: codeEditor.state.doc.length, insert: cssString }, annotations: CM6.Transaction.userEvent.of('setValue') });
-                    $('head').append('<style class="FrameTrailGlobalCustomCSS" type="text/css">'+ cssString +'</style>');
-                    $('head link[href$="custom.css"]').remove();
+                    document.head.insertAdjacentHTML('beforeend', '<style class="FrameTrailGlobalCustomCSS" type="text/css">'+ cssString +'</style>');
+                    var _lnk = document.head.querySelector('link[href$="custom.css"]'); if (_lnk) { _lnk.remove(); }
                 }).catch(function() {
                     // No custom.css yet — create empty style tag so edits can be applied
-                    $('head').append('<style class="FrameTrailGlobalCustomCSS" type="text/css"></style>');
-                    $('head link[href$="custom.css"]').remove();
+                    document.head.insertAdjacentHTML('beforeend', '<style class="FrameTrailGlobalCustomCSS" type="text/css"></style>');
+                    var _lnk = document.head.querySelector('link[href$="custom.css"]'); if (_lnk) { _lnk.remove(); }
                 });
-            } else if ( $('head link[href$="custom.css"]').length != 0 ) {
-                fetch($('head link[href$="custom.css"]').attr('href'))
+            } else if ( document.head.querySelector('link[href$="custom.css"]') ) {
+                fetch(document.head.querySelector('link[href$="custom.css"]').getAttribute('href'))
                     .then(function(r) { return r.text(); })
                     .then(function(cssString) {
                         codeEditor.dispatch({ changes: { from: 0, to: codeEditor.state.doc.length, insert: cssString }, annotations: CM6.Transaction.userEvent.of('setValue') });
-                        $('head').append('<style class="FrameTrailGlobalCustomCSS" type="text/css">'+ cssString +'</style>');
-                        $('head link[href$="custom.css"]').remove();
+                        document.head.insertAdjacentHTML('beforeend', '<style class="FrameTrailGlobalCustomCSS" type="text/css">'+ cssString +'</style>');
+                        var _lnk = document.head.querySelector('link[href$="custom.css"]'); if (_lnk) { _lnk.remove(); }
                     })
                     .catch(function() {
                         console.log(labels['ErrorCouldNotRetrieveCustomCSS']);
@@ -274,18 +289,21 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
         }
 
         /* Tag Definitions UI */
-        var tagDefinitionsUI = $('<div class="tagDefinitionsContainer">'
+        var _tdw = document.createElement('div');
+        _tdw.innerHTML = '<div class="tagDefinitionsContainer">'
             + '    <div class="tagListHeader">'
             + '        <button class="addTagButton"><span class="icon-plus"></span> '+ labels['TagAdd'] +'</button>'
             + '        <input type="text" class="tagFilterInput" placeholder="'+ labels['SettingsFilterByName'] +'">'
             + '    </div>'
             + '    <div class="tagList"></div>'
-            + '</div>');
+            + '</div>';
+        var tagDefinitionsUI = _tdw.firstElementChild;
 
-        adminTabs.find('#TagDefinitions').append(tagDefinitionsUI);
+        adminTabs.querySelector('#TagDefinitions').appendChild(tagDefinitionsUI);
 
         function renderTagList(filterText) {
-            var tagList = tagDefinitionsUI.find('.tagList').empty();
+            var tagList = tagDefinitionsUI.querySelector('.tagList');
+            tagList.innerHTML = '';
             var allTags = FrameTrail.module('TagModel').getAllTags();
 
             for (var tagId in allTags) {
@@ -294,18 +312,20 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                 }
 
                 var tagData = allTags[tagId];
-                var tagItem = $('<div class="tagListItem" data-tag-id="'+ tagId +'">'
+                var _tiw = document.createElement('div');
+                _tiw.innerHTML = '<div class="tagListItem" data-tag-id="'+ tagId +'">'
                     + '    <div class="tagId">'+ tagId +'</div>'
                     + '    <div class="tagLanguages"></div>'
                     + '    <div class="tagActions">'
                     + '        <button class="editTagButton" title="'+ labels['GenericEditStart'] +'"><span class="icon-pencil"></span></button>'
                     + '        <button class="deleteTagButton" title="'+ labels['GenericDelete'] +'"><span class="icon-trash"></span></button>'
                     + '    </div>'
-                    + '</div>');
+                    + '</div>';
+                var tagItem = _tiw.firstElementChild;
 
-                var langContainer = tagItem.find('.tagLanguages');
+                var langContainer = tagItem.querySelector('.tagLanguages');
                 for (var lang in tagData) {
-                    langContainer.append(
+                    langContainer.insertAdjacentHTML('beforeend',
                         '<div class="tagLang">'
                         + '    <span class="langCode">'+ lang.toUpperCase() +':</span> '
                         + '    <span class="langLabel">'+ tagData[lang].label +'</span>'
@@ -314,32 +334,34 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                     );
                 }
 
-                tagList.append(tagItem);
+                tagList.appendChild(tagItem);
             }
 
-            if (tagList.children().length === 0) {
-                tagList.append('<div class="message active">'+ labels['TagNoTagsDefined'] +'</div>');
+            if (tagList.children.length === 0) {
+                tagList.insertAdjacentHTML('beforeend', '<div class="message active">'+ labels['TagNoTagsDefined'] +'</div>');
             }
         }
 
         renderTagList('');
 
-        tagDefinitionsUI.find('.tagFilterInput').on('input', function() {
-            renderTagList($(this).val());
+        tagDefinitionsUI.querySelector('.tagFilterInput').addEventListener('input', function() {
+            renderTagList(this.value);
         });
 
-        tagDefinitionsUI.find('.addTagButton').click(function() {
+        tagDefinitionsUI.querySelector('.addTagButton').addEventListener('click', function() {
             openTagEditDialog(null);
         });
 
-        tagDefinitionsUI.on('click', '.editTagButton', function() {
-            var tagId = $(this).closest('.tagListItem').data('tag-id');
-            openTagEditDialog(tagId);
-        });
-
-        tagDefinitionsUI.on('click', '.deleteTagButton', function() {
-            var tagId = $(this).closest('.tagListItem').data('tag-id');
-            confirmDeleteTag(tagId);
+        tagDefinitionsUI.addEventListener('click', function(evt) {
+            var _editBtn = evt.target.closest('.editTagButton');
+            if (_editBtn) {
+                openTagEditDialog(_editBtn.closest('.tagListItem').dataset.tagId);
+                return;
+            }
+            var _delBtn = evt.target.closest('.deleteTagButton');
+            if (_delBtn) {
+                confirmDeleteTag(_delBtn.closest('.tagListItem').dataset.tagId);
+            }
         });
 
         function openTagEditDialog(tagId) {
@@ -348,7 +370,8 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
             var existingData = isNew ? {} : (allTags[tagId] || {});
             var existingLangs = isNew ? [] : Object.keys(existingData);
 
-            var dialogContent = $('<div class="tagEditDialog">'
+            var _dcw = document.createElement('div');
+            _dcw.innerHTML = '<div class="tagEditDialog">'
                 + '    <div class="formRow">'
                 + '        <label>'+ labels['TagID'] +'</label>'
                 + '        <input type="text" class="tagIdInput" value="'+ (tagId || '') +'" '+ (isNew ? '' : 'readonly') +'>'
@@ -359,12 +382,14 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                 + '        <div class="languagesList"></div>'
                 + '        <button class="addLanguageButton"><span class="icon-plus"></span> '+ labels['TagAddLanguage'] +'</button>'
                 + '    </div>'
-                + '</div>');
+                + '</div>';
+            var dialogContent = _dcw.firstElementChild;
 
-            var languagesList = dialogContent.find('.languagesList');
+            var languagesList = dialogContent.querySelector('.languagesList');
 
             function addLanguageRow(lang, label, description, isExisting) {
-                var row = $('<div class="languageRow" data-lang="'+ (lang || '') +'">'
+                var _rw = document.createElement('div');
+                _rw.innerHTML = '<div class="languageRow" data-lang="'+ (lang || '') +'">'
                     + '    <div class="langHeader">'
                     + '        <input type="text" class="langCodeInput" value="'+ (lang || '') +'" placeholder="en" maxlength="2" '+ (isExisting ? 'readonly' : '') +'>'
                     + (isExisting ? '' : '        <button class="removeLangButton"><span class="icon-cancel"></span></button>')
@@ -373,13 +398,17 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                     + '        <input type="text" class="langLabelInput" value="'+ (label || '') +'" placeholder="'+ labels['TagLabel'] +'">'
                     + '        <input type="text" class="langDescInput" value="'+ (description || '') +'" placeholder="'+ labels['TagDescription'] +'">'
                     + '    </div>'
-                    + '</div>');
+                    + '</div>';
+                var row = _rw.firstElementChild;
 
-                row.find('.removeLangButton').click(function() {
-                    row.remove();
-                });
+                var _removeBtn = row.querySelector('.removeLangButton');
+                if (_removeBtn) {
+                    _removeBtn.addEventListener('click', function() {
+                        row.remove();
+                    });
+                }
 
-                languagesList.append(row);
+                languagesList.appendChild(row);
             }
 
             for (var lang in existingData) {
@@ -390,7 +419,7 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                 addLanguageRow('', '', '', false);
             }
 
-            dialogContent.find('.addLanguageButton').click(function() {
+            dialogContent.querySelector('.addLanguageButton').addEventListener('click', function() {
                 addLanguageRow('', '', '', false);
             });
 
@@ -409,7 +438,7 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                         click: function() {
                             saveTag(dialogContent, isNew, existingLangs, function() {
                                 tagDialogCtrl.close();
-                                renderTagList(tagDefinitionsUI.find('.tagFilterInput').val());
+                                renderTagList(tagDefinitionsUI.querySelector('.tagFilterInput').value);
                             });
                         }
                     }
@@ -419,8 +448,8 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
         }
 
         function saveTag(dialogContent, isNew, existingLangs, onSuccess) {
-            var tagId = dialogContent.find('.tagIdInput').val().trim();
-            var languageRows = dialogContent.find('.languageRow');
+            var tagId = dialogContent.querySelector('.tagIdInput').value.trim();
+            var languageRows = dialogContent.querySelectorAll('.languageRow');
 
             if (tagId.length < 2) {
                 FrameTrail.module('InterfaceModal').showErrorMessage(labels['TagErrorIDTooShort']);
@@ -433,11 +462,10 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
             }
 
             var saveQueue = [];
-            languageRows.each(function() {
-                var row = $(this);
-                var lang = row.find('.langCodeInput').val().trim().toLowerCase();
-                var label = row.find('.langLabelInput').val().trim();
-                var desc = row.find('.langDescInput').val().trim();
+            languageRows.forEach(function(row) {
+                var lang = row.querySelector('.langCodeInput').value.trim().toLowerCase();
+                var label = row.querySelector('.langLabelInput').value.trim();
+                var desc = row.querySelector('.langDescInput').value.trim();
 
                 if (lang.length === 2 && label.length >= 4 && desc.length >= 4) {
                     saveQueue.push({ lang: lang, label: label, description: desc });
@@ -478,7 +506,7 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
         function confirmDeleteTag(tagId) {
             FrameTrail.module('TagModel').deleteTag(tagId,
                 function(response) {
-                    renderTagList(tagDefinitionsUI.find('.tagFilterInput').val());
+                    renderTagList(tagDefinitionsUI.querySelector('.tagFilterInput').value);
                     FrameTrail.module('InterfaceModal').showStatusMessage(labels['TagDeleted']);
                     setTimeout(function() {
                         FrameTrail.module('InterfaceModal').hideMessage(500);
@@ -495,19 +523,21 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
         }
 
         function showTagUsageWarning(tagId, usageData) {
-            var content = $('<div class="tagUsageWarning">'
+            var _tuw = document.createElement('div');
+            _tuw.innerHTML = '<div class="tagUsageWarning">'
                 + '    <p><strong>'+ labels['TagCannotDelete'].replace('{tagId}', tagId) +'</strong></p>'
                 + '    <p>'+ labels['TagInUseCount'].replace('{count}', usageData.count) +'</p>'
                 + '    <ul class="usageList"></ul>'
                 + '    <p>'+ labels['TagRemoveBeforeDelete'] +'</p>'
-                + '</div>');
+                + '</div>';
+            var content = _tuw.firstElementChild;
 
-            var usageList = content.find('.usageList');
+            var usageList = content.querySelector('.usageList');
 
             if (usageData.matches) {
                 for (var i = 0; i < usageData.matches.length; i++) {
                     var match = usageData.matches[i];
-                    usageList.append(
+                    usageList.insertAdjacentHTML('beforeend',
                         '<li>Hypervideo "'+ match.hypervideo +'" &mdash; '
                         + match.where + ' ('+ match.type +') by '+ match.owner
                         + '</li>'
@@ -549,18 +579,18 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                             // Apply config changes from form
                             if (configChanged) {
                                 // Apply text input changes
-                                configurationUI.find('input[type="text"]').each(function() {
-                                    var key = $(this).attr('name'),
-                                        value = $(this).val();
+                                configurationUI.querySelectorAll('input[type="text"]').forEach(function(el) {
+                                    var key = el.getAttribute('name'),
+                                        value = el.value;
                                     if (key) {
                                         database.config[key] = value;
                                     }
                                 });
                                 
                                 // Apply checkbox changes
-                                configurationUI.find('input[type="checkbox"]').each(function() {
-                                    var key = $(this).attr('name'),
-                                        value = $(this).is(':checked');
+                                configurationUI.querySelectorAll('input[type="checkbox"]').forEach(function(el) {
+                                    var key = el.getAttribute('name'),
+                                        value = el.checked;
                                     
                                     if (key) {
                                         database.config[key] = value;
@@ -568,9 +598,9 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                                 });
                                 
                                 // Apply radio changes
-                                configurationUI.find('input[type="radio"]:checked').each(function() {
-                                    var key = $(this).attr('name'),
-                                        value = $(this).val();
+                                configurationUI.querySelectorAll('input[type="radio"]:checked').forEach(function(el) {
+                                    var key = el.getAttribute('name'),
+                                        value = el.value;
                                     if (key) {
                                         database.config[key] = value;
                                     }
@@ -581,13 +611,13 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                                 // Only apply to current view if the hypervideo has no per-hypervideo theme
                                 var hvConfig = database.hypervideo && database.hypervideo.config;
                                 if (!hvConfig || !hvConfig.theme) {
-                                    $(FrameTrail.getState('target')).attr('data-frametrail-theme', selectedThemeValue);
+                                    document.querySelector(FrameTrail.getState('target')).setAttribute('data-frametrail-theme', selectedThemeValue);
                                 }
                             }
                             
                             // Apply CSS changes
                             if (globalCSSChanged) {
-                                $('head > style.FrameTrailGlobalCustomCSS').html(cssEditorValue);
+                                document.head.querySelector('style.FrameTrailGlobalCustomCSS').innerHTML = cssEditorValue;
                             }
                             
                             var saveCount = 0;
@@ -609,11 +639,11 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                                             // Only revert theme on current view if hypervideo has no per-hypervideo theme
                                             var hvCfg = database.hypervideo && database.hypervideo.config;
                                             if (!hvCfg || !hvCfg.theme) {
-                                                $(FrameTrail.getState('target')).attr('data-frametrail-theme', initialConfig.theme || 'default');
+                                                document.querySelector(FrameTrail.getState('target')).setAttribute('data-frametrail-theme', initialConfig.theme || 'default');
                                             }
                                         }
                                         if (globalCSSChanged) {
-                                            $('head > style.FrameTrailGlobalCustomCSS').html(initialCSS);
+                                            document.head.querySelector('style.FrameTrailGlobalCustomCSS').innerHTML = initialCSS;
                                         }
                                     } else {
                                         // Reload config to ensure consistency

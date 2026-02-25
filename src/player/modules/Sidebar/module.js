@@ -20,56 +20,59 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
 
     var labels = FrameTrail.module('Localization').labels;
 
-    var domElement  = $(      '<div class="sidebar">'
-                            + '    <div class="sidebarContainer">'
-                            + '        <div data-viewmode="overview">'
-                            + '            <div class="viewmodeControls">'
-                            + '                <div class="viewModeActionButtonContainer">'
-                            + '                    <button class="newHypervideoButton" data-tooltip-bottom-left="'+ labels['HypervideoNew'] +'"><span class="icon-hypervideo-add"></span></button>'
-                            + '                    <button class="exportButton" data-tooltip-bottom-left="'+ labels['GenericExport'] +'"><span class="icon-download"></span></button>'
-                            + '                    <div style="clear: both;"></div>'
-                            + '                </div>'
-                            + '            </div>'
-                            + '        </div>'
-                            + '        <div data-viewmode="video">'
-                            + '            <div class="viewmodeControls">'
-                            + '                <div class="viewModeActionButtonContainer">'
-                            + '                    <button class="newHypervideoButton" data-tooltip-bottom-left="'+ labels['HypervideoNew'] +'"><span class="icon-hypervideo-add"></span></button>'
-                            + '                    <button class="forkButton" data-tooltip-bottom-left="'+ labels['GenericForkHypervideo'] +'"><span class="icon-hypervideo-fork"></span></button>'
-                            + '                    <button class="saveButton" data-tooltip-bottom-left="'+ labels['GenericSaveChanges'] +'"><span class="icon-floppy"></span></button>'
-                            + '                    <button class="saveAsButton" data-tooltip-bottom-left="'+ labels['GenericSaveAs'] +'"><span class="icon-export"></span></button>'
-                            + '                    <button class="undoButton" disabled data-tooltip-bottom-left="'+ labels['GenericUndo'] +'"><span class="icon-ccw"></span></button>'
-                            + '                    <button class="redoButton" disabled data-tooltip-bottom-left="'+ labels['GenericRedo'] +'"><span class="icon-cw"></span></button>'
-                            + '                    <button class="exportButton" data-tooltip-bottom-left="'+ labels['GenericExportHypervideo'] +'"><span class="icon-download"></span></button>'
-                            + '                    <div style="clear: both;"></div>'
-                            + '                </div>'
-                            + '                <button class="editMode" data-editmode="preview"><span class="icon-eye"></span><span class="editModeLabel">'+ labels['SidebarPreview'] +'</span></button>'
-                            + '                <button class="editMode" data-editmode="layout"><span class="icon-website"></span><span class="editModeLabel">'+ labels['SidebarLayout'] +'</span></button>'
-                            + '                <button class="editMode" data-editmode="overlays"><span class="icon-object-ungroup"></span><span class="editModeLabel">'+ labels['SidebarOverlays'] +'</span></button>'
-                            + '                <button class="editMode" data-editmode="codesnippets"><span class="icon-code"></span><span class="editModeLabel">'+ labels['SidebarCustomCode'] +'</span></button>'
-                            + '                <button class="editMode" data-editmode="annotations"><span class="icon-annotations"></span><span class="editModeLabel">'+ labels['SidebarMyAnnotations'] +'<span class="icon-user"></span></button>'
-                            + '            </div>'
-                            + '            <button class="hypervideoDeleteButton" data-tooltip-top-left="'+ labels['GenericDeleteHypervideo'] +'"><span class="icon-trash"></span></button>'
-                            + '        </div>'
-                            + '    </div>'
-                            + '    </div>'
-                            + '</div>'
-                        ),
+    var _sdw = document.createElement('div');
+    _sdw.innerHTML = '<div class="sidebar">'
+                   + '    <div class="sidebarContainer">'
+                   + '        <div data-viewmode="overview">'
+                   + '            <div class="viewmodeControls">'
+                   + '                <div class="viewModeActionButtonContainer">'
+                   + '                    <button class="newHypervideoButton" data-tooltip-bottom-left="'+ labels['HypervideoNew'] +'"><span class="icon-hypervideo-add"></span></button>'
+                   + '                    <button class="exportButton" data-tooltip-bottom-left="'+ labels['GenericExport'] +'"><span class="icon-download"></span></button>'
+                   + '                    <div style="clear: both;"></div>'
+                   + '                </div>'
+                   + '            </div>'
+                   + '        </div>'
+                   + '        <div data-viewmode="video">'
+                   + '            <div class="viewmodeControls">'
+                   + '                <div class="viewModeActionButtonContainer">'
+                   + '                    <button class="newHypervideoButton" data-tooltip-bottom-left="'+ labels['HypervideoNew'] +'"><span class="icon-hypervideo-add"></span></button>'
+                   + '                    <button class="forkButton" data-tooltip-bottom-left="'+ labels['GenericForkHypervideo'] +'"><span class="icon-hypervideo-fork"></span></button>'
+                   + '                    <button class="saveButton" data-tooltip-bottom-left="'+ labels['GenericSaveChanges'] +'"><span class="icon-floppy"></span></button>'
+                   + '                    <button class="saveAsButton" data-tooltip-bottom-left="'+ labels['GenericSaveAs'] +'"><span class="icon-export"></span></button>'
+                   + '                    <button class="undoButton" disabled data-tooltip-bottom-left="'+ labels['GenericUndo'] +'"><span class="icon-ccw"></span></button>'
+                   + '                    <button class="redoButton" disabled data-tooltip-bottom-left="'+ labels['GenericRedo'] +'"><span class="icon-cw"></span></button>'
+                   + '                    <button class="exportButton" data-tooltip-bottom-left="'+ labels['GenericExportHypervideo'] +'"><span class="icon-download"></span></button>'
+                   + '                    <div style="clear: both;"></div>'
+                   + '                </div>'
+                   + '                <button class="editMode" data-editmode="preview"><span class="icon-eye"></span><span class="editModeLabel">'+ labels['SidebarPreview'] +'</span></button>'
+                   + '                <button class="editMode" data-editmode="layout"><span class="icon-website"></span><span class="editModeLabel">'+ labels['SidebarLayout'] +'</span></button>'
+                   + '                <button class="editMode" data-editmode="overlays"><span class="icon-object-ungroup"></span><span class="editModeLabel">'+ labels['SidebarOverlays'] +'</span></button>'
+                   + '                <button class="editMode" data-editmode="codesnippets"><span class="icon-code"></span><span class="editModeLabel">'+ labels['SidebarCustomCode'] +'</span></button>'
+                   + '                <button class="editMode" data-editmode="annotations"><span class="icon-annotations"></span><span class="editModeLabel">'+ labels['SidebarMyAnnotations'] +'<span class="icon-user"></span></button>'
+                   + '            </div>'
+                   + '            <button class="hypervideoDeleteButton" data-tooltip-top-left="'+ labels['GenericDeleteHypervideo'] +'"><span class="icon-trash"></span></button>'
+                   + '        </div>'
+                   + '    </div>'
+                   + '    </div>'
+                   + '</div>'
+    var domElement = _sdw.firstElementChild;
 
-        sidebarContainer       = domElement.find('.sidebarContainer'),
-        overviewContainer      = sidebarContainer.children('[data-viewmode="overview"]'),
-        videoContainer         = sidebarContainer.children('[data-viewmode="video"]'),
-        videoContainerControls = videoContainer.children('.viewmodeControls'),
-        resourcesContainer     = sidebarContainer.children('[data-viewmode="resources"]'),
+    var sidebarContainer       = domElement.querySelector('.sidebarContainer'),
+        overviewContainer      = sidebarContainer.querySelector(':scope > [data-viewmode="overview"]'),
+        videoContainer         = sidebarContainer.querySelector(':scope > [data-viewmode="video"]'),
+        videoContainerControls = videoContainer.querySelector(':scope > .viewmodeControls'),
+        resourcesContainer     = sidebarContainer.querySelector(':scope > [data-viewmode="resources"]'),
 
-        NewHypervideoButton    = domElement.find('.newHypervideoButton'),
-        SaveButton             = domElement.find('.saveButton'),
-        SaveAsButton           = domElement.find('.saveAsButton'),
-        ForkButton             = domElement.find('.forkButton'),
-        ExportButton           = domElement.find('.exportButton'),
-        DeleteButton           = domElement.find('.hypervideoDeleteButton'),
-        UndoButton             = domElement.find('.undoButton'),
-        RedoButton             = domElement.find('.redoButton');
+        NewHypervideoButton    = domElement.querySelectorAll('.newHypervideoButton'),
+        SaveButton             = domElement.querySelector('.saveButton'),
+        SaveAsButton           = domElement.querySelector('.saveAsButton'),
+        ForkButton             = domElement.querySelector('.forkButton'),
+        ExportButton           = domElement.querySelectorAll('.exportButton'),
+        DeleteButton           = domElement.querySelector('.hypervideoDeleteButton'),
+        UndoButton             = domElement.querySelector('.undoButton'),
+        RedoButton             = domElement.querySelector('.redoButton');
+
+    var _resourcesItemHandler = null;
 
 
     /**
@@ -78,26 +81,26 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
      */
     function addHypervideoLocally(newDialogCtrl, validateFn, getDurationFn) {
         // Validation
-        newDialogCtrl.widget().find('.message.error').removeClass('active').html('');
+        var _err = newDialogCtrl.widget().querySelector('.message.error'); _err.classList.remove('active'); _err.innerHTML = '';
         if (!validateFn()) {
-            var activeTab = newDialogCtrl.element.find('.videoSourceTabs').tabs('option', 'active');
+            var activeTab = FTTabs(newDialogCtrl.element.querySelector('.videoSourceTabs'), 'option', 'active');
             if (activeTab === 0) {
-                newDialogCtrl.widget().find('.message.error').addClass('active').html(labels['ErrorSelectVideoFromList']);
+                _err.classList.add('active'); _err.innerHTML = labels['ErrorSelectVideoFromList'];
             } else if (activeTab === 1) {
-                newDialogCtrl.widget().find('.message.error').addClass('active').html(labels['ErrorDurationMinimum4Seconds']);
+                _err.classList.add('active'); _err.innerHTML = labels['ErrorDurationMinimum4Seconds'];
             }
             return;
         }
 
         var formBuilder = FrameTrail.module('HypervideoFormBuilder');
-        var selectedResourcesID = newDialogCtrl.element.find('input[name="resourcesID"]').val() || '';
+        var selectedResourcesID = newDialogCtrl.element.querySelector('input[name="resourcesID"]').value || '';
         var adapter = FrameTrail.module('StorageManager').getAdapter();
         var userInfo = adapter.userInfo;
 
         var hypervideoData = {
             "meta": {
-                "name": newDialogCtrl.element.find('input[name="name"]').val(),
-                "description": newDialogCtrl.element.find('textarea[name="description"]').val(),
+                "name": newDialogCtrl.element.querySelector('input[name="name"]').value,
+                "description": newDialogCtrl.element.querySelector('textarea[name="description"]').value,
                 "thumb": (selectedResourcesID.length > 0) ? FrameTrail.module('Database').resources[parseInt(selectedResourcesID)].thumb : null,
                 "creator": userInfo.name || 'Local User',
                 "creatorId": userInfo.id || 'local',
@@ -109,9 +112,9 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                 "slidingTrigger": "key",
                 "theme": "",
                 "autohideControls": false,
-                "captionsVisible": newDialogCtrl.element.find('input[name="config[captionsVisible]"]').is(':checked'),
+                "captionsVisible": newDialogCtrl.element.querySelector('input[name="config[captionsVisible]"]').checked,
                 "clipTimeVisible": false,
-                "hidden": newDialogCtrl.element.find('input[name="hidden"]').is(':checked'),
+                "hidden": newDialogCtrl.element.querySelector('input[name="hidden"]').checked,
                 "layoutArea": {
                     "areaTop": [],
                     "areaBottom": [],
@@ -143,7 +146,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
 
         // Apply config overrides from form
         for (var configKey in hypervideoData.config) {
-            var newConfigVal = newDialogCtrl.element.find('input[data-configkey=' + configKey + ']').val();
+            var newConfigVal = (newDialogCtrl.element.querySelector('input[data-configkey="' + configKey + '"]') || {value: undefined}).value;
             newConfigVal = (newConfigVal === 'true')
                             ? true
                             : (newConfigVal === 'false')
@@ -155,8 +158,8 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
         }
 
         // Collect subtitle info
-        newDialogCtrl.element.find('.newSubtitlesContainer input[type=file]').each(function () {
-            var match = /subtitles\[(.+)\]/g.exec($(this).attr('name'));
+        Array.from(newDialogCtrl.element.querySelectorAll('.newSubtitlesContainer input[type=file]')).forEach(function(el) {
+            var match = /subtitles\[(.+)\]/g.exec(el.getAttribute('name'));
             if (match) {
                 hypervideoData.subtitles.push({
                     "src": match[1] + ".vtt",
@@ -209,10 +212,10 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                 ];
 
                 // Write subtitle files
-                newDialogCtrl.element.find('.newSubtitlesContainer input[type=file]').each(function () {
-                    var match = /subtitles\[(.+)\]/g.exec($(this).attr('name'));
-                    if (match && this.files && this.files[0]) {
-                        writeTasks.push(adapter.writeFile(basePath + '/subtitles/' + match[1] + '.vtt', this.files[0]));
+                Array.from(newDialogCtrl.element.querySelectorAll('.newSubtitlesContainer input[type=file]')).forEach(function(el) {
+                    var match = /subtitles\[(.+)\]/g.exec(el.getAttribute('name'));
+                    if (match && el.files && el.files[0]) {
+                        writeTasks.push(adapter.writeFile(basePath + '/subtitles/' + match[1] + '.vtt', el.files[0]));
                     }
                 });
 
@@ -227,7 +230,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                 function() {}
             );
         }).catch(function(err) {
-            newDialogCtrl.widget().find('.message.error').addClass('active').html('Local save failed: ' + err.message);
+            newDialogCtrl.widget().querySelector('.message.error').classList.add('active'); newDialogCtrl.widget().querySelector('.message.error').innerHTML = 'Local save failed: ' + err.message;
         });
     }
 
@@ -237,10 +240,10 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
      */
     function deleteHypervideoLocally(deleteDialogCtrl, thisID) {
         var hypervideos = FrameTrail.module('Database').hypervideos;
-        var enteredName = deleteDialogCtrl.element.find('input[name="hypervideoName"]').val();
+        var enteredName = deleteDialogCtrl.element.querySelector('input[name="hypervideoName"]').value;
 
         if (enteredName.toLowerCase() !== hypervideos[thisID].name.toLowerCase()) {
-            deleteDialogCtrl.element.find('.message.error').addClass('active').html(labels['ErrorHypervideoNameIncorrect']);
+            var _err = deleteDialogCtrl.element.querySelector('.message.error'); _err.classList.add('active'); _err.innerHTML = labels['ErrorHypervideoNameIncorrect'];
             return;
         }
 
@@ -248,7 +251,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
 
         adapter.readJSON('hypervideos/_index.json').then(function(hvi) {
             if (!hvi.hypervideos[thisID]) {
-                deleteDialogCtrl.element.find('.message.error').addClass('active').html(labels['ErrorHypervideoDoesNotExist']);
+                deleteDialogCtrl.element.querySelector('.message.error').classList.add('active'); deleteDialogCtrl.element.querySelector('.message.error').innerHTML = labels['ErrorHypervideoDoesNotExist'];
                 return Promise.reject();
             }
             var hvPath = 'hypervideos/' + hvi.hypervideos[thisID];
@@ -268,7 +271,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                             FrameTrail.changeState('editMode', false);
                         }
                         FrameTrail.module('RouteNavigation').hypervideoID = null;
-                        $('.titlebar button[data-viewmode="video"]').hide();
+                        document.querySelector('.titlebar button[data-viewmode="video"]').style.display = 'none';
                         window.location.hash = '#';
                         FrameTrail.changeState('viewMode', 'overview');
                     }
@@ -287,15 +290,15 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
         var userInfo = adapter.userInfo;
 
         var currentData = FrameTrail.module('Database').convertToDatabaseFormat(thisID);
-        currentData.meta.name = forkDialogCtrl.element.find('input[name="name"]').val();
-        currentData.meta.description = forkDialogCtrl.element.find('textarea[name="description"]').val();
+        currentData.meta.name = forkDialogCtrl.element.querySelector('input[name="name"]').value;
+        currentData.meta.description = forkDialogCtrl.element.querySelector('textarea[name="description"]').value;
         currentData.meta.creator = userInfo.name || 'Local User';
         currentData.meta.creatorId = userInfo.id || 'local';
         currentData.meta.created = Date.now();
         currentData.meta.lastchanged = Date.now();
 
         if (!currentData.meta.name || currentData.meta.name.length < 3) {
-            forkDialogCtrl.element.find('.message.error').addClass('active').html(labels['ErrorGeneric']);
+            var _err = forkDialogCtrl.element.querySelector('.message.error'); _err.classList.add('active'); _err.innerHTML = labels['ErrorGeneric'];
             return;
         }
 
@@ -355,16 +358,17 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                 function() {}
             );
         }).catch(function(err) {
-            forkDialogCtrl.element.find('.message.error').addClass('active').html('Local fork failed: ' + (err ? err.message : ''));
+            forkDialogCtrl.element.querySelector('.message.error').classList.add('active'); forkDialogCtrl.element.querySelector('.message.error').innerHTML = 'Local fork failed: ' + (err ? err.message : '');
         });
     }
 
-    NewHypervideoButton.click(function(evt) {
+    NewHypervideoButton.forEach(function(btn) { btn.addEventListener('click', function(evt) {
 
         var formBuilder = FrameTrail.module('HypervideoFormBuilder');
         var defaultHidden = FrameTrail.module('Database').config.defaultHypervideoHidden.toString() === "true";
 
-        var newDialog = $('<div class="newHypervideoDialog">'
+        var _ndw = document.createElement('div');
+        _ndw.innerHTML = '<div class="newHypervideoDialog">'
                         + '    <form class="newHypervideoForm" method="post">'
                         + formBuilder.generateSettingsRow({ hidden: defaultHidden })
                         + '        <hr>'
@@ -374,13 +378,14 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                           })
                         + '        <div class="message error"></div>'
                         + '    </form>'
-                        + '</div>');
+                        + '</div>';
+        var newDialog = _ndw.firstElementChild;
 
         // Attach subtitle event handlers using shared module
         formBuilder.attachSubtitleHandlers(newDialog);
 
         // Render video resource list
-        FrameTrail.module('ResourceManager').renderList(newDialog.find('.videoResourceList'), true,
+        FrameTrail.module('ResourceManager').renderList(newDialog.querySelector('.videoResourceList'), true,
             'type',
             'contains',
             ['video', 'youtube', 'vimeo']
@@ -391,17 +396,17 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
 
         // Validation function to check if form is valid
         function validateHypervideoForm() {
-            var activeTab = newDialog.find('.videoSourceTabs').tabs('option', 'active');
+            var activeTab = FTTabs(newDialog.querySelector('.videoSourceTabs'), 'option', 'active');
             var isChooseVideoTab = (activeTab === 0); // First tab is ChooseVideo
             var isEmptyVideoTab = (activeTab === 1); // Second tab is EmptyVideo
             
             if (isChooseVideoTab) {
                 // Choose Video tab: must have a selected video
-                var hasSelectedVideo = newDialog.find('.resourceThumb.selected').length > 0;
+                var hasSelectedVideo = newDialog.querySelector('.resourceThumb.selected') !== null;
                 return hasSelectedVideo;
             } else if (isEmptyVideoTab) {
                 // Empty Video tab: must have duration >= 4 seconds
-                var durationValue = formBuilder.timeStringToSeconds(newDialog.find('input[name="duration"]').val());
+                var durationValue = formBuilder.timeStringToSeconds(newDialog.querySelector('input[name="duration"]').value);
                 return durationValue >= 4;
             }
             
@@ -410,37 +415,38 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
         
         // Get duration in seconds from time input
         function getDurationFromInputs() {
-            return formBuilder.timeStringToSeconds(newDialog.find('input[name="duration"]').val());
+            return formBuilder.timeStringToSeconds(newDialog.querySelector('input[name="duration"]').value);
         }
 
         // Function to update the Add Hypervideo button state
         function updateAddButtonState() {
             if (addHypervideoButton) {
                 var isValid = validateHypervideoForm();
-                addHypervideoButton[0].disabled = !isValid;
+                addHypervideoButton.disabled = !isValid;
             }
         }
 
-        $('body').on('click.hypervideoAddResourcesItem', '.newHypervideoDialog .resourceThumb', function() {
+        _resourcesItemHandler = function(evt) {
+            var thumb = evt.target.closest('.newHypervideoDialog .resourceThumb');
+            if (!thumb) return;
+            newDialog.querySelectorAll('.resourceThumb').forEach(function(el) { el.classList.remove('selected'); });
+            thumb.classList.add('selected');
+            newDialog.querySelector('input[name="resourcesID"]').value = thumb.dataset.resourceid;
 
-            newDialog.find('.resourceThumb').removeClass('selected');
-            $(this).addClass('selected');
-            newDialog.find('input[name="resourcesID"]').val($(this).data('resourceid'));
-            
             // Update button state when video is selected
             updateAddButtonState();
+        };
+        document.body.addEventListener('click', _resourcesItemHandler);
 
-        });
-
-        newDialog.find('.videoSourceTabs').tabs({
+        FTTabs(newDialog.querySelector('.videoSourceTabs'), {
             activate: function(event, ui) {
-                if ( ui.newPanel.attr('id') == 'EmptyVideo' ) {
-                    newDialog.find('input[name="resourcesID"]').prop('disabled',true);
-                    newDialog.find('input[name="duration"]').prop('disabled',false);
-                    newDialog.find('.resourceThumb').removeClass('selected');
+                if ( ui.newPanel.id == 'EmptyVideo' ) {
+                    newDialog.querySelector('input[name="resourcesID"]').disabled = true;
+                    newDialog.querySelector('input[name="duration"]').disabled = false;
+                    newDialog.querySelectorAll('.resourceThumb').forEach(function(el) { el.classList.remove('selected'); });
                 } else {
-                    newDialog.find('input[name="resourcesID"]').prop('disabled',false);
-                    newDialog.find('input[name="duration"]').prop('disabled',true);
+                    newDialog.querySelector('input[name="resourcesID"]').disabled = false;
+                    newDialog.querySelector('input[name="duration"]').disabled = true;
                 }
                 
                 // Update button state when tab changes
@@ -449,62 +455,65 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
         });
 
         // Listen for changes to the duration input
-        newDialog.on('input change', 'input[name="duration"]', function() {
+        newDialog.querySelector('input[name="duration"]').addEventListener('input', function() {
+            updateAddButtonState();
+        });
+        newDialog.querySelector('input[name="duration"]').addEventListener('change', function() {
             updateAddButtonState();
         });
 
         var newDialogCtrl;
-        newDialog.find('.newHypervideoForm').on('submit', function(e) {
+        newDialog.querySelector('.newHypervideoForm').addEventListener('submit', function(e) {
             e.preventDefault();
             var form = this;
 
             // Validation
-            newDialogCtrl.widget().find('.message.error').removeClass('active').html('');
+            var _dlgErr = newDialogCtrl.widget().querySelector('.message.error'); _dlgErr.classList.remove('active'); _dlgErr.innerHTML = '';
 
             if (!validateHypervideoForm()) {
-                var activeTab = newDialog.find('.videoSourceTabs').tabs('option', 'active');
+                var activeTab = FTTabs(newDialog.querySelector('.videoSourceTabs'), 'option', 'active');
                 var isChooseVideoTab = (activeTab === 0);
                 var isEmptyVideoTab = (activeTab === 1);
 
                 if (isChooseVideoTab) {
-                    newDialogCtrl.widget().find('.message.error').addClass('active').html(labels['ErrorSelectVideoFromList']);
+                    _dlgErr.classList.add('active'); _dlgErr.innerHTML = labels['ErrorSelectVideoFromList'];
                 } else if (isEmptyVideoTab) {
-                    newDialogCtrl.widget().find('.message.error').addClass('active').html(labels['ErrorDurationMinimum4Seconds']);
+                    _dlgErr.classList.add('active'); _dlgErr.innerHTML = labels['ErrorDurationMinimum4Seconds'];
                 } else {
-                    newDialogCtrl.widget().find('.message.error').addClass('active').html(labels['ErrorChooseVideoOrSetDuration']);
+                    _dlgErr.classList.add('active'); _dlgErr.innerHTML = labels['ErrorChooseVideoOrSetDuration'];
                 }
                 return;
             }
 
             // Subtitles Validation
             var err = 0;
-            newDialog.find('.subtitlesItem').each(function() {
-                $(this).css({'outline': ''});
+            Array.from(newDialog.querySelectorAll('.subtitlesItem')).forEach(function(el) {
+                el.style.outline = '';
 
-                if (($(this).find('input[type="file"]:first').attr('name') == 'subtitles[]') || ($(this).find('.subtitlesTmpKeySetter').first().val() == '') || ($(this).find('input[type="file"]:first').val().length == 0)) {
-                    $(this).css({'outline': '1px solid #cd0a0a'});
-                    newDialogCtrl.widget().find('.message.error').addClass('active').html(labels['ErrorSubtitlesEmptyFields']);
+                if ((el.querySelector('input[type="file"]').getAttribute('name') == 'subtitles[]') || (el.querySelector('.subtitlesTmpKeySetter').value == '') || (el.querySelector('input[type="file"]').value.length == 0)) {
+                    el.style.outline = '1px solid #cd0a0a';
+                    _dlgErr.classList.add('active'); _dlgErr.innerHTML = labels['ErrorSubtitlesEmptyFields'];
                     err++;
-                } else if ( !(new RegExp('(' + ['.vtt'].join('|').replace(/\./g, '\\.') + ')$')).test($(this).find('input[type="file"]:first').val()) ) {
-                    $(this).css({'outline': '1px solid #cd0a0a'});
-                    newDialogCtrl.widget().find('.message.error').addClass('active').html(labels['ErrorSubtitlesWrongFormat']);
+                } else if ( !(new RegExp('(' + ['.vtt'].join('|').replace(/\\./g, '\\\\.') + ')$')).test(el.querySelector('input[type="file"]').value) ) {
+                    el.style.outline = '1px solid #cd0a0a';
+                    _dlgErr.classList.add('active'); _dlgErr.innerHTML = labels['ErrorSubtitlesWrongFormat'];
                     err++;
                 }
 
-                if (newDialog.find('.subtitlesItem input[type="file"][name="subtitles['+ $(this).find('.subtitlesTmpKeySetter:first').val() +']"]').length > 1 ) {
-                    newDialogCtrl.widget().find('.message.error').addClass('active').html(labels['ErrorSubtitlesLanguageDuplicate']);
-                    return false;
+                if (newDialog.querySelectorAll('.subtitlesItem input[type="file"][name="subtitles['+ el.querySelector('.subtitlesTmpKeySetter').value +']"]').length > 1 ) {
+                    _dlgErr.classList.add('active'); _dlgErr.innerHTML = labels['ErrorSubtitlesLanguageDuplicate'];
+                    return;
                 }
             });
             if (err > 0) return;
 
             // Build hypervideoData
-            var selectedResourcesID = newDialog.find('input[name="resourcesID"]').val() || '';
+            var selectedResourcesID = newDialog.querySelector('input[name="resourcesID"]').value || '';
 
             var hypervideoData = {
                 "meta": {
-                    "name": newDialog.find('input[name="name"]').val(),
-                    "description": newDialog.find('textarea[name="description"]').val(),
+                    "name": newDialog.querySelector('input[name="name"]').value,
+                    "description": newDialog.querySelector('textarea[name="description"]').value,
                     "thumb": (selectedResourcesID.length > 0) ? FrameTrail.module('Database').resources[parseInt(selectedResourcesID)].thumb : null,
                     "creator": FrameTrail.module('Database').users[FrameTrail.module('UserManagement').userID].name,
                     "creatorId": FrameTrail.module('UserManagement').userID,
@@ -516,9 +525,9 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                     "slidingTrigger": "key",
                     "theme": "",
                     "autohideControls": false,
-                    "captionsVisible": newDialog.find('input[name="config[captionsVisible]"]').is(':checked'),
+                    "captionsVisible": newDialog.querySelector('input[name="config[captionsVisible]"]').checked,
                     "clipTimeVisible": false,
-                    "hidden": newDialog.find('input[name="hidden"]').is(':checked'),
+                    "hidden": newDialog.querySelector('input[name="hidden"]').checked,
                     "layoutArea": {
                         "areaTop": [],
                         "areaBottom": [],
@@ -549,7 +558,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
             };
 
             for (var configKey in hypervideoData.config) {
-                var newConfigVal = newDialog.find('input[data-configkey=' + configKey + ']').val();
+                var newConfigVal = (newDialog.querySelector('input[data-configkey="' + configKey + '"]') || {value: undefined}).value;
                 newConfigVal = (newConfigVal === 'true')
                                 ? true
                                 : (newConfigVal === 'false')
@@ -560,8 +569,8 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                 hypervideoData.config[configKey] = newConfigVal;
             }
 
-            newDialog.find('.newSubtitlesContainer input[type=file]').each(function () {
-                var match = /subtitles\[(.+)\]/g.exec($(this).attr('name'));
+            Array.from(newDialog.querySelectorAll('.newSubtitlesContainer input[type=file]')).forEach(function(el) {
+                var match = /subtitles\[(.+)\]/g.exec(el.getAttribute('name'));
                 if (match) {
                     hypervideoData.subtitles.push({
                         "src": match[1] + ".vtt",
@@ -587,19 +596,19 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                         );
                         break;
                     default:
-                        newDialogCtrl.widget().find('.message.error').addClass('active').html(response['string']);
+                        newDialogCtrl.widget().querySelector('.message.error').classList.add('active'); newDialogCtrl.widget().querySelector('.message.error').innerHTML = response['string'];
                         break;
                 }
             });
         });
 
 
-        newDialog.find('.uploadNewVideoResource').click(function(){
+        newDialog.querySelector('.uploadNewVideoResource').addEventListener('click', function(){
 
             FrameTrail.module('ResourceManager').uploadResource(function(){
 
-                var videoResourceList = newDialog.find('.videoResourceList');
-                videoResourceList.empty();
+                var videoResourceList = newDialog.querySelector('.videoResourceList');
+                videoResourceList.innerHTML = '';
 
                 FrameTrail.module('ResourceManager').renderList(videoResourceList, true,
                     'type',
@@ -619,13 +628,13 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
             content:  newDialog,
             autoOpen: false,
             open: function() {
-                newDialog.find('.message.error').appendTo(newDialogCtrl.widget().find('.ft-dialog-buttonpane'));
-                addHypervideoButton = newDialogCtrl.widget().find('.ft-dialog-buttonpane button').first();
-                addHypervideoButton[0].disabled = true;
+                newDialogCtrl.widget().querySelector('.ft-dialog-buttonpane').append(newDialog.querySelector('.message.error'));
+                addHypervideoButton = newDialogCtrl.widget().querySelector('.ft-dialog-buttonpane button');
+                addHypervideoButton.disabled = true;
                 updateAddButtonState();
             },
             close: function() {
-                $('body').off('click.hypervideoAddResourcesItem');
+                if (_resourcesItemHandler) { document.body.removeEventListener('click', _resourcesItemHandler); _resourcesItemHandler = null; }
                 newDialogCtrl.destroy();
             },
             buttons: [
@@ -634,7 +643,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                         if (FrameTrail.getState('storageMode') === 'local') {
                             addHypervideoLocally(newDialogCtrl, validateHypervideoForm, getDurationFromInputs);
                         } else {
-                            newDialog.find('.newHypervideoForm').submit();
+                            newDialog.querySelector('.newHypervideoForm').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
                         }
                     }
                 },
@@ -647,9 +656,9 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
         });
         newDialogCtrl.open();
 
-    });
+    }); });
 
-    SaveButton.click(function(){
+    SaveButton.addEventListener('click', function(){
         if (FrameTrail.module('StorageManager').canSave()) {
             FrameTrail.module('HypervideoModel').save();
         } else {
@@ -657,38 +666,38 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
         }
     });
 
-    SaveAsButton.click(function(){
+    SaveAsButton.addEventListener('click', function(){
         FrameTrail.module('HypervideoModel').saveAs();
     });
 
-    UndoButton.click(function(){
+    UndoButton.addEventListener('click', function(){
         FrameTrail.module('UndoManager').undo();
     });
 
-    RedoButton.click(function(){
+    RedoButton.addEventListener('click', function(){
         FrameTrail.module('UndoManager').redo();
     });
 
     // Listen for undo state changes to update button states
     FrameTrail.addEventListener('undoStateChanged', function(evt) {
         var state = evt.detail;
-        UndoButton.prop('disabled', !state.canUndo);
-        RedoButton.prop('disabled', !state.canRedo);
+        UndoButton.disabled = !state.canUndo;
+        RedoButton.disabled = !state.canRedo;
 
         // Update tooltips with action descriptions
         if (state.undoDescription) {
-            UndoButton.attr('data-tooltip-bottom-left', labels['GenericUndo'] + ': ' + state.undoDescription);
+            UndoButton.setAttribute('data-tooltip-bottom-left', labels['GenericUndo'] + ': ' + state.undoDescription);
         } else {
-            UndoButton.attr('data-tooltip-bottom-left', labels['GenericUndo']);
+            UndoButton.setAttribute('data-tooltip-bottom-left', labels['GenericUndo']);
         }
         if (state.redoDescription) {
-            RedoButton.attr('data-tooltip-bottom-left', labels['GenericRedo'] + ': ' + state.redoDescription);
+            RedoButton.setAttribute('data-tooltip-bottom-left', labels['GenericRedo'] + ': ' + state.redoDescription);
         } else {
-            RedoButton.attr('data-tooltip-bottom-left', labels['GenericRedo']);
+            RedoButton.setAttribute('data-tooltip-bottom-left', labels['GenericRedo']);
         }
     });
 
-    ForkButton.click(function(evt) {
+    ForkButton.addEventListener('click', function(evt) {
 
         evt.preventDefault();
         evt.stopPropagation();
@@ -696,23 +705,25 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
         var thisID = FrameTrail.module('RouteNavigation').hypervideoID,
             thisHypervideo = FrameTrail.module('Database').hypervideo;
 
-        var forkDialog = $('<div class="forkHypervideoDialog">'
+        var _fdw = document.createElement('div');
+        _fdw.innerHTML = '<div class="forkHypervideoDialog">'
                          + '    <div class="message active">'+ labels['MessageForkHypervideo'] +'</div>'
                          + '    <form method="POST" class="forkHypervideoForm">'
                          + '        <input type="text" name="name" placeholder="" value="'+ thisHypervideo.name +'"><br>'
                          + '        <textarea name="description" placeholder="">'+ thisHypervideo.description +'</textarea><br>'
                          + '        <div class="message error"></div>'
                          + '    </form>'
-                         + '</div>');
+                         + '</div>';
+        var forkDialog = _fdw.firstElementChild;
 
         var forkDialogCtrl;
-        forkDialog.find('.forkHypervideoForm').on('submit', function(e) {
+        forkDialog.querySelector('.forkHypervideoForm').addEventListener('submit', function(e) {
             e.preventDefault();
             var form = this;
 
             var currentData = FrameTrail.module("Database").convertToDatabaseFormat(thisID);
-            currentData.meta.name = forkDialog.find('input[name="name"]').val();
-            currentData.meta.description = forkDialog.find('textarea[name="description"]').val();
+            currentData.meta.name = forkDialog.querySelector('input[name="name"]').value;
+            currentData.meta.description = forkDialog.querySelector('textarea[name="description"]').value;
             currentData.meta.creator = FrameTrail.module('Database').users[FrameTrail.module('UserManagement').userID].name;
             currentData.meta.creatorId = FrameTrail.module('UserManagement').userID;
 
@@ -749,7 +760,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
 
                         break;
                     default:
-                        forkDialog.find('.message.error').addClass('active').html(labels['ErrorGeneric']);
+                        var _frkErr = forkDialog.querySelector('.message.error'); _frkErr.classList.add('active'); _frkErr.innerHTML = labels['ErrorGeneric'];
                         break;
                 }
             });
@@ -767,7 +778,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                         if (FrameTrail.getState('storageMode') === 'local') {
                             forkHypervideoLocally(forkDialogCtrl, thisID);
                         } else {
-                            forkDialog.find('.forkHypervideoForm').submit();
+                            forkDialog.querySelector('.forkHypervideoForm').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
                         }
                     }
                 },
@@ -781,11 +792,11 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
 
     });
 
-    ExportButton.click(function(){
+    ExportButton.forEach(function(btn) { btn.addEventListener('click', function(){
         FrameTrail.module('HypervideoModel').exportIt();
-    });
+    }); });
 
-    DeleteButton.click(function(evt) {
+    DeleteButton.addEventListener('click', function(evt) {
 
         evt.preventDefault();
         evt.stopPropagation();
@@ -793,7 +804,8 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
         var thisID = FrameTrail.module('RouteNavigation').hypervideoID,
             hypervideos = FrameTrail.module('Database').hypervideos;
 
-        var deleteDialog = $('<div class="deleteHypervideoDialog">'
+        var _ddw = document.createElement('div');
+        _ddw.innerHTML = '<div class="deleteHypervideoDialog">'
                            + '<div>'+ labels['MessageDeleteHypervideoQuestion'] +'</div>'
                            + '    <input class="thisHypervideoName" type="text" value="'+ hypervideos[thisID]['name'] +'" readonly>'
                            + '    <div class="message active">'+ labels['MessageDeleteHypervideoReEnter'] +':</div>'
@@ -801,11 +813,12 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                            + '        <input type="text" name="hypervideoName" placeholder="'+ labels['GenericName'] +'"><br>'
                            + '        <div class="message error"></div>'
                            + '    </form>'
-                           + '</div>');
+                           + '</div>';
+        var deleteDialog = _ddw.firstElementChild;
 
 
         var deleteDialogCtrl;
-        deleteDialog.find('.deleteHypervideoForm').on('submit', function(e) {
+        deleteDialog.querySelector('.deleteHypervideoForm').addEventListener('submit', function(e) {
             e.preventDefault();
             var form = this;
 
@@ -832,7 +845,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
 
                                     FrameTrail.module('RouteNavigation').hypervideoID = null;
 
-                                    $('.titlebar button[data-viewmode="video"]').hide();
+                                    document.querySelector('.titlebar button[data-viewmode="video"]').style.display = 'none';
 
                                     window.location.hash = "#";
                                     FrameTrail.changeState('viewMode', 'overview');
@@ -843,22 +856,22 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
 
                     break;
                     case 1:
-                        deleteDialog.find('.message.error').addClass('active').html(labels['ErrorNotLoggedIn']);
+                        var _delErr = deleteDialog.querySelector('.message.error'); _delErr.classList.add('active'); _delErr.innerHTML = labels['ErrorNotLoggedIn'];
                     break;
                     case 2:
-                        deleteDialog.find('.message.error').addClass('active').html(labels['ErrorNotActivated']);
+                        var _delErr = deleteDialog.querySelector('.message.error'); _delErr.classList.add('active'); _delErr.innerHTML = labels['ErrorNotActivated'];
                     break;
                     case 3:
-                        deleteDialog.find('.message.error').addClass('active').html(labels['ErrorCouldNotFindHypervideoDirectory']);
+                        var _delErr = deleteDialog.querySelector('.message.error'); _delErr.classList.add('active'); _delErr.innerHTML = labels['ErrorCouldNotFindHypervideoDirectory'];
                     break;
                     case 4:
-                        deleteDialog.find('.message.error').addClass('active').html(labels['ErrorHypervideoDoesNotExist']);
+                        var _delErr = deleteDialog.querySelector('.message.error'); _delErr.classList.add('active'); _delErr.innerHTML = labels['ErrorHypervideoDoesNotExist'];
                     break;
                     case 5:
-                        deleteDialog.find('.message.error').addClass('active').html(labels['ErrorHypervideoNameIncorrect']);
+                        var _delErr = deleteDialog.querySelector('.message.error'); _delErr.classList.add('active'); _delErr.innerHTML = labels['ErrorHypervideoNameIncorrect'];
                     break;
                     case 6:
-                        deleteDialog.find('.message.error').addClass('active').html(labels['ErrorHypervideoPermissionDenied']);
+                        var _delErr = deleteDialog.querySelector('.message.error'); _delErr.classList.add('active'); _delErr.innerHTML = labels['ErrorHypervideoPermissionDenied'];
                     break;
                 }
             });
@@ -868,7 +881,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                 modal:   true,
                 content: deleteDialog,
                 open: function() {
-                    deleteDialog.find('.thisHypervideoName').focus().select();
+                    var _tn = deleteDialog.querySelector('.thisHypervideoName'); _tn.focus(); _tn.select();
                 },
                 close: function() {
                     deleteDialogCtrl.destroy();
@@ -879,7 +892,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                             if (FrameTrail.getState('storageMode') === 'local') {
                                 deleteHypervideoLocally(deleteDialogCtrl, thisID);
                             } else {
-                                deleteDialog.find('.deleteHypervideoForm').submit();
+                                deleteDialog.querySelector('.deleteHypervideoForm').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
                             }
                         }
                     },
@@ -894,8 +907,10 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
     });
 
 
-    videoContainerControls.find('.editMode').click(function(evt){
-        FrameTrail.changeState('editMode', ($(this).attr('data-editmode')));
+    videoContainerControls.querySelectorAll('.editMode').forEach(function(btn) {
+        btn.addEventListener('click', function(evt) {
+            FrameTrail.changeState('editMode', this.dataset.editmode);
+        });
     });
 
 
@@ -912,7 +927,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
         toggleViewMode(FrameTrail.getState('viewMode'));
         toggleEditMode(FrameTrail.getState('editMode'));
 
-        $(FrameTrail.getState('target')).append(domElement);
+        document.querySelector(FrameTrail.getState('target')).append(domElement);
 
         if ( FrameTrail.getState('embed') ) {
             //domElement.find('.viewmodeControls').hide();
@@ -931,9 +946,9 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
     function toggleSidebarOpen(opened) {
 
         if (opened) {
-            domElement.addClass('open');
+            domElement.classList.add('open');
         } else {
-            domElement.removeClass('open');
+            domElement.classList.remove('open');
         }
 
     };
@@ -974,17 +989,17 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                            FrameTrail.module('UserManagement').isGuestMode();
 
         if (aBoolean) {
-            domElement.find('button[data-viewmode="video"]').addClass('unsavedChanges');
+            domElement.querySelectorAll('button[data-viewmode="video"]').forEach(function(el) { el.classList.add('unsavedChanges'); });
             if (noDirectSave) {
-                SaveAsButton.addClass('unsavedChanges');
+                SaveAsButton.classList.add('unsavedChanges');
             } else {
-                SaveButton.addClass('unsavedChanges');
+                SaveButton.classList.add('unsavedChanges');
             }
         } else {
-            domElement.find('button[data-viewmode="video"]').removeClass('unsavedChanges');
-            domElement.find('button.editMode').removeClass('unsavedChanges');
-            SaveButton.removeClass('unsavedChanges');
-            SaveAsButton.removeClass('unsavedChanges');
+            domElement.querySelectorAll('button[data-viewmode="video"]').forEach(function(el) { el.classList.remove('unsavedChanges'); });
+            domElement.querySelectorAll('button.editMode').forEach(function(el) { el.classList.remove('unsavedChanges'); });
+            SaveButton.classList.remove('unsavedChanges');
+            SaveAsButton.classList.remove('unsavedChanges');
         }
 
     };
@@ -1001,11 +1016,11 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
 
         if (category == 'codeSnippets' || category == 'events' || category == 'customCSS') {
             // camelCase not valid in attributes
-            domElement.find('button[data-editmode="codesnippets"]').addClass('unsavedChanges');
+            domElement.querySelector('button[data-editmode="codesnippets"]').classList.add('unsavedChanges');
         } else if (category == 'layout') {
-            domElement.find('button[data-editmode="layout"]').addClass('unsavedChanges');
+            domElement.querySelector('button[data-editmode="layout"]').classList.add('unsavedChanges');
         } else {
-            domElement.find('button[data-editmode="'+category+'"]').addClass('unsavedChanges');
+            domElement.querySelector('button[data-editmode="'+category+'"]').classList.add('unsavedChanges');
         }
 
     };
@@ -1019,9 +1034,9 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
      */
     function toggleViewMode(viewMode) {
 
-        sidebarContainer.children().removeClass('active');
+        Array.from(sidebarContainer.children).forEach(function(el) { el.classList.remove('active'); });
 
-        domElement.find('[data-viewmode=' + viewMode + ']').addClass('active');
+        domElement.querySelector('[data-viewmode="' + viewMode + '"]').classList.add('active');
 
         changeViewSize();
 
@@ -1042,44 +1057,44 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
 
         if (editMode) {
 
-            domElement.addClass('editActive');
+            domElement.classList.add('editActive');
 
             if (oldEditMode === false) {
 
                 var _canSave = FrameTrail.module('StorageManager').canSave();
                 var _isGuest = FrameTrail.module('UserManagement').isGuestMode();
-                NewHypervideoButton.show().prop('disabled', _isGuest);
-                ForkButton.prop('disabled', _isGuest);
-                DeleteButton.prop('disabled', _isGuest);
-                ExportButton.hide();
-                SaveButton.show().prop('disabled', !_canSave);
-                SaveAsButton.show();
-                UndoButton.show();
-                RedoButton.show();
+                NewHypervideoButton.forEach(function(btn) { btn.style.display = ''; btn.disabled = _isGuest; });
+                ForkButton.disabled = _isGuest;
+                DeleteButton.disabled = _isGuest;
+                ExportButton.forEach(function(btn) { btn.style.display = 'none'; });
+                SaveButton.style.display = ''; SaveButton.disabled = !_canSave;
+                SaveAsButton.style.display = '';
+                UndoButton.style.display = '';
+                RedoButton.style.display = '';
 
-                videoContainerControls.find('.editMode').addClass('inEditMode');
+                videoContainerControls.querySelectorAll('.editMode').forEach(function(el) { el.classList.add('inEditMode'); });
 
             }
 
-            videoContainerControls.find('.editMode').removeClass('active');
+            videoContainerControls.querySelectorAll('.editMode').forEach(function(el) { el.classList.remove('active'); });
 
-            videoContainerControls.find('[data-editmode="' + editMode + '"]').addClass('active');
+            videoContainerControls.querySelector('[data-editmode="' + editMode + '"]').classList.add('active');
 
             FrameTrail.changeState('sidebarOpen', true);
 
 
         } else {
 
-            domElement.removeClass('editActive');
+            domElement.classList.remove('editActive');
 
-            NewHypervideoButton.hide();
+            NewHypervideoButton.forEach(function(btn) { btn.style.display = 'none'; });
             //ExportButton.show();
-            SaveButton.hide();
-            SaveAsButton.hide();
-            UndoButton.hide();
-            RedoButton.hide();
+            SaveButton.style.display = 'none';
+            SaveAsButton.style.display = 'none';
+            UndoButton.style.display = 'none';
+            RedoButton.style.display = 'none';
 
-            videoContainerControls.find('.editMode').removeClass('inEditMode');
+            videoContainerControls.querySelectorAll('.editMode').forEach(function(el) { el.classList.remove('inEditMode'); });
 
             FrameTrail.changeState('sidebarOpen', false);
 
@@ -1106,13 +1121,13 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
         if (FrameTrail.module('RouteNavigation').hypervideoID) {
             if (FrameTrail.module('UserManagement').userRole == 'admin' || parseInt(FrameTrail.module('HypervideoModel').creatorId) == FrameTrail.module('UserManagement').userID) {
                 // Admin or owner: enable all buttons
-                videoContainerControls.find('.editMode').removeClass('disabled');
+                videoContainerControls.querySelectorAll('.editMode').forEach(function(el) { el.classList.remove('disabled'); });
             } else {
                 // Non-owner: disable layout, overlays, codesnippets (can only edit annotations)
-                videoContainerControls.find('.editMode').removeClass('disabled');
-                videoContainerControls.find('.editMode[data-editmode="layout"]').addClass('disabled');
-                videoContainerControls.find('.editMode[data-editmode="overlays"]').addClass('disabled');
-                videoContainerControls.find('.editMode[data-editmode="codesnippets"]').addClass('disabled');
+                videoContainerControls.querySelectorAll('.editMode').forEach(function(el) { el.classList.remove('disabled'); });
+                videoContainerControls.querySelector('.editMode[data-editmode="layout"]').classList.add('disabled');
+                videoContainerControls.querySelector('.editMode[data-editmode="overlays"]').classList.add('disabled');
+                videoContainerControls.querySelector('.editMode[data-editmode="codesnippets"]').classList.add('disabled');
             }
         }
 
@@ -1157,7 +1172,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
          * @type Number
          * @readOnly
          */
-        get width() { return domElement.width() }
+        get width() { return domElement.offsetWidth; }
 
     };
 

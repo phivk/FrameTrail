@@ -212,7 +212,8 @@
                                                 // Finished
                                                 FrameTrail.module('InterfaceModal').hideMessage();
 
-                                                $(FrameTrail.getState('target')).find('.hypervideo video.video').removeClass('nocolor dark');
+                                                var hvVid = document.querySelector(FrameTrail.getState('target') + ' .hypervideo video.video');
+                                                if (hvVid) { hvVid.classList.remove('nocolor', 'dark'); }
 
                                             },
 
@@ -316,10 +317,12 @@
             ? '<p style="margin-top:8px; color:#666;">' + labels['CurrentFolder'] + ': <strong>' + currentFolder + '</strong></p>'
             : '';
 
-        var folderDialog = $('<div class="folderPromptDialog">'
+        var _fdWrapper = document.createElement('div');
+        _fdWrapper.innerHTML = '<div class="folderPromptDialog">'
             + '<p>' + labels['SelectDataFolderDescription'] + '</p>'
             + folderInfo
-            + '</div>');
+            + '</div>';
+        var folderDialog = _fdWrapper.firstElementChild;
 
         var folderDialogCtrl = Dialog({
             title:         labels['SelectDataFolder'],

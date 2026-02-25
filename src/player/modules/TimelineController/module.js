@@ -46,8 +46,9 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
      */
     function getVisibleContainerWidth() {
         for (var i = 0; i < registeredTimelines.length; i++) {
-            if (registeredTimelines[i].element.is(':visible')) {
-                return registeredTimelines[i].element.width();
+            var el = registeredTimelines[i].element;
+            if (el.offsetParent !== null && getComputedStyle(el).display !== 'none') {
+                return el.offsetWidth;
             }
         }
         return containerWidth;
@@ -71,12 +72,14 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
         registerTimeline(ViewVideo.CodeSnippetTimeline);
 
         // Create shared controls container
-        controlsContainer = $('<div class="timelineControlsContainer"></div>');
+        controlsContainer = document.createElement('div');
+        controlsContainer.className = 'timelineControlsContainer';
 
         // DOM order in playerContainer is:
         //   codeSnippetTimeline > overlayTimeline > playerProgress > controls > annotationTimeline
         // Insert before codeSnippetTimeline so controls appear above all timelines
-        ViewVideo.CodeSnippetTimeline.before(controlsContainer);
+        var cst = ViewVideo.CodeSnippetTimeline;
+        cst.insertAdjacentElement('beforebegin', controlsContainer);
 
         // Create UI elements
         createZoomControls();
@@ -104,17 +107,23 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
         if (!initialized) return;
 
         // Remove any detached preview popup still on body
-        $('body > .timelineElement.previewPopupWrapper').remove();
+        document.querySelectorAll('body > .timelineElement.previewPopupWrapper').forEach(function(el) { el.remove(); });
 
         // Clean up timelines: remove playheads, unwrap children from scroller back to timeline
         registeredTimelines.forEach(function(t) {
-            t.element.off('scroll.timelineSync mouseenter.previewPopup mouseleave.previewPopup');
+            t.element.removeEventListener('scroll', t._scrollHandler);
+            t.element.removeEventListener('dragstart', t._dragstartHandler);
+            if (t._previewHandlers) {
+                t.element.removeEventListener('mousedown', t._previewHandlers.mousedown);
+                t.element.removeEventListener('mouseover', t._previewHandlers.mouseover);
+                t.element.removeEventListener('mouseout', t._previewHandlers.mouseout);
+            }
             if (t.playhead) {
                 t.playhead.remove();
             }
             if (t.scroller) {
-                t.scroller.off('click.timelineSeek');
-                t.scroller.children().appendTo(t.element);
+                t.scroller.removeEventListener('click', t._clickHandler);
+                Array.from(t.scroller.children).forEach(function(c) { t.element.appendChild(c); });
                 t.scroller.remove();
             }
         });
@@ -122,8 +131,12 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
 
         // Clean up follower timelines
         followerTimelines.forEach(function(f) {
-            f.wrapper.off('scroll.followerSync');
-            f.wrapper.off('mouseenter.previewPopup mouseleave.previewPopup');
+            f.wrapper.removeEventListener('scroll', f._scrollHandler);
+            if (f._previewHandlers) {
+                f.wrapper.removeEventListener('mousedown', f._previewHandlers.mousedown);
+                f.wrapper.removeEventListener('mouseover', f._previewHandlers.mouseover);
+                f.wrapper.removeEventListener('mouseout', f._previewHandlers.mouseout);
+            }
         });
         followerTimelines = [];
 
@@ -166,12 +179,12 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
 
         // Update playhead positions on all timelines (percentage of scroller width)
         playheadElements.forEach(function(playhead) {
-            playhead.css('left', playheadPercent + '%');
+            playhead.style.left = playheadPercent + '%';
         });
 
         // Update ruler playhead
         if (rulerPlayhead) {
-            rulerPlayhead.css('left', playheadPercent + '%');
+            rulerPlayhead.style.left = playheadPercent + '%';
         }
 
         // Auto-scroll to keep playhead visible when zoomed in
@@ -193,24 +206,25 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
     /**
      * Return a detached preview popup to its original element.
      * @method returnPreviewToElement
-     * @param {jQuery} el - The element that should receive the preview
+     * @param {HTMLElement} el - The element that should receive the preview
      */
     function returnPreviewToElement(el) {
-        if (el.data('previewDetached')) {
-            var wrapper = $('body > .timelineElement.previewPopupWrapper');
-            if (wrapper.length) {
-                var preview = wrapper.find('.previewWrapper');
-                preview.css({
-                    position: '',
-                    top: '',
-                    left: '',
-                    marginLeft: '',
-                    display: '',
-                    zIndex: ''
-                }).appendTo(el);
+        if (el.dataset.previewDetached) {
+            var wrapper = document.querySelector('body > .timelineElement.previewPopupWrapper');
+            if (wrapper) {
+                var preview = wrapper.querySelector('.previewWrapper');
+                if (preview) {
+                    preview.style.position = '';
+                    preview.style.top = '';
+                    preview.style.left = '';
+                    preview.style.marginLeft = '';
+                    preview.style.display = '';
+                    preview.style.zIndex = '';
+                    el.appendChild(preview);
+                }
                 wrapper.remove();
             }
-            el.removeData('previewDetached');
+            delete el.dataset.previewDetached;
         }
     }
 
@@ -219,8 +233,9 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
      * Set up preview popup behavior on a container: on hover, move .previewWrapper
      * to body to escape overflow clipping, and return it on mouseleave.
      * @method setupPreviewPopup
-     * @param {jQuery} container - The parent element to listen on
+     * @param {HTMLElement} container - The parent element to listen on
      * @param {String} childSelector - CSS selector for the hoverable child elements
+     * @return {Object} handlers object for later cleanup
      */
     function setupPreviewPopup(container, childSelector) {
 
@@ -233,26 +248,32 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
         // Dismiss preview before interact.js takes control of the pointer on mousedown.
         // mouseleave does not reliably fire once interact.js captures pointer events,
         // so without this the preview can stay visible for the entire drag.
-        container.on('mousedown.previewPopup', childSelector, function() {
-            returnPreviewToElement($(this));
+        var mousedownHandler = function(e) {
+            var target = e.target.closest(childSelector);
+            if (!target) return;
+            returnPreviewToElement(target);
             currentDetachedEl = null;
-        });
+        };
 
-        container.on('mouseenter.previewPopup', childSelector, function() {
-            var el = $(this);
-            var preview = el.find('.previewWrapper');
-            if (!preview.length || !preview.children().length) return;
+        var mouseoverHandler = function(e) {
+            var el = e.target.closest(childSelector);
+            if (!el) return;
+            // Simulate mouseenter: only fire when entering from outside the element
+            if (e.relatedTarget && el.contains(e.relatedTarget)) return;
+
+            var preview = el.querySelector('.previewWrapper');
+            if (!preview || !preview.children.length) return;
 
             // If a different element's preview is still detached, return it first
-            if (currentDetachedEl && currentDetachedEl[0] !== el[0]) {
+            if (currentDetachedEl && currentDetachedEl !== el) {
                 returnPreviewToElement(currentDetachedEl);
                 currentDetachedEl = null;
             }
 
             // Already showing this element's preview — nothing to do
-            if (el.data('previewDetached')) return;
+            if (el.dataset.previewDetached) return;
 
-            var rect = this.getBoundingClientRect();
+            var rect = el.getBoundingClientRect();
             var previewWidth = 80;
             var previewHeight = 60;
             var left = rect.left + (rect.width / 2) - (previewWidth / 2);
@@ -266,95 +287,116 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
             }
 
             // Create wrapper with .timelineElement class so body > .timelineElement .previewWrapper CSS applies
-            var wrapper = $('<div class="timelineElement previewPopupWrapper"></div>').css({
-                position: 'fixed',
-                top: top + 'px',
-                left: left + 'px',
-                width: previewWidth + 'px',
-                height: previewHeight + 'px',
-                zIndex: 200000,
-                pointerEvents: 'none'
-            });
+            var wrapper = document.createElement('div');
+            wrapper.className = 'timelineElement previewPopupWrapper';
+            wrapper.style.position = 'fixed';
+            wrapper.style.top = top + 'px';
+            wrapper.style.left = left + 'px';
+            wrapper.style.width = previewWidth + 'px';
+            wrapper.style.height = previewHeight + 'px';
+            wrapper.style.zIndex = '200000';
+            wrapper.style.pointerEvents = 'none';
 
-            preview.css({
-                display: 'block',
-                position: 'static',
-                width: '100%',
-                height: '100%',
-                left: 'auto',
-                top: 'auto',
-                marginLeft: '0'
-            });
+            preview.style.display = 'block';
+            preview.style.position = 'static';
+            preview.style.width = '100%';
+            preview.style.height = '100%';
+            preview.style.left = 'auto';
+            preview.style.top = 'auto';
+            preview.style.marginLeft = '0';
 
-            wrapper.append(preview);
-            $('body').append(wrapper);
+            wrapper.appendChild(preview);
+            document.body.appendChild(wrapper);
 
-            el.data('previewDetached', true);
+            el.dataset.previewDetached = '1';
             currentDetachedEl = el;
-        });
+        };
 
-        container.on('mouseleave.previewPopup', childSelector, function() {
-            returnPreviewToElement($(this));
+        var mouseoutHandler = function(e) {
+            var el = e.target.closest(childSelector);
+            if (!el) return;
+            // Simulate mouseleave: only fire when leaving the element entirely
+            if (e.relatedTarget && el.contains(e.relatedTarget)) return;
+            returnPreviewToElement(el);
             currentDetachedEl = null;
-        });
+        };
+
+        container.addEventListener('mousedown', mousedownHandler);
+        container.addEventListener('mouseover', mouseoverHandler);
+        container.addEventListener('mouseout', mouseoutHandler);
+
+        return { mousedown: mousedownHandler, mouseover: mouseoverHandler, mouseout: mouseoutHandler };
     }
 
 
     /**
      * Register a timeline element to be managed.
      * @method registerTimeline
-     * @param {jQuery} timelineElement
+     * @param {jQuery|HTMLElement} timelineElement
      */
     function registerTimeline(timelineElement) {
+        var el = timelineElement;
+
         // Ensure timeline has scroller wrapper
-        var scroller = timelineElement.find('.timelineScroller');
-        if (!scroller.length) {
-            scroller = $('<div class="timelineScroller"></div>');
-            scroller.append(timelineElement.children());
-            timelineElement.append(scroller);
+        var scroller = el.querySelector('.timelineScroller');
+        if (!scroller) {
+            scroller = document.createElement('div');
+            scroller.className = 'timelineScroller';
+            Array.from(el.children).forEach(function(c) { scroller.appendChild(c); });
+            el.appendChild(scroller);
         }
 
         // Add playhead indicator inside scroller (positioned absolutely within it)
-        var playhead = $('<div class="timelinePlayhead"></div>');
-        scroller.append(playhead);
+        var playhead = document.createElement('div');
+        playhead.className = 'timelinePlayhead';
+        scroller.appendChild(playhead);
         playheadElements.push(playhead);
 
-        var timelineData = {
-            element: timelineElement,
-            scroller: scroller,
-            playhead: playhead
-        };
-
-        registeredTimelines.push(timelineData);
-
         // Set up scroll synchronization
-        timelineElement.on('scroll.timelineSync', function() {
-            if (!timelineElement.data('programmaticScroll')) {
-                onTimelineScroll($(this).scrollLeft());
+        var scrollHandler = function() {
+            if (!el.dataset.programmaticScroll) {
+                onTimelineScroll(el.scrollLeft);
             }
-        });
+        };
+        el.addEventListener('scroll', scrollHandler);
 
         // Click-to-seek on timeline
-        scroller.on('click.timelineSeek', function(e) {
+        var clickHandler = function(e) {
             // Don't seek if clicking on a timelineElement (that has its own interactions)
-            if ($(e.target).closest('.timelineElement').length) return;
+            if (e.target.closest('.timelineElement')) return;
 
-            var scrollerWidth = scroller.width();
+            var scrollerWidth = scroller.offsetWidth;
             if (scrollerWidth === 0 || duration === 0) return;
 
-            var rect = scroller[0].getBoundingClientRect();
+            var rect = scroller.getBoundingClientRect();
             var clickX = e.clientX - rect.left;
             var time = (clickX / scrollerWidth) * duration;
             FrameTrail.module('HypervideoController').currentTime = Math.max(0, Math.min(time, duration));
-        });
+        };
+        scroller.addEventListener('click', clickHandler);
 
         // Preview popup for main timeline elements
-        setupPreviewPopup(timelineElement, '.timelineElement');
+        var previewHandlers = setupPreviewPopup(el, '.timelineElement');
 
         // Return preview when drag starts
-        timelineElement.on('dragstart.previewPopup', '.timelineElement', function() {
-            returnPreviewToElement($(this));
-        });
+        var dragstartHandler = function(e) {
+            var target = e.target.closest('.timelineElement');
+            if (!target) return;
+            returnPreviewToElement(target);
+        };
+        el.addEventListener('dragstart', dragstartHandler);
+
+        var timelineData = {
+            element: el,
+            scroller: scroller,
+            playhead: playhead,
+            _scrollHandler: scrollHandler,
+            _clickHandler: clickHandler,
+            _dragstartHandler: dragstartHandler,
+            _previewHandlers: previewHandlers
+        };
+
+        registeredTimelines.push(timelineData);
 
         // Apply current zoom
         applyZoomToTimeline(timelineData);
@@ -366,32 +408,38 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
      * but without playhead, click-to-seek, or preview popups.
      * The element should contain a child scroller that will be width-scaled.
      * @method registerFollowerTimeline
-     * @param {jQuery} wrapperElement - The scrollable wrapper element
-     * @param {jQuery} scrollerElement - The inner element to scale width on
+     * @param {jQuery|HTMLElement} wrapperElement - The scrollable wrapper element
+     * @param {jQuery|HTMLElement} scrollerElement - The inner element to scale width on
      */
     function registerFollowerTimeline(wrapperElement, scrollerElement) {
+        var wrapper = wrapperElement;
+        var scroller = scrollerElement;
+
+        // Sync scroll from follower to main timelines
+        var scrollHandler = function() {
+            if (!wrapper.dataset.programmaticScroll) {
+                onTimelineScroll(wrapper.scrollLeft);
+            }
+        };
+        wrapper.addEventListener('scroll', scrollHandler);
+
+        // Preview popup for compare timeline elements
+        var previewHandlers = setupPreviewPopup(wrapper, '.compareTimelineElement');
+
         var followerData = {
-            wrapper: wrapperElement,
-            scroller: scrollerElement
+            wrapper: wrapper,
+            scroller: scroller,
+            _scrollHandler: scrollHandler,
+            _previewHandlers: previewHandlers
         };
 
         followerTimelines.push(followerData);
 
-        // Sync scroll from follower to main timelines
-        wrapperElement.on('scroll.followerSync', function() {
-            if (!wrapperElement.data('programmaticScroll')) {
-                onTimelineScroll($(this).scrollLeft());
-            }
-        });
-
         // Apply current zoom and scroll
-        scrollerElement.css('width', (zoomLevel * 100) + '%');
-        wrapperElement.data('programmaticScroll', true);
-        wrapperElement.scrollLeft(scrollPosition);
-        wrapperElement.data('programmaticScroll', false);
-
-        // Preview popup for compare timeline elements
-        setupPreviewPopup(wrapperElement, '.compareTimelineElement');
+        scroller.style.width = (zoomLevel * 100) + '%';
+        wrapper.dataset.programmaticScroll = '1';
+        wrapper.scrollLeft = scrollPosition;
+        delete wrapper.dataset.programmaticScroll;
     }
 
 
@@ -405,25 +453,25 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
 
         // Sync other timelines
         registeredTimelines.forEach(function(t) {
-            if (t.element.scrollLeft() !== scrollPosition) {
-                t.element.data('programmaticScroll', true);
-                t.element.scrollLeft(scrollPosition);
-                t.element.data('programmaticScroll', false);
+            if (t.element.scrollLeft !== scrollPosition) {
+                t.element.dataset.programmaticScroll = '1';
+                t.element.scrollLeft = scrollPosition;
+                delete t.element.dataset.programmaticScroll;
             }
         });
 
         // Sync follower timelines
         followerTimelines.forEach(function(f) {
-            if (f.wrapper.scrollLeft() !== scrollPosition) {
-                f.wrapper.data('programmaticScroll', true);
-                f.wrapper.scrollLeft(scrollPosition);
-                f.wrapper.data('programmaticScroll', false);
+            if (f.wrapper.scrollLeft !== scrollPosition) {
+                f.wrapper.dataset.programmaticScroll = '1';
+                f.wrapper.scrollLeft = scrollPosition;
+                delete f.wrapper.dataset.programmaticScroll;
             }
         });
 
         // Sync time ruler
         if (timeRulerElement) {
-            timeRulerElement.scrollLeft(scrollPosition);
+            timeRulerElement.scrollLeft = scrollPosition;
         }
 
         updateMinimapViewport();
@@ -437,19 +485,19 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
      */
     function syncScroll() {
         registeredTimelines.forEach(function(t) {
-            t.element.data('programmaticScroll', true);
-            t.element.scrollLeft(scrollPosition);
-            t.element.data('programmaticScroll', false);
+            t.element.dataset.programmaticScroll = '1';
+            t.element.scrollLeft = scrollPosition;
+            delete t.element.dataset.programmaticScroll;
         });
 
         followerTimelines.forEach(function(f) {
-            f.wrapper.data('programmaticScroll', true);
-            f.wrapper.scrollLeft(scrollPosition);
-            f.wrapper.data('programmaticScroll', false);
+            f.wrapper.dataset.programmaticScroll = '1';
+            f.wrapper.scrollLeft = scrollPosition;
+            delete f.wrapper.dataset.programmaticScroll;
         });
 
         if (timeRulerElement) {
-            timeRulerElement.scrollLeft(scrollPosition);
+            timeRulerElement.scrollLeft = scrollPosition;
         }
 
         updateMinimapViewport();
@@ -494,7 +542,7 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
 
         // Apply to follower timelines
         followerTimelines.forEach(function(f) {
-            f.scroller.css('width', (zoomLevel * 100) + '%');
+            f.scroller.style.width = (zoomLevel * 100) + '%';
         });
 
         // Update scroll
@@ -518,7 +566,7 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
      */
     function applyZoomToTimeline(timelineData) {
         var widthPercent = zoomLevel * 100;
-        timelineData.scroller.css('width', widthPercent + '%');
+        timelineData.scroller.style.width = widthPercent + '%';
     }
 
 
@@ -597,23 +645,29 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
      * @method createZoomControls
      */
     function createZoomControls() {
-        var wrapper = $('<div class="timelineZoomControlsWrapper"></div>');
-        var controls = $('<div class="timelineZoomControls"></div>');
+        var wrapper = document.createElement('div');
+        wrapper.className = 'timelineZoomControlsWrapper';
+        var controls = document.createElement('div');
+        controls.className = 'timelineZoomControls';
 
         ZOOM_PRESETS.forEach(function(preset) {
             var label = preset === 1 ? 'Fit' : preset + 'x';
-            var btn = $('<button class="button timelineZoomPreset" data-zoom="' + preset + '">' + label + '</button>');
-            if (preset === zoomLevel) btn.addClass('active');
-            controls.append(btn);
+            var btn = document.createElement('button');
+            btn.className = 'button timelineZoomPreset';
+            btn.setAttribute('data-zoom', preset);
+            btn.textContent = label;
+            if (preset === zoomLevel) btn.classList.add('active');
+            controls.appendChild(btn);
         });
 
-        controls.on('click', '.timelineZoomPreset', function() {
-            var newZoom = parseFloat($(this).attr('data-zoom'));
-            setZoom(newZoom);
+        controls.addEventListener('click', function(e) {
+            var btn = e.target.closest('.timelineZoomPreset');
+            if (!btn) return;
+            setZoom(parseFloat(btn.getAttribute('data-zoom')));
         });
 
-        wrapper.append(controls);
-        controlsContainer.append(wrapper);
+        wrapper.appendChild(controls);
+        controlsContainer.appendChild(wrapper);
     }
 
 
@@ -624,8 +678,9 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
     function updateZoomControlsActive() {
         if (!controlsContainer) return;
 
-        controlsContainer.find('.timelineZoomPreset').removeClass('active');
-        controlsContainer.find('.timelineZoomPreset[data-zoom="' + zoomLevel + '"]').addClass('active');
+        controlsContainer.querySelectorAll('.timelineZoomPreset').forEach(function(btn) { btn.classList.remove('active'); });
+        var activeBtn = controlsContainer.querySelector('.timelineZoomPreset[data-zoom="' + zoomLevel + '"]');
+        if (activeBtn) activeBtn.classList.add('active');
     }
 
 
@@ -634,22 +689,25 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
      * @method createTimeRuler
      */
     function createTimeRuler() {
-        var wrapper = $('<div class="timelineRulerWrapper"></div>');
-        timeRulerElement = $('<div class="timelineRuler"><div class="timelineRulerScroller"></div></div>');
+        var wrapper = document.createElement('div');
+        wrapper.className = 'timelineRulerWrapper';
+        var _rw = document.createElement('div');
+        _rw.innerHTML = '<div class="timelineRuler"><div class="timelineRulerScroller"></div></div>';
+        timeRulerElement = _rw.firstElementChild;
 
         updateTimeRuler();
 
         // Click to seek
-        timeRulerElement.on('click', function(e) {
-            var rect = timeRulerElement[0].getBoundingClientRect();
-            var clickX = e.clientX - rect.left + timeRulerElement.scrollLeft();
+        timeRulerElement.addEventListener('click', function(e) {
+            var rect = timeRulerElement.getBoundingClientRect();
+            var clickX = e.clientX - rect.left + timeRulerElement.scrollLeft;
             var scrollerWidth = containerWidth * zoomLevel;
             var time = (clickX / scrollerWidth) * duration;
             FrameTrail.module('HypervideoController').currentTime = Math.max(0, Math.min(time, duration));
         });
 
-        wrapper.append(timeRulerElement);
-        controlsContainer.append(wrapper);
+        wrapper.appendChild(timeRulerElement);
+        controlsContainer.appendChild(wrapper);
     }
 
 
@@ -660,25 +718,28 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
     function updateTimeRuler() {
         if (!timeRulerElement) return;
 
-        var scroller = timeRulerElement.find('.timelineRulerScroller');
-        scroller.empty().css('width', (zoomLevel * 100) + '%');
+        var scroller = timeRulerElement.querySelector('.timelineRulerScroller');
+        scroller.innerHTML = '';
+        scroller.style.width = (zoomLevel * 100) + '%';
 
         var interval = getTimeInterval();
 
         for (var t = 0; t <= duration; t += interval) {
             var leftPercent = (t / duration) * 100;
-            var marker = $('<div class="timelineRulerMarker"></div>')
-                .css('left', leftPercent + '%')
-                .html('<span class="timelineRulerLabel">' + formatTime(t) + '</span>');
-            scroller.append(marker);
+            var marker = document.createElement('div');
+            marker.className = 'timelineRulerMarker';
+            marker.style.left = leftPercent + '%';
+            marker.innerHTML = '<span class="timelineRulerLabel">' + formatTime(t) + '</span>';
+            scroller.appendChild(marker);
         }
 
         // Re-add playhead indicator to ruler (scroller was emptied above)
-        rulerPlayhead = $('<div class="timelinePlayhead"></div>');
-        scroller.append(rulerPlayhead);
+        rulerPlayhead = document.createElement('div');
+        rulerPlayhead.className = 'timelinePlayhead';
+        scroller.appendChild(rulerPlayhead);
 
         // Sync scroll
-        timeRulerElement.scrollLeft(scrollPosition);
+        timeRulerElement.scrollLeft = scrollPosition;
     }
 
 
@@ -721,25 +782,29 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
      * @method createMinimap
      */
     function createMinimap() {
-        var wrapper = $('<div class="timelineMinimapWrapper"></div>');
-        minimapElement = $('<div class="timelineMinimap"></div>');
-        var track = $('<div class="timelineMinimapTrack"></div>');
-        minimapViewport = $('<div class="timelineMinimapViewport"></div>');
+        var wrapper = document.createElement('div');
+        wrapper.className = 'timelineMinimapWrapper';
+        minimapElement = document.createElement('div');
+        minimapElement.className = 'timelineMinimap';
+        var track = document.createElement('div');
+        track.className = 'timelineMinimapTrack';
+        minimapViewport = document.createElement('div');
+        minimapViewport.className = 'timelineMinimapViewport';
 
         renderMinimapItems(track);
 
         minimapElement.append(track, minimapViewport);
 
         // Make viewport draggable (interact.js, x-axis only)
-        interact(minimapViewport[0]).draggable({
+        interact(minimapViewport).draggable({
             listeners: {
                 start: function(e) {
                     e.target.dataset.ftX = parseFloat(e.target.style.left) || e.target.offsetLeft || 0;
                 },
                 move: function(e) {
                     var x = parseFloat(e.target.dataset.ftX) + e.dx;
-                    var parentWidth = minimapElement.width();
-                    var viewportWidth = minimapViewport.outerWidth();
+                    var parentWidth = minimapElement.offsetWidth;
+                    var viewportWidth = minimapViewport.offsetWidth;
                     var maxLeft = parentWidth - viewportWidth;
                     if (maxLeft < 0) { maxLeft = 0; }
                     x = Math.max(0, Math.min(maxLeft, x));
@@ -756,10 +821,10 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
         });
 
         // Click on minimap to jump
-        minimapElement.on('click', function(e) {
-            if ($(e.target).hasClass('timelineMinimapViewport')) return;
+        minimapElement.addEventListener('click', function(e) {
+            if (e.target.classList.contains('timelineMinimapViewport')) return;
 
-            var rect = minimapElement[0].getBoundingClientRect();
+            var rect = minimapElement.getBoundingClientRect();
             var clickPercent = (e.clientX - rect.left) / rect.width;
             var time = clickPercent * duration;
 
@@ -769,23 +834,23 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
 
         updateMinimapViewport();
 
-        wrapper.append(minimapElement);
-        controlsContainer.append(wrapper);
+        wrapper.appendChild(minimapElement);
+        controlsContainer.appendChild(wrapper);
     }
 
 
     /**
      * Render minimap item indicators.
      * @method renderMinimapItems
-     * @param {jQuery} track - Optional track element, otherwise finds existing
+     * @param {HTMLElement} track - Optional track element, otherwise finds existing
      */
     function renderMinimapItems(track) {
         if (!track) {
             if (!minimapElement) return;
-            track = minimapElement.find('.timelineMinimapTrack');
+            track = minimapElement.querySelector('.timelineMinimapTrack');
         }
 
-        track.empty();
+        track.innerHTML = '';
 
         var items = getAllItems();
 
@@ -796,21 +861,25 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
                 ? Math.max(((item.data.end - start) / duration) * 100, 0.3) + '%'
                 : '10px';
 
-            $('<div class="timelineMinimapItem"></div>').css({
-                left: leftPercent + '%',
-                width: cssWidth
-            }).appendTo(track);
+            var el = document.createElement('div');
+            el.className = 'timelineMinimapItem';
+            el.style.left = leftPercent + '%';
+            el.style.width = cssWidth;
+            track.appendChild(el);
         });
 
         // Use CollisionDetection to stack items (same mechanism as timelines)
-        CollisionDetection(track[0], { spacing: 0, includeVerticalMargins: true, containerPadding: 5 });
+        CollisionDetection(track, { spacing: 0, includeVerticalMargins: true, containerPadding: 5 });
 
         // CollisionDetection counts margin-bottom in height, which adds extra space
         // below the bottom row. Subtract it so top and bottom padding are equal.
-        var firstItem = track.children('.timelineMinimapItem').first();
-        var itemMargin = firstItem.length ? (firstItem.outerHeight(true) - firstItem.outerHeight()) : 0;
-        var trackHeight = Math.max(track.height() - itemMargin, 12);
-        minimapElement.css('height', trackHeight + 'px');
+        var firstItem = track.querySelector('.timelineMinimapItem');
+        var itemMargin = 0;
+        if (firstItem) {
+            itemMargin = parseFloat(getComputedStyle(firstItem).marginBottom) || 0;
+        }
+        var trackHeight = Math.max(track.offsetHeight - itemMargin, 12);
+        minimapElement.style.height = trackHeight + 'px';
     }
 
 
@@ -847,10 +916,11 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
     function updateMinimapViewport() {
         if (!minimapElement || !minimapViewport) return;
 
-        var minimapWidth = minimapElement.width();
+        var minimapWidth = minimapElement.offsetWidth;
 
         if (zoomLevel <= 1 || minimapWidth === 0) {
-            minimapViewport.css({ width: '100%', left: 0 });
+            minimapViewport.style.width = '100%';
+            minimapViewport.style.left = '0';
             return;
         }
 
@@ -862,10 +932,8 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
         var maxLeft = minimapWidth * (1 - (1 / zoomLevel));
         var viewportLeft = scrollPercent * maxLeft;
 
-        minimapViewport.css({
-            width: viewportWidthPercent + '%',
-            left: viewportLeft + 'px'
-        });
+        minimapViewport.style.width = viewportWidthPercent + '%';
+        minimapViewport.style.left = viewportLeft + 'px';
     }
 
 

@@ -233,11 +233,7 @@ FrameTrail.defineModule('RouteNavigation', function(FrameTrail){
 
 	}
 
-	if (navigator.appName == 'Microsoft Internet Explorer' ||  !!(navigator.userAgent.match(/Trident/) || navigator.userAgent.match(/rv:11/)) || (typeof $.browser !== "undefined" && $.browser.msie == 1)) {
-		$(window).on('hashchange', routeHasChanged);
-	} else {
-		$(window).on('popstate', routeHasChanged);
-	}
+	window.addEventListener('popstate', routeHasChanged);
 
 	routeHasChanged();
 

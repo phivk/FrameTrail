@@ -24,9 +24,9 @@
  *   ctrl.destroy()                 // Close + remove from DOM
  *   ctrl.setButtons(newButtons)    // Replace button bar
  *   ctrl.getButtons()              // Get current buttons array/object
- *   ctrl.widget()                  // Returns jQuery-wrapped <dialog> element
+ *   ctrl.widget()                  // Returns the native <dialog> DOM element
  *   ctrl.isOpen()                  // Returns true when dialog is open
- *   ctrl.element                   // jQuery-wrapped content element
+ *   ctrl.element                   // The content DOM element
  */
 
 window.Dialog = function(opts) {
@@ -219,9 +219,9 @@ window.Dialog = function(opts) {
             return buttons;
         },
 
-        /** Returns jQuery-wrapped <dialog> — equivalent to .dialog('widget'). */
+        /** Returns the native <dialog> DOM element. */
         widget: function() {
-            return $(dlg);
+            return dlg;
         },
 
         /** True when the dialog is currently open. */
@@ -229,8 +229,8 @@ window.Dialog = function(opts) {
             return dlg.open;
         },
 
-        /** jQuery-wrapped content element — equivalent to the original $el. */
-        element: $(contentEl)
+        /** The content DOM element. */
+        element: contentEl
     };
 
     // Auto-open by default, matching jQuery UI behaviour

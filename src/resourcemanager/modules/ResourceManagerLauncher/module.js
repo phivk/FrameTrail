@@ -49,9 +49,9 @@
         var storageMode = FrameTrail.getState('storageMode');
 
         if (storageMode === 'needsFolder') {
-            var folderDialog = $('<div class="folderPromptDialog">'
-                + '<p>' + labels['SelectDataFolderDescription'] + '</p>'
-                + '</div>');
+            var _fdw = document.createElement('div');
+            _fdw.innerHTML = '<div class="folderPromptDialog"><p>' + labels['SelectDataFolderDescription'] + '</p></div>';
+            var folderDialog = _fdw.firstElementChild;
 
             var folderDialogCtrl = Dialog({
                 title:         labels['SelectDataFolder'],
@@ -95,6 +95,8 @@
             } else {
                 initResourceManager();
             }
+        }, function(err) {
+            alert(err);
         });
 
     }
@@ -103,7 +105,7 @@
 
         appendTitlebar();
 
-        $(FrameTrail.getState('target')).append($('<div class="mainContainer"></div>'));
+        document.querySelector(FrameTrail.getState('target')).insertAdjacentHTML('beforeend', '<div class="mainContainer"></div>');
 
         FrameTrail.module('ViewResources').create(true);
 
@@ -123,24 +125,26 @@
      */
     function appendTitlebar() {
 
-        var titlebar = $(  '<div class="titlebar">'
+        var _tbw = document.createElement('div');
+        _tbw.innerHTML = '<div class="titlebar">'
                          + '    <div class="titlebarTitle">'+ labels['ResourceManager'] +'</div>'
                          + '    <div class="titlebarActionButtonContainer">'
                          + '        <button type="button" class="startEditButton" data-tooltip-bottom-left="'+ labels['GenericEditStart'] +'"><span class="icon-edit"></span></button>'
                          + '        <button type="button" class="logoutButton" data-tooltip-bottom-right="'+ labels['UserLogout'] +'"><span class="icon-logout"></span></button>'
                          + '    </div>'
-                         + '</div>');
+                         + '</div>';
+        var titlebar = _tbw.firstElementChild;
 
-        titlebar.appendTo($(FrameTrail.getState('target')));
+        document.querySelector(FrameTrail.getState('target')).append(titlebar);
 
-        titlebar.find('.logoutButton').click(function(){
+        titlebar.querySelector('.logoutButton').addEventListener('click', function(){
             FrameTrail.module('UserManagement').logout();
             toggleLoginState(false);
         });
 
-        titlebar.find('.startEditButton').click(function(){
+        titlebar.querySelector('.startEditButton').addEventListener('click', function(){
             FrameTrail.module('UserManagement').ensureAuthenticated(function() {
-                
+
                 // login success
                 toggleLoginState(true);
 
@@ -160,16 +164,17 @@
      */
     function toggleLoginState(loggedIn) {
 
+        var _targetEl = document.querySelector(FrameTrail.getState('target'));
         if (loggedIn) {
-            $(FrameTrail.getState('target')).find('.resourcesControls, .logoutButton').show();
-            $(FrameTrail.getState('target')).find('.startEditButton').hide();
-            $(FrameTrail.getState('target')).find('.titlebar, .mainContainer').addClass('editActive');
-            $(FrameTrail.getState('target')).find('.viewResources').removeClass('resourceManager');
+            _targetEl.querySelectorAll('.resourcesControls, .logoutButton').forEach(function(el) { el.style.display = ''; });
+            _targetEl.querySelector('.startEditButton').style.display = 'none';
+            _targetEl.querySelectorAll('.titlebar, .mainContainer').forEach(function(el) { el.classList.add('editActive'); });
+            _targetEl.querySelector('.viewResources').classList.remove('resourceManager');
         } else {
-            $(FrameTrail.getState('target')).find('.resourcesControls, .logoutButton').hide();
-            $(FrameTrail.getState('target')).find('.startEditButton').show();
-            $(FrameTrail.getState('target')).find('.titlebar, .mainContainer').removeClass('editActive');
-            $(FrameTrail.getState('target')).find('.viewResources').addClass('resourceManager');
+            _targetEl.querySelectorAll('.resourcesControls, .logoutButton').forEach(function(el) { el.style.display = 'none'; });
+            _targetEl.querySelector('.startEditButton').style.display = '';
+            _targetEl.querySelectorAll('.titlebar, .mainContainer').forEach(function(el) { el.classList.remove('editActive'); });
+            _targetEl.querySelector('.viewResources').classList.add('resourceManager');
         }
 
     }
@@ -181,23 +186,19 @@
      */
     function initWindowResizeHandler() {
 
-        var _window = $(window);
+        function _handleResize() {
+            var width  = window.innerWidth;
+            var height = window.innerHeight;
+            var _targetEl = document.querySelector(FrameTrail.getState('target'));
+            _targetEl.querySelector('.mainContainer').style.height = height + 'px';
+            var _vr = _targetEl.querySelector('.viewResources');
+            _vr.style.margin = '10px';
+            _vr.style.height = (height - 20 - _targetEl.querySelector('.titlebar').offsetHeight) + 'px';
+            FrameTrail.changeState('viewSize', [width, height]);
+        }
 
-        _window.resize(function(){
-
-            var width   = _window.width(),
-                height  = _window.height();
-
-            $(FrameTrail.getState('target')).find('.mainContainer').height( height );
-            $(FrameTrail.getState('target')).find('.viewResources').css({
-                margin: 10 + 'px',
-                height: height - 20 - $(FrameTrail.getState('target')).find('.titlebar').height() + 'px'
-            });
-            FrameTrail.changeState('viewSize', [width, height])
-
-        });
-
-        _window.resize();
+        window.addEventListener('resize', _handleResize);
+        _handleResize();
 
 
     }

@@ -107,7 +107,9 @@ FrameTrail.defineType(
                     var self = this;
                     var attrs = this.resourceData.attributes;
 
-                    var resourceDetail = $('<div class="resourceDetail" data-type="'+ this.resourceData.type +'" style="width: 100%; height: 100%;"></div>');
+                    var _rdw = document.createElement('div');
+                    _rdw.innerHTML = '<div class="resourceDetail" data-type="'+ this.resourceData.type +'" style="width: 100%; height: 100%;"></div>';
+                    var resourceDetail = _rdw.firstElementChild;
 
                     // Parse coordinates
                     var lat = parseFloat(attrs.lat);
@@ -140,7 +142,7 @@ FrameTrail.defineType(
                             mapOptions.tap = false;
                         }
 
-                        var map = L.map(resourceDetail[0], mapOptions);
+                        var map = L.map(resourceDetail, mapOptions);
 
                         // Add tile layer
                         var tileOptions = {
@@ -168,7 +170,7 @@ FrameTrail.defineType(
                         }
 
                         // Store map reference for resize handling
-                        resourceDetail.data('map', map);
+                        resourceDetail._leafletMap = map;
 
                         // Handle resize
                         map.invalidateSize();
@@ -206,20 +208,25 @@ FrameTrail.defineType(
 
                     var tagList = (this.resourceData.tags ? this.resourceData.tags.join(' ') : '');
 
-                    var thumbElement = $('<div class="resourceThumb '+ tagList +'" data-license-type="'+ this.resourceData.licenseType +'" data-resourceID="'+ trueID +'" data-type="'+ this.resourceData.type +'" style="'+ thumbBackground +'">'
+                    var _tew = document.createElement('div');
+                    _tew.innerHTML = '<div class="resourceThumb '+ tagList +'" data-license-type="'+ this.resourceData.licenseType +'" data-resourceID="'+ trueID +'" data-type="'+ this.resourceData.type +'" style="'+ thumbBackground +'">'
                         + '                  <div class="resourceOverlay">'
                         + '                      <div class="resourceIcon"><span class="icon-location-2"></span></div>'
                         + '                  </div>'
                         + '                  <div class="resourceTitle">'+ this.resourceData.name +'</div>'
-                        + '              </div>');
+                        + '              </div>';
+                    var thumbElement = _tew.firstElementChild;
 
-                    var previewButton = $('<div class="resourcePreviewButton"><span class="icon-eye"></span></div>').click(function(evt) {
+                    var previewButton = document.createElement('div');
+                    previewButton.className = 'resourcePreviewButton';
+                    previewButton.innerHTML = '<span class="icon-eye"></span>';
+                    previewButton.addEventListener('click', function(evt) {
                         // call the openPreview method (defined in abstract type: Resource)
-                        self.openPreview( $(this).parent() );
+                        self.openPreview( this.parentElement );
                         evt.stopPropagation();
                         evt.preventDefault();
                     });
-                    thumbElement.append(previewButton);
+                    thumbElement.appendChild(previewButton);
 
                     return thumbElement;
 
@@ -236,7 +243,7 @@ FrameTrail.defineType(
 
                     var basicControls = this.renderBasicPropertiesControls(overlay);
 
-                    basicControls.controlsContainer.find('#OverlayOptions').prepend(this.renderLocationEditor(overlay));
+                    basicControls.controlsContainer.querySelector('#OverlayOptions').prepend(this.renderLocationEditor(overlay));
 
                     return basicControls;
 
@@ -253,7 +260,7 @@ FrameTrail.defineType(
 
                     var timeControls = this.renderBasicTimeControls(annotation);
 
-                    timeControls.controlsContainer.find('#AnnotationOptions').append(this.renderLocationEditor(annotation));
+                    timeControls.controlsContainer.querySelector('#AnnotationOptions').append(this.renderLocationEditor(annotation));
 
                     return timeControls;
 
@@ -310,134 +317,127 @@ FrameTrail.defineType(
                     // Helper to re-render the map (preserves resize handles on overlayElement)
                     var refreshMap = function(el) {
                         if (el.overlayElement) {
-                            var mapContainer = el.overlayElement.find('.resourceDetail[data-type="location"]');
-                            if (mapContainer.length && mapContainer.data('map')) {
-                                mapContainer.data('map').remove();
-                                mapContainer.removeData('map');
-                            }
-                            mapContainer.remove();
-                            el.overlayElement.prepend(el.resourceItem.renderContent());
-                        } else {
-                            $(el.contentViewDetailElements).each(function() {
-                                var mapContainer = $(this).find('.resourceDetail[data-type="location"]');
-                                if (mapContainer.length && mapContainer.data('map')) {
-                                    mapContainer.data('map').remove();
-                                    mapContainer.removeData('map');
+                            var mapContainer = el.overlayElement.querySelector('.resourceDetail[data-type="location"]');
+                            if (mapContainer) {
+                                if (mapContainer._leafletMap) {
+                                    mapContainer._leafletMap.remove();
+                                    delete mapContainer._leafletMap;
                                 }
                                 mapContainer.remove();
-                                $(this).append(el.resourceItem.renderContent());
+                            }
+                            el.overlayElement.prepend(el.resourceItem.renderContent());
+                        } else {
+                            (el.contentViewDetailElements || []).forEach(function(item) {
+                                var cvItem = item.jquery ? item[0] : item;
+                                var mapContainer = cvItem.querySelector('.resourceDetail[data-type="location"]');
+                                if (mapContainer) {
+                                    if (mapContainer._leafletMap) {
+                                        mapContainer._leafletMap.remove();
+                                        delete mapContainer._leafletMap;
+                                    }
+                                    mapContainer.remove();
+                                }
+                                cvItem.appendChild(el.resourceItem.renderContent());
                             });
                         }
                     };
 
                     // Helper to sync editor UI controls from current data attributes
                     var syncEditorUI = function(a) {
-                        var c = $('.locationEditorContainer');
-                        if (!c.length) return;
-                        c.find('.locationPropTileStyle').val(a.tileStyle || 'osm-standard');
-                        c.find('.locationPropZoom').val(a.zoom || 15);
+                        var c = document.querySelector('.locationEditorContainer');
+                        if (!c) return;
+                        c.querySelector('.locationPropTileStyle').value = a.tileStyle || 'osm-standard';
+                        c.querySelector('.locationPropZoom').value = a.zoom || 15;
 
-                        c.find('.locationPropMarkerShow').prop('checked', a.marker ? a.marker.show !== false : true);
-                        c.find('.locationPropMarkerColor').val(a.marker && a.marker.color ? a.marker.color : '#e74c3c');
-                        c.find('.locationPropDragging').prop('checked', a.controls ? a.controls.dragging !== false : true);
-                        c.find('.locationPropZoomControl').prop('checked', a.controls ? a.controls.zoomControl !== false : true);
-                        c.find('.locationPropScrollWheelZoom').prop('checked', a.controls ? a.controls.scrollWheelZoom !== false : true);
+                        c.querySelector('.locationPropMarkerShow').checked = a.marker ? a.marker.show !== false : true;
+                        c.querySelector('.locationPropMarkerColor').value = a.marker && a.marker.color ? a.marker.color : '#e74c3c';
+                        c.querySelector('.locationPropDragging').checked = a.controls ? a.controls.dragging !== false : true;
+                        c.querySelector('.locationPropZoomControl').checked = a.controls ? a.controls.zoomControl !== false : true;
+                        c.querySelector('.locationPropScrollWheelZoom').checked = a.controls ? a.controls.scrollWheelZoom !== false : true;
                     };
 
                     // Build location-specific controls HTML
-                    var locationEditorContainer = $('<div class="locationEditorContainer"></div>');
-
-                    // Row 1: Tile Style (full width)
-                    var row1 = $('<div class="layoutRow"></div>');
-                    var tileStyleCol = $('<div class="column-12"></div>');
-                    tileStyleCol.append('<label>'+ this.labels['SettingsLocationTileStyle'] +'</label>');
-                    var tileStyleWrapper = $('<div class="custom-select"></div>');
-                    var tileStyleSelect = $('<select class="locationPropTileStyle">'
+                    var locationEditorContainer = document.createElement('div');
+                    locationEditorContainer.className = 'locationEditorContainer';
+                    locationEditorContainer.innerHTML =
+                        '<div class="layoutRow">'
+                        + '<div class="column-12">'
+                        + '<label>' + this.labels['SettingsLocationTileStyle'] + '</label>'
+                        + '<div class="custom-select">'
+                        + '<select class="locationPropTileStyle">'
                         + '<option value="osm-standard">OpenStreetMap (Standard)</option>'
                         + '<option value="carto-light">Light (CARTO Positron)</option>'
                         + '<option value="carto-dark">Dark (CARTO Dark Matter)</option>'
                         + '<option value="carto-voyager">Colorful (CARTO Voyager)</option>'
                         + '<option value="opentopomap">Terrain (OpenTopoMap)</option>'
-                        + '</select>');
-                    tileStyleWrapper.append(tileStyleSelect);
-                    tileStyleCol.append(tileStyleWrapper);
-                    row1.append(tileStyleCol);
-
-                    // Row 2: Show Marker (4) + Show Zoom Controls (8)
-                    var row2 = $('<div class="layoutRow"></div>');
-
-                    var markerShowCol = $('<div class="column-4"></div>');
-                    var markerShowRow = $('<div class="checkboxRow"></div>');
-                    markerShowRow.append('<label class="switch">'
-                        + '<input id="locationPropMarkerShow" type="checkbox" class="locationPropMarkerShow" '+ (currentMarkerShow ? 'checked' : '') +'>'
+                        + '</select>'
+                        + '</div>'
+                        + '</div>'
+                        + '</div>'
+                        + '<div class="layoutRow">'
+                        + '<div class="column-4">'
+                        + '<div class="checkboxRow">'
+                        + '<label class="switch">'
+                        + '<input id="locationPropMarkerShow" type="checkbox" class="locationPropMarkerShow"' + (currentMarkerShow ? ' checked' : '') + '>'
                         + '<span class="slider round"></span>'
-                        + '</label>');
-                    markerShowRow.append('<label for="locationPropMarkerShow">'+ this.labels['SettingsLocationShowMarker'] +'</label>');
-                    markerShowCol.append(markerShowRow);
-                    row2.append(markerShowCol);
-
-                    var zoomControlCol = $('<div class="column-8"></div>');
-                    var zoomControlRow = $('<div class="checkboxRow"></div>');
-                    zoomControlRow.append('<label class="switch">'
-                        + '<input id="locationPropZoomControl" type="checkbox" class="locationPropZoomControl" '+ (currentZoomControl ? 'checked' : '') +'>'
+                        + '</label>'
+                        + '<label for="locationPropMarkerShow">' + this.labels['SettingsLocationShowMarker'] + '</label>'
+                        + '</div>'
+                        + '</div>'
+                        + '<div class="column-8">'
+                        + '<div class="checkboxRow">'
+                        + '<label class="switch">'
+                        + '<input id="locationPropZoomControl" type="checkbox" class="locationPropZoomControl"' + (currentZoomControl ? ' checked' : '') + '>'
                         + '<span class="slider round"></span>'
-                        + '</label>');
-                    zoomControlRow.append('<label for="locationPropZoomControl">'+ this.labels['SettingsLocationShowZoomControls'] +'</label>');
-                    zoomControlCol.append(zoomControlRow);
-                    row2.append(zoomControlCol);
-
-                    // Row 3: Marker Color (4) + Zoom Level (8)
-                    var row3 = $('<div class="layoutRow"></div>');
-
-                    var markerColorCol = $('<div class="column-4"></div>');
-                    markerColorCol.append('<label>'+ this.labels['SettingsLocationMarkerColor'] +'</label>');
-                    markerColorCol.append('<input type="color" class="locationPropMarkerColor" value="'+ currentMarkerColor +'"/>');
-                    row3.append(markerColorCol);
-
-                    var zoomCol = $('<div class="column-8"></div>');
-                    zoomCol.append('<label>'+ this.labels['SettingsLocationZoomLevel'] +'</label>');
-                    zoomCol.append('<input type="range" class="locationPropZoom" min="1" max="19" value="'+ currentZoom +'">');
-
-                    row3.append(zoomCol);
-
-                    // Row 4: Allow Panning (4) + Scroll Wheel Zoom (4)
-                    var row4 = $('<div class="layoutRow"></div>');
-
-                    var draggingCol = $('<div class="column-4"></div>');
-                    var draggingRow = $('<div class="checkboxRow"></div>');
-                    draggingRow.append('<label class="switch">'
-                        + '<input id="locationPropDragging" type="checkbox" class="locationPropDragging" '+ (currentDragging ? 'checked' : '') +'>'
+                        + '</label>'
+                        + '<label for="locationPropZoomControl">' + this.labels['SettingsLocationShowZoomControls'] + '</label>'
+                        + '</div>'
+                        + '</div>'
+                        + '</div>'
+                        + '<div class="layoutRow">'
+                        + '<div class="column-4">'
+                        + '<label>' + this.labels['SettingsLocationMarkerColor'] + '</label>'
+                        + '<input type="color" class="locationPropMarkerColor" value="' + currentMarkerColor + '"/>'
+                        + '</div>'
+                        + '<div class="column-8">'
+                        + '<label>' + this.labels['SettingsLocationZoomLevel'] + '</label>'
+                        + '<input type="range" class="locationPropZoom" min="1" max="19" value="' + currentZoom + '">'
+                        + '</div>'
+                        + '</div>'
+                        + '<div class="layoutRow">'
+                        + '<div class="column-4">'
+                        + '<div class="checkboxRow">'
+                        + '<label class="switch">'
+                        + '<input id="locationPropDragging" type="checkbox" class="locationPropDragging"' + (currentDragging ? ' checked' : '') + '>'
                         + '<span class="slider round"></span>'
-                        + '</label>');
-                    draggingRow.append('<label for="locationPropDragging">'+ this.labels['SettingsLocationAllowPanning'] +'</label>');
-                    draggingCol.append(draggingRow);
-                    row4.append(draggingCol);
-
-                    var scrollZoomCol = $('<div class="column-4"></div>');
-                    var scrollZoomRow = $('<div class="checkboxRow"></div>');
-                    scrollZoomRow.append('<label class="switch">'
-                        + '<input id="locationPropScrollWheelZoom" type="checkbox" class="locationPropScrollWheelZoom" '+ (currentScrollWheelZoom ? 'checked' : '') +'>'
+                        + '</label>'
+                        + '<label for="locationPropDragging">' + this.labels['SettingsLocationAllowPanning'] + '</label>'
+                        + '</div>'
+                        + '</div>'
+                        + '<div class="column-4">'
+                        + '<div class="checkboxRow">'
+                        + '<label class="switch">'
+                        + '<input id="locationPropScrollWheelZoom" type="checkbox" class="locationPropScrollWheelZoom"' + (currentScrollWheelZoom ? ' checked' : '') + '>'
                         + '<span class="slider round"></span>'
-                        + '</label>');
-                    scrollZoomRow.append('<label for="locationPropScrollWheelZoom">'+ this.labels['SettingsLocationScrollWheelZoom'] +'</label>');
-                    scrollZoomCol.append(scrollZoomRow);
-                    row4.append(scrollZoomCol);
-
-                    locationEditorContainer.append(row1, row2, row3, row4);
+                        + '</label>'
+                        + '<label for="locationPropScrollWheelZoom">' + this.labels['SettingsLocationScrollWheelZoom'] + '</label>'
+                        + '</div>'
+                        + '</div>'
+                        + '</div>';
 
                     // Set current tile style selection
-                    locationEditorContainer.find('.locationPropTileStyle').val(currentTileStyle);
+                    locationEditorContainer.querySelector('.locationPropTileStyle').value = currentTileStyle;
 
                     // ============================================
                     // TILE STYLE with Undo
                     // ============================================
                     var tileStyleBeforeChange = currentTileStyle;
-                    locationEditorContainer.find('.locationPropTileStyle').on('focus', function() {
+                    locationEditorContainer.querySelector('.locationPropTileStyle').addEventListener('focus', function() {
                         tileStyleBeforeChange = overlayOrAnnotation.data.attributes.tileStyle || 'osm-standard';
                     });
 
-                    locationEditorContainer.find('.locationPropTileStyle').on('change', function() {
-                        var newStyle = $(this).val();
+                    locationEditorContainer.querySelector('.locationPropTileStyle').addEventListener('change', function() {
+                        var newStyle = this.value;
                         var oldStyle = tileStyleBeforeChange;
                         overlayOrAnnotation.data.attributes.tileStyle = newStyle;
                         refreshMap(overlayOrAnnotation);
@@ -474,14 +474,14 @@ FrameTrail.defineType(
                     // ZOOM LEVEL with Undo
                     // ============================================
                     var zoomBeforeChange = currentZoom;
-                    locationEditorContainer.find('.locationPropZoom').on('focus', function() {
+                    locationEditorContainer.querySelector('.locationPropZoom').addEventListener('focus', function() {
                         zoomBeforeChange = overlayOrAnnotation.data.attributes.zoom || 15;
                     });
 
 
 
-                    locationEditorContainer.find('.locationPropZoom').on('change', function() {
-                        var newZoom = parseInt($(this).val(), 10);
+                    locationEditorContainer.querySelector('.locationPropZoom').addEventListener('change', function() {
+                        var newZoom = parseInt(this.value, 10);
                         var oldZoom = zoomBeforeChange;
                         overlayOrAnnotation.data.attributes.zoom = newZoom;
                         refreshMap(overlayOrAnnotation);
@@ -518,12 +518,12 @@ FrameTrail.defineType(
                     // MARKER SHOW with Undo
                     // ============================================
                     var markerShowBeforeChange = currentMarkerShow;
-                    locationEditorContainer.find('.locationPropMarkerShow').on('focus', function() {
+                    locationEditorContainer.querySelector('.locationPropMarkerShow').addEventListener('focus', function() {
                         markerShowBeforeChange = overlayOrAnnotation.data.attributes.marker.show !== false;
                     });
 
-                    locationEditorContainer.find('.locationPropMarkerShow').on('change', function() {
-                        var newValue = $(this).is(':checked');
+                    locationEditorContainer.querySelector('.locationPropMarkerShow').addEventListener('change', function() {
+                        var newValue = this.checked;
                         var oldValue = markerShowBeforeChange;
                         overlayOrAnnotation.data.attributes.marker.show = newValue;
                         refreshMap(overlayOrAnnotation);
@@ -562,17 +562,17 @@ FrameTrail.defineType(
                     // MARKER COLOR with Undo
                     // ============================================
                     var markerColorBeforeChange = currentMarkerColor;
-                    locationEditorContainer.find('.locationPropMarkerColor').on('focus', function() {
+                    locationEditorContainer.querySelector('.locationPropMarkerColor').addEventListener('focus', function() {
                         markerColorBeforeChange = (overlayOrAnnotation.data.attributes.marker && overlayOrAnnotation.data.attributes.marker.color) || '#e74c3c';
                     });
 
-                    locationEditorContainer.find('.locationPropMarkerColor').on('input', function() {
-                        overlayOrAnnotation.data.attributes.marker.color = $(this).val();
+                    locationEditorContainer.querySelector('.locationPropMarkerColor').addEventListener('input', function() {
+                        overlayOrAnnotation.data.attributes.marker.color = this.value;
                         refreshMap(overlayOrAnnotation);
                     });
 
-                    locationEditorContainer.find('.locationPropMarkerColor').on('change', function() {
-                        var newColor = $(this).val();
+                    locationEditorContainer.querySelector('.locationPropMarkerColor').addEventListener('change', function() {
+                        var newColor = this.value;
                         var oldColor = markerColorBeforeChange;
                         overlayOrAnnotation.data.attributes.marker.color = newColor;
                         refreshMap(overlayOrAnnotation);
@@ -611,12 +611,12 @@ FrameTrail.defineType(
                     // DRAGGING with Undo
                     // ============================================
                     var draggingBeforeChange = currentDragging;
-                    locationEditorContainer.find('.locationPropDragging').on('focus', function() {
+                    locationEditorContainer.querySelector('.locationPropDragging').addEventListener('focus', function() {
                         draggingBeforeChange = overlayOrAnnotation.data.attributes.controls.dragging !== false;
                     });
 
-                    locationEditorContainer.find('.locationPropDragging').on('change', function() {
-                        var newValue = $(this).is(':checked');
+                    locationEditorContainer.querySelector('.locationPropDragging').addEventListener('change', function() {
+                        var newValue = this.checked;
                         var oldValue = draggingBeforeChange;
                         overlayOrAnnotation.data.attributes.controls.dragging = newValue;
                         refreshMap(overlayOrAnnotation);
@@ -655,12 +655,12 @@ FrameTrail.defineType(
                     // ZOOM CONTROL with Undo
                     // ============================================
                     var zoomControlBeforeChange = currentZoomControl;
-                    locationEditorContainer.find('.locationPropZoomControl').on('focus', function() {
+                    locationEditorContainer.querySelector('.locationPropZoomControl').addEventListener('focus', function() {
                         zoomControlBeforeChange = overlayOrAnnotation.data.attributes.controls.zoomControl !== false;
                     });
 
-                    locationEditorContainer.find('.locationPropZoomControl').on('change', function() {
-                        var newValue = $(this).is(':checked');
+                    locationEditorContainer.querySelector('.locationPropZoomControl').addEventListener('change', function() {
+                        var newValue = this.checked;
                         var oldValue = zoomControlBeforeChange;
                         overlayOrAnnotation.data.attributes.controls.zoomControl = newValue;
                         refreshMap(overlayOrAnnotation);
@@ -699,12 +699,12 @@ FrameTrail.defineType(
                     // SCROLL WHEEL ZOOM with Undo
                     // ============================================
                     var scrollWheelZoomBeforeChange = currentScrollWheelZoom;
-                    locationEditorContainer.find('.locationPropScrollWheelZoom').on('focus', function() {
+                    locationEditorContainer.querySelector('.locationPropScrollWheelZoom').addEventListener('focus', function() {
                         scrollWheelZoomBeforeChange = overlayOrAnnotation.data.attributes.controls.scrollWheelZoom !== false;
                     });
 
-                    locationEditorContainer.find('.locationPropScrollWheelZoom').on('change', function() {
-                        var newValue = $(this).is(':checked');
+                    locationEditorContainer.querySelector('.locationPropScrollWheelZoom').addEventListener('change', function() {
+                        var newValue = this.checked;
                         var oldValue = scrollWheelZoomBeforeChange;
                         overlayOrAnnotation.data.attributes.controls.scrollWheelZoom = newValue;
                         refreshMap(overlayOrAnnotation);

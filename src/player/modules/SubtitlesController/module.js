@@ -51,29 +51,33 @@ FrameTrail.defineModule('SubtitlesController', function(FrameTrail){
         subtitles = FrameTrail.module('HypervideoModel').subtitles;
         subtitleFiles = FrameTrail.module('HypervideoModel').subtitleFiles;
 
-        ViewVideo.CaptionContainer.empty();
-        ViewVideo.CaptionsButton.find('.captionSelectList').empty();
+        ViewVideo.CaptionContainer.innerHTML = '';
+        var _csl = ViewVideo.CaptionsButton.querySelector('.captionSelectList'); if (_csl) _csl.innerHTML = '';
 
         if ( !subtitleFiles || !subtitles ) {
 
-            ViewVideo.CaptionsButton.hide();
+            ViewVideo.CaptionsButton.style.display = 'none';
 
         } else {
 
             if (!!document.fullscreenEnabled) {
                 
                 for (var s = 0; s < subtitleFiles.length; s++) {
-                    var captionSelect = $('<div class="captionSelect" data-lang="'+ subtitleFiles[s].srclang +'" data-config="hv_config_captionsVisible">'+ FrameTrail.module('Database').subtitles[subtitleFiles[s].srclang].label +'</div>')
-                            .click(function(evt) {
-                                HypervideoModel.selectedLang = $(this).attr('data-lang');
-                                subtitles = HypervideoModel.subtitles;
+                    var captionSelect = document.createElement('div');
+                    captionSelect.className = 'captionSelect';
+                    captionSelect.dataset.lang = subtitleFiles[s].srclang;
+                    captionSelect.dataset.config = 'hv_config_captionsVisible';
+                    captionSelect.textContent = FrameTrail.module('Database').subtitles[subtitleFiles[s].srclang].label;
+                    captionSelect.addEventListener('click', function(evt) {
+                        HypervideoModel.selectedLang = this.dataset.lang;
+                        subtitles = HypervideoModel.subtitles;
 
-                                initSubtitles();
+                        initSubtitles();
 
-                                FrameTrail.changeState('hv_config_captionsVisible', true);
+                        FrameTrail.changeState('hv_config_captionsVisible', true);
 
-                            });
-                    ViewVideo.CaptionsButton.find('.captionSelectList').append(captionSelect);
+                    });
+                    var _csl2 = ViewVideo.CaptionsButton.querySelector('.captionSelectList'); if (_csl2) _csl2.appendChild(captionSelect);
                 }
 
 
@@ -81,7 +85,7 @@ FrameTrail.defineModule('SubtitlesController', function(FrameTrail){
                     subtitles[i].renderInDOM();
                 }
 
-                ViewVideo.CaptionsButton.show();
+                ViewVideo.CaptionsButton.style.display = '';
                 updateStatesOfSubtitles(FrameTrail.module('HypervideoController').currentTime);
 
                 // update state
@@ -90,7 +94,7 @@ FrameTrail.defineModule('SubtitlesController', function(FrameTrail){
 
             } else {
                 
-                ViewVideo.CaptionContainer.css('display', 'none !important');
+                ViewVideo.CaptionContainer.style.setProperty('display', 'none', 'important');
                 
                 var videoElement = FrameTrail.module('ViewVideo').Video;
                 

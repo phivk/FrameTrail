@@ -181,68 +181,87 @@ FrameTrail.defineModule('HypervideoFormBuilder', function(FrameTrail){
     /**
      * Create a new subtitle item element
      * @method createSubtitleItem
-     * @return {jQuery} jQuery element for a new subtitle item
+     * @return {HTMLElement} element for a new subtitle item
      */
     function createSubtitleItem() {
         var labels = getLabels();
         var langOptions = generateLanguageOptions();
-        
+
         var languageSelect = '<select class="subtitlesTmpKeySetter">'
                            + '    <option value="" disabled selected style="display:none;">'+ labels['GenericLanguage'] +'</option>'
                            + langOptions
                            + '</select>';
 
-        return $('<span class="subtitlesItem">'+ languageSelect +'<input type="file" name="subtitles[]"><button class="subtitlesRemove" type="button">x</button><br></span>');
+        var _w = document.createElement('div');
+        _w.innerHTML = '<span class="subtitlesItem">'+ languageSelect +'<input type="file" name="subtitles[]"><button class="subtitlesRemove" type="button">x</button><br></span>';
+        return _w.firstElementChild;
     }
 
     /**
      * Attach subtitle event handlers to a form element
      * @method attachSubtitleHandlers
-     * @param {jQuery} formElement - The form jQuery element
+     * @param {HTMLElement|jQuery} formElement - The form element (or jQuery wrapper)
      */
     function attachSubtitleHandlers(formElement) {
+        var el = (formElement instanceof Element) ? formElement : formElement[0];
+
         // Add new subtitle item
-        formElement.find('.subtitlesPlus').on('click', function() {
+        el.querySelector('.subtitlesPlus').addEventListener('click', function() {
             var subtitleItem = createSubtitleItem();
-            formElement.find('.newSubtitlesContainer').append(subtitleItem);
+            el.querySelector('.newSubtitlesContainer').append(subtitleItem);
         });
 
-        // Remove subtitle item
-        formElement.find('.newSubtitlesContainer').on('click', '.subtitlesRemove', function(evt) {
-            $(this).parent().remove();
+        // Remove subtitle item (delegated)
+        el.querySelector('.newSubtitlesContainer').addEventListener('click', function(evt) {
+            var btn = evt.target.closest('.subtitlesRemove');
+            if (btn) { btn.parentElement.remove(); }
         });
 
-        // Update file input name when language is selected
-        formElement.find('.newSubtitlesContainer').on('change', '.subtitlesTmpKeySetter', function() {
-            $(this).parent().find('input[type="file"]').attr('name', 'subtitles['+ $(this).val() +']');
+        // Update file input name when language is selected (delegated)
+        el.querySelector('.newSubtitlesContainer').addEventListener('change', function(evt) {
+            var sel = evt.target.closest('.subtitlesTmpKeySetter');
+            if (sel) {
+                sel.parentElement.querySelector('input[type="file"]').name = 'subtitles[' + sel.value + ']';
+            }
         });
     }
 
     /**
      * Populate existing subtitles in the edit dialog
      * @method populateExistingSubtitles
-     * @param {jQuery} formElement - The form jQuery element
+     * @param {HTMLElement|jQuery} formElement - The form element (or jQuery wrapper)
      * @param {Array} subtitles - Array of subtitle objects { src, srclang }
      */
     function populateExistingSubtitles(formElement, subtitles) {
         if (!subtitles || subtitles.length === 0) return;
 
+        var el = (formElement instanceof Element) ? formElement : formElement[0];
         var langMapping = FrameTrail.module('Database').subtitlesLangMapping;
-        var container = formElement.find('.existingSubtitlesContainer');
+        var container = el.querySelector('.existingSubtitlesContainer');
 
         for (var i = 0; i < subtitles.length; i++) {
             var currentSubtitle = subtitles[i];
             var langName = langMapping[currentSubtitle.srclang] || currentSubtitle.srclang;
-            
-            var existingItem = $('<div class="existingSubtitlesItem"><span>'+ langName +'</span></div>');
-            var deleteButton = $('<button class="subtitlesDelete" type="button" data-lang="'+ currentSubtitle.srclang +'"><span class="icon-cancel"></span></button>');
 
-            deleteButton.click(function(evt) {
-                $(this).parent().remove();
-                formElement.find('.subtitlesSettingsWrapper').append('<input type="hidden" name="SubtitlesToDelete[]" value="'+ $(this).attr('data-lang') +'">');
+            var _iw = document.createElement('div');
+            _iw.innerHTML = '<div class="existingSubtitlesItem"><span>'+ langName +'</span></div>';
+            var existingItem = _iw.firstElementChild;
+
+            var deleteButton = document.createElement('button');
+            deleteButton.className = 'subtitlesDelete';
+            deleteButton.type = 'button';
+            deleteButton.dataset.lang = currentSubtitle.srclang;
+            deleteButton.innerHTML = '<span class="icon-cancel"></span>';
+
+            deleteButton.addEventListener('click', function(evt) {
+                var lang = evt.currentTarget.dataset.lang;
+                evt.currentTarget.closest('.existingSubtitlesItem').remove();
+                el.querySelector('.subtitlesSettingsWrapper').insertAdjacentHTML('beforeend',
+                    '<input type="hidden" name="SubtitlesToDelete[]" value="' + lang + '">' 
+                );
             });
 
-            deleteButton.appendTo(existingItem);
+            existingItem.append(deleteButton);
             container.append(existingItem);
         }
     }

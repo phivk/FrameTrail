@@ -52,6 +52,7 @@ FrameTrail.defineModule('InteractionController', function(FrameTrail){
         scrollRightBlocked = false;
 
     var activityCheck, inactivityTimeout;
+    var _keydownHandler = null, _mousemoveHandler = null;
 
 
     /**
@@ -66,9 +67,10 @@ FrameTrail.defineModule('InteractionController', function(FrameTrail){
         scrollLeftBlocked = false,
         scrollRightBlocked = false;
 
-        var namespace = 'FrameTrail'+ $(FrameTrail.getState('target')).attr('id') + $(FrameTrail.getState('target')).attr('data-movie-id') + $(FrameTrail.getState('target')).attr('data-scene-index');
-        
-    	$(document).off('keydown.'+ namespace).on('keydown.'+ namespace, function(evt){
+        var targetEl = document.querySelector(FrameTrail.getState('target'));
+
+        if (_keydownHandler) { document.removeEventListener('keydown', _keydownHandler); }
+    	_keydownHandler = function(evt){
 
     		// Save when ctrl+s or command+s
             if ((evt.metaKey || evt.ctrlKey) && evt.keyCode == 83) {
@@ -88,7 +90,7 @@ FrameTrail.defineModule('InteractionController', function(FrameTrail){
                 if (FrameTrail.getState('editMode') &&
                     evt.target.tagName !== 'INPUT' &&
                     evt.target.tagName !== 'TEXTAREA' &&
-                    !$(evt.target).closest('.cm-editor').length) {
+                    !evt.target.closest('.cm-editor')) {
 
                     if (evt.shiftKey) {
                         // Redo: Ctrl+Shift+Z / Cmd+Shift+Z
@@ -107,7 +109,7 @@ FrameTrail.defineModule('InteractionController', function(FrameTrail){
                 if (FrameTrail.getState('editMode') &&
                     evt.target.tagName !== 'INPUT' &&
                     evt.target.tagName !== 'TEXTAREA' &&
-                    !$(evt.target).closest('.cm-editor').length) {
+                    !evt.target.closest('.cm-editor')) {
 
                     FrameTrail.module('UndoManager').redo();
                     evt.preventDefault();
@@ -123,13 +125,16 @@ FrameTrail.defineModule('InteractionController', function(FrameTrail){
 
     		return keyBindings[evt.keyCode] && keyBindings[evt.keyCode].call(this, evt);
 
-    	});
+    	};
+    	document.addEventListener('keydown', _keydownHandler);
 
-        $(document).off('mousemove.'+ namespace).on('mousemove.'+ namespace, function(evt){
+        if (_mousemoveHandler) { document.removeEventListener('mousemove', _mousemoveHandler); }
+        _mousemoveHandler = function(evt){
 
             FrameTrail.changeState('userActivity', true);
 
-        });
+        };
+        document.addEventListener('mousemove', _mousemoveHandler);
 
         initActivityCheck();
 
@@ -189,12 +194,12 @@ FrameTrail.defineModule('InteractionController', function(FrameTrail){
         var ViewVideo = FrameTrail.module('ViewVideo');
 
         if ( FrameTrail.getState('slidePosition') == 'middle'
-            && ViewVideo.AreaTopContainer.attr('data-size') != 'large'
-            && ViewVideo.AreaTopDetails.find('.collectionElement').length != 0 ) {
+            && ViewVideo.AreaTopContainer.getAttribute('data-size') != 'large'
+            && !!ViewVideo.AreaTopDetails.querySelector('.collectionElement') ) {
 
-            var activeContentViewContainer = ViewVideo.AreaTopContainer.find('.contentViewContainer.active');
-            if ( activeContentViewContainer && activeContentViewContainer.find('.collectionElement.open').length == 0 ) {
-                activeContentViewContainer.find('.collectionElement').eq(0).click();
+            var activeContentViewContainer = ViewVideo.AreaTopContainer.querySelector('.contentViewContainer.active');
+            if ( activeContentViewContainer && !activeContentViewContainer.querySelector('.collectionElement.open') ) {
+                var _first = activeContentViewContainer.querySelector('.collectionElement'); if (_first) _first.click();
             } else {
                 ViewVideo.shownDetails = 'top';
             }
@@ -233,12 +238,12 @@ FrameTrail.defineModule('InteractionController', function(FrameTrail){
         var ViewVideo = FrameTrail.module('ViewVideo');
 
         if ( FrameTrail.getState('slidePosition') == 'middle'
-            && ViewVideo.AreaBottomContainer.attr('data-size') != 'large'
-            && ViewVideo.AreaBottomDetails.find('.collectionElement').length != 0 ) {
+            && ViewVideo.AreaBottomContainer.getAttribute('data-size') != 'large'
+            && !!ViewVideo.AreaBottomDetails.querySelector('.collectionElement') ) {
 
-            var activeContentViewContainer = ViewVideo.AreaBottomContainer.find('.contentViewContainer.active');
-            if ( activeContentViewContainer && activeContentViewContainer.find('.collectionElement.open').length == 0 ) {
-                activeContentViewContainer.find('.collectionElement').eq(0).click();
+            var activeContentViewContainer = ViewVideo.AreaBottomContainer.querySelector('.contentViewContainer.active');
+            if ( activeContentViewContainer && !activeContentViewContainer.querySelector('.collectionElement.open') ) {
+                var _first = activeContentViewContainer.querySelector('.collectionElement'); if (_first) _first.click();
             } else {
                 ViewVideo.shownDetails = 'bottom';
             }
@@ -277,16 +282,22 @@ FrameTrail.defineModule('InteractionController', function(FrameTrail){
 
         if ( FrameTrail.getState('slidePosition') == 'top' ) {
 
-            var activeContentViewContainer = ViewVideo.AreaTopContainer.find('.contentViewContainer.active');
-            if ( activeContentViewContainer && activeContentViewContainer.find('.collectionElement.open').length != 0 ) {
-                activeContentViewContainer.find('.collectionElement.open').prev('.collectionElement').click();
+            var activeContentViewContainer = ViewVideo.AreaTopContainer.querySelector('.contentViewContainer.active');
+            if ( activeContentViewContainer && activeContentViewContainer.querySelector('.collectionElement.open') ) {
+                var _open = activeContentViewContainer.querySelector('.collectionElement.open');
+                var prev = _open.previousElementSibling;
+                while (prev && !prev.classList.contains('collectionElement')) { prev = prev.previousElementSibling; }
+                if (prev) prev.click();
             }
 
         } else if ( FrameTrail.getState('slidePosition') == 'bottom' ) {
 
-            var activeContentViewContainer = ViewVideo.AreaBottomContainer.find('.contentViewContainer.active');
-            if ( activeContentViewContainer && activeContentViewContainer.find('.collectionElement.open').length != 0 ) {
-                activeContentViewContainer.find('.collectionElement.open').prev('.collectionElement').click();
+            var activeContentViewContainer = ViewVideo.AreaBottomContainer.querySelector('.contentViewContainer.active');
+            if ( activeContentViewContainer && activeContentViewContainer.querySelector('.collectionElement.open') ) {
+                var _open = activeContentViewContainer.querySelector('.collectionElement.open');
+                var prev = _open.previousElementSibling;
+                while (prev && !prev.classList.contains('collectionElement')) { prev = prev.previousElementSibling; }
+                if (prev) prev.click();
             }
 
         }
@@ -319,16 +330,22 @@ FrameTrail.defineModule('InteractionController', function(FrameTrail){
 
         if ( FrameTrail.getState('slidePosition') == 'top' ) {
 
-            var activeContentViewContainer = ViewVideo.AreaTopContainer.find('.contentViewContainer.active');
-            if ( activeContentViewContainer && activeContentViewContainer.find('.collectionElement.open').length != 0 ) {
-                activeContentViewContainer.find('.collectionElement.open').next('.collectionElement').click();
+            var activeContentViewContainer = ViewVideo.AreaTopContainer.querySelector('.contentViewContainer.active');
+            if ( activeContentViewContainer && activeContentViewContainer.querySelector('.collectionElement.open') ) {
+                var _open = activeContentViewContainer.querySelector('.collectionElement.open');
+                var nxt = _open.nextElementSibling;
+                while (nxt && !nxt.classList.contains('collectionElement')) { nxt = nxt.nextElementSibling; }
+                if (nxt) nxt.click();
             }
 
         } else if ( FrameTrail.getState('slidePosition') == 'bottom' ) {
 
-            var activeContentViewContainer = ViewVideo.AreaBottomContainer.find('.contentViewContainer.active');
-            if ( activeContentViewContainer && activeContentViewContainer.find('.collectionElement.open').length != 0 ) {
-                activeContentViewContainer.find('.collectionElement.open').next('.collectionElement').click();
+            var activeContentViewContainer = ViewVideo.AreaBottomContainer.querySelector('.contentViewContainer.active');
+            if ( activeContentViewContainer && activeContentViewContainer.querySelector('.collectionElement.open') ) {
+                var _open = activeContentViewContainer.querySelector('.collectionElement.open');
+                var nxt = _open.nextElementSibling;
+                while (nxt && !nxt.classList.contains('collectionElement')) { nxt = nxt.nextElementSibling; }
+                if (nxt) nxt.click();
             }
 
         }
@@ -377,13 +394,13 @@ FrameTrail.defineModule('InteractionController', function(FrameTrail){
 
         FrameTrail.changeState('xKey', true);
 
-        $(document).one('keyup', function(evt) {
-
+        function _xKeyUpOnce(evt) {
             if ( evt.keyCode == '88' ) {
                 FrameTrail.changeState('xKey', false);
             }
-
-        });
+            document.removeEventListener('keyup', _xKeyUpOnce);
+        }
+        document.addEventListener('keyup', _xKeyUpOnce);
 
         evt.preventDefault();
         evt.stopPropagation();

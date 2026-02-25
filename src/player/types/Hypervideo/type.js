@@ -45,14 +45,15 @@ FrameTrail.defineType(
                         thumbBackground = (this.data.thumb ?
                             'background-image: url('+ FrameTrail.module('RouteNavigation').getResourceURL(this.data.thumb) +');' : '' );
 
-                        thumbElement    =   $('<div class="hypervideoThumb" data-hypervideoID="'+ hypervideoID +'" data-name="'+ this.data.name +'" style="'+ thumbBackground +'">'
-                                            + '    <div class="hypervideoThumbContent">'
-                                            + '        <a href="'+ href +'" class="hypervideoIcon"><span class="icon-play-circled"></span></a>'
-                                            + '    </div>'
-                                            + '    <div class="hypervideoTitle">'+ this.data.name +'</div>'
-                                            + '</div>');
+                    var _thumbWrapper = document.createElement('div');
+                    _thumbWrapper.innerHTML = '<div class="hypervideoThumb" data-hypervideoid="'+ hypervideoID +'" data-name="'+ this.data.name +'" style="'+ thumbBackground +'">'
+                                            + '<div class="hypervideoThumbContent">'
+                                            + '    <a href="'+ href +'" class="hypervideoIcon"><span class="icon-play-circled"></span></a>'
+                                            + '</div>'
+                                            + '<div class="hypervideoTitle">'+ this.data.name +'</div>'
+                                            + '</div>';
 
-                    return thumbElement;
+                    return _thumbWrapper.firstElementChild;
 
                 }
 

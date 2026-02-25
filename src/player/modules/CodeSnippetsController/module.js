@@ -121,22 +121,24 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
      */
     function stackTimelineView() {
 
-        var scroller = ViewVideo.CodeSnippetTimeline.find('.timelineScroller');
-        if (scroller.length) {
+        var cstEl   = ViewVideo.CodeSnippetTimeline;
+        var scroller = cstEl.querySelector('.timelineScroller');
+        if (scroller) {
             // Reset inline heights first so elements resolve to their CSS-defined height
             // (avoids circular dependency: elements height:100% → scroller min-height:100% → inflated)
-            scroller.css({ height: '', 'flex-basis': '' });
-            ViewVideo.CodeSnippetTimeline.css({ height: '', 'min-height': '', 'flex-basis': '' });
-            CollisionDetection(scroller[0], {spacing:0, includeVerticalMargins: true, exclude: '.timelinePlayhead', containerPadding: 4});
+            scroller.style.height    = '';
+            scroller.style.flexBasis = '';
+            cstEl.style.height    = '';
+            cstEl.style.minHeight = '';
+            cstEl.style.flexBasis = '';
+            CollisionDetection(scroller, {spacing:0, includeVerticalMargins: true, exclude: '.timelinePlayhead', containerPadding: 4});
             // Read the inline value CollisionDetection just wrote (not .css() which is affected by CSS min-height:100%)
-            var stackedHeight = scroller[0].style.height;
-            ViewVideo.CodeSnippetTimeline.css({
-                height:        stackedHeight,
-                'flex-basis':  stackedHeight,
-                'flex-shrink': '0'
-            });
+            var stackedHeight = scroller.style.height;
+            cstEl.style.height     = stackedHeight;
+            cstEl.style.flexBasis  = stackedHeight;
+            cstEl.style.flexShrink = '0';
         } else {
-            CollisionDetection(ViewVideo.CodeSnippetTimeline[0], {spacing:0, includeVerticalMargins: true});
+            CollisionDetection(cstEl, {spacing:0, includeVerticalMargins: true});
         }
         ViewVideo.adjustLayout();
         ViewVideo.adjustHypervideo();
@@ -158,16 +160,22 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
      */
     function resetTimelineView() {
 
-        ViewVideo.CodeSnippetTimeline.css({ height: '', 'min-height': '', 'flex-basis': '', 'flex-shrink': '' });
-        var target = ViewVideo.CodeSnippetTimeline.find('.timelineScroller');
-        if (target.length) {
-            target.css({ height: '', 'flex-basis': '' });
+        var cstEl = ViewVideo.CodeSnippetTimeline;
+        cstEl.style.height     = '';
+        cstEl.style.minHeight  = '';
+        cstEl.style.flexBasis  = '';
+        cstEl.style.flexShrink = '';
+        var target = cstEl.querySelector('.timelineScroller');
+        if (target) {
+            target.style.height    = '';
+            target.style.flexBasis = '';
         }
-        (target.length ? target : ViewVideo.CodeSnippetTimeline).children('.timelineElement').css({
-            top:    '',
-            right:  '',
-            bottom: '',
-            height: ''
+        var targetContainer = target || cstEl;
+        targetContainer.querySelectorAll(':scope > .timelineElement').forEach(function(el) {
+            el.style.top    = '';
+            el.style.right  = '';
+            el.style.bottom = '';
+            el.style.height = '';
         });
 
     };
@@ -185,66 +193,72 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
      */
     function initEditOptions() {
 
-        ViewVideo.EditingOptions.empty();
+        ViewVideo.EditingOptions.innerHTML = '';
 
-        ViewVideo.EditingOptions.append(
-            '<div class="message active"><span class="icon-code"></span> '+ labels['MessageHintDragCodeSnippets'] +'</div>'
-        );
+        var _hint = document.createElement('div');
+        _hint.className = 'message active';
+        _hint.innerHTML = '<span class="icon-code"></span> ' + labels['MessageHintDragCodeSnippets'];
+        ViewVideo.EditingOptions.appendChild(_hint);
 
         var hypervideos = FrameTrail.module('Database').hypervideos,
             thumb,
             events      = FrameTrail.module('HypervideoModel').events,
-            customCSS   = FrameTrail.module('HypervideoModel').customCSS,
+            customCSS   = FrameTrail.module('HypervideoModel').customCSS;
 
-            codeSnippetEditingOptions = $('<div class="codeSnippetEditingTabs">'
-                                    +   '    <ul>'
-                                    +   '        <li><a href="#CodeSnippetList">'+ labels['SettingsCodeSnippetAdd'] +'</a></li>'
-                                    +   '        <li><a href="#CustomCSS">'+ labels['GenericCustomCSS'] +'</a></li>'
-                                    +   '        <li class="ui-tabs-right"><a href="#EventOnEnded">onEnded</a></li>'
-                                    +   '        <li class="ui-tabs-right"><a href="#EventOnPause">onPause</a></li>'
-                                    +   '        <li class="ui-tabs-right"><a href="#EventOnPlay">onPlay</a></li>'
-                                    +   '        <li class="ui-tabs-right"><a href="#EventOnReady">onReady</a></li>'
-                                    +   '        <li class="ui-tabs-right tab-label">Events: </li>'
-                                    +   '    </ul>'
-                                    +   '    <div id="CustomCSS">'
-                                    +   '        <div class="message active">'+ labels['MessageCustomCSSHypervideo'] +'</div>'
-                                    +   '        <div style="position: relative; height: calc(100% - 23px);">'
-                                    +   '            <textarea class="customCSS cssTextarea">' + (customCSS ? customCSS : '') + '</textarea>'
-                                    +   '        </div>'
-                                    +   '    </div>'
-                                    +   '    <div id="CodeSnippetList">'
-                                    +   '    </div>'
-                                    +   '    <div id="EventOnReady">'
-                                    +   '        <textarea class="onReadyCode codeTextarea" data-eventname="onReady">' + (events.onReady ? events.onReady : '') + '</textarea>'
-                                    +   '        <button class="executeEventCode">'+ labels['SettingsTestCode'] +'</button>'
-                                    +   '    </div>'
-                                    +   '    <div id="EventOnPlay">'
-                                    +   '        <textarea class="onPlayCode codeTextarea" data-eventname="onPlay">' + (events.onPlay ? events.onPlay : '') + '</textarea>'
-                                    +   '        <button class="executeEventCode">'+ labels['SettingsTestCode'] +'</button>'
-                                    +   '    </div>'
-                                    +   '    <div id="EventOnPause">'
-                                    +   '        <textarea class="onPauseCode codeTextarea" data-eventname="onPause">' + (events.onPause ? events.onPause : '') + '</textarea>'
-                                    +   '        <button class="executeEventCode">'+ labels['SettingsTestCode'] +'</button>'
-                                    +   '    </div>'
-                                    +   '    <div id="EventOnEnded">'
-                                    +   '        <textarea class="onEndedCode codeTextarea" data-eventname="onEnded">' + (events.onEnded ? events.onEnded : '') + '</textarea>'
-                                    +   '        <button class="executeEventCode">'+ labels['SettingsTestCode'] +'</button>'
-                                    +   '    </div>'
-                                    +   '</div>')
-                                    .tabs({
-                                        heightStyle: 'fill',
-                                        activate: function(event, ui) {
-                                            var cm6Wrapper = ui.newPanel.find('.cm6-wrapper')[0];
-                                            if (cm6Wrapper && cm6Wrapper._cm6view) { cm6Wrapper._cm6view.requestMeasure(); }
-                                        }
-                                    }),
+            var _cseWrapper = document.createElement('div');
+            _cseWrapper.innerHTML = '<div class="codeSnippetEditingTabs">' +
+                '    <ul>' +
+                '        <li><a href="#CodeSnippetList">'+ labels['SettingsCodeSnippetAdd'] +'</a></li>' +
+                '        <li><a href="#CustomCSS">'+ labels['GenericCustomCSS'] +'</a></li>' +
+                '        <li class="ui-tabs-right"><a href="#EventOnEnded">onEnded</a></li>' +
+                '        <li class="ui-tabs-right"><a href="#EventOnPause">onPause</a></li>' +
+                '        <li class="ui-tabs-right"><a href="#EventOnPlay">onPlay</a></li>' +
+                '        <li class="ui-tabs-right"><a href="#EventOnReady">onReady</a></li>' +
+                '        <li class="ui-tabs-right tab-label">Events: </li>' +
+                '    </ul>' +
+                '    <div id="CustomCSS">' +
+                '        <div class="message active">'+ labels['MessageCustomCSSHypervideo'] +'</div>' +
+                '        <div style="position: relative; height: calc(100% - 23px);">' +
+                '            <textarea class="customCSS cssTextarea">' + (customCSS ? customCSS : '') + '</textarea>' +
+                '        </div>' +
+                '    </div>' +
+                '    <div id="CodeSnippetList">' +
+                '    </div>' +
+                '    <div id="EventOnReady">' +
+                '        <textarea class="onReadyCode codeTextarea" data-eventname="onReady">' + (events.onReady ? events.onReady : '') + '</textarea>' +
+                '        <button class="executeEventCode">'+ labels['SettingsTestCode'] +'</button>' +
+                '    </div>' +
+                '    <div id="EventOnPlay">' +
+                '        <textarea class="onPlayCode codeTextarea" data-eventname="onPlay">' + (events.onPlay ? events.onPlay : '') + '</textarea>' +
+                '        <button class="executeEventCode">'+ labels['SettingsTestCode'] +'</button>' +
+                '    </div>' +
+                '    <div id="EventOnPause">' +
+                '        <textarea class="onPauseCode codeTextarea" data-eventname="onPause">' + (events.onPause ? events.onPause : '') + '</textarea>' +
+                '        <button class="executeEventCode">'+ labels['SettingsTestCode'] +'</button>' +
+                '    </div>' +
+                '    <div id="EventOnEnded">' +
+                '        <textarea class="onEndedCode codeTextarea" data-eventname="onEnded">' + (events.onEnded ? events.onEnded : '') + '</textarea>' +
+                '        <button class="executeEventCode">'+ labels['SettingsTestCode'] +'</button>' +
+                '    </div>' +
+                '</div>';
+            var codeSnippetEditingOptions = _cseWrapper.firstElementChild;
 
-            codeSnippetList = codeSnippetEditingOptions.find('#CodeSnippetList');
+        FTTabs(codeSnippetEditingOptions, {
+            heightStyle: 'fill',
+            activate: function(event, ui) {
+                var cm6Wrapper = ui.newPanel.querySelector('.cm6-wrapper');
+                if (cm6Wrapper && cm6Wrapper._cm6view) { cm6Wrapper._cm6view.requestMeasure(); }
+            }
+        });
 
-        codeSnippetEditingOptions.find('.executeEventCode').click(function(evt) {
-            var textarea = $(evt.currentTarget).siblings('textarea');
+            var codeSnippetList = codeSnippetEditingOptions.querySelector('#CodeSnippetList');
+
+        codeSnippetEditingOptions.addEventListener('click', function(evt) {
+            var btn = evt.target.closest('.executeEventCode');
+            if (!btn) { return; }
+            var textarea = btn.parentElement.querySelector('textarea');
             try {
-                var testRun = new Function('FrameTrail', textarea.val());
+                var testRun = new Function('FrameTrail', textarea.value);
                 testRun(FrameTrail);
             } catch (exception) {
                 alert(labels['MessageCodeContainsErrors'] +': '+ exception.message);
@@ -252,17 +266,19 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
         });
 
         // Append Editing Options
-        ViewVideo.EditingOptions.append(codeSnippetEditingOptions);
+        ViewVideo.EditingOptions.appendChild(codeSnippetEditingOptions);
 
         /* Append custom code snippet element to 'Custom Code Snippet' tab */
         // TODO: Move to separate function
-        var codeSnippetElement = $('<div class="codeSnippetElement" data-type="codesnippet">'
-                   + '                  <div class="codeSnippetTitle">'+ labels['SettingsCodeSnippetCustom'] +'</div>'
-                   + '              </div>');
+        var _cseWrapper2 = document.createElement('div');
+        _cseWrapper2.innerHTML = '<div class="codeSnippetElement" data-type="codesnippet">' +
+            '<div class="codeSnippetTitle">'+ labels['SettingsCodeSnippetCustom'] +'</div>' +
+            '</div>';
+        var codeSnippetElement = _cseWrapper2.firstElementChild;
 
         (function() {
             var dragClone = null;
-            interact(codeSnippetElement[0]).draggable({
+            interact(codeSnippetElement).draggable({
                 listeners: {
                     start: function(e) {
                         var rect = e.target.getBoundingClientRect();
@@ -300,15 +316,18 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
         // Init CodeMirror 6 editors for Events
 
         var CM6 = window.FrameTrailCM6;
-        var codeTextareas = codeSnippetEditingOptions.find('.codeTextarea');
+        var codeTextareas = Array.from(codeSnippetEditingOptions.querySelectorAll('.codeTextarea'));
 
         for (var i=0; i<codeTextareas.length; i++) {
             (function(textarea) {
-                var cm6Wrapper = $('<div class="cm6-wrapper" style="height: 100%;"></div>');
-                textarea.after(cm6Wrapper).hide();
+                var cm6Wrapper = document.createElement('div');
+                cm6Wrapper.className = 'cm6-wrapper';
+                cm6Wrapper.style.height = '100%';
+                textarea.insertAdjacentElement('afterend', cm6Wrapper);
+                textarea.style.display = 'none';
                 var codeEditor = new CM6.EditorView({
                     state: CM6.EditorState.create({
-                        doc: textarea.val(),
+                        doc: textarea.value,
                         extensions: [
                             CM6.oneDark,
                             CM6.lineNumbers(),
@@ -324,28 +343,31 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
                             CM6.EditorView.updateListener.of(function(update) {
                                 if (!update.docChanged) { return; }
                                 var currentEvents = FrameTrail.module('HypervideoModel').events;
-                                currentEvents[textarea.data('eventname')] = update.state.doc.toString();
+                                currentEvents[textarea.dataset.eventname] = update.state.doc.toString();
                                 FrameTrail.module('HypervideoModel').events = currentEvents;
                             })
                         ]
                     }),
-                    parent: cm6Wrapper[0]
+                    parent: cm6Wrapper
                 });
-                cm6Wrapper[0]._cm6view = codeEditor;
-            })(codeTextareas.eq(i));
+                cm6Wrapper._cm6view = codeEditor;
+            })(codeTextareas[i]);
         }
 
         // Init CodeMirror 6 editors for Custom CSS
 
-        var cssTextareas = codeSnippetEditingOptions.find('.cssTextarea');
+        var cssTextareas = Array.from(codeSnippetEditingOptions.querySelectorAll('.cssTextarea'));
 
         for (var i=0; i<cssTextareas.length; i++) {
             (function(textarea) {
-                var cm6Wrapper = $('<div class="cm6-wrapper" style="height: 100%;"></div>');
-                textarea.after(cm6Wrapper).hide();
+                var cm6Wrapper = document.createElement('div');
+                cm6Wrapper.className = 'cm6-wrapper';
+                cm6Wrapper.style.height = '100%';
+                textarea.insertAdjacentElement('afterend', cm6Wrapper);
+                textarea.style.display = 'none';
                 var codeEditor = new CM6.EditorView({
                     state: CM6.EditorState.create({
-                        doc: textarea.val(),
+                        doc: textarea.value,
                         extensions: [
                             CM6.oneDark,
                             CM6.lineNumbers(),
@@ -366,10 +388,10 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
                             })
                         ]
                     }),
-                    parent: cm6Wrapper[0]
+                    parent: cm6Wrapper
                 });
-                cm6Wrapper[0]._cm6view = codeEditor;
-            })(cssTextareas.eq(i));
+                cm6Wrapper._cm6view = codeEditor;
+            })(cssTextareas[i]);
         }
 
 
@@ -389,15 +411,15 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
 
         if (active) {
 
-            interact(ViewVideo.CodeSnippetTimeline[0]).dropzone({
+            interact(ViewVideo.CodeSnippetTimeline).dropzone({
                 accept:  '.codeSnippetElement',
                 overlap: 'pointer',
-                ondropactivate:   function(e) { $(e.target).addClass('droppableActive'); },
-                ondropdeactivate: function(e) { $(e.target).removeClass('droppableActive droppableHover'); ViewVideo.PlayerProgress.find('.ui-slider-handle').removeClass('highlight'); },
-                ondragenter:      function(e) { $(e.target).addClass('droppableHover'); ViewVideo.PlayerProgress.find('.ui-slider-handle').addClass('highlight'); },
-                ondragleave:      function(e) { $(e.target).removeClass('droppableHover'); ViewVideo.PlayerProgress.find('.ui-slider-handle').removeClass('highlight'); },
+                ondropactivate:   function(e) { e.target.classList.add('droppableActive'); },
+                ondropdeactivate: function(e) { e.target.classList.remove('droppableActive', 'droppableHover'); var _sh = ViewVideo.PlayerProgress.querySelector('.ui-slider-handle'); if (_sh) _sh.classList.remove('highlight'); },
+                ondragenter:      function(e) { e.target.classList.add('droppableHover'); var _sh = ViewVideo.PlayerProgress.querySelector('.ui-slider-handle'); if (_sh) _sh.classList.add('highlight'); },
+                ondragleave:      function(e) { e.target.classList.remove('droppableHover'); var _sh = ViewVideo.PlayerProgress.querySelector('.ui-slider-handle'); if (_sh) _sh.classList.remove('highlight'); },
                 ondrop: function(e) {
-                    var codeSnippetTitle = $(e.relatedTarget).find('.codeSnippetTitle').text(),
+                    var codeSnippetTitle = e.relatedTarget.querySelector('.codeSnippetTitle').textContent,
                         startTime        = FrameTrail.module('HypervideoController').currentTime,
                         newCodeSnippet   = FrameTrail.module('HypervideoModel').newCodeSnippet({
                             "start":   startTime,
@@ -440,13 +462,13 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
                         });
                     })(JSON.parse(JSON.stringify(newCodeSnippet.data)));
 
-                    ViewVideo.PlayerProgress.find('.ui-slider-handle').removeClass('highlight');
+                    var _sh = ViewVideo.PlayerProgress.querySelector('.ui-slider-handle'); if (_sh) _sh.classList.remove('highlight');
                 }
             });
 
         } else {
 
-            interact(ViewVideo.CodeSnippetTimeline[0]).unset();
+            interact(ViewVideo.CodeSnippetTimeline).unset();
 
         }
 
@@ -561,8 +583,8 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
     function onViewSizeChanged() {
 
         if (codeSnippetInFocus && codeSnippetInFocus.cm6Wrapper) {
-            var editorHeight = ViewVideo.EditPropertiesContainer.height() - 70;
-            codeSnippetInFocus.cm6Wrapper.css('height', editorHeight + 'px');
+            var editorHeight = ViewVideo.EditPropertiesContainer.offsetHeight - 70;
+            codeSnippetInFocus.cm6Wrapper.style.height = editorHeight + 'px';
         }
 
     }
@@ -593,10 +615,11 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
 
         for (var idx in codeSnippets) {
 
-            codeSnippets[idx].codeSnippetElement.removeClass('open');
-            codeSnippets[idx].tileElement.removeClass('open');
+            codeSnippets[idx].codeSnippetElement.classList.remove('open');
+            codeSnippets[idx].tileElement.classList.remove('open');
 
-            codeSnippets[idx].codeSnippetElement.children('iframe').attr('src', '');
+            var iframeEl = codeSnippets[idx].codeSnippetElement.querySelector('iframe');
+            if (iframeEl) { iframeEl.setAttribute('src', ''); }
 
         }
 
@@ -607,10 +630,11 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
                 fragmentSplit  = codeSnippet.data.href.split('#'),
                 randomizedLink = fragmentSplit[0] + '&v=' + randomVersion + '#' + fragmentSplit[1];
 
-            codeSnippet.codeSnippetElement.children('iframe').attr('src', randomizedLink);
+            var iframeEl2 = codeSnippet.codeSnippetElement.querySelector('iframe');
+            if (iframeEl2) { iframeEl2.setAttribute('src', randomizedLink); }
 
-            codeSnippet.codeSnippetElement.addClass('open');
-            codeSnippet.tileElement.addClass('open');
+            codeSnippet.codeSnippetElement.classList.add('open');
+            codeSnippet.tileElement.classList.add('open');
             ViewVideo.shownDetails = 'codeSnippets';
 
         } else {
@@ -678,7 +702,7 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
      */
     function initCustomCSS(cssString) {
 
-        $('head').append('<style class="FrameTrailCustomCSS" type="text/css">'+ cssString +'</style>');
+        document.head.insertAdjacentHTML('beforeend', '<style class="FrameTrailCustomCSS" type="text/css">'+ cssString +'</style>');
 
     }
 
@@ -690,7 +714,8 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
      * @param {String} cssString
      */
     function updateCustomCSS(cssString) {
-        $('head > style.FrameTrailCustomCSS').html(cssString);
+        var _csStyle = document.head.querySelector('style.FrameTrailCustomCSS');
+        if (_csStyle) { _csStyle.textContent = cssString; }
 
     }
 

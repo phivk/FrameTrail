@@ -19,19 +19,23 @@
 FrameTrail.defineModule('InterfaceModal', function(FrameTrail){
 
 
-	var loadingScreen = $('<div class="loadingScreen">'
+	var _lsWrapper = document.createElement('div');
+	_lsWrapper.innerHTML = '<div class="loadingScreen">'
 						+ '    <div class="loadingTitle"></div>'
 						+ '    <div class="workingSpinner"></div>'
-						+ '</div>'),
-		statusMessage = $('<div class="statusMessage message"></div>');
+						+ '</div>';
+	var loadingScreen = _lsWrapper.firstElementChild;
+	var statusMessage = document.createElement('div');
+	statusMessage.className = 'statusMessage message';
 
-	$(FrameTrail.getState('target')).append(loadingScreen);
-   	$(FrameTrail.getState('target')).append(statusMessage);
+	var targetEl = document.querySelector(FrameTrail.getState('target'));
+	targetEl.append(loadingScreen);
+   	targetEl.append(statusMessage);
 
 	// Show immediately so no app content is visible before the loading screen covers it.
-	// jQuery's fadeIn() is a no-op on an already-visible element, so showLoadingScreen()
-	// still works correctly for subsequent calls (after hideLoadingScreen() hides it).
-	loadingScreen.show().addClass('active');
+	// showLoadingScreen() still works correctly for subsequent calls (after hideLoadingScreen() hides it).
+	loadingScreen.style.display = '';
+	loadingScreen.classList.add('active');
 
 
 
@@ -41,7 +45,9 @@ FrameTrail.defineModule('InterfaceModal', function(FrameTrail){
 	 * @param {String} msg
 	 */
 	function showStatusMessage(msg){
-		statusMessage.text(msg).addClass('active').removeClass('error success');
+		statusMessage.textContent = msg;
+		statusMessage.classList.add('active');
+		statusMessage.classList.remove('error', 'success');
 	}
 
 	/**
@@ -50,7 +56,9 @@ FrameTrail.defineModule('InterfaceModal', function(FrameTrail){
 	 * @param {String} msg
 	 */
 	function showErrorMessage(msg){
-		statusMessage.text(msg).addClass('active error').removeClass('success');
+		statusMessage.textContent = msg;
+		statusMessage.classList.add('active', 'error');
+		statusMessage.classList.remove('success');
 	}
 
 	/**
@@ -59,7 +67,9 @@ FrameTrail.defineModule('InterfaceModal', function(FrameTrail){
 	 * @param {String} msg
 	 */
 	function showSuccessMessage(msg){
-		statusMessage.text(msg).addClass('active success').removeClass('error');
+		statusMessage.textContent = msg;
+		statusMessage.classList.add('active', 'success');
+		statusMessage.classList.remove('error');
 	}
 
 
@@ -73,12 +83,14 @@ FrameTrail.defineModule('InterfaceModal', function(FrameTrail){
 		if (typeof delay === 'number') {
 
 			window.setTimeout(function() {
-				statusMessage.text('').removeClass('active');
+				statusMessage.textContent = '';
+				statusMessage.classList.remove('active');
 			}, delay);
 
 		} else {
 
-			statusMessage.text('').removeClass('active');
+			statusMessage.textContent = '';
+			statusMessage.classList.remove('active');
 
 		}
 
@@ -90,8 +102,14 @@ FrameTrail.defineModule('InterfaceModal', function(FrameTrail){
 	 */
 	function showLoadingScreen() {
 
-		loadingScreen.fadeIn(300, 'swing', function() {
-			$(this).addClass('active');
+		loadingScreen.style.display = '';
+		var anim = loadingScreen.animate(
+			[{ opacity: '0' }, { opacity: '1' }],
+			{ duration: 300, easing: 'ease-in-out', fill: 'forwards' }
+		);
+		anim.finished.then(function() {
+			anim.cancel();
+			loadingScreen.classList.add('active');
 		});
 
 	}
@@ -102,23 +120,35 @@ FrameTrail.defineModule('InterfaceModal', function(FrameTrail){
 	 */
 	function hideLoadingScreen() {
 
-		loadingScreen.delay( 1300 ).animate({
-			top: - 100 + '%',
-			backgroundColor: 'rgba(47, 50, 58,0)'
-		}, 400, function() {
-			$(this).hide().removeClass('active').css({
-				top: '',
-				backgroundColor: ''
+		var loadingTitle = loadingScreen.querySelector('.loadingTitle');
+
+		// Animate loadingTitle: delay 1000ms, duration 600ms
+		setTimeout(function() {
+			var anim = loadingTitle.animate(
+				[{ top: '20px', fontSize: '10px' }],
+				{ duration: 600, easing: 'ease', fill: 'forwards' }
+			);
+			anim.finished.then(function() {
+				anim.cancel();
+				loadingTitle.style.top = '';
+				loadingTitle.style.fontSize = '';
 			});
-		}).children('.loadingTitle').delay( 1000 ).animate({
-			top: 20 + 'px',
-			fontSize: 10 + 'px'
-		}, 600, function() {
-			$(this).css({
-				top: '',
-				fontSize: ''
+		}, 1000);
+
+		// Animate loadingScreen: delay 1300ms, duration 400ms
+		setTimeout(function() {
+			var anim = loadingScreen.animate(
+				[{ top: '-100%', backgroundColor: 'rgba(47, 50, 58, 0)' }],
+				{ duration: 400, easing: 'ease', fill: 'forwards' }
+			);
+			anim.finished.then(function() {
+				anim.cancel();
+				loadingScreen.style.display = 'none';
+				loadingScreen.classList.remove('active');
+				loadingScreen.style.top = '';
+				loadingScreen.style.backgroundColor = '';
 			});
-		});
+		}, 1300);
 
 	}
 
@@ -129,7 +159,7 @@ FrameTrail.defineModule('InterfaceModal', function(FrameTrail){
 	 */
 	function setLoadingTitle(title) {
 
-		loadingScreen.children('.loadingTitle').html(title);
+		loadingScreen.querySelector('.loadingTitle').innerHTML = title;
 
 	}
 

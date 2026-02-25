@@ -39,7 +39,8 @@ FrameTrail.defineModule('Interface', function(FrameTrail){
 
   	FrameTrail.initModule('ViewResources');
 
-  	var mainContainer = $('<div class="mainContainer"></div>');
+  	var mainContainer = document.createElement('div');
+  	mainContainer.className = 'mainContainer';
 
 
 
@@ -68,7 +69,7 @@ FrameTrail.defineModule('Interface', function(FrameTrail){
 		FrameTrail.module('Sidebar').create();
 
 
-		$(FrameTrail.getState('target')).append(mainContainer);
+		document.querySelector(FrameTrail.getState('target')).append(mainContainer);
 
 
 		FrameTrail.module('ViewOverview').create();
@@ -99,15 +100,14 @@ FrameTrail.defineModule('Interface', function(FrameTrail){
 	 */
 	function initWindowResizeHandler() {
 
-		var _window = $(FrameTrail.getState('target')),
+		var targetEl = document.querySelector(FrameTrail.getState('target')),
 			resizeTimeout = false;
 
-		$(window).resize(function(){
+		window.addEventListener('resize', function(){
 
-		 	var width   = _window.width(),
-		 		height  = _window.height();
+		 	var width   = targetEl.offsetWidth,
+		 		height  = targetEl.offsetHeight;
 
-		 	//$('.mainContainer').height( height - FrameTrail.module('Titlebar').height );
 		 	FrameTrail.changeState('viewSize', [width, height]);
 
 		 	if ( resizeTimeout !== false ) {
@@ -121,7 +121,7 @@ FrameTrail.defineModule('Interface', function(FrameTrail){
 		});
 
 
-		$(window).resize();
+		window.dispatchEvent(new Event('resize'));
 
 
 
@@ -139,9 +139,9 @@ FrameTrail.defineModule('Interface', function(FrameTrail){
 	function toggleSidebarOpen(opened) {
 
 		if (opened) {
-			mainContainer.addClass('sidebarOpen');
+			mainContainer.classList.add('sidebarOpen');
 		} else {
-			mainContainer.removeClass('sidebarOpen');
+			mainContainer.classList.remove('sidebarOpen');
 		}
 
 		var ViewVideo = FrameTrail.module('ViewVideo');
@@ -164,13 +164,15 @@ FrameTrail.defineModule('Interface', function(FrameTrail){
 
         if (editMode) {
 
-            $(FrameTrail.getState('target')).addClass('editActive');
-            mainContainer.addClass('editActive').attr('data-edit-mode', editMode);
+            document.querySelector(FrameTrail.getState('target')).classList.add('editActive');
+            mainContainer.classList.add('editActive');
+            mainContainer.dataset.editMode = editMode;
 
         } else {
 
-            $(FrameTrail.getState('target')).removeClass('editActive');
-            mainContainer.removeClass('editActive').removeAttr('data-edit-mode');
+            document.querySelector(FrameTrail.getState('target')).classList.remove('editActive');
+            mainContainer.classList.remove('editActive');
+            mainContainer.removeAttribute('data-edit-mode');
 
         }
 

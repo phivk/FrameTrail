@@ -15,11 +15,10 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
 
     var labels = FrameTrail.module('Localization').labels;
 
-    var domElement = $(    '<div class="viewOverview">'
-                        +  '    <div class="overviewList"></div>'
-                        +  '</div>'),
-
-        OverviewList          = domElement.find('.overviewList'),
+    var _domWrapper = document.createElement('div');
+    _domWrapper.innerHTML = '<div class="viewOverview"><div class="overviewList"></div></div>';
+    var domElement = _domWrapper.firstElementChild,
+        OverviewList = domElement.querySelector('.overviewList'),
 
         animationElement      = null,
         lastSelectedThumb     = null;
@@ -34,7 +33,9 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
      */
     function create() {
 
-        $(FrameTrail.getState('target')).find('.mainContainer').append(domElement);
+        var _t = FrameTrail.getState('target');
+        var _targetEl = (typeof _t === 'string') ? document.querySelector(_t) : _t;
+        _targetEl.querySelector('.mainContainer').append(domElement);
 
         toggleViewMode(FrameTrail.getState('viewMode'));
         toggleEditMode(FrameTrail.getState('editMode'));
@@ -58,7 +59,7 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
             editMode = FrameTrail.getState('editMode');
             userColor = FrameTrail.getState('userColor');
 
-        OverviewList.find('.hypervideoThumb').remove();
+        OverviewList.querySelectorAll('.hypervideoThumb').forEach(function(el) { el.remove(); });
 
         for (var id in hypervideos) {
 
@@ -74,18 +75,23 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
 
                 if ( (admin || owner) && editMode && FrameTrail.module('StorageManager').canSave() ) {
 
-                    var hypervideoOptions = $('<div class="hypervideoOptions"></div>');
-                    var editButton = $('<button class="hypervideoEditButton" data-tooltip-bottom="'+ labels['SettingsHypervideoSettings'] +'"><span class="icon-pencil"></span></button>');
-                    
+                    var hypervideoOptions = document.createElement('div');
+                    hypervideoOptions.className = 'hypervideoOptions';
+
+                    var editButton = document.createElement('button');
+                    editButton.className = 'hypervideoEditButton';
+                    editButton.setAttribute('data-tooltip-bottom', labels['SettingsHypervideoSettings']);
+                    editButton.innerHTML = '<span class="icon-pencil"></span>';
+
                     // Capture the hypervideoID in the closure to avoid referencing the last thumb
                     (function(hypervideoID) {
-                        editButton.click(function(evt) {
+                        editButton.addEventListener('click', function(evt) {
                             evt.preventDefault();
                             evt.stopPropagation();
                             FrameTrail.module('HypervideoSettingsDialog').open(hypervideoID);
                         });
                     })(id);
-                    
+
                     hypervideoOptions.append(editButton);
                     thumb.append(hypervideoOptions);
 
@@ -94,26 +100,27 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
                 /*
                 if (owner && editMode ) {
 
-                    thumb.addClass('owner').css('border-color', '#' + userColor);
+                    thumb.classList.add('owner');
+                    thumb.style.borderColor = '#' + userColor;
 
                 }
                 */
 
-                if ( thumb.attr('data-hypervideoid') == FrameTrail.module('RouteNavigation').hypervideoID ) {
-                    thumb.addClass('activeHypervideo');
+                if ( thumb.dataset.hypervideoid == FrameTrail.module('RouteNavigation').hypervideoID ) {
+                    thumb.classList.add('activeHypervideo');
                 }
 
-                thumb.css('transition-duration', '0ms');
+                thumb.style.transitionDuration = '0ms';
 
                 // open hypervideo without reloading the page
-                thumb.click(function(evt) {
+                thumb.addEventListener('click', function(evt) {
 
                     // prevent opening href location
                     evt.preventDefault();
                     evt.stopPropagation();
 
-                    var clickedThumb = $(this);
-                    var newHypervideoID = clickedThumb.attr('data-hypervideoid'),
+                    var clickedThumb = this;
+                    var newHypervideoID = clickedThumb.dataset.hypervideoid,
                         update = (FrameTrail.module('RouteNavigation').hypervideoID == undefined) ? false : true;
 
                     // Store reference to clicked thumb for animation
@@ -125,7 +132,7 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
 
                         // Store the clicked thumb for animation in toggleViewMode
                         lastSelectedThumb = clickedThumb;
-                        
+
                         // Just switch to video view - animation will happen in toggleViewMode
                         FrameTrail.changeState('viewMode', 'video');
 
@@ -133,10 +140,10 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
 
                         if ( FrameTrail.getState('editMode') && FrameTrail.getState('unsavedChanges') ) {
 
-                            var confirmDialog = $('<div class="confirmSaveChanges">'
-                                                + '    <div class="message active">'+ labels['MessageSaveChanges'] +'</div>'
-                                                + '    <p>'+ labels['MessageSaveChangesQuestion'] +'</p>'
-                                                + '</div>');
+                            var confirmDialog = document.createElement('div');
+                            confirmDialog.className = 'confirmSaveChanges';
+                            confirmDialog.innerHTML = '<div class="message active">'+ labels['MessageSaveChanges'] +'</div>'
+                                                    + '<p>'+ labels['MessageSaveChangesQuestion'] +'</p>';
 
                             var confirmDialogCtrl = Dialog({
                               title:     labels['MessageSaveChangesQuestionShort'],
@@ -161,8 +168,9 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
 
                                         confirmDialogCtrl.close();
 
-                                        OverviewList.find('.hypervideoThumb.activeHypervideo').removeClass('activeHypervideo');
-                                        OverviewList.find('.hypervideoThumb[data-hypervideoid="'+ newHypervideoID +'"]').addClass('activeHypervideo');
+                                        OverviewList.querySelectorAll('.hypervideoThumb.activeHypervideo').forEach(function(el) { el.classList.remove('activeHypervideo'); });
+                                        var _newThumb = OverviewList.querySelector('.hypervideoThumb[data-hypervideoid="'+ newHypervideoID +'"]');
+                                        if (_newThumb) _newThumb.classList.add('activeHypervideo');
 
                                         FrameTrail.module('HypervideoModel').updateHypervideo(newHypervideoID, true, update);
 
@@ -189,8 +197,9 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
 
                         } else {
 
-                            OverviewList.find('.hypervideoThumb.activeHypervideo').removeClass('activeHypervideo');
-                            OverviewList.find('.hypervideoThumb[data-hypervideoid="'+ newHypervideoID +'"]').addClass('activeHypervideo');
+                            OverviewList.querySelectorAll('.hypervideoThumb.activeHypervideo').forEach(function(el) { el.classList.remove('activeHypervideo'); });
+                            var _newThumb = OverviewList.querySelector('.hypervideoThumb[data-hypervideoid="'+ newHypervideoID +'"]');
+                            if (_newThumb) _newThumb.classList.add('activeHypervideo');
 
                             history.pushState({
                                 editMode: FrameTrail.getState('editMode')
@@ -230,7 +239,7 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
         }
 
         changeViewSize();
-        OverviewList.find('.hypervideoThumb').css('transition-duration', '');
+        OverviewList.querySelectorAll('.hypervideoThumb').forEach(function(el) { el.style.transitionDuration = ''; });
 
     }
 
@@ -292,16 +301,18 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
     /**
      * Animates a hypervideo thumb from its grid position to full mainContainer size
      * @method animateThumbToFullSize
-     * @param {jQuery} thumbElement The thumb element to animate
+     * @param {HTMLElement} thumbElement The thumb element to animate
      * @param {Function} callback Function to call after animation completes
      * @param {Object} preCapturedRect Optional: thumb rect captured before overview is hidden
      */
     function animateThumbToFullSize(thumbElement, callback, preCapturedRect) {
-        var mainContainer = $(FrameTrail.getState('target')).find('.mainContainer');
-        var mainContainerRect = mainContainer[0].getBoundingClientRect();
-        
+        var _t = FrameTrail.getState('target');
+        var _targetEl = (typeof _t === 'string') ? document.querySelector(_t) : _t;
+        var mainContainer = _targetEl.querySelector('.mainContainer');
+        var mainContainerRect = mainContainer.getBoundingClientRect();
+
         // Use pre-captured rect if provided, otherwise get it now
-        var thumbRect = preCapturedRect || thumbElement[0].getBoundingClientRect();
+        var thumbRect = preCapturedRect || thumbElement.getBoundingClientRect();
 
         // Calculate positions relative to mainContainer
         var startWidth = thumbRect.width;
@@ -310,18 +321,19 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
         var endHeight = mainContainerRect.height;
 
         // Get video container background color (like closing animation)
-        var viewVideo = $(FrameTrail.getState('target')).find('.viewVideo');
-        var videoContainer = viewVideo.find('.videoContainer').first();
+        var viewVideo = _targetEl.querySelector('.viewVideo');
+        var videoContainer = viewVideo ? viewVideo.querySelector('.videoContainer') : null;
         var bgColor = '#000';
-        if (videoContainer.length > 0) {
-            var computedStyle = window.getComputedStyle(videoContainer[0]);
+        if (videoContainer) {
+            var computedStyle = window.getComputedStyle(videoContainer);
             if (computedStyle.backgroundColor && computedStyle.backgroundColor !== 'rgba(0, 0, 0, 0)') {
                 bgColor = computedStyle.backgroundColor;
             }
         }
 
         // Create simple, scalable animation element (like closing animation)
-        animationElement = $('<div></div>').css({
+        animationElement = document.createElement('div');
+        Object.assign(animationElement.style, {
             position: 'fixed',
             left: thumbRect.left + 'px',
             top: thumbRect.top + 'px',
@@ -329,7 +341,7 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
             height: startHeight + 'px',
             margin: '0',
             padding: '0',
-            zIndex: 10000,
+            zIndex: '10000',
             pointerEvents: 'none',
             transformOrigin: 'top left',
             overflow: 'hidden',
@@ -338,14 +350,14 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
             boxSizing: 'border-box',
             opacity: '1'
         });
-        $('body').append(animationElement);
+        document.body.append(animationElement);
 
         // Hide the original thumb temporarily
-        thumbElement.css('opacity', '0');
+        thumbElement.style.opacity = '0';
 
-        // Animate to full size with opacity change
+        // Animate to full size
         if (typeof anime !== 'undefined' && typeof anime.animate === 'function') {
-            anime.animate(animationElement[0], {
+            anime.animate(animationElement, {
                 left: mainContainerRect.left + 'px',
                 top: mainContainerRect.top + 'px',
                 width: endWidth + 'px',
@@ -358,24 +370,22 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
                         animationElement.remove();
                         animationElement = null;
                     }
-                    thumbElement.css('opacity', '');
+                    thumbElement.style.opacity = '';
                     if (callback) callback();
                 }
             });
         } else {
-            // Fallback if anime.js is not available
-            animationElement.animate({
-                left: mainContainerRect.left + 'px',
-                top: mainContainerRect.top + 'px',
-                width: endWidth + 'px',
-                height: endHeight + 'px',
-                opacity: 1
-            }, 400, function() {
+            // Web Animations API fallback
+            var anim = animationElement.animate([
+                { left: thumbRect.left + 'px', top: thumbRect.top + 'px', width: startWidth + 'px', height: startHeight + 'px', opacity: '1' },
+                { left: mainContainerRect.left + 'px', top: mainContainerRect.top + 'px', width: endWidth + 'px', height: endHeight + 'px', opacity: '1' }
+            ], { duration: 400, easing: 'ease-in-out', fill: 'forwards' });
+            anim.finished.then(function() {
                 if (animationElement) {
                     animationElement.remove();
                     animationElement = null;
                 }
-                thumbElement.css('opacity', '');
+                thumbElement.style.opacity = '';
                 if (callback) callback();
             });
         }
@@ -390,29 +400,25 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
     function animateFullSizeToThumb(hypervideoID, capturedVideoContainer, mainContainerRect, callback) {
         // First, ensure overview is visible so thumbs can be positioned
         // Show overview but keep it visually behind the animation (it's already added to DOM)
-        domElement.addClass('active');
+        domElement.classList.add('active');
         changeViewSize();
-        
+
         // Function to find thumb and perform animation
         function findThumbAndAnimate() {
-            // Find the thumb element - try both attribute variations
-            var thumbElement = OverviewList.find('.hypervideoThumb[data-hypervideoid="' + hypervideoID + '"]');
-            if (thumbElement.length === 0) {
-                // Try alternative attribute name (capital ID)
-                thumbElement = OverviewList.find('.hypervideoThumb[data-hypervideoID="' + hypervideoID + '"]');
-            }
-            
-            if (thumbElement.length === 0) {
+            // Find the thumb element (lowercase attribute set by renderThumb)
+            var thumbElement = OverviewList.querySelector('.hypervideoThumb[data-hypervideoid="' + hypervideoID + '"]');
+
+            if (!thumbElement) {
                 // Thumb not found yet, try again after a short delay
                 window.setTimeout(findThumbAndAnimate, 50);
                 return;
             }
-            
+
             // Get thumb position relative to viewport
-            var thumbRect = thumbElement[0].getBoundingClientRect();
-            
+            var thumbRect = thumbElement.getBoundingClientRect();
+
             // Check if thumb has valid dimensions and position (not 0x0 and not at 0,0)
-            if (thumbRect.width === 0 || thumbRect.height === 0 || 
+            if (thumbRect.width === 0 || thumbRect.height === 0 ||
                 (thumbRect.left === 0 && thumbRect.top === 0 && thumbRect.width < 100)) {
                 // Thumb not positioned yet, try again
                 window.setTimeout(findThumbAndAnimate, 50);
@@ -420,21 +426,19 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
             }
 
             // Create animation element - use a simple scalable representation
-            // Instead of cloning the video container (which has fixed-size video elements that don't scale),
-            // create a simple div that scales smoothly like the thumb does in the opening animation
-            var computedStyle = capturedVideoContainer && capturedVideoContainer.length > 0 
-                ? window.getComputedStyle(capturedVideoContainer[0]) 
+            var computedStyle = capturedVideoContainer
+                ? window.getComputedStyle(capturedVideoContainer)
                 : null;
-            
+
             // Get background color from the video container
             var bgColor = '#000';
             if (computedStyle && computedStyle.backgroundColor && computedStyle.backgroundColor !== 'rgba(0, 0, 0, 0)') {
                 bgColor = computedStyle.backgroundColor;
             }
-            
+
             // Create a simple, scalable div (no nested elements with fixed sizes)
-            // Add active border like the active hypervideo thumb has
-            animationElement = $('<div></div>').css({
+            animationElement = document.createElement('div');
+            Object.assign(animationElement.style, {
                 position: 'fixed',
                 left: mainContainerRect.left + 'px',
                 top: mainContainerRect.top + 'px',
@@ -442,23 +446,22 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
                 height: mainContainerRect.height + 'px',
                 margin: '0',
                 padding: '0',
-                zIndex: 10000,
+                zIndex: '10000',
                 pointerEvents: 'none',
                 transformOrigin: 'top left',
                 overflow: 'hidden',
                 backgroundColor: bgColor,
                 border: '2px solid var(--primary-fg-color)',
-                // Ensure all children scale with the element
                 transform: 'scale(1)',
                 boxSizing: 'border-box',
                 opacity: '1'
             });
-            
-            $('body').append(animationElement);
 
-            // Animate to thumb position with opacity change
+            document.body.append(animationElement);
+
+            // Animate to thumb position
             if (typeof anime !== 'undefined' && typeof anime.animate === 'function') {
-                anime.animate(animationElement[0], {
+                anime.animate(animationElement, {
                     left: thumbRect.left + 'px',
                     top: thumbRect.top + 'px',
                     width: thumbRect.width + 'px',
@@ -475,14 +478,12 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
                     }
                 });
             } else {
-                // Fallback if anime.js is not available
-                animationElement.animate({
-                    left: thumbRect.left + 'px',
-                    top: thumbRect.top + 'px',
-                    width: thumbRect.width + 'px',
-                    height: thumbRect.height + 'px',
-                    opacity: 1
-                }, 400, function() {
+                // Web Animations API fallback
+                var anim = animationElement.animate([
+                    { left: mainContainerRect.left + 'px', top: mainContainerRect.top + 'px', width: mainContainerRect.width + 'px', height: mainContainerRect.height + 'px', opacity: '1' },
+                    { left: thumbRect.left + 'px', top: thumbRect.top + 'px', width: thumbRect.width + 'px', height: thumbRect.height + 'px', opacity: '1' }
+                ], { duration: 400, easing: 'ease-in-out', fill: 'forwards' });
+                anim.finished.then(function() {
                     if (animationElement) {
                         animationElement.remove();
                         animationElement = null;
@@ -491,7 +492,7 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
                 });
             }
         }
-        
+
         // Wait for overview to be visible and layout to complete
         // Use requestAnimationFrame to ensure DOM is updated, then wait for layout
         requestAnimationFrame(function() {
@@ -516,16 +517,18 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
             var currentHypervideoID = FrameTrail.module('RouteNavigation').hypervideoID;
             if (oldViewMode === 'video' && currentHypervideoID) {
                 // Capture video view immediately and synchronously (before other modules hide it)
-                var viewVideo = $(FrameTrail.getState('target')).find('.viewVideo');
-                var videoContainer = viewVideo.find('.videoContainer').first();
-                var mainContainer = $(FrameTrail.getState('target')).find('.mainContainer');
-                var mainContainerRect = mainContainer.length > 0 ? mainContainer[0].getBoundingClientRect() : null;
-                
+                var _t = FrameTrail.getState('target');
+                var _targetEl = (typeof _t === 'string') ? document.querySelector(_t) : _t;
+                var viewVideo = _targetEl.querySelector('.viewVideo');
+                var videoContainer = viewVideo ? viewVideo.querySelector('.videoContainer') : null;
+                var mainContainer = _targetEl.querySelector('.mainContainer');
+                var mainContainerRect = mainContainer ? mainContainer.getBoundingClientRect() : null;
+
                 // Check if we have a video view to animate from
-                if (viewVideo.length > 0 && videoContainer.length > 0 && mainContainerRect) {
+                if (viewVideo && videoContainer && mainContainerRect) {
                     // Store reference to video container for animation
                     var capturedContainer = videoContainer;
-                    
+
                     // Delay showing overview until animation completes
                     animateFullSizeToThumb(currentHypervideoID, capturedContainer, mainContainerRect, function() {
                         FrameTrail.module('Titlebar').title = labels['GenericOverview'];
@@ -533,65 +536,63 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
                 } else {
                     // Video view not available, just show overview
                     changeViewSize();
-                    domElement.addClass('active');
+                    domElement.classList.add('active');
                     FrameTrail.module('Titlebar').title = labels['GenericOverview'];
                 }
             } else {
                 changeViewSize();
-                domElement.addClass('active');
+                domElement.classList.add('active');
                 FrameTrail.module('Titlebar').title = labels['GenericOverview'];
             }
         } else if (viewMode === 'video' && oldViewMode === 'overview') {
             // Animate from thumb position to full size when switching from overview to video
             // Check if animation is already in progress
-            if (animationElement && animationElement.length > 0) {
+            if (animationElement) {
                 // Animation already in progress, just hide overview
-                domElement.removeClass('active');
+                domElement.classList.remove('active');
                 return;
             }
-            
+
             // Use requestAnimationFrame to ensure ViewVideo has processed first, then hide it
-            var viewVideo = $(FrameTrail.getState('target')).find('.viewVideo');
+            var _t2 = FrameTrail.getState('target');
+            var _targetEl2 = (typeof _t2 === 'string') ? document.querySelector(_t2) : _t2;
+            var viewVideo2 = _targetEl2.querySelector('.viewVideo');
             requestAnimationFrame(function() {
                 // Hide video view after ViewVideo has shown it
-                viewVideo.removeClass('active');
-                
+                if (viewVideo2) viewVideo2.classList.remove('active');
+
                 // Use the last selected thumb if available (from click), otherwise find active thumb
                 var thumbToAnimate = lastSelectedThumb;
-                
-                if (!thumbToAnimate || thumbToAnimate.length === 0) {
+
+                if (!thumbToAnimate) {
                     // Find the active hypervideo thumb
                     var currentHypervideoID = FrameTrail.module('RouteNavigation').hypervideoID;
                     if (currentHypervideoID) {
-                        thumbToAnimate = OverviewList.find('.hypervideoThumb.activeHypervideo');
-                        if (thumbToAnimate.length === 0) {
-                            // Try alternative attribute name
-                            thumbToAnimate = OverviewList.find('.hypervideoThumb[data-hypervideoid="' + currentHypervideoID + '"]');
-                            if (thumbToAnimate.length === 0) {
-                                thumbToAnimate = OverviewList.find('.hypervideoThumb[data-hypervideoID="' + currentHypervideoID + '"]');
-                            }
+                        thumbToAnimate = OverviewList.querySelector('.hypervideoThumb.activeHypervideo');
+                        if (!thumbToAnimate) {
+                            thumbToAnimate = OverviewList.querySelector('.hypervideoThumb[data-hypervideoid="' + currentHypervideoID + '"]');
                         }
                     }
                 }
-                
-                if (thumbToAnimate && thumbToAnimate.length > 0) {
+
+                if (thumbToAnimate) {
                     // Clear the stored thumb
                     lastSelectedThumb = null;
-                    
+
                     // Capture thumb position while overview is still visible
-                    var thumbRect = thumbToAnimate[0].getBoundingClientRect();
-                    
+                    var thumbRect = thumbToAnimate.getBoundingClientRect();
+
                     // Only animate if thumb has valid position (not at 0,0 with tiny size)
-                    if (thumbRect.width > 0 && thumbRect.height > 0 && 
+                    if (thumbRect.width > 0 && thumbRect.height > 0 &&
                         !(thumbRect.left === 0 && thumbRect.top === 0 && thumbRect.width < 100)) {
-                        
+
                         // Hide overview during animation
-                        domElement.removeClass('active');
-                        
+                        domElement.classList.remove('active');
+
                         // Animate thumb to full size, passing the pre-captured rect
                         animateThumbToFullSize(thumbToAnimate, function() {
                             // Animation complete, now show the video view
-                            viewVideo.addClass('active');
+                            if (viewVideo2) viewVideo2.classList.add('active');
                             // Ensure ViewVideo is properly initialized
                             if (FrameTrail.module('ViewVideo') && FrameTrail.module('ViewVideo').onChange && FrameTrail.module('ViewVideo').onChange.viewMode) {
                                 FrameTrail.module('ViewVideo').onChange.viewMode('video');
@@ -599,17 +600,17 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
                         }, thumbRect);
                     } else {
                         // Thumb position not valid, show video view immediately
-                        viewVideo.addClass('active');
-                        domElement.removeClass('active');
+                        if (viewVideo2) viewVideo2.classList.add('active');
+                        domElement.classList.remove('active');
                     }
                 } else {
                     // Thumb not found, show video view immediately
-                    viewVideo.addClass('active');
-                    domElement.removeClass('active');
+                    if (viewVideo2) viewVideo2.classList.add('active');
+                    domElement.classList.remove('active');
                 }
             });
         } else if (viewMode != 'resources') {
-            domElement.removeClass('active');
+            domElement.classList.remove('active');
         }
 
     };

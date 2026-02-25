@@ -17,7 +17,7 @@
 
         <script type="text/javascript" src="_lib/hlsjs/hls.min.js"></script>
         <script type="text/javascript" src="_lib/parsers/vtt.min.js"></script>
-        <script type="text/javascript" src="_lib/jquery/jquery-3.7.1.min.js"></script>
+
         <script type="text/javascript" src="_lib/interactjs/interact.min.js"></script>
         <script type="text/javascript" src="_lib/quill/quill.min.js"></script>
         <script type="text/javascript" src="_lib/leaflet/leaflet.js"></script>
@@ -132,7 +132,7 @@
         <script type="text/javascript" src="player/types/ContentView/type.js"></script>
 
         <script type="text/javascript" src="_lib/dialog/dialog.js"></script>
-        <script type="text/javascript" src="_lib/jquery.tabs/jquery.tabs.js"></script>
+        <script type="text/javascript" src="_lib/vanilla-tabs/vanilla-tabs.js"></script>
         <script type="text/javascript" src="_shared/frametrail-core/storage/StorageAdapter.js"></script>
         <script type="text/javascript" src="_shared/frametrail-core/storage/StorageAdapterServer.js"></script>
         <script type="text/javascript" src="_shared/frametrail-core/storage/StorageAdapterLocal.js"></script>
@@ -172,22 +172,20 @@
 
         <script type="text/javascript">
 
-            $(document).ready( function() {
+            document.addEventListener('DOMContentLoaded', function() {
 
                 // Check Setup
                 if (!!document.location.host) {
-                    $.ajax({
-                        "type": "POST",
-                        url: "_server/ajaxServer.php",
-                        data: {"a":"setupCheck"},
-                        dataType: "json",
-                        success: function(ret) {
-                            if (ret["code"] != "1") {
-                                var setupUrl = window.location.href.replace('resources.html', '') + 'setup.html';
-                                window.location.replace(setupUrl);
-                            }
+                    fetch('_server/ajaxServer.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: 'a=setupCheck'
+                    }).then(function(r) { return r.json(); }).then(function(ret) {
+                        if (ret["code"] != "1") {
+                            var setupUrl = window.location.href.replace('resources.html', '') + 'setup.html';
+                            window.location.replace(setupUrl);
                         }
-                    });
+                    }).catch(function() {});
                 }
                 
                 

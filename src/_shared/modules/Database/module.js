@@ -51,19 +51,27 @@
         var cachePolicy = (config.allowCaching) ? 'default' : 'no-cache';
         var method      = (opts.type || 'GET').toUpperCase();
         var fetchOpts   = { cache: cachePolicy };
+        var url         = opts.url;
+
+        // Prepend serverPath (e.g. '../') to relative _server/ and _data/ URLs when
+        // FrameTrail is loaded from a subdirectory (replaces the old $.ajaxPrefilter).
+        var serverPath = FrameTrail.getState('serverPath');
+        if (serverPath && typeof url === 'string' && /^(_server|_data)\//.test(url)) {
+            url = serverPath + url;
+        }
 
         if (method === 'POST') {
             fetchOpts.method = 'POST';
             fetchOpts.body   = new URLSearchParams(opts.data || {});
         }
 
-        fetch(opts.url, fetchOpts)
+        fetch(url, fetchOpts)
             .then(function (r) {
                 if (!r.ok) { throw new Error('HTTP ' + r.status); }
                 return (opts.dataType === 'text') ? r.text() : r.json();
             })
             .then(done)
-            .catch(fail || function () {});
+            .catch(function(err) { if (fail) fail(err); });
     }
 
 
@@ -172,7 +180,9 @@
             // Apply global theme only if no per-hypervideo theme is set
             var hvTheme = hypervideo && hypervideo.config && hypervideo.config.theme;
             if (!hvTheme) {
-                $(FrameTrail.getState('target')).attr('data-frametrail-theme', config.theme || '');
+                var _t = FrameTrail.getState('target');
+                var _themeEl = (typeof _t === 'string') ? document.querySelector(_t) : _t;
+                if (_themeEl) _themeEl.setAttribute('data-frametrail-theme', config.theme || '');
             }
 
             return success.call(this);
@@ -185,7 +195,9 @@
             // Apply global theme only if no per-hypervideo theme is set
             var hvTheme = hypervideo && hypervideo.config && hypervideo.config.theme;
             if (!hvTheme) {
-                $(FrameTrail.getState('target')).attr('data-frametrail-theme', config.theme || '');
+                var _t = FrameTrail.getState('target');
+                var _themeEl = (typeof _t === 'string') ? document.querySelector(_t) : _t;
+                if (_themeEl) _themeEl.setAttribute('data-frametrail-theme', config.theme || '');
             }
             success.call(this);
         }
@@ -1513,7 +1525,8 @@
      */
     function saveGlobalCSS(callback) {
 
-        var styles = $('head > style.FrameTrailGlobalCustomCSS').html();
+        var _cssEl = document.querySelector('head > style.FrameTrailGlobalCustomCSS');
+        var styles = _cssEl ? _cssEl.textContent : '';
 
         var storageMode = FrameTrail.getState('storageMode');
 

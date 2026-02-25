@@ -17,7 +17,8 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
 
     var labels = FrameTrail.module('Localization').labels;
 
-    var domElement = $(   '<div class="titlebar">'
+    var _tbWrapper = document.createElement('div');
+    _tbWrapper.innerHTML = '<div class="titlebar">'
                             + '  <div class="titlebarViewMode">'
                             + '      <button data-viewmode="overview" data-tooltip-bottom-left="'+ labels['GenericOverview'] +'"><span class="icon-overview"></span></button>'
                             + '      <button data-viewmode="video"><span class="icon-hypervideo"></span></button>'
@@ -32,21 +33,22 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
                             + '      <button class="leaveEditModeButton" data-tooltip-bottom-right="'+ labels['GenericEditEnd'] +'"><span class="icon-ok-squared"></span></button>'
                             + '  </div>'
                             + '  <div class="sharingWidget"><button class="sharingWidgetButton" data-tooltip-bottom-right="'+ labels['GenericShareEmbed'] +'"><span class="icon-share"></span></button></div>'
-                            + '</div>'
-                          ),
-    TitlebarViewMode        = domElement.find('.titlebarViewMode'),
-    TitlebarTitle           = domElement.find('.titlebarTitle'),
-    HypervideoEditButton    = domElement.find('.hypervideoEditButton'),
-    ManageResourcesButton   = domElement.find('.manageResourcesButton'),
-    AdminSettingsButton     = domElement.find('.adminSettingsButton'),
-    StartEditButton         = domElement.find('.startEditButton'),
-    LeaveEditModeButton     = domElement.find('.leaveEditModeButton'),
-    UserSettingsButton      = domElement.find('.userSettingsButton'),
-    SharingWidget           = domElement.find('.sharingWidget');
+                            + '</div>';
+    var domElement = _tbWrapper.firstElementChild;
+
+    var TitlebarViewMode        = domElement.querySelector('.titlebarViewMode'),
+        TitlebarTitle           = domElement.querySelector('.titlebarTitle'),
+        HypervideoEditButton    = domElement.querySelector('.hypervideoEditButton'),
+        ManageResourcesButton   = domElement.querySelector('.manageResourcesButton'),
+        AdminSettingsButton     = domElement.querySelector('.adminSettingsButton'),
+        StartEditButton         = domElement.querySelector('.startEditButton'),
+        LeaveEditModeButton     = domElement.querySelector('.leaveEditModeButton'),
+        UserSettingsButton      = domElement.querySelector('.userSettingsButton'),
+        SharingWidget           = domElement.querySelector('.sharingWidget');
 
 
-    StartEditButton.click(function(){
-        
+    StartEditButton.addEventListener('click', function(){
+
         if (FrameTrail.module('RouteNavigation').environment.iframe) {
             FrameTrail.module('ViewVideo').toggleNativeFullscreenState(false, 'open');
         }
@@ -70,31 +72,32 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
         );
     });
 
-    LeaveEditModeButton.click(function(){
+    LeaveEditModeButton.addEventListener('click', function(){
         FrameTrail.module('HypervideoModel').leaveEditMode();
     });
 
-    UserSettingsButton.click(function(){
+    UserSettingsButton.addEventListener('click', function(){
         FrameTrail.module('UserManagement').showAdministrationBox();
     });
 
-    domElement.find('.sidebarToggleButton').click(function(){
+    domElement.querySelector('.sidebarToggleButton') && domElement.querySelector('.sidebarToggleButton').addEventListener('click', function(){
 
         FrameTrail.changeState('sidebarOpen', ! FrameTrail.getState('sidebarOpen'));
 
     });
 
     if (!FrameTrail.module('RouteNavigation').hypervideoID) {
-        domElement.find('button[data-viewmode="video"]').hide();
+        domElement.querySelector('button[data-viewmode="video"]').style.display = 'none';
     }
 
-    TitlebarViewMode.children().click(function(evt){
-        FrameTrail.changeState('viewMode', ($(this).attr('data-viewmode')));
+    TitlebarViewMode.addEventListener('click', function(evt) {
+        var btn = evt.target.closest('button');
+        if (btn) { FrameTrail.changeState('viewMode', btn.getAttribute('data-viewmode')); }
     });
 
 
 
-    SharingWidget.find('.sharingWidgetButton').click(function(){
+    SharingWidget.querySelector('.sharingWidgetButton').addEventListener('click', function(){
 
         var RouteNavigation = FrameTrail.module('RouteNavigation'),
             baseUrl = window.location.href.split('?')[0].split('#'),
@@ -107,16 +110,20 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
             iframeUrl += 'hypervideo='+ RouteNavigation.hypervideoID;
         }
 
-        var shareDialog = $('<div class="shareDialog">'
+        var _sdWrapper = document.createElement('div');
+        _sdWrapper.innerHTML = '<div class="shareDialog">'
                         + '    <div>Link</div>'
                         + '    <input type="text" value="'+ url +'"/>'
                         + '    <div>Embed Code</div>'
                         + '    <textarea style="height: 100px;" readonly><iframe width="800" height="600" scrolling="no" src="'+ iframeUrl +'" frameborder="0" allowfullscreen></iframe></textarea>'
-                        + '</div>');
+                        + '</div>';
+        var shareDialog = _sdWrapper.firstElementChild;
 
-        shareDialog.find('input[type="text"], textarea').click(function() {
-            $(this).focus();
-            $(this).select();
+        shareDialog.querySelectorAll('input[type="text"], textarea').forEach(function(el) {
+            el.addEventListener('click', function() {
+                this.focus();
+                this.select();
+            });
         });
 
         var shareDialogCtrl = Dialog({
@@ -140,27 +147,29 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
 
     });
 
-    domElement.find('.logoutButton').click(function(){
+    domElement.querySelector('.logoutButton').addEventListener('click', function(){
 
         FrameTrail.module('HypervideoModel').leaveEditMode(true);
 
     });
 
-    ManageResourcesButton.click(function() {
+    ManageResourcesButton.addEventListener('click', function() {
         FrameTrail.module('ViewResources').open();
     });
 
-    AdminSettingsButton.click(function() {
+    AdminSettingsButton.addEventListener('click', function() {
         FrameTrail.module('AdminSettingsDialog').open();
     });
 
     // Use event delegation to handle clicks even if button is recreated
-    domElement.on('click', '.hypervideoEditButton', function(evt) {
-        evt.preventDefault();
-        evt.stopPropagation();
-        var hypervideoID = FrameTrail.module('RouteNavigation').hypervideoID;
-        if (hypervideoID) {
-            FrameTrail.module('HypervideoSettingsDialog').open(hypervideoID);
+    domElement.addEventListener('click', function(evt) {
+        if (evt.target.closest('.hypervideoEditButton')) {
+            evt.preventDefault();
+            evt.stopPropagation();
+            var hypervideoID = FrameTrail.module('RouteNavigation').hypervideoID;
+            if (hypervideoID) {
+                FrameTrail.module('HypervideoSettingsDialog').open(hypervideoID);
+            }
         }
     });
 
@@ -203,7 +212,7 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
             //domElement.find('#SidebarToggleButton, #SharingWidgetButton').hide();
         }
 
-        $(FrameTrail.getState('target')).append(domElement);
+        document.querySelector(FrameTrail.getState('target')).append(domElement);
 
     }
 
@@ -218,11 +227,11 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
 
         if (opened) {
 
-            domElement.addClass('sidebarOpen');
+            domElement.classList.add('sidebarOpen');
 
         } else {
 
-            domElement.removeClass('sidebarOpen');
+            domElement.classList.remove('sidebarOpen');
 
         }
 
@@ -238,9 +247,9 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
     function toogleUnsavedChanges(aBoolean) {
 
         if(aBoolean){
-            TitlebarViewMode.find('[data-viewmode="video"]').addClass('unsavedChanges');
+            TitlebarViewMode.querySelector('[data-viewmode="video"]').classList.add('unsavedChanges');
         }else{
-            TitlebarViewMode.find('[data-viewmode="video"]').removeClass('unsavedChanges');
+            TitlebarViewMode.querySelector('[data-viewmode="video"]').classList.remove('unsavedChanges');
         }
 
     }
@@ -254,7 +263,7 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
     function toggleViewMode(viewMode) {
 
         if (FrameTrail.module('RouteNavigation').hypervideoID) {
-            domElement.find('button[data-viewmode="video"]').show();
+            domElement.querySelector('button[data-viewmode="video"]').style.display = '';
 
             // count visible hypervideos
             var hypervideos = FrameTrail.module('Database').hypervideos,
@@ -267,20 +276,20 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
 
             // hide 'Overview' and 'Video' controls when there's only one hypervideo
             if (visibleCount == 1) {
-                TitlebarViewMode.addClass('hidden');
+                TitlebarViewMode.classList.add('hidden');
             }
 
         }
 
-        TitlebarViewMode.children().removeClass('active');
+        TitlebarViewMode.querySelectorAll('button').forEach(function(b) { b.classList.remove('active'); });
 
-        domElement.find('[data-viewmode=' + viewMode + ']').addClass('active');
+        domElement.querySelector('[data-viewmode=' + viewMode + ']').classList.add('active');
 
         // Show/hide hypervideo edit button based on view mode, edit mode, and permission
         if (viewMode === 'video' && FrameTrail.getState('editMode') && FrameTrail.module('RouteNavigation').hypervideoID && canEditCurrentHypervideo()) {
-            HypervideoEditButton.addClass('active');
+            HypervideoEditButton.classList.add('active');
         } else {
-            HypervideoEditButton.removeClass('active');
+            HypervideoEditButton.classList.remove('active');
         }
 
     }
@@ -296,54 +305,54 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
 
         if (editMode) {
 
-            domElement.addClass('editActive');
+            domElement.classList.add('editActive');
 
             if (oldEditMode === false) {
 
-                StartEditButton.hide();
-                LeaveEditModeButton.show();
-                ManageResourcesButton.show();
-                SharingWidget.hide();
+                StartEditButton.style.display = 'none';
+                LeaveEditModeButton.style.display = '';
+                ManageResourcesButton.style.display = '';
+                SharingWidget.style.display = 'none';
 
                 // Show hypervideo edit button if in video view and user has permission
                 if (FrameTrail.getState('viewMode') === 'video' && FrameTrail.module('RouteNavigation').hypervideoID && canEditCurrentHypervideo()) {
-                    HypervideoEditButton.addClass('active');
+                    HypervideoEditButton.classList.add('active');
                 }
 
                 // Show admin settings button if server-authenticated admin (not guest)
                 if (FrameTrail.module('UserManagement').userRole === 'admin' &&
                     !FrameTrail.module('UserManagement').isGuestMode()) {
-                    AdminSettingsButton.show();
+                    AdminSettingsButton.style.display = '';
                 }
 
                 // Show logout button for all logged-in users (including guest)
                 if (FrameTrail.getState('loggedIn')) {
-                    domElement.find('.logoutButton').show();
+                    domElement.querySelector('.logoutButton').style.display = '';
                 }
 
                 // Show user settings only for server-authenticated (non-guest) users
                 if (FrameTrail.getState('loggedIn') && !FrameTrail.module('UserManagement').isGuestMode()) {
-                    UserSettingsButton.show();
+                    UserSettingsButton.style.display = '';
                 }
 
             }
 
         } else {
 
-            domElement.removeClass('editActive');
+            domElement.classList.remove('editActive');
 
             // Edit is always available — guest mode allows editing in all storage modes
-            StartEditButton.show();
+            StartEditButton.style.display = '';
 
-            LeaveEditModeButton.hide();
-            ManageResourcesButton.hide();
-            HypervideoEditButton.removeClass('active');
-            AdminSettingsButton.hide();
-            SharingWidget.show();
+            LeaveEditModeButton.style.display = 'none';
+            ManageResourcesButton.style.display = 'none';
+            HypervideoEditButton.classList.remove('active');
+            AdminSettingsButton.style.display = 'none';
+            SharingWidget.style.display = '';
 
             // Hide user settings and logout buttons when leaving edit mode
-            UserSettingsButton.hide();
-            domElement.find('.logoutButton').hide();
+            UserSettingsButton.style.display = 'none';
+            domElement.querySelector('.logoutButton').style.display = 'none';
 
         }
 
@@ -362,11 +371,11 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
             // Only show buttons if in edit mode
             if (FrameTrail.getState('editMode')) {
                 // Logout for all logged-in users
-                domElement.find('.logoutButton').show();
+                domElement.querySelector('.logoutButton').style.display = '';
 
                 // User settings only for server-authenticated (non-guest) users
                 if (!FrameTrail.module('UserManagement').isGuestMode()) {
-                    UserSettingsButton.show();
+                    UserSettingsButton.style.display = '';
                 }
             }
 
@@ -374,14 +383,14 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
             if (FrameTrail.module('UserManagement').userRole === 'admin' &&
                 !FrameTrail.module('UserManagement').isGuestMode() &&
                 FrameTrail.getState('editMode')) {
-                AdminSettingsButton.show();
+                AdminSettingsButton.style.display = '';
             }
 
         } else {
 
-            domElement.find('.logoutButton').hide();
-            UserSettingsButton.hide();
-            AdminSettingsButton.hide();
+            domElement.querySelector('.logoutButton').style.display = 'none';
+            UserSettingsButton.style.display = 'none';
+            AdminSettingsButton.style.display = 'none';
 
         }
 
@@ -412,7 +421,6 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
 
 
 
-
     return {
 
         onChange: {
@@ -432,15 +440,18 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
          */
         set title(aString) {
             var titleText = aString;
-            var editButton = TitlebarTitle.find('.hypervideoEditButton');
-            TitlebarTitle.empty();
+            var editButton = TitlebarTitle.querySelector('.hypervideoEditButton');
+            TitlebarTitle.innerHTML = '';
 
             // Show folder name before title when in local storage mode
             if (FrameTrail.getState('storageMode') === 'local') {
                 var adapter = FrameTrail.module('StorageManager').getAdapter();
                 if (adapter && adapter.folderName) {
-                    var folderIndicator = $('<span class="localFolderIndicator" title="Click to change folder">\ud83d\udcc2 '+ adapter.folderName +'</span>');
-                    folderIndicator.click(function() {
+                    var folderIndicator = document.createElement('span');
+                    folderIndicator.className = 'localFolderIndicator';
+                    folderIndicator.title = 'Click to change folder';
+                    folderIndicator.textContent = '\ud83d\udcc2 ' + adapter.folderName;
+                    folderIndicator.addEventListener('click', function() {
                         FrameTrail.module('StorageManager').switchToLocal().then(function() {
                             // Clear hash so we reload to overview, not a hypervideo ID from the old folder
                             window.location.hash = '';
@@ -453,9 +464,9 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
                 }
             }
 
-            TitlebarTitle.append('<span>' + titleText + '</span>');
+            TitlebarTitle.insertAdjacentHTML('beforeend', '<span>' + titleText + '</span>');
 
-            if (editButton.length > 0) {
+            if (editButton) {
                 TitlebarTitle.append(editButton);
             }
         },
@@ -467,7 +478,7 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
          * @readOnly
          */
         get height() {
-            return FrameTrail.getState('fullscreen') ? 0 : domElement.height();
+            return FrameTrail.getState('fullscreen') ? 0 : domElement.offsetHeight;
         },
 
         create: create

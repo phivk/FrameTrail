@@ -21,7 +21,8 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
 
     var labels = FrameTrail.module('Localization').labels;
 
-    var domElement  = $(  '<div class="viewVideo">'
+    var _dvv = document.createElement('div');
+    _dvv.innerHTML = '<div class="viewVideo">'
                         + '    <div class="areaLeftDetails layoutAreaDetails" data-area="areaLeft"></div>'
                         + '    <div class="slideArea">'
                         + '        <div class="areaTopDetails layoutAreaDetails" data-area="areaTop"></div>'
@@ -118,62 +119,63 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
                         + '    <div class="areaRightDetails layoutAreaDetails" data-area="areaRight"></div>'
                         + '    <div class="otherUsersContainer"></div>'
                         + '    <div class="hypervideoLayoutContainer"></div>'
-                        + '</div>'),
+                        + '</div>';
+    var domElement = _dvv.firstElementChild,
 
 
-        slideArea                   = domElement.children('.slideArea'),
+        slideArea                   = domElement.querySelector('.slideArea'),
 
-        PlayerContainer             = domElement.find('.playerContainer'),
-        HypervideoContainer         = domElement.find('.hypervideoContainer'),
-        VideoContainer              = domElement.find('.videoContainer'),
-        Hypervideo                  = domElement.find('.hypervideo'),
-        CaptionContainer            = domElement.find('.captionContainer'),
+        PlayerContainer             = domElement.querySelector('.playerContainer'),
+        HypervideoContainer         = domElement.querySelector('.hypervideoContainer'),
+        VideoContainer              = domElement.querySelector('.videoContainer'),
+        Hypervideo                  = domElement.querySelector('.hypervideo'),
+        CaptionContainer            = domElement.querySelector('.captionContainer'),
 
-        AreaTopDetails              = domElement.find('.areaTopDetails'),
-        AreaTopContainer            = domElement.find('.areaTopContainer'),
+        AreaTopDetails              = domElement.querySelector('.areaTopDetails'),
+        AreaTopContainer            = domElement.querySelector('.areaTopContainer'),
 
-        AreaBottomDetails           = domElement.find('.areaBottomDetails'),
-        AreaBottomContainer         = domElement.find('.areaBottomContainer'),
+        AreaBottomDetails           = domElement.querySelector('.areaBottomDetails'),
+        AreaBottomContainer         = domElement.querySelector('.areaBottomContainer'),
 
-        AreaLeftDetails             = domElement.find('.areaLeftDetails'),
-        AreaLeftContainer           = domElement.find('.areaLeftContainer'),
+        AreaLeftDetails             = domElement.querySelector('.areaLeftDetails'),
+        AreaLeftContainer           = domElement.querySelector('.areaLeftContainer'),
 
-        AreaRightDetails            = domElement.find('.areaRightDetails'),
-        AreaRightContainer          = domElement.find('.areaRightContainer'),
+        AreaRightDetails            = domElement.querySelector('.areaRightDetails'),
+        AreaRightContainer          = domElement.querySelector('.areaRightContainer'),
 
-        AnnotationTimeline          = domElement.find('.annotationTimeline'),
+        AnnotationTimeline          = domElement.querySelector('.annotationTimeline'),
 
-        OverlayTimeline             = domElement.find('.overlayTimeline'),
-        OverlayContainer            = domElement.find('.overlayContainer'),
+        OverlayTimeline             = domElement.querySelector('.overlayTimeline'),
+        OverlayContainer            = domElement.querySelector('.overlayContainer'),
 
-        CodeSnippetTimeline         = domElement.find('.codeSnippetTimeline'),
+        CodeSnippetTimeline         = domElement.querySelector('.codeSnippetTimeline'),
 
-        Controls                    = domElement.find('.controls'),
-        AnnotationSearchButton      = domElement.find('.annotationSearchButton'),
-        InfoAreaRight               = domElement.find('.infoAreaRight'),
-        EditingOptions              = domElement.find('.editingOptions'),
-        OtherUsersContainer         = domElement.find('.otherUsersContainer'),
-        HypervideoLayoutContainer   = domElement.find('.hypervideoLayoutContainer'),
+        Controls                    = domElement.querySelector('.controls'),
+        AnnotationSearchButton      = domElement.querySelector('.annotationSearchButton'),
+        InfoAreaRight               = domElement.querySelector('.infoAreaRight'),
+        EditingOptions              = domElement.querySelector('.editingOptions'),
+        OtherUsersContainer         = domElement.querySelector('.otherUsersContainer'),
+        HypervideoLayoutContainer   = domElement.querySelector('.hypervideoLayoutContainer'),
 
 
-        CurrentTime                 = domElement.find('.currentTime'),
-        TotalDuration               = domElement.find('.totalDuration'),
-        CurrentTimeFull             = domElement.find('.currentTimeFull'),
-        TotalDurationFull           = domElement.find('.totalDurationFull'),
-        PlayButton                  = domElement.find('.playButton'),
-        VideoStartOverlay           = domElement.find('.videoStartOverlay'),
-        VolumeButton                = domElement.find('.volumeButton'),
-        FullscreenButton            = domElement.find('.fullscreenButton'),
+        CurrentTime                 = domElement.querySelector('.currentTime'),
+        TotalDuration               = domElement.querySelector('.totalDuration'),
+        CurrentTimeFull             = domElement.querySelector('.currentTimeFull'),
+        TotalDurationFull           = domElement.querySelector('.totalDurationFull'),
+        PlayButton                  = domElement.querySelector('.playButton'),
+        VideoStartOverlay           = domElement.querySelector('.videoStartOverlay'),
+        VolumeButton                = domElement.querySelector('.volumeButton'),
+        FullscreenButton            = domElement.querySelector('.fullscreenButton'),
 
-        PlayerProgress              = domElement.find('.playerProgress'),
+        PlayerProgress              = domElement.querySelector('.playerProgress'),
 
-        Video                       = domElement.find('.video')[0],
+        Video                       = domElement.querySelector('.video'),
 
-        EditPropertiesContainer     = domElement.find('.editPropertiesContainer'),
+        EditPropertiesContainer     = domElement.querySelector('.editPropertiesContainer'),
 
-        ExpandButton                = domElement.find('.expandButton'),
+        ExpandButton                = domElement.querySelector('.expandButton'),
 
-        WorkingIndicator            = VideoContainer.find('.workingIndicator'),
+        WorkingIndicator            = VideoContainer.querySelector('.workingIndicator'),
 
         shownDetails                = null,
         wasPlaying                  = false;
@@ -195,24 +197,26 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         _existingEl.removeAttribute('controls');
         _existingEl.setAttribute('playsinline', '');
         _existingEl.setAttribute('disablePictureInPicture', '');
-        $(_existingEl).addClass('video');
+        _existingEl.classList.add('video');
 
         // Replace the template <video> inside .hypervideo with the existing element.
         // jQuery's replaceWith moves the DOM node, so the element ends up inside
         // the player structure and is removed from its original position.
-        Hypervideo.find('video.video').replaceWith(_existingEl);
+        Hypervideo.querySelector('video.video').replaceWith(_existingEl);
 
         // Point the Video reference at the adopted element
         Video = _existingEl;
     })();
 
 
-    ExpandButton.click(function() {
+    ExpandButton.addEventListener('click', function() {
         showDetails(false);
     });
 
-    InfoAreaRight.on('click', '.infoAreaRightTab', function() {
-        var tabName = $(this).data('tab');
+    InfoAreaRight.addEventListener('click', function(e) {
+        var tab = e.target.closest('.infoAreaRightTab');
+        if (!tab) return;
+        var tabName = tab.dataset.tab;
         switchInfoTab(tabName);
     });
 
@@ -222,115 +226,120 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      * @param {String} tabName - Either 'properties' or 'add'
      */
     function switchInfoTab(tabName) {
-        InfoAreaRight.find('.infoAreaRightTab').removeClass('active');
-        InfoAreaRight.find('.infoAreaRightTab[data-tab="'+ tabName +'"]').addClass('active');
-        InfoAreaRight.find('.infoAreaRightTabContent').removeClass('active');
-        InfoAreaRight.find('.infoAreaRightTabContent[data-tab="'+ tabName +'"]').addClass('active');
-        EditingOptions.find('.ui-tabs').tabs('refresh');
+        InfoAreaRight.querySelectorAll('.infoAreaRightTab').forEach(function(el) { el.classList.remove('active'); });
+        InfoAreaRight.querySelector('.infoAreaRightTab[data-tab="'+ tabName +'"]').classList.add('active');
+        InfoAreaRight.querySelectorAll('.infoAreaRightTabContent').forEach(function(el) { el.classList.remove('active'); });
+        InfoAreaRight.querySelector('.infoAreaRightTabContent[data-tab="'+ tabName +'"]').classList.add('active');
+        var _tabs = EditingOptions.querySelector('.ui-tabs');
+        if (_tabs) { FTTabs(_tabs, 'refresh'); } // Phase 2 bridge
 
         // Show/hide properties tab button based on whether properties content is active
-        var propertiesTab = InfoAreaRight.find('.infoAreaRightTab[data-tab="properties"]');
+        var propertiesTab = InfoAreaRight.querySelector('.infoAreaRightTab[data-tab="properties"]');
         if (tabName === 'properties') {
-            propertiesTab.css('visibility', '');
-        } else if (!EditPropertiesContainer.hasClass('active')) {
-            propertiesTab.css('visibility', 'hidden');
+            propertiesTab.style.visibility = '';
+        } else if (!EditPropertiesContainer.classList.contains('active')) {
+            propertiesTab.style.visibility = 'hidden';
         }
     }
 
-    Controls.find('.captionsButton').click(function() {
+    Controls.querySelector('.captionsButton').addEventListener('click', function() {
 
-        Controls.find('.rightControlPanel .active').not('[data-config], .captionsButton, .captionSelectContainer, .annotationSetButton').removeClass('active');
+        Controls.querySelectorAll('.rightControlPanel .active:not([data-config]):not(.captionsButton):not(.captionSelectContainer):not(.annotationSetButton)').forEach(function(el) { el.classList.remove('active'); });
 
-        if ( !$(this).children('.captionSelectContainer').hasClass('active') ) {
-            $(this).children('.captionSelectContainer').addClass('active');
-            VideoContainer.css('opacity', 0.3);
-            domElement.find('.areaLeftContainer, .areaRightContainer').css('opacity', 0.3);
+        var captionContainer = this.querySelector('.captionSelectContainer');
+        if ( !captionContainer.classList.contains('active') ) {
+            captionContainer.classList.add('active');
+            VideoContainer.style.opacity = '0.3';
+            domElement.querySelectorAll('.areaLeftContainer, .areaRightContainer').forEach(function(el) { el.style.opacity = '0.3'; });
         } else {
-            $(this).children('.captionSelectContainer').removeClass('active');
-            VideoContainer.css('opacity', 1);
-            domElement.find('.areaLeftContainer, .areaRightContainer').css('opacity', 1);
+            captionContainer.classList.remove('active');
+            VideoContainer.style.opacity = '1';
+            domElement.querySelectorAll('.areaLeftContainer, .areaRightContainer').forEach(function(el) { el.style.opacity = '1'; });
         }
 
     });
 
-    Controls.find('.captionSelect.none').click(function() {
+    Controls.querySelector('.captionSelect.none').addEventListener('click', function() {
         FrameTrail.changeState('hv_config_captionsVisible', false);
     });
 
-    Controls.find('.contextButton').click(function(evt) {
+    Controls.querySelector('.contextButton').addEventListener('click', function(evt) {
 
-        var contextButton = $(this);
+        var contextButton = this;
 
-        if ( !contextButton.hasClass('active') ) {
+        if ( !contextButton.classList.contains('active') ) {
 
-            $('body').on('mouseup', function(evt) {
+            var _bodyMouseup = function(evt) {
 
-                if ( !$(evt.target).attr('data-config') && !$(evt.target).hasClass('contextButton') ) {
-                    contextButton.removeClass('active');
-                    VideoContainer.css('opacity', 1);
-                    domElement.find('.areaLeftContainer, .areaRightContainer').css('opacity', 1);
-                    $('body').off('mouseup');
+                if ( !evt.target.getAttribute('data-config') && !evt.target.classList.contains('contextButton') ) {
+                    contextButton.classList.remove('active');
+                    VideoContainer.style.opacity = '1';
+                    domElement.querySelectorAll('.areaLeftContainer, .areaRightContainer').forEach(function(el) { el.style.opacity = '1'; });
+                    document.body.removeEventListener('mouseup', _bodyMouseup);
                     evt.preventDefault();
                     evt.stopPropagation();
                 }
 
-            });
+            };
+            document.body.addEventListener('mouseup', _bodyMouseup);
 
-            Controls.find('.rightControlPanel .active').not('[data-config], .captionsButton').removeClass('active');
+            Controls.querySelectorAll('.rightControlPanel .active:not([data-config]):not(.captionsButton)').forEach(function(el) { el.classList.remove('active'); });
 
-            contextButton.addClass('active');
-            VideoContainer.css('opacity', 0.3);
-            domElement.find('.areaLeftContainer, .areaRightContainer').css('opacity', 0.3);
+            contextButton.classList.add('active');
+            VideoContainer.style.opacity = '0.3';
+            domElement.querySelectorAll('.areaLeftContainer, .areaRightContainer').forEach(function(el) { el.style.opacity = '0.3'; });
 
         } else {
 
-            contextButton.removeClass('active');
-            VideoContainer.css('opacity', 1);
-            domElement.find('.areaLeftContainer, .areaRightContainer').css('opacity', 1);
+            contextButton.classList.remove('active');
+            VideoContainer.style.opacity = '1';
+            domElement.querySelectorAll('.areaLeftContainer, .areaRightContainer').forEach(function(el) { el.style.opacity = '1'; });
 
         }
 
     });
 
-    VolumeButton.click(function() {
+    VolumeButton.addEventListener('click', function() {
 
-        if ( $(this).hasClass('active') ) {
+        if ( this.classList.contains('active') ) {
             FrameTrail.module('HypervideoController').muted = false;
-            $(this).removeClass('active');
+            this.classList.remove('active');
         } else {
             FrameTrail.module('HypervideoController').muted = true;
-            $(this).addClass('active');
+            this.classList.add('active');
         }
 
 
     });
 
-    AreaTopContainer.click(function(evt) {
+    AreaTopContainer.addEventListener('click', function(evt) {
 
         //
 
     });
 
-    AreaBottomContainer.click(function(evt) {
+    AreaBottomContainer.addEventListener('click', function(evt) {
 
-        if ( FrameTrail.module('AnnotationsController').openedAnnotation && $(evt.target).hasClass('areaBottomContainer') ) {
+        if ( FrameTrail.module('AnnotationsController').openedAnnotation && evt.target.classList.contains('areaBottomContainer') ) {
             FrameTrail.module('AnnotationsController').openedAnnotation = null;
         }
 
     });
 
-    domElement.find('.layoutAreaToggleCloseButton').click(function() {
-        $(this).parent('.layoutArea').toggleClass('closed');
-        showDetails(false);
-        window.setTimeout(function() {
-            adjustHypervideo();
-        }, 250);
+    domElement.querySelectorAll('.layoutAreaToggleCloseButton').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            this.closest('.layoutArea').classList.toggle('closed');
+            showDetails(false);
+            window.setTimeout(function() {
+                adjustHypervideo();
+            }, 250);
+        });
     });
 
     document.addEventListener("fullscreenchange", toggleFullscreenState, false);
     document.addEventListener("webkitfullscreenchange", toggleFullscreenState, false);
     document.addEventListener("mozfullscreenchange", toggleFullscreenState, false);
-    Controls.find('.fullscreenButton').click(toggleNativeFullscreenState);
+    Controls.querySelector('.fullscreenButton').addEventListener('click', toggleNativeFullscreenState);
 
 
     /**
@@ -340,14 +349,14 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      */
     function create() {
         
-        $(FrameTrail.getState('target')).find('.mainContainer').append(domElement);
+        document.querySelector(FrameTrail.getState('target')).querySelector('.mainContainer').appendChild(domElement);
 
         if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent)) {
             fixGoddamnSafariBug();
         };
 
         if (FrameTrail.getState('hv_config_clipTimeVisible')) {
-            Controls.find('.timeDisplayFull').show();
+            Controls.querySelector('.timeDisplayFull').style.display = '';
         }
 
         toggleViewMode(FrameTrail.getState('viewMode'));
@@ -362,11 +371,14 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
 
     function fixGoddamnSafariBug() {
 
-        $($(FrameTrail.getState('target')).find('.sidebar'), $(FrameTrail.getState('target')).find('.mainContainer'), $(FrameTrail.getState('target')).find('.viewVideo'), $(FrameTrail.getState('target')).find('.slideArea') ).css({
-            'transition-duration': '0ms',
-            '-moz-transition-duration': '0ms',
-            '-webkit-transition-duration': '0ms',
-            '-o-transition-duration': '0ms'
+        var _t = document.querySelector(FrameTrail.getState('target'));
+        ['.sidebar', '.mainContainer', '.viewVideo', '.slideArea'].forEach(function(sel) {
+            var el = _t.querySelector(sel);
+            if (!el) return;
+            el.style.transitionDuration = '0ms';
+            el.style.MozTransitionDuration = '0ms';
+            el.style.webkitTransitionDuration = '0ms';
+            el.style.OTransitionDuration = '0ms';
         });
 
         window.setTimeout(function() {
@@ -410,23 +422,19 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      */
     function changeViewSize(arrayWidthAndHeight) {
 
-        slideArea.css({
-            'transition-duration': '0ms',
-            '-moz-transition-duration': '0ms',
-            '-webkit-transition-duration': '0ms',
-            '-o-transition-duration': '0ms'
-        });
+        slideArea.style.transitionDuration = '0ms';
+        slideArea.style.MozTransitionDuration = '0ms';
+        slideArea.style.webkitTransitionDuration = '0ms';
+        slideArea.style.OTransitionDuration = '0ms';
 
         adjustLayout();
         adjustHypervideo();
 
         if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent) == false) {
-            slideArea.css({
-                'transition-duration': '',
-                '-moz-transition-duration': '',
-                '-webkit-transition-duration': '',
-                '-o-transition-duration': ''
-            });
+            slideArea.style.transitionDuration = '';
+            slideArea.style.MozTransitionDuration = '';
+            slideArea.style.webkitTransitionDuration = '';
+            slideArea.style.OTransitionDuration = '';
         }
 
     };
@@ -442,36 +450,32 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      */
     function onViewSizeChanged() {
 
-        slideArea.css({
-            'transition-duration': '0ms',
-            '-moz-transition-duration': '0ms',
-            '-webkit-transition-duration': '0ms',
-            '-o-transition-duration': '0ms'
-        });
+        slideArea.style.transitionDuration = '0ms';
+        slideArea.style.MozTransitionDuration = '0ms';
+        slideArea.style.webkitTransitionDuration = '0ms';
+        slideArea.style.OTransitionDuration = '0ms';
 
         adjustLayout();
         adjustHypervideo();
         FrameTrail.module('ViewLayout').adjustContentViewLayout();
 
         if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent) == false) {
-            slideArea.css({
-                'transition-duration': '',
-                '-moz-transition-duration': '',
-                '-webkit-transition-duration': '',
-                '-o-transition-duration': ''
-            });
+            slideArea.style.transitionDuration = '';
+            slideArea.style.MozTransitionDuration = '';
+            slideArea.style.webkitTransitionDuration = '';
+            slideArea.style.OTransitionDuration = '';
         }
 
-        domElement.find('.resourceDetail[data-type="location"]').each(function() {
-            if ( $(this).data('map') ) {
-                $(this).data('map').invalidateSize();
+        domElement.querySelectorAll('.resourceDetail[data-type="location"]').forEach(function(el) {
+            if (el._leafletMap) {
+                el._leafletMap.invalidateSize();
             }
         });
 
         var editMode = FrameTrail.getState('editMode');
-        if ((editMode == 'overlays' || editMode == 'annotations' || editMode == 'codesnippets')
-            && EditPropertiesContainer.find('.ui-tabs').length != 0) {
-            EditPropertiesContainer.find('.ui-tabs').tabs('refresh');
+        if ((editMode == 'overlays' || editMode == 'annotations' || editMode == 'codesnippets')) {
+            var _tabs = EditPropertiesContainer.querySelector('.ui-tabs');
+            if (_tabs) { FTTabs(_tabs, 'refresh'); } // Phase 2 bridge
         }
 
     };
@@ -489,9 +493,11 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      */
     function adjustLayout() {
 
+        var mainContainer = document.querySelector(FrameTrail.getState('target') + ' .mainContainer');
+        if (!mainContainer) { return; }
 
         var editMode            = FrameTrail.getState('editMode'),
-            playerMargin        = parseInt(PlayerContainer.css('marginTop')),
+            playerMargin        = parseInt(getComputedStyle(PlayerContainer).marginTop),
             editBorder          = (editMode != false) ? 20 : 0,
             slidePosition       = (editMode == 'layout') ? 'middle' : FrameTrail.getState('slidePosition'),
             slidingMode         = FrameTrail.getState('hv_config_slidingMode'),
@@ -502,69 +508,53 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
             areaRightVisible    = ( (editMode != false && editMode != 'preview' && editMode != 'layout') ? false : FrameTrail.getState('hv_config_areaRightVisible') );
 
         if (slidingMode == 'overlay') {
-            PlayerContainer.css({
-                'flex-grow': 0,
-                'flex-shrink': 0,
-                'flex-basis':
-                    $(FrameTrail.getState('target')).find('.mainContainer').height()
-                    - ((areaTopVisible) ? (AreaTopContainer.height() + playerMargin) : 0)
-                    - ((areaBottomVisible) ? (AreaBottomContainer.height() + playerMargin) : 0)
-                    - editBorder
-                    + 'px'
-            });
+            PlayerContainer.style.flexGrow = '0';
+            PlayerContainer.style.flexShrink = '0';
+            PlayerContainer.style.flexBasis = (
+                mainContainer.offsetHeight
+                - ((areaTopVisible) ? (AreaTopContainer.offsetHeight + playerMargin) : 0)
+                - ((areaBottomVisible) ? (AreaBottomContainer.offsetHeight + playerMargin) : 0)
+                - editBorder
+            ) + 'px';
         } else {
-            PlayerContainer.css({
-                'flex': ''
-            });
+            PlayerContainer.style.flex = '';
         }
 
         if ( slidePosition == 'top' ) {
 
             if ( slidingMode == 'adjust' ) {
 
-                slideArea.css({
-                    marginTop:
-                        - ((editMode != false && editMode != 'preview' && editMode != 'layout') ? playerMargin : 0)
-                        + 'px',
-                    minHeight:
-                        $(FrameTrail.getState('target')).find('.mainContainer').height()
-                        + (areaBottomVisible ? AreaBottomDetails.height() + AreaBottomContainer.height() : 0)
-                        + playerMargin
-                        - editBorder
-                        + 'px'
-                });
+                slideArea.style.marginTop = (
+                    - ((editMode != false && editMode != 'preview' && editMode != 'layout') ? playerMargin : 0)
+                ) + 'px';
+                slideArea.style.minHeight = (
+                    mainContainer.offsetHeight
+                    + (areaBottomVisible ? AreaBottomDetails.offsetHeight + AreaBottomContainer.offsetHeight : 0)
+                    + playerMargin
+                    - editBorder
+                ) + 'px';
 
             } else if ( slidingMode == 'overlay' ) {
 
-                slideArea.css({
-                    marginTop:
-                        - (areaTopVisible ? AreaTopDetails.height() : 0)
-                        - (areaBottomVisible ? AreaBottomDetails.height() : 0)
-                        - playerMargin
-                        + 'px'
-                });
+                slideArea.style.marginTop = (
+                    - (areaTopVisible ? AreaTopDetails.offsetHeight : 0)
+                    - (areaBottomVisible ? AreaBottomDetails.offsetHeight : 0)
+                    - playerMargin
+                ) + 'px';
 
                 // slidingMode overlay top behaviour
-                var targetOffset = playerMargin + ( (PlayerContainer.height() - Controls.height())/2 ),
+                var targetOffset = playerMargin + ( (PlayerContainer.offsetHeight - Controls.offsetHeight)/2 ),
                     thisOffset;
 
-                thisOffset = AreaBottomDetails.height() + AreaBottomContainer.height() + targetOffset - (AreaBottomDetails.height() / 2);
+                thisOffset = AreaBottomDetails.offsetHeight + AreaBottomContainer.offsetHeight + targetOffset - (AreaBottomDetails.offsetHeight / 2);
 
-                AreaBottomDetails.css({
-                    marginTop: thisOffset + 'px'
-                });
+                AreaBottomDetails.style.marginTop = thisOffset + 'px';
 
-                AreaBottomContainer.css({
-                    marginTop: - thisOffset + 'px'
-                });
+                AreaBottomContainer.style.marginTop = - thisOffset + 'px';
 
-                AreaTopDetails.css({
-                    marginTop: ''
-                });
+                AreaTopDetails.style.marginTop = '';
 
-                AreaTopContainer.css({
-                    marginTop: ''
-                });
+                AreaTopContainer.style.marginTop = '';
 
             }
 
@@ -572,96 +562,69 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
 
             if ( slidingMode == 'adjust' ) {
 
-                slideArea.css({
-                    marginTop:
-                        - (areaTopVisible ? AreaTopDetails.height() + AreaTopContainer.height() : 0)
-                        - playerMargin
-                        + 'px',
-                    minHeight:
-                        $(FrameTrail.getState('target')).find('.mainContainer').height()
-                        + (areaTopVisible ? AreaTopDetails.height() + AreaTopContainer.height() : 0)
-                        - editBorder
-                        + 'px'
-                });
+                slideArea.style.marginTop = (
+                    - (areaTopVisible ? AreaTopDetails.offsetHeight + AreaTopContainer.offsetHeight : 0)
+                    - playerMargin
+                ) + 'px';
+                slideArea.style.minHeight = (
+                    mainContainer.offsetHeight
+                    + (areaTopVisible ? AreaTopDetails.offsetHeight + AreaTopContainer.offsetHeight : 0)
+                    - editBorder
+                ) + 'px';
 
             } else if ( slidingMode == 'overlay' ) {
 
-                slideArea.css({
-                    marginTop:
-                        - (areaTopVisible ? AreaTopDetails.height() : 0)
-                        - playerMargin
-                        + 'px'
-                });
+                slideArea.style.marginTop = (
+                    - (areaTopVisible ? AreaTopDetails.offsetHeight : 0)
+                    - playerMargin
+                ) + 'px';
 
-                var targetOffset = playerMargin + (PlayerContainer.height()/2) + (OverlayTimeline.height()*2) + (Controls.height()/2);
+                var targetOffset = playerMargin + (PlayerContainer.offsetHeight/2) + (OverlayTimeline.offsetHeight*2) + (Controls.offsetHeight/2);
 
                 // slidingMode overlay bottom behaviour
-                AreaBottomDetails.css({
-                    marginTop: - (targetOffset + AreaBottomContainer.height() + (AreaBottomDetails.height() / 2)) + 'px'
-                });
+                AreaBottomDetails.style.marginTop = - (targetOffset + AreaBottomContainer.offsetHeight + (AreaBottomDetails.offsetHeight / 2)) + 'px';
 
-                AreaTopDetails.css({
-                    marginTop: ''
-                });
+                AreaTopDetails.style.marginTop = '';
 
-                AreaTopContainer.css({
-                    marginTop: ''
-                });
+                AreaTopContainer.style.marginTop = '';
 
             }
 
         } else {
 
-            var topMargin = areaTopVisible ? AreaTopDetails.height() : playerMargin;
+            var topMargin = areaTopVisible ? AreaTopDetails.offsetHeight : playerMargin;
 
 
-            slideArea.css({
-                marginTop:
-                    - topMargin
-                    + 'px',
-                minHeight:
-                    $(FrameTrail.getState('target')).find('.mainContainer').height()
-                    + (areaTopVisible ? AreaTopDetails.height() : playerMargin)
-                    + (areaBottomVisible ? AreaBottomDetails.height() : playerMargin)
-                    - editBorder
-                    + 'px'
-            });
+            slideArea.style.marginTop = - topMargin + 'px';
+            slideArea.style.minHeight = (
+                mainContainer.offsetHeight
+                + (areaTopVisible ? AreaTopDetails.offsetHeight : playerMargin)
+                + (areaBottomVisible ? AreaBottomDetails.offsetHeight : playerMargin)
+                - editBorder
+            ) + 'px';
 
-            AreaBottomDetails.css({
-                marginTop: ''
-            });
+            AreaBottomDetails.style.marginTop = '';
 
-            AreaBottomContainer.css({
-                marginTop: ''
-            });
+            AreaBottomContainer.style.marginTop = '';
 
-            AreaTopDetails.css({
-                marginTop: ''
-            });
+            AreaTopDetails.style.marginTop = '';
 
-            AreaTopContainer.css({
-                marginTop: ''
-            });
+            AreaTopContainer.style.marginTop = '';
 
         }
 
         if ( editMode != false && editMode != 'preview' ) {
-            slideArea.css({
-                minHeight: ''
-            });
-            PlayerContainer.css({
-                marginBottom: 0
-            });
-            EditingOptions.find('.ui-tabs').tabs('refresh');
+            slideArea.style.minHeight = '';
+            PlayerContainer.style.marginBottom = '0';
+            var _tabs2 = EditingOptions.querySelector('.ui-tabs');
+            if (_tabs2) { FTTabs(_tabs2, 'refresh'); } // Phase 2 bridge
         } else {
-            PlayerContainer.css({
-                marginBottom: ''
-            });
+            PlayerContainer.style.marginBottom = '';
         }
 
-        slideArea.children('svg').css({
-            width: $(document).width() + 'px',
-            height: slideArea.height() + 'px'
+        slideArea.querySelectorAll('svg').forEach(function(el) {
+            el.style.width = document.documentElement.offsetWidth + 'px';
+            el.style.height = slideArea.offsetHeight + 'px';
         });
 
     };
@@ -679,103 +642,90 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      */
     function adjustHypervideo(animate) {
 
+        var _target = document.querySelector(FrameTrail.getState('target'));
+        var _titlebar = _target && _target.querySelector('.titlebar');
+        if (!_titlebar) { return; }
 
-        var isMobileWidth = ($(window).width() <= 768),
-            editBorder = (FrameTrail.getState('editMode') != false) ? (parseInt(domElement.css('borderTopWidth'))*2) : 0;
-            mainContainerWidth  = $(FrameTrail.getState('target')).width()
+        var isMobileWidth = (window.innerWidth <= 768),
+            editBorder = (FrameTrail.getState('editMode') != false) ? (parseInt(getComputedStyle(domElement).borderTopWidth)*2) : 0,
+            mainContainerWidth  = _target.offsetWidth
                                     - ((FrameTrail.getState('sidebarOpen') && !FrameTrail.getState('fullscreen')) ? FrameTrail.module('Sidebar').width : 0)
                                     - editBorder,
-            mainContainerHeight = $(FrameTrail.getState('target')).height()
-                                    - $(FrameTrail.getState('target')).find('.titlebar').height()
+            mainContainerHeight = _target.offsetHeight
+                                    - _titlebar.offsetHeight
                                     - editBorder,
-            _video              = $(Video),
+            _video              = Video,
             videoFit            = (FrameTrail.module('Database').config.videoFit) ? FrameTrail.module('Database').config.videoFit : 'contain';
 
         if (animate) {
-            VideoContainer.css({
-                'transition-duration': '',
-                '-moz-transition-duration': '',
-                '-webkit-transition-duration': '',
-                '-o-transition-duration': ''
-            });
-            Hypervideo.css({
-                'transition-duration': '',
-                '-moz-transition-duration': '',
-                '-webkit-transition-duration': '',
-                '-o-transition-duration': ''
-            });
+            VideoContainer.style.transitionDuration = '';
+            VideoContainer.style.MozTransitionDuration = '';
+            VideoContainer.style.webkitTransitionDuration = '';
+            VideoContainer.style.OTransitionDuration = '';
+            Hypervideo.style.transitionDuration = '';
+            Hypervideo.style.MozTransitionDuration = '';
+            Hypervideo.style.webkitTransitionDuration = '';
+            Hypervideo.style.OTransitionDuration = '';
         } else {
-            VideoContainer.css({
-                'transition-duration': '0ms',
-                '-moz-transition-duration': '0ms',
-                '-webkit-transition-duration': '0ms',
-                '-o-transition-duration': '0ms'
-            });
-            Hypervideo.css({
-                'transition-duration': '0ms',
-                '-moz-transition-duration': '0ms',
-                '-webkit-transition-duration': '0ms',
-                '-o-transition-duration': '0ms'
-            });
+            VideoContainer.style.transitionDuration = '0ms';
+            VideoContainer.style.MozTransitionDuration = '0ms';
+            VideoContainer.style.webkitTransitionDuration = '0ms';
+            VideoContainer.style.OTransitionDuration = '0ms';
+            Hypervideo.style.transitionDuration = '0ms';
+            Hypervideo.style.MozTransitionDuration = '0ms';
+            Hypervideo.style.webkitTransitionDuration = '0ms';
+            Hypervideo.style.OTransitionDuration = '0ms';
         }
 
-        var widthAuto = (_video[0].style.width == 'auto');
-        var heightAuto = (_video[0].style.height == 'auto');
+        var widthAuto = (_video.style.width == 'auto');
+        var heightAuto = (_video.style.height == 'auto');
 
         var videoContainerWidth;
 
         if ( ( FrameTrail.getState('editMode') != false && FrameTrail.getState('editMode') != 'preview' && FrameTrail.getState('editMode') != 'layout' ) ) {
-            videoContainerWidth = mainContainerWidth - InfoAreaRight.outerWidth();
+            videoContainerWidth = mainContainerWidth - InfoAreaRight.offsetWidth;
         } else {
             videoContainerWidth = mainContainerWidth
-            - ((FrameTrail.getState('hv_config_areaLeftVisible') && !isMobileWidth) ? AreaLeftContainer.outerWidth() : 0)
-            - ((FrameTrail.getState('hv_config_areaRightVisible') && !isMobileWidth) ? AreaRightContainer.outerWidth() : 0);
+            - ((FrameTrail.getState('hv_config_areaLeftVisible') && !isMobileWidth) ? AreaLeftContainer.offsetWidth : 0)
+            - ((FrameTrail.getState('hv_config_areaRightVisible') && !isMobileWidth) ? AreaRightContainer.offsetWidth : 0);
         }
 
-        VideoContainer.width(videoContainerWidth);
+        VideoContainer.style.width = videoContainerWidth + 'px';
 
         //if ( (_video.height() < VideoContainer.height() && widthAuto) || (_video.width() < videoContainerWidth && heightAuto) ) {
-        if ( (_video.height() < VideoContainer.height()) || (_video.width() < videoContainerWidth) ) {
-            _video.css({
-                height: FrameTrail.getState('viewSize')[1] + 'px',
-                width: FrameTrail.getState('viewSize')[0] + 'px'
-            });
+        if ( (_video.offsetHeight < VideoContainer.offsetHeight) || (_video.offsetWidth < videoContainerWidth) ) {
+            _video.style.height = FrameTrail.getState('viewSize')[1] + 'px';
+            _video.style.width = FrameTrail.getState('viewSize')[0] + 'px';
         }
 
-        var videoWidth = (_video[0].videoWidth) ? _video[0].videoWidth : 1920;
-        var videoHeight = (_video[0].videoHeight) ? _video[0].videoHeight : 1080;
+        var videoWidth = (_video.videoWidth) ? _video.videoWidth : 1920;
+        var videoHeight = (_video.videoHeight) ? _video.videoHeight : 1080;
 
         if (videoFit == 'cover') {
 
-            var ratio = Math.max(VideoContainer.width() / videoWidth, VideoContainer.height() /videoHeight);
+            var ratio = Math.max(VideoContainer.offsetWidth / videoWidth, VideoContainer.offsetHeight / videoHeight);
             var scaledWidth = videoWidth * ratio;
             var scaledHeight = videoHeight * ratio;
 
-            _video.css({
-                height: scaledHeight + 'px',
-                width: scaledWidth + 'px'
-            });
+            _video.style.height = scaledHeight + 'px';
+            _video.style.width = scaledWidth + 'px';
 
         } else {
 
             // Use explicit aspect-ratio-aware calculations to avoid
             // browser issues when video metadata is not yet loaded
-            var ratio = Math.min(videoContainerWidth / videoWidth, VideoContainer.height() / videoHeight);
+            var ratio = Math.min(videoContainerWidth / videoWidth, VideoContainer.offsetHeight / videoHeight);
             var scaledWidth = videoWidth * ratio;
             var scaledHeight = videoHeight * ratio;
 
-            _video.css({
-                height: scaledHeight + 'px',
-                width: scaledWidth + 'px'
-            });
+            _video.style.height = scaledHeight + 'px';
+            _video.style.width = scaledWidth + 'px';
 
         }
 
-        Hypervideo.css({
-            marginLeft: - _video.width()/2 + 'px',
-            marginTop: - _video.height()/2 + 'px',
-            height: _video.height()
-        });
+        Hypervideo.style.marginLeft = - _video.offsetWidth/2 + 'px';
+        Hypervideo.style.marginTop = - _video.offsetHeight/2 + 'px';
+        Hypervideo.style.height = _video.offsetHeight + 'px';
 
         if (animate) {
             window.setTimeout(function() {
@@ -798,11 +748,11 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
     function toggleFullscreen(aBoolean) {
 
         if (aBoolean) {
-            $(FrameTrail.getState('target')).find('.fullscreenButton').addClass('active');
-            $(FrameTrail.getState('target')).addClass('inFullscreen');
+            document.querySelector(FrameTrail.getState('target') + ' .fullscreenButton').classList.add('active');
+            document.querySelector(FrameTrail.getState('target')).classList.add('inFullscreen');
         } else {
-            $(FrameTrail.getState('target')).find('.fullscreenButton').removeClass('active');
-            $(FrameTrail.getState('target')).removeClass('inFullscreen');
+            document.querySelector(FrameTrail.getState('target') + ' .fullscreenButton').classList.remove('active');
+            document.querySelector(FrameTrail.getState('target')).classList.remove('inFullscreen');
         }
 
     };
@@ -827,12 +777,12 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
     function toggleViewMode(viewMode) {
 
         if (viewMode === 'video') {
-            domElement.addClass('active');
+            domElement.classList.add('active');
             FrameTrail.module('Titlebar').title = FrameTrail.module('HypervideoModel').hypervideoName;
             adjustLayout();
             adjustHypervideo();
         } else if (viewMode != 'resources') {
-            domElement.removeClass('active');
+            domElement.classList.remove('active');
         }
 
     };
@@ -873,8 +823,9 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
                 break;
         }
 
-        if ( editMode && !VideoStartOverlay.hasClass('inactive') ) {
-            VideoStartOverlay.addClass('inactive').fadeOut();
+        if ( editMode && !VideoStartOverlay.classList.contains('inactive') ) {
+            VideoStartOverlay.classList.add('inactive');
+            VideoStartOverlay.style.display = 'none';
         }
 
         window.setTimeout(function() {
@@ -888,10 +839,10 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      * @method resetEditMode
      */
     function resetEditMode() {
-        domElement.find('.timeline').removeClass('editable').css({'flex-basis': '', 'display': ''});
-        InfoAreaRight.removeClass('active');
-        OtherUsersContainer.empty().removeClass('active');
-        HypervideoLayoutContainer.empty().removeClass('active');
+        domElement.querySelectorAll('.timeline').forEach(function(el) { el.classList.remove('editable'); el.style.flexBasis = ''; el.style.display = ''; });
+        InfoAreaRight.classList.remove('active');
+        OtherUsersContainer.innerHTML = ''; OtherUsersContainer.classList.remove('active');
+        HypervideoLayoutContainer.innerHTML = ''; HypervideoLayoutContainer.classList.remove('active');
     }
 
     /**
@@ -900,29 +851,25 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      */
     function initEditMode() {
 
-        ExpandButton.hide();
+        ExpandButton.style.display = 'none';
 
-        $(VideoContainer).css({
-            opacity: 1
-        });
+        VideoContainer.style.opacity = '1';
 
-        InfoAreaRight.css({
-            opacity: 1
-        });
+        InfoAreaRight.style.opacity = '1';
 
-        AreaTopContainer.hide();
-        AreaTopDetails.hide();
-        AreaBottomContainer.hide();
-        AreaBottomDetails.hide();
-        AreaLeftContainer.hide();
-        AreaRightContainer.hide();
+        AreaTopContainer.style.display = 'none';
+        AreaTopDetails.style.display = 'none';
+        AreaBottomContainer.style.display = 'none';
+        AreaBottomDetails.style.display = 'none';
+        AreaLeftContainer.style.display = 'none';
+        AreaRightContainer.style.display = 'none';
 
         // Timeline visibility is handled by CSS rules based on .editActive[data-edit-mode]
         // Don't use .show() here as it sets inline display:block that persists after leaving edit mode
 
-        InfoAreaRight.addClass('active');
-        EditPropertiesContainer.show();
-        InfoAreaRight.find('.infoAreaRightTab[data-tab="properties"]').css('visibility', 'hidden');
+        InfoAreaRight.classList.add('active');
+        EditPropertiesContainer.style.display = 'flex';
+        InfoAreaRight.querySelector('.infoAreaRightTab[data-tab="properties"]').style.visibility = 'hidden';
         switchInfoTab('add');
 
         // Initialize timeline controls (shared across all edit modes)
@@ -939,10 +886,10 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         FrameTrail.module('TimelineController').destroyEditTimelines();
 
         // Remove editable class and clear inline display from all timelines
-        domElement.find('.timeline').removeClass('editable').css('display', '');
+        domElement.querySelectorAll('.timeline').forEach(function(el) { el.classList.remove('editable'); el.style.display = ''; });
 
-        HypervideoLayoutContainer.empty().removeClass('active');
-        EditPropertiesContainer.removeAttr('data-editmode').hide();
+        HypervideoLayoutContainer.innerHTML = ''; HypervideoLayoutContainer.classList.remove('active');
+        EditPropertiesContainer.removeAttribute('data-editmode'); EditPropertiesContainer.style.display = 'none';
 
         toggleConfig_areaTopVisible(FrameTrail.getState('hv_config_areaTopVisible'));
         toggleConfig_areaBottomVisible(FrameTrail.getState('hv_config_areaBottomVisible'));
@@ -955,7 +902,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
 
         changeSlidePosition(FrameTrail.getState('slidePosition'));
 
-        Controls.find('.rightControlPanel').show();
+        Controls.querySelector('.rightControlPanel').style.display = '';
 
         FrameTrail.module('ViewLayout').updateContentInContentViews();
     }
@@ -975,11 +922,11 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      */
     function enterLayoutMode() {
 
-        AreaTopDetails.hide();
-        AreaBottomDetails.hide();
+        AreaTopDetails.style.display = 'none';
+        AreaBottomDetails.style.display = 'none';
         
         FrameTrail.module('ViewLayout').initLayoutManager();
-        HypervideoLayoutContainer.addClass('active');
+        HypervideoLayoutContainer.classList.add('active');
 
     }
 
@@ -989,10 +936,10 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      */
     function enterOverlayMode() {
         initEditMode();
-        OverlayTimeline.addClass('editable');
+        OverlayTimeline.classList.add('editable');
         toggleConfig_overlaysVisible(true);
 
-        EditPropertiesContainer.attr('data-editmode', 'overlays');
+        EditPropertiesContainer.setAttribute('data-editmode', 'overlays');
     }
 
     /**
@@ -1009,9 +956,9 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      */
     function enterCodeSnippetMode() {
         initEditMode();
-        CodeSnippetTimeline.addClass('editable');
+        CodeSnippetTimeline.classList.add('editable');
 
-        EditPropertiesContainer.attr('data-editmode', 'codesnippets');
+        EditPropertiesContainer.setAttribute('data-editmode', 'codesnippets');
     }
 
     /**
@@ -1020,10 +967,10 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      */
     function enterAnnotationMode() {
         initEditMode();
-        AnnotationTimeline.addClass('editable');
-        OtherUsersContainer.addClass('active');
+        AnnotationTimeline.classList.add('editable');
+        OtherUsersContainer.classList.add('active');
 
-        EditPropertiesContainer.attr('data-editmode', 'annotations');
+        EditPropertiesContainer.setAttribute('data-editmode', 'annotations');
     }
 
     /**
@@ -1037,9 +984,9 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      */
     function toggleConfig_areaTopVisible(newState, oldState) {
         if (newState == true) {
-            domElement.find('.areaTopContainer, .areaTopDetails').show();
+            domElement.querySelectorAll('.areaTopContainer, .areaTopDetails').forEach(function(el) { el.style.display = ''; });
         } else {
-            domElement.find('.areaTopContainer, .areaTopDetails').hide();
+            domElement.querySelectorAll('.areaTopContainer, .areaTopDetails').forEach(function(el) { el.style.display = 'none'; });
         }
         if ( FrameTrail.getState('slidePosition') != 'middle' ) {
             FrameTrail.changeState('slidePosition', 'middle');
@@ -1057,9 +1004,9 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      */
     function toggleConfig_areaBottomVisible(newState, oldState) {
         if (newState == true) {
-            domElement.find('.areaBottomContainer, .areaBottomDetails').show();
+            domElement.querySelectorAll('.areaBottomContainer, .areaBottomDetails').forEach(function(el) { el.style.display = ''; });
         } else {
-            domElement.find('.areaBottomContainer, .areaBottomDetails').hide();
+            domElement.querySelectorAll('.areaBottomContainer, .areaBottomDetails').forEach(function(el) { el.style.display = 'none'; });
         }
         if ( FrameTrail.getState('slidePosition') != 'middle' ) {
             FrameTrail.changeState('slidePosition', 'middle');
@@ -1077,9 +1024,9 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      */
     function toggleConfig_areaLeftVisible(newState, oldState) {
         if (newState == true) {
-            AreaLeftContainer.show();
+            AreaLeftContainer.style.display = '';
         } else {
-            AreaLeftContainer.hide();
+            AreaLeftContainer.style.display = 'none';
         }
     };
 
@@ -1094,9 +1041,9 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      */
     function toggleConfig_areaRightVisible(newState, oldState) {
         if (newState == true) {
-            AreaRightContainer.show();
+            AreaRightContainer.style.display = '';
         } else {
-            AreaRightContainer.hide();
+            AreaRightContainer.style.display = 'none';
         }
     };
 
@@ -1111,9 +1058,9 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      */
     function toggleConfig_overlaysVisible(newState, oldState) {
         if (newState == true) {
-            OverlayContainer.show();
+            OverlayContainer.style.display = '';
         } else {
-            OverlayContainer.hide();
+            OverlayContainer.style.display = 'none';
         }
     };
 
@@ -1176,16 +1123,17 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      * @param {Boolean} oldState
      */
     function toggleConfig_captionsVisible(newState, oldState) {
-        if (newState == true && Controls.find('.captionsButton').find('.captionSelect[data-lang="'+ FrameTrail.module('HypervideoModel').selectedLang +'"]').length > 0 ) {
-            Controls.find('.captionsButton').addClass('active');
-            Controls.find('.captionsButton').find('.captionSelect').removeClass('active');
-            Controls.find('.captionsButton').find('.captionSelect[data-lang="'+ FrameTrail.module('HypervideoModel').selectedLang +'"]').addClass('active');
-            CaptionContainer.show();
+        var _cb = Controls.querySelector('.captionsButton');
+        if (newState == true && _cb.querySelector('.captionSelect[data-lang="'+ FrameTrail.module('HypervideoModel').selectedLang +'"]') !== null ) {
+            _cb.classList.add('active');
+            _cb.querySelectorAll('.captionSelect').forEach(function(el) { el.classList.remove('active'); });
+            _cb.querySelector('.captionSelect[data-lang="'+ FrameTrail.module('HypervideoModel').selectedLang +'"]').classList.add('active');
+            CaptionContainer.style.display = '';
         } else {
-            Controls.find('.captionsButton').removeClass('active');
-            Controls.find('.captionsButton').find('.captionSelect').removeClass('active');
-            Controls.find('.captionsButton').find('.captionSelect.none').addClass('active');
-            CaptionContainer.hide();
+            _cb.classList.remove('active');
+            _cb.querySelectorAll('.captionSelect').forEach(function(el) { el.classList.remove('active'); });
+            _cb.querySelector('.captionSelect.none').classList.add('active');
+            CaptionContainer.style.display = 'none';
         }
     };
 
@@ -1211,9 +1159,9 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         if ( FrameTrail.getState('editMode') && FrameTrail.getState('editMode') != 'preview' ) return;
 
         if ( newState != 'middle' ) {
-            ExpandButton.show();
+            ExpandButton.style.display = '';
         } else {
-            ExpandButton.hide();
+            ExpandButton.style.display = 'none';
         }
 
         if ( newState == 'bottom' ) {
@@ -1228,17 +1176,14 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
 
             if ( shownDetails != null ) {
 
-                $(VideoContainer).animate({
-                    opacity: 0.2
-                }, 500);
+                VideoContainer.style.transition = 'opacity 500ms';
+                VideoContainer.style.opacity = '0.2';
 
-                AreaLeftContainer.animate({
-                    opacity: 0.2
-                }, 500);
+                AreaLeftContainer.style.transition = 'opacity 500ms';
+                AreaLeftContainer.style.opacity = '0.2';
 
-                AreaRightContainer.animate({
-                    opacity: 0.2
-                }, 500);
+                AreaRightContainer.style.transition = 'opacity 500ms';
+                AreaRightContainer.style.opacity = '0.2';
 
                 wasPlaying = FrameTrail.module('HypervideoController').isPlaying;
 
@@ -1248,34 +1193,28 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
 
             } else if ( wasPlaying ) {
 
-                $(VideoContainer).animate({
-                    opacity: 1
-                }, 500);
+                VideoContainer.style.transition = 'opacity 500ms';
+                VideoContainer.style.opacity = '1';
 
-                AreaLeftContainer.animate({
-                    opacity: 1
-                }, 500);
+                AreaLeftContainer.style.transition = 'opacity 500ms';
+                AreaLeftContainer.style.opacity = '1';
 
-                AreaRightContainer.animate({
-                    opacity: 1
-                }, 500);
+                AreaRightContainer.style.transition = 'opacity 500ms';
+                AreaRightContainer.style.opacity = '1';
 
                 window.setTimeout(function() {
                     FrameTrail.module('HypervideoController').play();
                 }, 500);
 
             } else {
-                $(VideoContainer).animate({
-                    opacity: 1
-                }, 500);
+                VideoContainer.style.transition = 'opacity 500ms';
+                VideoContainer.style.opacity = '1';
 
-                AreaLeftContainer.animate({
-                    opacity: 1
-                }, 500);
+                AreaLeftContainer.style.transition = 'opacity 500ms';
+                AreaLeftContainer.style.opacity = '1';
 
-                AreaRightContainer.animate({
-                    opacity: 1
-                }, 500);
+                AreaRightContainer.style.transition = 'opacity 500ms';
+                AreaRightContainer.style.opacity = '1';
             }
 
 
@@ -1352,42 +1291,37 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
             return;
         }
 
-        var timelineItems = $(FrameTrail.getState('target')).find('.timelineElement').not('.ui-draggable'),
-            draggableElements = $(FrameTrail.getState('target')).find('.timelineElement.ui-draggableable');
-            GridContainer = $('<div class="gridContainer" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 3"></div>');
+        var _gt = document.querySelector(FrameTrail.getState('target'));
+        var _allItems = Array.from(_gt.querySelectorAll('.timelineElement'));
+        var timelineItems = _allItems.filter(function(el) { return !el.classList.contains('ui-draggable'); });
+        var draggableElements = _allItems.filter(function(el) { return el.classList.contains('ui-draggableable'); });
+        var GridContainer = document.createElement('div');
+        GridContainer.className = 'gridContainer';
+        GridContainer.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 3';
 
 
         if ( visible ) {
 
             for (var i = 0; i < timelineItems.length; i++) { // vertical grid lines
 
-                var position = $(timelineItems[i]).position();
+                var _gl1 = document.createElement('div');
+                _gl1.className = 'gridline';
+                _gl1.style.cssText = 'position: absolute; top: 0; left: ' + timelineItems[i].offsetLeft + 'px; width: 1px; height: 100%; background-color: #ff9900';
+                GridContainer.appendChild(_gl1);
 
-                $('<div class="gridline"></div>').css({
-                    'position': 'absolute',
-                    'top': 0,
-                    'left': position.left,
-                    'width': 1,
-                    'height': 100 + '%',
-                    'background-color': '#ff9900'
-                }).appendTo(GridContainer);
-
-                $('<div class="gridline"></div>').css({
-                    'position': 'absolute',
-                    'top': 0,
-                    'left': position.left + $(timelineItems[i]).width(),
-                    'width': 1,
-                    'height': 100 + '%',
-                    'background-color': '#ff9900'
-                }).appendTo(GridContainer);
+                var _gl2 = document.createElement('div');
+                _gl2.className = 'gridline';
+                _gl2.style.cssText = 'position: absolute; top: 0; left: ' + (timelineItems[i].offsetLeft + timelineItems[i].offsetWidth) + 'px; width: 1px; height: 100%; background-color: #ff9900';
+                GridContainer.appendChild(_gl2);
 
             }
 
-            GridContainer.appendTo(PlayerProgress);
+            PlayerProgress.appendChild(GridContainer);
 
         } else {
 
-            PlayerProgress.find('.gridContainer').remove();
+            var _gc = PlayerProgress.querySelector('.gridContainer');
+            if (_gc) { _gc.remove(); }
 
         }
 
@@ -1403,11 +1337,11 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
 
         if ( working ) {
 
-            WorkingIndicator.show();
+            WorkingIndicator.style.display = '';
 
         } else {
 
-            WorkingIndicator.hide();
+            WorkingIndicator.style.display = 'none';
 
         }
 
@@ -1422,28 +1356,30 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      */
     function closestToOffset(collection, position) {
         var el = null, elOffset, x = position.left, y = position.top, distance, dx, dy, minDistance;
-        collection.each(function() {
-            elOffset = $(this).position();
+        var items = Array.from(collection);
+        for (var i = 0; i < items.length; i++) {
+            var item = items[i];
+            elOffset = { left: item.offsetLeft, top: item.offsetTop, right: item.offsetLeft + item.offsetWidth, bottom: item.offsetTop + item.offsetHeight };
 
             if (
             (x >= elOffset.left)  && (x <= elOffset.right) &&
             (y >= elOffset.top)   && (y <= elOffset.bottom)
             ) {
-                el = $(this);
-                return false;
+                el = item;
+                break;
             }
 
             var offsets = [[elOffset.left, elOffset.top], [elOffset.right, elOffset.top], [elOffset.left, elOffset.bottom], [elOffset.right, elOffset.bottom]];
-            for (off in offsets) {
+            for (var off in offsets) {
                 dx = offsets[off][0] - x;
                 dy = offsets[off][1] - y;
                 distance = Math.sqrt((dx*dx) + (dy*dy));
                 if (minDistance === undefined || distance < minDistance) {
                     minDistance = distance;
-                    el = $(this);
+                    el = item;
                 }
             }
-        });
+        }
         return el;
     };
 
@@ -1456,7 +1392,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      */
     function toggleNativeFullscreenState(evt, forceState) {
         
-        var element = $(FrameTrail.getState('fullscreenTarget') || FrameTrail.getState('target'))[0];
+        var element = document.querySelector(FrameTrail.getState('fullscreenTarget') || FrameTrail.getState('target'));
         
         if (element.requestFullscreen) {
             if ((!forceState && !document.fullscreen) || (forceState && forceState == 'open')) {
@@ -1487,7 +1423,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      */
     function toggleFullscreenState() {
 
-        var element = $(FrameTrail.getState('target')).find('.mainContainer')[0];
+        var element = document.querySelector(FrameTrail.getState('target') + ' .mainContainer');
 
         if (element.requestFullScreen) {
             if (!document.fullScreen) {
@@ -1511,7 +1447,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         }
 
         setTimeout(function() {
-            $(window).resize();
+            window.dispatchEvent(new Event('resize'));
         }, 1000);
 
     }
@@ -1527,9 +1463,9 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
 
         if (FrameTrail.getState('hv_config_autohideControls')) {
             if (activeState) {
-                $('body').removeClass('userinactive');
+                document.body.classList.remove('userinactive');
             } else {
-                $('body').addClass('userinactive');
+                document.body.classList.add('userinactive');
             }
         }
 
@@ -1543,9 +1479,9 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      */
     function toggleLivestream(activeState) {
         if (activeState) {
-            PlayerContainer.addClass('livestream');
+            PlayerContainer.classList.add('livestream');
         } else {
-            PlayerContainer.removeClass('livestream');
+            PlayerContainer.classList.remove('livestream');
         }
     }
 
@@ -1594,26 +1530,26 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
          * @attribute currentTime
          * @type String
          */
-        set currentTime(aString) { return CurrentTime.text(aString)   },
+        set currentTime(aString) { CurrentTime.textContent = aString; },
         /**
          * I display a (formated time) string in an area of the progress bar.
          * @attribute duration
          * @type String
          */
-        set duration(aString)    { return TotalDuration.text(aString) },
+        set duration(aString)    { TotalDuration.textContent = aString; },
 
         /**
          * I display a (formated time) string in an area of the progress bar.
          * @attribute currentTimeFull
          * @type String
          */
-        set currentTimeFull(aString) { return CurrentTimeFull.text(aString)   },
+        set currentTimeFull(aString) { CurrentTimeFull.textContent = aString; },
         /**
          * I display a (formated time) string in an area of the progress bar.
          * @attribute durationFull
          * @type String
          */
-        set durationFull(aString)    { return TotalDurationFull.text(aString) },
+        set durationFull(aString)    { TotalDurationFull.textContent = aString; },
 
         /**
          * I contain the HypervideoContainer element.
@@ -1780,7 +1716,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
          * @attribute CaptionsButton
          * @type HTMLElement
          */
-        get CaptionsButton() { return Controls.find('.captionsButton') }
+        get CaptionsButton() { return Controls.querySelector('.captionsButton') }
 
     };
 

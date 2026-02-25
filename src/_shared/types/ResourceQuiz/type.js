@@ -51,33 +51,41 @@ FrameTrail.defineType(
                     var licenseType = (this.resourceData.licenseType && this.resourceData.licenseType == 'CC-BY-SA-3.0') ? '<a href="https://creativecommons.org/licenses/by-sa/3.0/" title="License: '+ this.resourceData.licenseType +'" target="_blank"><span class="cc-by-sa-bg-image"></span></a>' : this.resourceData.licenseType;
                     var licenseString = (licenseType) ? licenseType +' - '+ this.resourceData.licenseAttribution : '';
 
-                    var resourceDetail = $('<div class="resourceDetail" data-type="'+ this.resourceData.type +'" style="width: 100%; height: 100%;">'
+                    var _rdw = document.createElement('div');
+                    _rdw.innerHTML = '<div class="resourceDetail" data-type="'+ this.resourceData.type +'" style="width: 100%; height: 100%;">'
                                         +  '    <div class="resourceQuizQuestion">'+ this.resourceData.attributes.question +'</div>'
                                         +  '    <div class="resourceQuizAnswersContainer"></div>'
-                                        +  '</div>');
+                                        +  '</div>';
+                    var resourceDetail = _rdw.firstElementChild;
 
                     for (var i = 0; i < this.resourceData.attributes.answers.length; i++) {
-                        var answerElement = $('<button type="button">'+ this.resourceData.attributes.answers[i].text +'</button>');
-                        answerElement.data('correct', this.resourceData.attributes.answers[i].correct);
+                        var _ansbw = document.createElement('div');
+                        _ansbw.innerHTML = '<button type="button">'+ this.resourceData.attributes.answers[i].text +'</button>';
+                        var answerElement = _ansbw.firstElementChild;
+                        answerElement.dataset.correct = String(this.resourceData.attributes.answers[i].correct);
 
-                        resourceDetail.find('.resourceQuizAnswersContainer').append(answerElement);
+                        resourceDetail.querySelector('.resourceQuizAnswersContainer').appendChild(answerElement);
                     }
 
-                    resourceDetail.find('.resourceQuizAnswersContainer').on('click', 'button', function() {
-                        if ($(this).data('correct')) {
-                            $(this).removeClass('wrong').addClass('correct');
-                            $(this).parents('.resourceDetail').removeClass('wrong').addClass('correct');
+                    resourceDetail.querySelector('.resourceQuizAnswersContainer').addEventListener('click', function(evt) {
+                        var _btn = evt.target.closest('button');
+                        if (!_btn) return;
+                        if (_btn.dataset.correct === 'true') {
+                            _btn.classList.remove('wrong'); _btn.classList.add('correct');
+                            _btn.closest('.resourceDetail').classList.remove('wrong'); _btn.closest('.resourceDetail').classList.add('correct');
                             if (self.resourceData.attributes.onCorrectAnswer.showText) {
-                                var textDialog = $('<div class="textDialog">'
+                                var _tdw = document.createElement('div');
+                                _tdw.innerHTML = '<div class="textDialog">'
                                                 + '    <p>'+ self.resourceData.attributes.onCorrectAnswer.showText +'</p>'
-                                                + '</div>');
+                                                + '</div>';
+                                var textDialog = _tdw.firstElementChild;
                                 var textDialogCtrl = Dialog({
                                     content:       textDialog,
                                     modal:         true,
                                     classes:       'quizDialog',
                                     resizable:     false,
                                     closeOnEscape: false,
-                                    position:      { my: 'center', at: 'center', of: $(this).parents('.overlayContainer') },
+                                    position:      { my: 'center', at: 'center', of: _btn.closest('.overlayContainer') },
                                     close: function() {
                                         if (self.resourceData.attributes.onCorrectAnswer.jumpForward) {
                                             FrameTrail.module('HypervideoController').currentTime = self.resourceData.attributes.onCorrectAnswer.jumpForward;
@@ -104,19 +112,21 @@ FrameTrail.defineType(
                                 }
                             }
                         } else {
-                            $(this).removeClass('correct').addClass('wrong');
-                            $(this).parents('.resourceDetail').removeClass('correct').addClass('wrong');
+                            _btn.classList.remove('correct'); _btn.classList.add('wrong');
+                            _btn.closest('.resourceDetail').classList.remove('correct'); _btn.closest('.resourceDetail').classList.add('wrong');
                             if (self.resourceData.attributes.onWrongAnswer.showText) {
-                                var textDialog = $('<div class="shareDialog">'
+                                var _sdw = document.createElement('div');
+                                _sdw.innerHTML = '<div class="shareDialog">'
                                                 + '    <p>'+ self.resourceData.attributes.onWrongAnswer.showText +'</p>'
-                                                + '</div>');
+                                                + '</div>';
+                                var textDialog = _sdw.firstElementChild;
                                 var textDialogCtrl = Dialog({
                                     content:       textDialog,
                                     modal:         true,
                                     classes:       'quizDialog',
                                     resizable:     false,
                                     closeOnEscape: false,
-                                    position:      { my: 'center', at: 'center', of: $(this).parents('.overlayContainer') },
+                                    position:      { my: 'center', at: 'center', of: _btn.closest('.overlayContainer') },
                                     close: function() {
                                         if (self.resourceData.attributes.onWrongAnswer.jumpBackward) {
                                             FrameTrail.module('HypervideoController').currentTime = FrameTrail.module('HypervideoController').currentTime - self.resourceData.attributes.onWrongAnswer.jumpBackward;
@@ -146,6 +156,8 @@ FrameTrail.defineType(
                     });
                     resourceDetail.append('<div class="resourceOptions"><div class="licenseInformation">'+ licenseString +'</div><div class="resourceButtons"></div>');
 
+                    resourceDetail.insertAdjacentHTML('beforeend', '<div class="resourceOptions"><div class="licenseInformation">'+ licenseString +'</div><div class="resourceButtons"></div>');
+
                 	return resourceDetail;
 
                 },
@@ -164,20 +176,25 @@ FrameTrail.defineType(
 
                     var tagList = (this.resourceData.tags ? this.resourceData.tags.join(' ') : '');
                     
-                    var thumbElement = $('<div class="resourceThumb '+ tagList +'" data-license-type="'+ this.resourceData.licenseType +'" data-type="'+ this.resourceData.type +'">'
+                    var _thw = document.createElement('div');
+                    _thw.innerHTML = '<div class="resourceThumb '+ tagList +'" data-license-type="'+ this.resourceData.licenseType +'" data-type="'+ this.resourceData.type +'">'
                         + '                  <div class="resourceOverlay">'
                         + '                      <div class="resourceIcon"><span class="icon-question-circle-o"></span></div>'
                         + '                  </div>'
                         + '                  <div class="resourceTitle">'+ this.labels['ResourceCustomTextHTML'] +'</div>'
-                        + '              </div>');
+                        + '              </div>';
+                    var thumbElement = _thw.firstElementChild;
 
-                    var previewButton = $('<div class="resourcePreviewButton"><span class="icon-eye"></span></div>').click(function(evt) {
+                    var previewButton = document.createElement('div');
+                    previewButton.className = 'resourcePreviewButton';
+                    previewButton.innerHTML = '<span class="icon-eye"></span>';
+                    previewButton.addEventListener('click', function(evt) {
                         // call the openPreview method (defined in abstract type: Resource)
-                        self.openPreview( $(this).parent() );
+                        self.openPreview( this.parentElement );
                         evt.stopPropagation();
                         evt.preventDefault();
                     });
-                    thumbElement.append(previewButton);
+                    thumbElement.appendChild(previewButton);
 
                     return thumbElement;
 
@@ -194,7 +211,7 @@ FrameTrail.defineType(
 
                     var basicControls = this.renderBasicPropertiesControls(overlay);
 
-                    basicControls.controlsContainer.find('#OverlayOptions').prepend(this.renderQuizEditor(overlay));
+                    basicControls.controlsContainer.querySelector('#OverlayOptions').prepend(this.renderQuizEditor(overlay));
 
 
                     return basicControls;
@@ -212,7 +229,7 @@ FrameTrail.defineType(
 
                     var timeControls = this.renderBasicTimeControls(annotation);
 
-                    timeControls.controlsContainer.find('#AnnotationOptions').append(this.renderQuizEditor(annotation));
+                    timeControls.controlsContainer.querySelector('#AnnotationOptions').append(this.renderQuizEditor(annotation));
 
                     return timeControls;
 
@@ -236,28 +253,33 @@ FrameTrail.defineType(
 
                     /* Add Question Text Field */
                     
-                    var quizEditorContainer = $('<div class="quizEditorContainer"></div>');
+                    var quizEditorContainer = document.createElement('div');
+                    quizEditorContainer.className = 'quizEditorContainer';
                     
-                    var questionRow = $('<div class="layoutRow"></div>');
-                    var questionCol = $('<div class="column-12"></div>');
-                    questionCol.append('<label>'+ this.labels['SettingsQuizQuestionLabel'] +'</label>');
-                    var questionText = $('<input type="text" value="' +currentAttributes.question+ '"/>');
+                    var questionRow = document.createElement('div');
+                    questionRow.className = 'layoutRow';
+                    var questionCol = document.createElement('div');
+                    questionCol.className = 'column-12';
+                    questionCol.insertAdjacentHTML('beforeend', '<label>'+ this.labels['SettingsQuizQuestionLabel'] +'</label>');
+                    var questionText = document.createElement('input');
+                    questionText.type = 'text';
+                    questionText.value = currentAttributes.question;
                     
-                    questionText.on('keyup', function(evt) {
-                        if (!evt.originalEvent.metaKey && evt.originalEvent.key != 'Meta') {
-                            var newValue = $(this).val();
+                    questionText.addEventListener('keyup', function(evt) {
+                        if (!evt.metaKey && evt.key != 'Meta') {
+                            var newValue = this.value;
                             overlayOrAnnotation.data.attributes.question = newValue;
 
                             if (overlayOrAnnotation.overlayElement) {
-                                
-                                overlayOrAnnotation.overlayElement.children('.resourceDetail').find('.resourceQuizQuestion').html(newValue);
+
+                                overlayOrAnnotation.overlayElement.querySelector('.resourceQuizQuestion').innerHTML = newValue;
                                 FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
 
                             } else {
-                                
+
                                 // Update annotation elements in dom
-                                $(overlayOrAnnotation.contentViewDetailElements).each(function() {
-                                    $(this).find('.resourceDetail').find('.resourceQuizQuestion').html(newValue);
+                                overlayOrAnnotation.contentViewDetailElements.forEach(function(el) {
+                                    el.querySelector('.resourceQuizQuestion').innerHTML = newValue;
                                 });
                                 FrameTrail.module('HypervideoModel').newUnsavedChange('annotations');
 
@@ -265,22 +287,25 @@ FrameTrail.defineType(
                         }
                     });
 
-                    questionCol.append(questionText);
-                    questionRow.append(questionCol);
-                    quizEditorContainer.append(questionRow);
+                    questionCol.appendChild(questionText);
+                    questionRow.appendChild(questionCol);
+                    quizEditorContainer.appendChild(questionRow);
 
                     /* Add Answer Text Fields */
 
-                    var answersRow = $('<div class="layoutRow"></div>');
-                    var leftColumn = $('<div class="column-12"></div>');
+                    var answersRow = document.createElement('div');
+                    answersRow.className = 'layoutRow';
+                    var leftColumn = document.createElement('div');
+                    leftColumn.className = 'column-12';
 
-                    leftColumn.append('<label>'+ this.labels['SettingsQuizAnswersLabel'] +'</label>');
+                    leftColumn.insertAdjacentHTML('beforeend', '<label>'+ this.labels['SettingsQuizAnswersLabel'] +'</label>');
 
-                    var answersContainer = $('<div class="quizEditorAnswersContainer"></div>');
+                    var answersContainer = document.createElement('div');
+                    answersContainer.className = 'quizEditorAnswersContainer';
 
                     for (var i = 0; i < currentAttributes.answers.length; i++) {
                         
-                        answersContainer.append(getAnswerElement(currentAttributes.answers[i].text, currentAttributes.answers[i].correct));
+                        answersContainer.appendChild(getAnswerElement(currentAttributes.answers[i].text, currentAttributes.answers[i].correct));
                         
                     }
 
@@ -291,81 +316,105 @@ FrameTrail.defineType(
                         if (!isCorrect) {
                             isCorrect = false;
                         }
-                        var answerWrapper = $('<div class="answerWrapper"></div>'),
-                            answerText = $('<input type="text" value="'+ answerInput +'"/>'),
-                            answerDeleteButton = $('<button type="button" class="answerDeleteButton"><span class="icon-cancel"></span></button>'),
-                            checkedString = (isCorrect) ? 'checked="checked"' : '';
-                            answerCheckbox = $('<label class="switch">'
-                                            +  '    <input class="answerCheckbox" type="checkbox" autocomplete="off" '+ checkedString +'>'
-                                            +  '    <span class="slider round"></span>'
-                                            +  '</label>');
+                        var answerWrapper = document.createElement('div');
+                        answerWrapper.className = 'answerWrapper';
+                        var answerText = document.createElement('input');
+                        answerText.type = 'text';
+                        answerText.value = answerInput || '';
+                        var _adbw = document.createElement('div');
+                        _adbw.innerHTML = '<button type="button" class="answerDeleteButton"><span class="icon-cancel"></span></button>';
+                        var answerDeleteButton = _adbw.firstElementChild;
+                        var checkedString = (isCorrect) ? 'checked="checked"' : '';
+                        var _acbw = document.createElement('div');
+                        _acbw.innerHTML = '<label class="switch">'
+                                        +  '    <input class="answerCheckbox" type="checkbox" autocomplete="off" '+ checkedString +'>'
+                                        +  '    <span class="slider round"></span>'
+                                        +  '</label>';
+                        answerCheckbox = _acbw.firstElementChild;
 
                         answerWrapper.append(answerText, answerCheckbox, answerDeleteButton);
                         return answerWrapper;
                     }
 
-                    answersContainer.on('keyup', 'input[type="text"]', function(evt) {
-                        if (!evt.originalEvent.metaKey && evt.originalEvent.key != 'Meta') {
-                            var newValue = $(this).val(),
-                                thisIndex = $(this).parents('.answerWrapper').index();
-                            
+                    answersContainer.addEventListener('keyup', function(evt) {
+                        var _inp = evt.target.closest('input[type="text"]');
+                        if (!_inp) return;
+                        if (!evt.metaKey && evt.key != 'Meta') {
+                            var _wrapper = _inp.closest('.answerWrapper'),
+                                thisIndex = Array.from(_wrapper.parentNode.children).indexOf(_wrapper),
+                                newValue = _inp.value;
+
                             overlayOrAnnotation.data.attributes.answers[thisIndex].text = newValue;
 
-                            if (overlayOrAnnotation.overlayElement) { 
-                                overlayOrAnnotation.overlayElement.children('.resourceDetail').find('.resourceQuizAnswersContainer button').removeClass('correct wrong');
-                                overlayOrAnnotation.overlayElement.children('.resourceDetail').find('.resourceQuizAnswersContainer button').eq(thisIndex).html(newValue);
+                            if (overlayOrAnnotation.overlayElement) {
+                                overlayOrAnnotation.overlayElement.querySelectorAll('.resourceQuizAnswersContainer button').forEach(function(b) { b.classList.remove('correct', 'wrong'); });
+                                var _btn2 = overlayOrAnnotation.overlayElement.querySelectorAll('.resourceQuizAnswersContainer button')[thisIndex];
+                                if (_btn2) _btn2.innerHTML = newValue;
                                 FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
                             } else {
                                 // Update annotation elements in dom
-                                $(overlayOrAnnotation.contentViewDetailElements).each(function() {
-                                    $(this).find('.resourceDetail').find('.resourceQuizAnswersContainer button').removeClass('correct wrong');
-                                    $(this).find('.resourceDetail').find('.resourceQuizAnswersContainer button').eq(thisIndex).html(newValue);
+                                overlayOrAnnotation.contentViewDetailElements.forEach(function(el) {
+                                    el.querySelectorAll('.resourceQuizAnswersContainer button').forEach(function(b) { b.classList.remove('correct', 'wrong'); });
+                                    var _btn3 = el.querySelectorAll('.resourceQuizAnswersContainer button')[thisIndex];
+                                    if (_btn3) _btn3.innerHTML = newValue;
                                 });
                                 FrameTrail.module('HypervideoModel').newUnsavedChange('annotations');
                             }
                         }
                     });
 
-                    answersContainer.on('click', '.answerDeleteButton', function() {
-                        var thisIndex = $(this).parents('.answerWrapper').index();
+                    answersContainer.addEventListener('click', function(evt) {
+                        var _delBtn = evt.target.closest('.answerDeleteButton');
+                        if (!_delBtn) return;
+                        var _wrapper = _delBtn.closest('.answerWrapper');
+                        var thisIndex = Array.from(_wrapper.parentNode.children).indexOf(_wrapper);
 
                         overlayOrAnnotation.data.attributes.answers.splice(thisIndex, 1);
 
-                        if (overlayOrAnnotation.overlayElement) { 
-                            overlayOrAnnotation.overlayElement.children('.resourceDetail').find('.resourceQuizAnswersContainer button').eq(thisIndex).remove();
+                        if (overlayOrAnnotation.overlayElement) {
+                            var _btns = overlayOrAnnotation.overlayElement.querySelectorAll('.resourceQuizAnswersContainer button');
+                            if (_btns[thisIndex]) _btns[thisIndex].remove();
                             FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
                         } else {
                             // Update annotation elements in dom
-                            $(overlayOrAnnotation.contentViewDetailElements).each(function() {
-                                $(this).find('.resourceDetail').find('.resourceQuizAnswersContainer button').eq(thisIndex).remove();
+                            overlayOrAnnotation.contentViewDetailElements.forEach(function(el) {
+                                var _btns2 = el.querySelectorAll('.resourceQuizAnswersContainer button');
+                                if (_btns2[thisIndex]) _btns2[thisIndex].remove();
                             });
                             FrameTrail.module('HypervideoModel').newUnsavedChange('annotations');
                         }
 
-                        $(this).parents('.answerWrapper').remove();
+                        _wrapper.remove();
                     });
 
-                    answersContainer.on('change', 'input[type="checkbox"]', function() {
-                        var thisIndex = $(this).parents('.answerWrapper').index();
+                    answersContainer.addEventListener('change', function(evt) {
+                        var _cb = evt.target.closest('input[type="checkbox"]');
+                        if (!_cb) return;
+                        var _wrapper = _cb.closest('.answerWrapper');
+                        var thisIndex = Array.from(_wrapper.parentNode.children).indexOf(_wrapper);
 
-                        overlayOrAnnotation.data.attributes.answers[thisIndex].correct = this.checked;
+                        overlayOrAnnotation.data.attributes.answers[thisIndex].correct = _cb.checked;
 
-                        if (overlayOrAnnotation.overlayElement) { 
-                            overlayOrAnnotation.overlayElement.children('.resourceDetail').find('.resourceQuizAnswersContainer button').eq(thisIndex).data('correct', this.checked);
+                        if (overlayOrAnnotation.overlayElement) {
+                            var _btns = overlayOrAnnotation.overlayElement.querySelectorAll('.resourceQuizAnswersContainer button');
+                            if (_btns[thisIndex]) _btns[thisIndex].dataset.correct = String(_cb.checked);
                             FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
                         } else {
                             // Update annotation elements in dom
-                            $(overlayOrAnnotation.contentViewDetailElements).each(function() {
-                                $(this).find('.resourceDetail').find('.resourceQuizAnswersContainer button').eq(thisIndex).data('correct', this.checked);
+                            overlayOrAnnotation.contentViewDetailElements.forEach(function(el) {
+                                var _btns2 = el.querySelectorAll('.resourceQuizAnswersContainer button');
+                                if (_btns2[thisIndex]) _btns2[thisIndex].dataset.correct = String(_cb.checked);
                             });
                             FrameTrail.module('HypervideoModel').newUnsavedChange('annotations');
                         }
                     });
 
-                    leftColumn.append(answersContainer);
+                    leftColumn.appendChild(answersContainer);
 
-                    var newAnswerButton = $('<button type="button">'+ this.labels['GenericAdd'] +' <span class="icon-plus"></span></button>');
-                    newAnswerButton.on('click', function() {
+                    var _nabw = document.createElement('div');
+                    _nabw.innerHTML = '<button type="button">'+ this.labels['GenericAdd'] +' <span class="icon-plus"></span></button>';
+                    var newAnswerButton = _nabw.firstElementChild;
+                    newAnswerButton.addEventListener('click', function() {
                         
                         overlayOrAnnotation.data.attributes.answers.push({
                             'text': '',
@@ -373,12 +422,13 @@ FrameTrail.defineType(
                         });
 
                         answersContainer.append(getAnswerElement());
-                        var answerElement = $('<button type="button"></button>');
-                        answerElement.data('correct', false);
-                        overlayOrAnnotation.overlayElement.children('.resourceDetail').find('.resourceQuizAnswersContainer').append(answerElement);
+                        var answerElement = document.createElement('button');
+                        answerElement.type = 'button';
+                        answerElement.dataset.correct = 'false';
+                        overlayOrAnnotation.overlayElement.querySelector('.resourceQuizAnswersContainer').appendChild(answerElement);
                     });
 
-                    leftColumn.append(newAnswerButton);
+                    leftColumn.appendChild(newAnswerButton);
 
                     var settingsCorrectShowTextCheckedString = (overlayOrAnnotation.data.attributes.onCorrectAnswer.showText) ? 'checked="checked"' : '',
                         settingsCorrectShowTextClass = (overlayOrAnnotation.data.attributes.onCorrectAnswer.showText) ? 'active' : '',
@@ -395,8 +445,10 @@ FrameTrail.defineType(
                         settingsJumpBackwardCheckedString = (overlayOrAnnotation.data.attributes.onWrongAnswer.jumpBackward) ? 'checked="checked"' : '',
                         settingsJumpBackwardDisabledString = (overlayOrAnnotation.data.attributes.onWrongAnswer.jumpBackward) ? '' : 'disabled="disabled"';
 
-                    var settingsRow = $('<div class="layoutRow"></div>');
-                    var rightColumn = $('<div class="column-12">'
+                    var settingsRow = document.createElement('div');
+                    settingsRow.className = 'layoutRow';
+                    var _rcw = document.createElement('div');
+                    _rcw.innerHTML = '<div class="column-12">'
                                     +   '    <div class="settingsActionsTabs">'
                                     +   '        <ul>'
                                     +   '            <li>'
@@ -461,14 +513,15 @@ FrameTrail.defineType(
                                     +   '            <div class="message active">'+ this.labels['MessageQuizActions'] +': '+ this.labels['GenericShowText'] +', '+ this.labels['GenericJumpBackward'] +', '+ this.labels['GenericContinuePlayback'] +'.</div>'
                                     +   '        </div>'
                                     +   '    </div>'
-                                    +   '</div>');
+                                    +   '</div>';
+                    var rightColumn = _rcw.firstElementChild;
 
-                    rightColumn.find('.settingsActionsTabs').tabs();
+                    FTTabs(rightColumn.querySelector('.settingsActionsTabs'));
 
-                    var settingsCorrectShowTextInput = rightColumn.find('input.settingsCorrectShowTextInput');
-                    settingsCorrectShowTextInput.on('keyup', function(evt) {
-                        if (!evt.originalEvent.metaKey && evt.originalEvent.key != 'Meta') {
-                            var thisValue = $(this).val();
+                    var settingsCorrectShowTextInput = rightColumn.querySelector('input.settingsCorrectShowTextInput');
+                    settingsCorrectShowTextInput.addEventListener('keyup', function(evt) {
+                        if (!evt.metaKey && evt.key != 'Meta') {
+                            var thisValue = this.value;
                             
                             overlayOrAnnotation.data.attributes.onCorrectAnswer.showText = thisValue;
                             if (overlayOrAnnotation.overlayElement) { 
@@ -478,13 +531,13 @@ FrameTrail.defineType(
                             }
                         }
                     });
-                    rightColumn.find('input.settingsCorrectShowTextCheckbox').on('change', function() {
+                    rightColumn.querySelector('input.settingsCorrectShowTextCheckbox').addEventListener('change', function() {
                         if (!this.checked) {
-                            settingsCorrectShowTextInput.val('').removeClass('active');
+                            settingsCorrectShowTextInput.value = ''; settingsCorrectShowTextInput.classList.remove('active');
                         } else {
-                            settingsCorrectShowTextInput.addClass('active');
+                            settingsCorrectShowTextInput.classList.add('active');
                         }
-                        overlayOrAnnotation.data.attributes.onCorrectAnswer.showText = (this.checked) ? settingsCorrectShowTextInput.val() : false;
+                        overlayOrAnnotation.data.attributes.onCorrectAnswer.showText = (this.checked) ? settingsCorrectShowTextInput.value : false;
                         if (overlayOrAnnotation.overlayElement) { 
                             FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
                         } else {
@@ -492,10 +545,10 @@ FrameTrail.defineType(
                         }
                     });
 
-                    var settingsWrongShowTextInput = rightColumn.find('input.settingsWrongShowTextInput');
-                    settingsWrongShowTextInput.on('keyup', function(evt) {
-                        if (!evt.originalEvent.metaKey && evt.originalEvent.key != 'Meta') {
-                            var thisValue = $(this).val();
+                    var settingsWrongShowTextInput = rightColumn.querySelector('input.settingsWrongShowTextInput');
+                    settingsWrongShowTextInput.addEventListener('keyup', function(evt) {
+                        if (!evt.metaKey && evt.key != 'Meta') {
+                            var thisValue = this.value;
                             
                             overlayOrAnnotation.data.attributes.onWrongAnswer.showText = thisValue;
                             if (overlayOrAnnotation.overlayElement) { 
@@ -505,13 +558,13 @@ FrameTrail.defineType(
                             }
                         }
                     });
-                    rightColumn.find('input.settingsWrongShowTextCheckbox').on('change', function() {
+                    rightColumn.querySelector('input.settingsWrongShowTextCheckbox').addEventListener('change', function() {
                         if (!this.checked) {
-                            settingsWrongShowTextInput.val('').removeClass('active');
+                            settingsWrongShowTextInput.value = ''; settingsWrongShowTextInput.classList.remove('active');
                         } else {
-                            settingsWrongShowTextInput.addClass('active');
+                            settingsWrongShowTextInput.classList.add('active');
                         }
-                        overlayOrAnnotation.data.attributes.onWrongAnswer.showText = (this.checked) ? settingsWrongShowTextInput.val() : false;
+                        overlayOrAnnotation.data.attributes.onWrongAnswer.showText = (this.checked) ? settingsWrongShowTextInput.value : false;
                         if (overlayOrAnnotation.overlayElement) { 
                             FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
                         } else {
@@ -519,7 +572,7 @@ FrameTrail.defineType(
                         }
                     });
 
-                    rightColumn.find('input.settingsCorrectPlayCheckbox').on('change', function() {
+                    rightColumn.querySelector('input.settingsCorrectPlayCheckbox').addEventListener('change', function() {
                         overlayOrAnnotation.data.attributes.onCorrectAnswer.resumePlayback = this.checked;
                         if (overlayOrAnnotation.overlayElement) { 
                             FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
@@ -528,7 +581,7 @@ FrameTrail.defineType(
                         }
                     });
 
-                    rightColumn.find('input.settingsWrongPlayCheckbox').on('change', function() {
+                    rightColumn.querySelector('input.settingsWrongPlayCheckbox').addEventListener('change', function() {
                         overlayOrAnnotation.data.attributes.onWrongAnswer.resumePlayback = this.checked;
                         if (overlayOrAnnotation.overlayElement) { 
                             FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
@@ -537,10 +590,10 @@ FrameTrail.defineType(
                         }
                     });
 
-                    var settingsJumpForwardInput = rightColumn.find('input.settingsJumpForwardInput');
-                    settingsJumpForwardInput.on('keyup', function(evt) {
-                        if (!evt.originalEvent.metaKey && evt.originalEvent.key != 'Meta') {
-                            var thisValue = parseFloat($(this).val());
+                    var settingsJumpForwardInput = rightColumn.querySelector('input.settingsJumpForwardInput');
+                    settingsJumpForwardInput.addEventListener('keyup', function(evt) {
+                        if (!evt.metaKey && evt.key != 'Meta') {
+                            var thisValue = parseFloat(this.value);
                             
                             overlayOrAnnotation.data.attributes.onCorrectAnswer.jumpForward = thisValue;
                             if (overlayOrAnnotation.overlayElement) { 
@@ -550,13 +603,13 @@ FrameTrail.defineType(
                             }
                         }
                     });
-                    rightColumn.find('input.settingsJumpForwardCheckbox').on('change', function() {
+                    rightColumn.querySelector('input.settingsJumpForwardCheckbox').addEventListener('change', function() {
                         if (!this.checked) {
-                            settingsJumpForwardInput.attr('disabled', 'disabled');
+                            settingsJumpForwardInput.disabled = true;
                         } else {
-                            settingsJumpForwardInput.removeAttr('disabled');
+                            settingsJumpForwardInput.disabled = false;
                         }
-                        overlayOrAnnotation.data.attributes.onCorrectAnswer.jumpForward = (this.checked) ? parseFloat(settingsJumpForwardInput.val()) : false;
+                        overlayOrAnnotation.data.attributes.onCorrectAnswer.jumpForward = (this.checked) ? parseFloat(settingsJumpForwardInput.value) : false;
                         if (overlayOrAnnotation.overlayElement) { 
                             FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
                         } else {
@@ -564,10 +617,10 @@ FrameTrail.defineType(
                         }
                     });
 
-                    var settingsJumpBackwardInput = rightColumn.find('input.settingsJumpBackwardInput');
-                    settingsJumpBackwardInput.on('keyup', function(evt) {
-                        if (!evt.originalEvent.metaKey && evt.originalEvent.key != 'Meta') {
-                            var thisValue = parseFloat($(this).val());
+                    var settingsJumpBackwardInput = rightColumn.querySelector('input.settingsJumpBackwardInput');
+                    settingsJumpBackwardInput.addEventListener('keyup', function(evt) {
+                        if (!evt.metaKey && evt.key != 'Meta') {
+                            var thisValue = parseFloat(this.value);
                             
                             overlayOrAnnotation.data.attributes.onWrongAnswer.jumpBackward = thisValue;
                             if (overlayOrAnnotation.overlayElement) { 
@@ -577,13 +630,13 @@ FrameTrail.defineType(
                             }
                         }
                     });
-                    rightColumn.find('input.settingsJumpBackwardCheckbox').on('change', function() {
+                    rightColumn.querySelector('input.settingsJumpBackwardCheckbox').addEventListener('change', function() {
                         if (!this.checked) {
-                            settingsJumpBackwardInput.attr('disabled', 'disabled');
+                            settingsJumpBackwardInput.disabled = true;
                         } else {
-                            settingsJumpBackwardInput.removeAttr('disabled');
+                            settingsJumpBackwardInput.disabled = false;
                         }
-                        overlayOrAnnotation.data.attributes.onWrongAnswer.jumpBackward = (this.checked) ? parseFloat(settingsJumpBackwardInput.val()) : false;
+                        overlayOrAnnotation.data.attributes.onWrongAnswer.jumpBackward = (this.checked) ? parseFloat(settingsJumpBackwardInput.value) : false;
                         if (overlayOrAnnotation.overlayElement) { 
                             FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
                         } else {
@@ -591,8 +644,8 @@ FrameTrail.defineType(
                         }
                     });
 
-                    answersRow.append(leftColumn);
-                    settingsRow.append(rightColumn);
+                    answersRow.appendChild(leftColumn);
+                    settingsRow.appendChild(rightColumn);
                     quizEditorContainer.append(answersRow, settingsRow);
 
                     // Helper function to update quiz DOM elements by re-rendering
@@ -603,18 +656,19 @@ FrameTrail.defineType(
                             el.overlayElement.append(el.resourceItem.renderContent());
                         } else {
                             // Re-render annotation content in all content views
-                            $(el.contentViewDetailElements).each(function() {
-                                $(this).find('.resourceDetail').remove();
-                                $(this).append(el.resourceItem.renderContent());
+                            el.contentViewDetailElements.forEach(function(detailEl) {
+                                var _rd = detailEl.querySelector('.resourceDetail');
+                                if (_rd) _rd.remove();
+                                detailEl.appendChild(el.resourceItem.renderContent());
                             });
                         }
                     };
 
                     // Register undo when focus leaves the quiz editor (if changes were made)
-                    quizEditorContainer.on('focusout', function(evt) {
+                    quizEditorContainer.addEventListener('focusout', function(evt) {
                         // Only register if focus is leaving the container entirely
                         var newFocusTarget = evt.relatedTarget;
-                        if (newFocusTarget && $.contains(quizEditorContainer[0], newFocusTarget)) {
+                        if (newFocusTarget && quizEditorContainer.contains(newFocusTarget)) {
                             return; // Focus is still within the container
                         }
                         

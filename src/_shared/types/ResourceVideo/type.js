@@ -53,16 +53,17 @@ FrameTrail.defineType(
                         downloadButton = '<a download class="button" href="'+ FrameTrail.module('RouteNavigation').getResourceURL(this.resourceData.src) +'" data-tooltip-bottom-right="'+ this.labels['GenericDownload'] +'"><span class="icon-download"></span></a>';
                     }
 
-                    var resourceDetailElement = $('<div class="resourceDetail" data-type="'+ this.resourceData.type +'">'
-                           + '    <video controls disablePictureInPicture>'
-                           + '    </video>'
-                           + '    <div class="resourceOptions">'
-                           + '        <div class="licenseInformation">'+ licenseString +'</div>'
-                           + '        <div class="resourceButtons">'+ downloadButton +'</div>'
-                           + '    </div>'
-                           + '</div>');
-                    
-                    var videoElement = resourceDetailElement.find('video').eq(0)[0];
+                    var _wrapper = document.createElement('div');
+                    _wrapper.innerHTML = '<div class="resourceDetail" data-type="'+ this.resourceData.type +'">'
+                        + '<video controls disablePictureInPicture></video>'
+                        + '<div class="resourceOptions">'
+                        + '    <div class="licenseInformation">'+ licenseString +'</div>'
+                        + '    <div class="resourceButtons">'+ downloadButton +'</div>'
+                        + '</div>'
+                        + '</div>';
+                    var resourceDetailElement = _wrapper.firstElementChild;
+
+                    var videoElement = resourceDetailElement.querySelector('video');
 
                     if (this.resourceData.src.indexOf('.m3u8') != -1) {
                         if(Hls.isSupported()) {
@@ -81,7 +82,7 @@ FrameTrail.defineType(
                         // Note: it would be more normal to wait on the 'canplay' event below however on Safari (where you are most likely to find built-in HLS support) the video.src URL must be on the user-driven
                         // white-list before a 'canplay' event will be emitted; the last video event that can be reliably listened-for when the URL is not on the white-list is 'loadedmetadata'.
                         else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
-                            $(videoElement).append('<source src="'+ FrameTrail.module('RouteNavigation').getResourceURL(this.resourceData.src)  +'" type="video/mp4"></source>');
+                            videoElement.insertAdjacentHTML('beforeend', '<source src="'+ FrameTrail.module('RouteNavigation').getResourceURL(this.resourceData.src)  +'" type="video/mp4"></source>');
                             /*
                             videoElement.addEventListener('loadedmetadata',function() {
                                 //videoElement.play();
@@ -89,20 +90,26 @@ FrameTrail.defineType(
                             */
                         }
                     } else {
-                        $(videoElement).append('<source src="'+ FrameTrail.module('RouteNavigation').getResourceURL(this.resourceData.src)  +'" type="video/mp4"></source>');
+                        videoElement.insertAdjacentHTML('beforeend', '<source src="'+ FrameTrail.module('RouteNavigation').getResourceURL(this.resourceData.src)  +'" type="video/mp4"></source>');
                     }
 
-                    $(videoElement).find('source').on('error', function(err) {
-                        console.log('PLAYBACK ERROR: ', err);
-                    });
+                    var sourceEl = videoElement.querySelector('source');
+                    if (sourceEl) {
+                        sourceEl.addEventListener('error', function(err) {
+                            console.log('PLAYBACK ERROR: ', err);
+                        });
+                    }
 
                     if (this.resourceData.start) {
-                        var jumpToTimeButton = $('<button class="button btn btn-sm" data-start="'+ this.resourceData.start +'" data-end="'+ this.resourceData.end +'"><span class="icon-play-1"></span></button>');
-                        jumpToTimeButton.click(function(){
-                            var time = $(this).attr('data-start');
-                            FrameTrail.module('HypervideoController').currentTime = time;
+                        var jumpToTimeButton = document.createElement('button');
+                        jumpToTimeButton.className = 'button btn btn-sm';
+                        jumpToTimeButton.setAttribute('data-start', this.resourceData.start);
+                        jumpToTimeButton.setAttribute('data-end', this.resourceData.end);
+                        jumpToTimeButton.innerHTML = '<span class="icon-play-1"></span>';
+                        jumpToTimeButton.addEventListener('click', function(){
+                            FrameTrail.module('HypervideoController').currentTime = this.getAttribute('data-start');
                         });
-                        resourceDetailElement.find('.resourceButtons').append(jumpToTimeButton);
+                        resourceDetailElement.querySelector('.resourceButtons').append(jumpToTimeButton);
                     }
 
                     return resourceDetailElement;
@@ -136,16 +143,19 @@ FrameTrail.defineType(
 
                     var tagList = (this.resourceData.tags ? this.resourceData.tags.join(' ') : '');
                     
-                    var thumbElement = $('<div class="resourceThumb '+ tagList +'" data-license-type="'+ this.resourceData.licenseType +'" data-resourceID="'+ trueID +'" data-type="'+ this.resourceData.type +'" style="'+ thumbBackground +'">'
-                        + '                  <div class="resourceOverlay">'
-                        + '                      <div class="resourceIcon"><span class="icon-play-1"></span></div>'
-                        + '                  </div>'
-                        + '                  <div class="resourceTitle">'+ this.resourceData.name +'</div>'
-                        + '              </div>');
+                    var _thumbWrapper = document.createElement('div');
+                    _thumbWrapper.innerHTML = '<div class="resourceThumb '+ tagList +'" data-license-type="'+ this.resourceData.licenseType +'" data-resourceID="'+ trueID +'" data-type="'+ this.resourceData.type +'" style="'+ thumbBackground +'">'
+                        + '<div class="resourceOverlay"><div class="resourceIcon"><span class="icon-play-1"></span></div></div>'
+                        + '<div class="resourceTitle">'+ this.resourceData.name +'</div>'
+                        + '</div>';
+                    var thumbElement = _thumbWrapper.firstElementChild;
 
-                    var previewButton = $('<div class="resourcePreviewButton"><span class="icon-eye"></span></div>').click(function(evt) {
+                    var previewButton = document.createElement('div');
+                    previewButton.className = 'resourcePreviewButton';
+                    previewButton.innerHTML = '<span class="icon-eye"></span>';
+                    previewButton.addEventListener('click', function(evt) {
                         // call the openPreview method (defined in abstract type: Resource)
-                        self.openPreview( $(this).parent() );
+                        self.openPreview(this.parentElement);
                         evt.stopPropagation();
                         evt.preventDefault();
                     });
@@ -171,17 +181,22 @@ FrameTrail.defineType(
 
                     /* Add Video Type  Controls */
 
-                    var checkboxRow = $('<div class="checkboxRow"></div>');
+                    var checkboxRow = document.createElement('div');
+                    checkboxRow.className = 'checkboxRow';
 
-                    var syncedLabel = $('<label for="syncedCheckbox">'+ this.labels['SettingsSynchronization'] +'</label>'),
-                        checkedString = (overlay.data.attributes.autoPlay) ? 'checked="checked"' : '',
-                        syncedCheckbox = $('<label class="switch">'
-                                        +  '    <input id="syncedCheckbox" class="syncedCheckbox" type="checkbox" autocomplete="off" '+ checkedString +'>'
-                                        +  '    <span class="slider round"></span>'
-                                        +  '</label>');
+                    var syncedLabel = document.createElement('label');
+                    syncedLabel.setAttribute('for', 'syncedCheckbox');
+                    syncedLabel.textContent = this.labels['SettingsSynchronization'];
+
+                    var _switchWrapper = document.createElement('div');
+                    _switchWrapper.innerHTML = '<label class="switch">'
+                        + '    <input id="syncedCheckbox" class="syncedCheckbox" type="checkbox" autocomplete="off" '+ ((overlay.data.attributes.autoPlay) ? 'checked' : '') +'>'
+                        + '    <span class="slider round"></span>'
+                        + '</label>';
+                    var syncedCheckbox = _switchWrapper.firstElementChild;
 
                     var self = this;
-                    syncedCheckbox.find('input[type="checkbox"]').on('change', function () {
+                    syncedCheckbox.querySelector('input[type="checkbox"]').addEventListener('change', function () {
                         var wasChecked = !this.checked; // opposite of current state
                         if (this.checked) {
                             overlay.data.attributes.autoPlay = true;
@@ -231,7 +246,7 @@ FrameTrail.defineType(
 
                     checkboxRow.append(syncedCheckbox, syncedLabel);
 
-                    basicControls.controlsContainer.find('#OverlayOptions').prepend(checkboxRow);
+                    basicControls.controlsContainer.querySelector('#OverlayOptions').prepend(checkboxRow);
 
                     return basicControls;
 

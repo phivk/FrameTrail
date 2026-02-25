@@ -51,30 +51,32 @@ FrameTrail.defineType(
                     var licenseType = (this.resourceData.licenseType && this.resourceData.licenseType == 'CC-BY-SA-3.0') ? '<a href="https://creativecommons.org/licenses/by-sa/3.0/" title="License: '+ this.resourceData.licenseType +'" target="_blank"><span class="cc-by-sa-bg-image"></span></a>' : this.resourceData.licenseType;
                     var licenseString = (licenseType) ? licenseType +' - '+ this.resourceData.licenseAttribution : '';
 
-                    var resourceDetail = $('<div class="resourceDetail" data-type="'+ this.resourceData.type +'" style="width: 100%; height: 100%;"></div>'),
-                        unescapeHelper = document.createElement('div'),
-                        child,
-                        unescapedString;
+                    var _rcw = document.createElement('div');
+                    _rcw.innerHTML = '<div class="resourceDetail" data-type="'+ this.resourceData.type +'" style="width: 100%; height: 100%;"></div>';
+                    var resourceDetail = _rcw.firstElementChild;
 
+                    var unescapeHelper = document.createElement('div');
                     // unescape string from json
                     unescapeHelper.innerHTML = self.resourceData.attributes.text;
-                    child = unescapeHelper.childNodes[0];
-                    unescapedString = child ? child.nodeValue : '';
+                    var child = unescapeHelper.childNodes[0];
+                    var unescapedString = child ? child.nodeValue : '';
 
-                    resourceDetail.html(unescapedString);
+                    resourceDetail.innerHTML = unescapedString;
 
-                    resourceDetail.append('<div class="resourceOptions"><div class="licenseInformation">'+ licenseString +'</div><div class="resourceButtons"></div>');
+                    resourceDetail.insertAdjacentHTML('beforeend', '<div class="resourceOptions"><div class="licenseInformation">'+ licenseString +'</div><div class="resourceButtons"></div>');
 
                     if (this.resourceData.start) {
-                        var jumpToTimeButton = $('<button class="button btn btn-sm" data-start="'+ this.resourceData.start +'" data-end="'+ this.resourceData.end +'"><span class="icon-play-1"></span></button>');
-                        jumpToTimeButton.click(function(){
-                            var time = $(this).attr('data-start');
+                        var _btw = document.createElement('div');
+                        _btw.innerHTML = '<button class="button btn btn-sm" data-start="'+ this.resourceData.start +'" data-end="'+ this.resourceData.end +'"><span class="icon-play-1"></span></button>';
+                        var jumpToTimeButton = _btw.firstElementChild;
+                        jumpToTimeButton.addEventListener('click', function(){
+                            var time = this.dataset.start;
                             FrameTrail.module('HypervideoController').currentTime = time;
                         });
-                        resourceDetail.find('.resourceButtons').append(jumpToTimeButton);
+                        resourceDetail.querySelector('.resourceButtons').appendChild(jumpToTimeButton);
                     }
 
-                	return resourceDetail;
+                    return resourceDetail;
 
                 },
 
@@ -103,27 +105,30 @@ FrameTrail.defineType(
 
                     var tagList = (this.resourceData.tags ? this.resourceData.tags.join(' ') : '');
 
-                    var thumbElement = $('<div class="resourceThumb '+ tagList +'" data-license-type="'+ this.resourceData.licenseType +'" data-type="'+ this.resourceData.type +'" style="'+ thumbBackground +'">'
-                        + '                  <div class="resourceOverlay">'
-                        + '                      <div class="resourceIcon"><span class="icon-doc-text"></span></div>'
-                        + '                  </div>'
-                        + '                  <div class="resourceTitle">'+ thumbLabel +'</div>'
-                        + '              </div>');
+                    var _tw = document.createElement('div');
+                    _tw.innerHTML = '<div class="resourceThumb '+ tagList +'" data-license-type="'+ this.resourceData.licenseType +'" data-type="'+ this.resourceData.type +'" style="'+ thumbBackground +'">'
+                        + '    <div class="resourceOverlay">'
+                        + '        <div class="resourceIcon"><span class="icon-doc-text"></span></div>'
+                        + '    </div>'
+                        + '    <div class="resourceTitle">'+ thumbLabel +'</div>'
+                        + '</div>';
+                    var thumbElement = _tw.firstElementChild;
 
-                    var previewButton = $('<div class="resourcePreviewButton"><span class="icon-eye"></span></div>').click(function(evt) {
+                    var previewButton = document.createElement('div');
+                    previewButton.className = 'resourcePreviewButton';
+                    previewButton.innerHTML = '<span class="icon-eye"></span>';
+                    previewButton.addEventListener('click', function(evt) {
                         // call the openPreview method (defined in abstract type: Resource)
-                        self.openPreview( $(this).parent() );
+                        self.openPreview(this.parentElement);
                         evt.stopPropagation();
                         evt.preventDefault();
                     });
-                    thumbElement.append(previewButton);
+                    thumbElement.appendChild(previewButton);
 
-                    //var decoded_string = $("<div/>").html(self.resourceData.attributes.text).text();
-                    //var textOnly = $("<div/>").html(decoded_string).text();
-                    //thumbElement.append('<div class="resourceTextPreview">'+ textOnly +'</div>');
-
-                    var decoded_string = $("<div/>").html(self.resourceData.attributes.text).text();
-                    thumbElement.append('<div class="resourceTextPreview">'+ decoded_string +'</div>');
+                    var _dh = document.createElement('div');
+                    _dh.innerHTML = self.resourceData.attributes.text;
+                    var decoded_string = _dh.textContent;
+                    thumbElement.insertAdjacentHTML('beforeend', '<div class="resourceTextPreview">'+ decoded_string +'</div>');
 
                     return thumbElement;
 
@@ -140,7 +145,7 @@ FrameTrail.defineType(
 
                     var basicControls = this.renderBasicPropertiesControls(overlay);
 
-                    basicControls.controlsContainer.find('#OverlayOptions').prepend(this.renderTextEditors(overlay));
+                    basicControls.controlsContainer.querySelector('#OverlayOptions').prepend(this.renderTextEditors(overlay));
 
 
                     return basicControls;
@@ -158,7 +163,7 @@ FrameTrail.defineType(
 
                     var timeControls = this.renderBasicTimeControls(annotation);
 
-                    timeControls.controlsContainer.find('#AnnotationOptions').append(this.renderTextEditors(annotation));
+                    timeControls.controlsContainer.querySelector('#AnnotationOptions').append(this.renderTextEditors(annotation));
 
                     return timeControls;
 
@@ -186,25 +191,36 @@ FrameTrail.defineType(
 
                     /* Add Panels and Text Areas */
                     
-                    var textContentEditorContainer = $('<div class="textContentEditorContainer"></div>'),
-                        visualEditorTab = $('<div class="textEditorTab">'+ this.labels['SettingsVisualEditor'] +' (beta)</div>'),
-                        htmlEditorTab = $('<div class="textEditorTab">'+ this.labels['SettingsHTMLEditor'] +'</div>'),
-                        visualEditorContent = $('<div class="textEditorContent visualEditorContent"></div>'),
-                        htmlEditorContent = $('<div class="textEditorContent htmlEditorContent"></div>');
+                    var textContentEditorContainer = document.createElement('div');
+                    textContentEditorContainer.className = 'textContentEditorContainer';
 
-                    visualEditorTab.click(function() {
-                        htmlEditorTab.removeClass('active');
-                        htmlEditorContent.hide();
-                        $(this).addClass('active');
-                        visualEditorContent.show();
+                    var visualEditorTab = document.createElement('div');
+                    visualEditorTab.className = 'textEditorTab';
+                    visualEditorTab.textContent = this.labels['SettingsVisualEditor'] + ' (beta)';
+
+                    var htmlEditorTab = document.createElement('div');
+                    htmlEditorTab.className = 'textEditorTab';
+                    htmlEditorTab.textContent = this.labels['SettingsHTMLEditor'];
+
+                    var visualEditorContent = document.createElement('div');
+                    visualEditorContent.className = 'textEditorContent visualEditorContent';
+
+                    var htmlEditorContent = document.createElement('div');
+                    htmlEditorContent.className = 'textEditorContent htmlEditorContent';
+
+                    visualEditorTab.addEventListener('click', function() {
+                        htmlEditorTab.classList.remove('active');
+                        htmlEditorContent.style.display = 'none';
+                        visualEditorTab.classList.add('active');
+                        visualEditorContent.style.display = '';
                     });
                     visualEditorTab.click();
 
-                    htmlEditorTab.click(function() {
-                        visualEditorTab.removeClass('active');
-                        visualEditorContent.hide();
-                        $(this).addClass('active');
-                        htmlEditorContent.show();
+                    htmlEditorTab.addEventListener('click', function() {
+                        visualEditorTab.classList.remove('active');
+                        visualEditorContent.style.display = 'none';
+                        htmlEditorTab.classList.add('active');
+                        htmlEditorContent.style.display = '';
                         if (window.htmlCodeEditor) {
                             window.htmlCodeEditor.requestMeasure();
 
@@ -219,19 +235,24 @@ FrameTrail.defineType(
 
                     textContentEditorContainer.append(visualEditorTab, htmlEditorTab, visualEditorContent, htmlEditorContent);
 
-                    var textarea = $('<textarea>' + overlayOrAnnotation.data.attributes.text + '</textarea>');
-                    htmlEditorContent.append(textarea);
+                    var textarea = document.createElement('textarea');
+                    textarea.textContent = overlayOrAnnotation.data.attributes.text;
+                    htmlEditorContent.appendChild(textarea);
 
-                    var visualEditorWrapper = $('<div class="visualEditorWrapper"></div>');
-                    visualEditorContent.append(visualEditorWrapper);
+                    var visualEditorWrapper = document.createElement('div');
+                    visualEditorWrapper.className = 'visualEditorWrapper';
+                    visualEditorContent.appendChild(visualEditorWrapper);
 
                     //textEditor.style.display = 'none';
 
                     /* Init CodeMirror 6 for Custom HTML */
 
                     var CM6 = window.FrameTrailCM6;
-                    var htmlCm6Wrapper = $('<div class="cm6-wrapper" style="height: 100%;"></div>');
-                    textarea.after(htmlCm6Wrapper).hide();
+                    var htmlCm6Wrapper = document.createElement('div');
+                    htmlCm6Wrapper.className = 'cm6-wrapper';
+                    htmlCm6Wrapper.style.height = '100%';
+                    textarea.insertAdjacentElement('afterend', htmlCm6Wrapper);
+                    textarea.style.display = 'none';
 
                     var delayTimer;
                     var textBeforeEdit = overlayOrAnnotation.data.attributes.text || '';
@@ -239,7 +260,7 @@ FrameTrail.defineType(
 
                     window.htmlCodeEditor = new CM6.EditorView({
                         state: CM6.EditorState.create({
-                            doc: textarea.val(),
+                            doc: textarea.value,
                             extensions: [
                                 CM6.oneDark,
                                 CM6.lineNumbers(),
@@ -316,7 +337,7 @@ FrameTrail.defineType(
 
                                     if (overlayOrAnnotation.overlayElement) {
 
-                                        overlayOrAnnotation.overlayElement.children('.resourceDetail').html(newHtml);
+                                        overlayOrAnnotation.overlayElement.querySelector('.resourceDetail').innerHTML = newHtml;
                                         FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
 
                                         if (window.oldTextContent != overlayOrAnnotation.data.attributes.text) {
@@ -338,14 +359,14 @@ FrameTrail.defineType(
                                         if (window.oldTextContent != overlayOrAnnotation.data.attributes.text) {
                                             clearTimeout(delayTimer);
                                             delayTimer = setTimeout(function() {
-                                                $(overlayOrAnnotation.contentViewDetailElements).each(function() {
-                                                    $(this).find('.resourceDetail').html(newHtml);
+                                                (overlayOrAnnotation.contentViewDetailElements || []).forEach(function(el) {
+                                                    (el.jquery ? el[0] : el).querySelector('.resourceDetail').innerHTML = newHtml;
                                                 });
-                                                $(overlayOrAnnotation.contentViewElements).each(function() {
-                                                    $(this).find('.resourceThumb .resourceTextPreview').html(newHtml);
+                                                (overlayOrAnnotation.contentViewElements || []).forEach(function(el) {
+                                                    (el.jquery ? el[0] : el).querySelector('.resourceThumb .resourceTextPreview').innerHTML = newHtml;
                                                 });
-                                                overlayOrAnnotation.timelineElement.find('.previewWrapper .resourceTextPreview').html(newHtml);
-                                                $(FrameTrail.getState('target')).find('.editPropertiesContainer .resourceTextPreview').html(newHtml);
+                                                overlayOrAnnotation.timelineElement.querySelector('.previewWrapper .resourceTextPreview').innerHTML = newHtml;
+                                                document.querySelector(FrameTrail.getState('target')).querySelector('.editPropertiesContainer .resourceTextPreview').innerHTML = newHtml;
                                                 FrameTrail.triggerEvent('userAction', {
                                                     action: 'AnnotationChange',
                                                     annotation: overlayOrAnnotation.data,
@@ -359,9 +380,9 @@ FrameTrail.defineType(
                                 })
                             ]
                         }),
-                        parent: htmlCm6Wrapper[0]
+                        parent: htmlCm6Wrapper
                     });
-                    htmlCm6Wrapper[0]._cm6view = window.htmlCodeEditor;
+                    htmlCm6Wrapper._cm6view = window.htmlCodeEditor;
 
                     /* Init Quill Visual Editor */
 
@@ -397,10 +418,11 @@ FrameTrail.defineType(
                         [{ 'align': [] }]
                     ];
 
-                    var quillContainer = $('<div class="quillEditorContainer"></div>');
-                    visualEditorWrapper.append(quillContainer);
+                    var quillContainer = document.createElement('div');
+                    quillContainer.className = 'quillEditorContainer';
+                    visualEditorWrapper.appendChild(quillContainer);
 
-                    window.quillEditor = new Quill(quillContainer[0], {
+                    window.quillEditor = new Quill(quillContainer, {
                         modules: { toolbar: toolbarOptions },
                         theme: 'snow'
                     });
@@ -431,7 +453,9 @@ FrameTrail.defineType(
 
                 getDisplayLabel: function() {
                     if (this.resourceData.attributes && this.resourceData.attributes.text) {
-                        var decoded = $("<div/>").html(this.resourceData.attributes.text).text();
+                        var _gdh = document.createElement('div');
+                        _gdh.innerHTML = this.resourceData.attributes.text;
+                        var decoded = _gdh.textContent;
                         return decoded.substring(0, 50) || this.resourceData.name || 'Text';
                     }
                     return this.resourceData.name || 'Text';

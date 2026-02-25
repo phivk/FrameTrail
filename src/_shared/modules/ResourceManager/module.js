@@ -152,25 +152,33 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 
 	//Check for valid URL
     var previewTimeout = null;
-    $(document).on('change paste keyup', '#resourceInputTabURL input', function(evt) {
-        clearTimeout(previewTimeout);
-        previewTimeout = setTimeout(function() {
-            $('#resourceInputTabURL .resourceURLPreview').empty();
-            $('.resourceInput[name="thumbnail"]').val('');
-            checkResourceInput( $('#resourceInputTabURL input')[0].value, $('.resourceNameInput')[0].value );
-        }, 800);
-        evt.stopPropagation();
+    ['change', 'paste', 'keyup'].forEach(function(ev) {
+        document.addEventListener(ev, function(evt) {
+            if (!evt.target.matches || !evt.target.matches('#resourceInputTabURL input')) { return; }
+            clearTimeout(previewTimeout);
+            previewTimeout = setTimeout(function() {
+                var previewEl = document.querySelector('#resourceInputTabURL .resourceURLPreview');
+                if (previewEl) { previewEl.innerHTML = ''; }
+                var thumbEl = document.querySelector('.resourceInput[name="thumbnail"]');
+                if (thumbEl) { thumbEl.value = ''; }
+                var urlInput = document.querySelector('#resourceInputTabURL input');
+                var nameInput = document.querySelector('.resourceNameInput');
+                checkResourceInput(urlInput ? urlInput.value : '', nameInput ? nameInput.value : '');
+            }, 800);
+            evt.stopPropagation();
+        });
     });
 
     //Check for Name Length
-    $(document).on('change paste keyup input', '.resourceNameInput', function(evt) {
-        if ( $(this).val().length > 2 ) {
-            $('.newResourceConfirm').prop('disabled', false);
-        } else {
-            $('.newResourceConfirm').prop('disabled', true);
-        }
-        $('.resourceURLPreview .resourceTitle').text($(this).val());
-        evt.stopPropagation();
+    ['change', 'paste', 'keyup', 'input'].forEach(function(ev) {
+        document.addEventListener(ev, function(evt) {
+            if (!evt.target.matches || !evt.target.matches('.resourceNameInput')) { return; }
+            var confirmBtn = document.querySelector('.newResourceConfirm');
+            if (confirmBtn) { confirmBtn.disabled = evt.target.value.length <= 2; }
+            var previewTitle = document.querySelector('.resourceURLPreview .resourceTitle');
+            if (previewTitle) { previewTitle.textContent = evt.target.value; }
+            evt.stopPropagation();
+        });
     });
 
 
@@ -358,10 +366,10 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 	function updateQueueUI() {
 		if (!currentUploadDialog) return;
 
-		var queueContainer = currentUploadDialog.find('.uploadQueue');
-		if (queueContainer.length === 0) return;
+		var queueContainer = currentUploadDialog.querySelector('.uploadQueue');
+		if (!queueContainer) return;
 
-		queueContainer.empty();
+		queueContainer.innerHTML = '';
 
 		var completed = 0;
 		var failed = 0;
@@ -379,21 +387,22 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 			if (item.status === 'completed') completed++;
 			if (item.status === 'error') failed++;
 
-			var queueRow = $('<div class="queueRow ' + statusClass + '">' +
+			var _rw = document.createElement('div');
+			_rw.innerHTML = '<div class="queueRow ' + statusClass + '">' +
 			                 '<span class="fileName">' + item.file.name + '</span>' +
 			                 '<span class="fileSize">' + bytesToSize(item.file.size) + '</span>' +
 			                 '<span class="fileType">' + (item.type || '?') + '</span>' +
 			                 '<span class="status">' + statusText + '</span>' +
-			                 '</div>');
-			queueContainer.append(queueRow);
+			                 '</div>';
+			queueContainer.appendChild(_rw.firstElementChild);
 		});
 
 		// Update summary
-		var summary = currentUploadDialog.find('.queueSummary');
-		if (summary.length > 0) {
+		var summary = currentUploadDialog.querySelector('.queueSummary');
+		if (summary) {
 			var total = allItems.length;
-			summary.text('Uploading: ' + completed + ' of ' + total + ' files' +
-			            (failed > 0 ? ' (' + failed + ' failed)' : ''));
+			summary.textContent = 'Uploading: ' + completed + ' of ' + total + ' files' +
+			            (failed > 0 ? ' (' + failed + ' failed)' : '');
 		}
 	}
 
@@ -405,12 +414,12 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 	function finishBatchUpload() {
 		FrameTrail.module('Database').loadResourceData(function() {
 			if (currentUploadDialog && currentUploadDialogCtrl) {
-				currentUploadDialog.find('.queueSummary').text('All uploads complete!');
+				currentUploadDialog.querySelector('.queueSummary').textContent = 'All uploads complete!';
 
 				var buttons = currentUploadDialogCtrl.getButtons();
 				buttons[0].text = 'Close';
 				currentUploadDialogCtrl.setButtons(buttons);
-				currentUploadDialogCtrl.widget().find('.newResourceConfirm').prop('disabled', false);
+				currentUploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = false;
 
 				// Call success callback if provided
 				if (currentSuccessCallback) {
@@ -446,7 +455,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 		xhr.upload.addEventListener('progress', function(e) {
 			if (e.lengthComputable && currentUploadDialog) {
 				var pct = Math.round((e.loaded / e.total) * 100);
-				currentUploadDialog.find('.uploadProgressBar').css('width', pct + '%');
+				currentUploadDialog.querySelector('.uploadProgressBar').style.width = pct + '%';
 			}
 		});
 		xhr.onload = function() {
@@ -487,7 +496,8 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                     var fileAccept = onlyVideo ? 'video/*' : '*/*';
 
                     var uploadDialogCtrl;
-                    var uploadDialog = $('<div class="uploadDialog">'
+                    var _udw = document.createElement('div');
+                    _udw.innerHTML = '<div class="uploadDialog">'
                                         + '    <div class="resourceInputTabContainer">'
                                         + '        <ul class="resourceInputTabList">'
                                         + (onlyVideo ? '' : '            <li data-type="url"><a href="#resourceInputTabURL">'+ labels['ResourcePasteURL'] +'</a></li>')
@@ -537,41 +547,44 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                                         + '        <div class="nameInputMessage">Name</div>'
                                         + '        <input type="text" name="name" placeholder="'+ labels['MessageNewResourceName'] +'" class="resourceNameInput">'
                                         + '    </div>'
-                                        + '</div>');
+                                        + '</div>';
+                    var uploadDialog = _udw.firstElementChild;
 
                     // Store reference to current dialog and callback
                     currentUploadDialog = uploadDialog;
                     currentSuccessCallback = successCallback;
 
                     // ---- Drop Zone & File Picker ----
-                    var dropZone = uploadDialog.find('.dropZone');
+                    var dropZone = uploadDialog.querySelector('.dropZone');
 
-                    dropZone.on('dragover', function(e) {
+                    dropZone.addEventListener('dragover', function(e) {
                         e.preventDefault();
                         e.stopPropagation();
-                        $(this).addClass('dragover');
+                        dropZone.classList.add('dragover');
                     });
 
-                    dropZone.on('dragleave', function(e) {
+                    dropZone.addEventListener('dragleave', function(e) {
                         e.preventDefault();
                         e.stopPropagation();
-                        $(this).removeClass('dragover');
+                        dropZone.classList.remove('dragover');
                     });
 
-                    dropZone.on('drop', function(e) {
+                    dropZone.addEventListener('drop', function(e) {
                         e.preventDefault();
                         e.stopPropagation();
-                        $(this).removeClass('dragover');
-                        var files = e.originalEvent.dataTransfer.files;
+                        dropZone.classList.remove('dragover');
+                        var files = e.dataTransfer.files;
                         if (files.length > 0) { handleFilesDrop(files); }
                     });
 
-                    uploadDialog.find('.chooseFilesBtn').on('click', function(e) {
+                    uploadDialog.querySelector('.chooseFilesBtn').addEventListener('click', function(e) {
                         e.stopPropagation();
-                        uploadDialog.find('.hiddenFileInput').val('').trigger('click');
+                        var _hfi = uploadDialog.querySelector('.hiddenFileInput');
+                        _hfi.value = '';
+                        _hfi.click();
                     });
 
-                    uploadDialog.find('.hiddenFileInput').on('change', function() {
+                    uploadDialog.querySelector('.hiddenFileInput').addEventListener('change', function() {
                         if (this.files.length > 0) { handleFilesDrop(this.files); }
                     });
 
@@ -601,111 +614,114 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                             uploadQueue.push({ file: file, type: detection.type, status: 'pending', error: null, thumb: null });
                         }
 
-                        uploadDialog.find('.message.error').remove();
+                        uploadDialog.querySelectorAll('.message.error').forEach(function(el) { el.remove(); });
                         if (errors.length > 0) {
-                            uploadDialog.find('#resourceInputTabFile').append('<div class="message active error">' + errors.join('<br>') + '</div>');
+                            uploadDialog.querySelector('#resourceInputTabFile').insertAdjacentHTML('beforeend', '<div class="message active error">' + errors.join('<br>') + '</div>');
                         }
 
                         if (uploadQueue.length > 0) {
-                            uploadDialog.find('.uploadQueue').show();
-                            uploadDialog.find('.queueSummary').show();
+                            uploadDialog.querySelector('.uploadQueue').style.display = '';
+                            uploadDialog.querySelector('.queueSummary').style.display = '';
                             updateQueueUI();
                             setTimeout(function() {
                                 var buttons = uploadDialogCtrl.getButtons();
                                 buttons[0].text = labels['ResourceUploadStart'] || 'Start Upload';
                                 uploadDialogCtrl.setButtons(buttons);
-                                uploadDialogCtrl.widget().find('.newResourceConfirm').prop('disabled', false);
+                                uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = false;
                             }, 50);
                         }
                     }
 
                     // ---- Map tab: Nominatim location search ----
-                    uploadDialog.find('.locationQ').keyup(function() {
-                        $.getJSON('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent($(this).val()) + '&format=json')
-                            .done(function(respText) {
-                                uploadDialog.find('.locationSearchSuggestions').empty().show();
+                    uploadDialog.querySelector('.locationQ').addEventListener('keyup', function() {
+                        fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(this.value) + '&format=json')
+                            .then(function(r) { return r.json(); })
+                            .then(function(respText) {
+                                var sugg = uploadDialog.querySelector('.locationSearchSuggestions');
+                                sugg.innerHTML = '';
+                                sugg.style.display = '';
                                 for (var i = 0; i < respText.length; i++) {
                                     var loc = respText[i];
-                                    $('<li>')
-                                        .text(loc.display_name)
-                                        .data('loc', loc)
-                                        .click(function() {
-                                            var d = $(this).data('loc');
-                                            uploadDialog.find('input[name="lon"]').val(d.lon);
-                                            uploadDialog.find('input[name="lat"]').val(d.lat);
-                                            uploadDialog.find('input.BB1').val(d.boundingbox[0]);
-                                            uploadDialog.find('input.BB2').val(d.boundingbox[1]);
-                                            uploadDialog.find('input.BB3').val(d.boundingbox[2]);
-                                            uploadDialog.find('input.BB4').val(d.boundingbox[3]);
-                                            uploadDialog.find('input[name="name"]').val(d.display_name);
-                                            uploadDialog.find('.locationSearchSuggestions').hide();
-                                            uploadDialogCtrl.widget().find('.newResourceConfirm').prop('disabled', false);
-                                        })
-                                        .appendTo(uploadDialog.find('.locationSearchSuggestions'));
+                                    var li = document.createElement('li');
+                                    li.textContent = loc.display_name;
+                                    li._locData = loc;
+                                    li.addEventListener('click', function() {
+                                        var d = this._locData;
+                                        uploadDialog.querySelector('input[name="lon"]').value = d.lon;
+                                        uploadDialog.querySelector('input[name="lat"]').value = d.lat;
+                                        uploadDialog.querySelector('input.BB1').value = d.boundingbox[0];
+                                        uploadDialog.querySelector('input.BB2').value = d.boundingbox[1];
+                                        uploadDialog.querySelector('input.BB3').value = d.boundingbox[2];
+                                        uploadDialog.querySelector('input.BB4').value = d.boundingbox[3];
+                                        uploadDialog.querySelector('input[name="name"]').value = d.display_name;
+                                        sugg.style.display = 'none';
+                                        uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = false;
+                                    });
+                                    sugg.appendChild(li);
                                 }
                             });
                     });
 
                     // ---- Tabs ----
-                    uploadDialog.find('.resourceInputTabContainer').tabs({
+                    FTTabs(uploadDialog.querySelector('.resourceInputTabContainer'), {
                         activate: function(e, ui) {
-                            uploadDialog.find('.message.error').remove();
-                            var tabType = $(ui.newTab[0]).data('type');
+                            uploadDialog.querySelectorAll('.message.error').forEach(function(el) { el.remove(); });
+                            var tabType = ui.newTab.dataset.type;
                             var buttons = uploadDialogCtrl.getButtons();
                             if (tabType === 'url') {
-                                uploadDialog.find('.nameInputContainer').show();
+                                uploadDialog.querySelector('.nameInputContainer').style.display = '';
                                 buttons[0].text = labels['ResourceAddNew'] || 'Add Resource';
                                 uploadDialogCtrl.setButtons(buttons);
-                                var hasUrl = uploadDialog.find('.resourceInput[name="url"]').val().length > 3;
-                                uploadDialogCtrl.widget().find('.newResourceConfirm').prop('disabled', !hasUrl);
+                                var hasUrl = uploadDialog.querySelector('.resourceInput[name="url"]').value.length > 3;
+                                uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = !hasUrl;
                             } else if (tabType === 'file') {
-                                uploadDialog.find('.nameInputContainer').hide();
+                                uploadDialog.querySelector('.nameInputContainer').style.display = 'none';
                                 var hasQueue = uploadQueue.length > 0;
                                 buttons[0].text = hasQueue ? (labels['ResourceUploadStart'] || 'Start Upload') : (labels['ResourceAddNew'] || 'Add Resource');
                                 uploadDialogCtrl.setButtons(buttons);
-                                uploadDialogCtrl.widget().find('.newResourceConfirm').prop('disabled', !hasQueue);
+                                uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = !hasQueue;
                             } else if (tabType === 'map') {
-                                uploadDialog.find('.nameInputContainer').show();
+                                uploadDialog.querySelector('.nameInputContainer').style.display = '';
                                 buttons[0].text = labels['ResourceAddNew'] || 'Add Resource';
                                 uploadDialogCtrl.setButtons(buttons);
-                                var hasCoords = uploadDialog.find('input[name="lat"]').val().length > 0;
-                                uploadDialogCtrl.widget().find('.newResourceConfirm').prop('disabled', !hasCoords);
+                                var hasCoords = uploadDialog.querySelector('input[name="lat"]').value.length > 0;
+                                uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = !hasCoords;
                             }
                         },
                         create: function() {
                             // Hide name input initially if starting on the file tab (onlyVideo mode)
                             if (onlyVideo) {
-                                uploadDialog.find('.nameInputContainer').hide();
+                                uploadDialog.querySelector('.nameInputContainer').style.display = 'none';
                             }
                         }
                     });
 
                     // ---- Button click handler ----
                     function getActiveTabType() {
-                        var activeIdx = uploadDialog.find('.resourceInputTabContainer').tabs('option', 'active');
-                        return uploadDialog.find('.resourceInputTabList li').eq(activeIdx).data('type');
+                        var activeIdx = FTTabs(uploadDialog.querySelector('.resourceInputTabContainer'), 'option', 'active');
+                        return uploadDialog.querySelectorAll('.resourceInputTabList li')[activeIdx].dataset.type;
                     }
 
                     function submitURL() {
                         if (previewController) { previewController.abort(); previewController = null; }
-                        var resourceName = uploadDialog.find('input[name="name"]').val();
+                        var resourceName = uploadDialog.querySelector('input[name="name"]').value;
                         if (!resourceName || resourceName.length < 2) {
-                            uploadDialog.find('.message.error').remove();
-                            uploadDialog.find('#resourceInputTabURL').append('<div class="message active error">'+ labels['ErrorEmptyName'] +'</div>');
+                            uploadDialog.querySelectorAll('.message.error').forEach(function(el) { el.remove(); });
+                            uploadDialog.querySelector('#resourceInputTabURL').insertAdjacentHTML('beforeend', '<div class="message active error">'+ labels['ErrorEmptyName'] +'</div>');
                             return;
                         }
                         var urlObj = checkResourceInput(
-                            uploadDialog.find('.resourceInput[name="url"]').val(),
+                            uploadDialog.querySelector('.resourceInput[name="url"]').value,
                             resourceName,
-                            uploadDialog.find('.resourceInput[name="thumbnail"]').val()
+                            uploadDialog.querySelector('.resourceInput[name="thumbnail"]').value
                         );
                         if (!urlObj || !urlObj.src) {
-                            uploadDialog.find('.message.error').remove();
-                            uploadDialog.find('#resourceInputTabURL').append('<div class="message active error">'+ labels['ErrorEmptyURL'] +'</div>');
+                            uploadDialog.querySelectorAll('.message.error').forEach(function(el) { el.remove(); });
+                            uploadDialog.querySelector('#resourceInputTabURL').insertAdjacentHTML('beforeend', '<div class="message active error">'+ labels['ErrorEmptyURL'] +'</div>');
                             return;
                         }
                         urlObj.name = resourceName;
-                        uploadDialogCtrl.widget().find('.newResourceConfirm').prop('disabled', true);
+                        uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = true;
 
                         if (isLocalMode) {
                             addResourceLocally(urlObj).then(function() {
@@ -714,9 +730,9 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                                     successCallback && successCallback.call();
                                 });
                             }).catch(function(err) {
-                                uploadDialog.find('.message.error').remove();
-                                uploadDialog.find('#resourceInputTabURL').append('<div class="message active error">' + err.message + '</div>');
-                                uploadDialogCtrl.widget().find('.newResourceConfirm').prop('disabled', false);
+                                uploadDialog.querySelectorAll('.message.error').forEach(function(el) { el.remove(); });
+                                uploadDialog.querySelector('#resourceInputTabURL').insertAdjacentHTML('beforeend', '<div class="message active error">' + err.message + '</div>');
+                                uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = false;
                             });
                         } else {
                             fetch('_server/ajaxServer.php', {
@@ -731,43 +747,43 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                                         successCallback && successCallback.call();
                                     });
                                 } else {
-                                    uploadDialog.find('.message.error').remove();
-                                    uploadDialog.find('#resourceInputTabURL').append('<div class="message active error">'+ (resp.string || labels['ErrorGeneric']) +'</div>');
-                                    uploadDialogCtrl.widget().find('.newResourceConfirm').prop('disabled', false);
+                                    uploadDialog.querySelectorAll('.message.error').forEach(function(el) { el.remove(); });
+                                    uploadDialog.querySelector('#resourceInputTabURL').insertAdjacentHTML('beforeend', '<div class="message active error">'+ (resp.string || labels['ErrorGeneric']) +'</div>');
+                                    uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = false;
                                 }
                             })
                             .catch(function() {
-                                uploadDialog.find('.message.error').remove();
-                                uploadDialog.find('#resourceInputTabURL').append('<div class="message active error">'+ labels['ErrorGeneric'] +'</div>');
-                                uploadDialogCtrl.widget().find('.newResourceConfirm').prop('disabled', false);
+                                uploadDialog.querySelectorAll('.message.error').forEach(function(el) { el.remove(); });
+                                uploadDialog.querySelector('#resourceInputTabURL').insertAdjacentHTML('beforeend', '<div class="message active error">'+ labels['ErrorGeneric'] +'</div>');
+                                uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = false;
                             });
                         }
                     }
 
                     function submitMap() {
-                        var resourceName = uploadDialog.find('input[name="name"]').val();
-                        var lat = uploadDialog.find('input[name="lat"]').val();
-                        var lon = uploadDialog.find('input[name="lon"]').val();
+                        var resourceName = uploadDialog.querySelector('input[name="name"]').value;
+                        var lat = uploadDialog.querySelector('input[name="lat"]').value;
+                        var lon = uploadDialog.querySelector('input[name="lon"]').value;
                         if (!lat || !lon) {
-                            uploadDialog.find('.message.error').remove();
-                            uploadDialog.find('#resourceInputTabMap').append('<div class="message active error">'+ labels['ErrorMapNoCoordinates'] +'</div>');
+                            uploadDialog.querySelectorAll('.message.error').forEach(function(el) { el.remove(); });
+                            uploadDialog.querySelector('#resourceInputTabMap').insertAdjacentHTML('beforeend', '<div class="message active error">'+ labels['ErrorMapNoCoordinates'] +'</div>');
                             return;
                         }
                         if (!resourceName || resourceName.length < 2) {
-                            uploadDialog.find('.message.error').remove();
-                            uploadDialog.find('#resourceInputTabMap').append('<div class="message active error">'+ labels['ErrorEmptyName'] +'</div>');
+                            uploadDialog.querySelectorAll('.message.error').forEach(function(el) { el.remove(); });
+                            uploadDialog.querySelector('#resourceInputTabMap').insertAdjacentHTML('beforeend', '<div class="message active error">'+ labels['ErrorEmptyName'] +'</div>');
                             return;
                         }
-                        uploadDialogCtrl.widget().find('.newResourceConfirm').prop('disabled', true);
+                        uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = true;
                         var mapResource = {
                             src: '', type: 'location', name: resourceName,
                             attributes: {
                                 lat: lat, lon: lon,
                                 boundingBox: [
-                                    uploadDialog.find('input.BB1').val(),
-                                    uploadDialog.find('input.BB2').val(),
-                                    uploadDialog.find('input.BB3').val(),
-                                    uploadDialog.find('input.BB4').val()
+                                    uploadDialog.querySelector('input.BB1').value,
+                                    uploadDialog.querySelector('input.BB2').value,
+                                    uploadDialog.querySelector('input.BB3').value,
+                                    uploadDialog.querySelector('input.BB4').value
                                 ]
                             }
                         };
@@ -779,19 +795,19 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                                     successCallback && successCallback.call();
                                 });
                             }).catch(function(err) {
-                                uploadDialog.find('.message.error').remove();
-                                uploadDialog.find('#resourceInputTabMap').append('<div class="message active error">' + err.message + '</div>');
-                                uploadDialogCtrl.widget().find('.newResourceConfirm').prop('disabled', false);
+                                uploadDialog.querySelectorAll('.message.error').forEach(function(el) { el.remove(); });
+                                uploadDialog.querySelector('#resourceInputTabMap').insertAdjacentHTML('beforeend', '<div class="message active error">' + err.message + '</div>');
+                                uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = false;
                             });
                         } else {
                             var mapParams = new URLSearchParams({
                                 a: 'fileUpload', type: 'map', name: resourceName,
                                 lat: lat, lon: lon
                             });
-                            mapParams.append('boundingBox[]', uploadDialog.find('input.BB1').val());
-                            mapParams.append('boundingBox[]', uploadDialog.find('input.BB2').val());
-                            mapParams.append('boundingBox[]', uploadDialog.find('input.BB3').val());
-                            mapParams.append('boundingBox[]', uploadDialog.find('input.BB4').val());
+                            mapParams.append('boundingBox[]', uploadDialog.querySelector('input.BB1').value);
+                            mapParams.append('boundingBox[]', uploadDialog.querySelector('input.BB2').value);
+                            mapParams.append('boundingBox[]', uploadDialog.querySelector('input.BB3').value);
+                            mapParams.append('boundingBox[]', uploadDialog.querySelector('input.BB4').value);
                             fetch('_server/ajaxServer.php', { method: 'POST', body: mapParams })
                             .then(function(r) { return r.json(); })
                             .then(function(resp) {
@@ -801,15 +817,15 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                                         successCallback && successCallback.call();
                                     });
                                 } else {
-                                    uploadDialog.find('.message.error').remove();
-                                    uploadDialog.find('#resourceInputTabMap').append('<div class="message active error">'+ (resp.string || labels['ErrorGeneric']) +'</div>');
-                                    uploadDialogCtrl.widget().find('.newResourceConfirm').prop('disabled', false);
+                                    uploadDialog.querySelectorAll('.message.error').forEach(function(el) { el.remove(); });
+                                    uploadDialog.querySelector('#resourceInputTabMap').insertAdjacentHTML('beforeend', '<div class="message active error">'+ (resp.string || labels['ErrorGeneric']) +'</div>');
+                                    uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = false;
                                 }
                             })
                             .catch(function() {
-                                uploadDialog.find('.message.error').remove();
-                                uploadDialog.find('#resourceInputTabMap').append('<div class="message active error">'+ labels['ErrorGeneric'] +'</div>');
-                                uploadDialogCtrl.widget().find('.newResourceConfirm').prop('disabled', false);
+                                uploadDialog.querySelectorAll('.message.error').forEach(function(el) { el.remove(); });
+                                uploadDialog.querySelector('#resourceInputTabMap').insertAdjacentHTML('beforeend', '<div class="message active error">'+ labels['ErrorGeneric'] +'</div>');
+                                uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = false;
                             });
                         }
                     }
@@ -818,7 +834,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                         var buttons = uploadDialogCtrl.getButtons();
                         buttons[0].text = labels['ResourceUploading'] || 'Uploading...';
                         uploadDialogCtrl.setButtons(buttons);
-                        uploadDialogCtrl.widget().find('.newResourceConfirm').prop('disabled', true);
+                        uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = true;
                         processUploadQueue();
                     }
 
@@ -915,6 +931,22 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 
 
     /**
+     * Synchronous GET returning parsed JSON, or null on error.
+     * @method syncGetJSON
+     * @private
+     */
+    function syncGetJSON(url) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url, false);
+        try { xhr.send(); } catch(e) { return null; }
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try { return JSON.parse(xhr.responseText); } catch(e) { return null; }
+        }
+        return null;
+    }
+
+
+    /**
      * I perform some client-side validations on an URI input field
      * @method checkResourceInput
      * @param {String} uriValue
@@ -930,7 +962,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
             if (!/^[a-zA-Z][a-zA-Z0-9+\-.]*:\/\//.test(uriValue)) {
                 uriValue = 'https://' + uriValue;
                 // Also update the input field so the user sees the normalised value
-                $('#resourceInputTabURL input[name="url"]').val(uriValue);
+                if (currentUploadDialog) { currentUploadDialog.querySelector('#resourceInputTabURL input[name="url"]').value = uriValue; }
             }
 
             var newResource = null;
@@ -970,19 +1002,16 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                     if (res !== null) {
                         // Create the resource beforehand, so that we can update its thumb property asynchronously
                         var r = createResource("https://player.vimeo.com/video/" + res[4], "vimeo", name);
-                        $.ajax({
-                            url: "https://vimeo.com/api/v2/video/" + res[4] + ".json",
-                            async: false,
-                            success: function (data) {
-                                r.thumb = data[0].thumbnail_large;
+                        var _vimeoData = syncGetJSON("https://vimeo.com/api/v2/video/" + res[4] + ".json");
+                        if (_vimeoData) {
+                                r.thumb = _vimeoData[0].thumbnail_large;
 
-                                var vimeoID = data[0].id.toString();
+                                var vimeoID = _vimeoData[0].id.toString();
 
                                 if (!r.name || r.name == vimeoID) {
-                                    r.name = data[0].title;
+                                    r.name = _vimeoData[0].title;
                                 }
-                            }
-                        });
+                        }
 
                         return r;
                     } else {
@@ -1096,20 +1125,15 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                     if (res !== null) {
                         var fullUrl = "https://bsky.app/profile/" + res[1] + "/post/" + res[2];
                         var r = createResource(fullUrl, "bluesky", name);
-                        $.ajax({
-                            url: "_server/ajaxServer.php",
-                            data: { a: "oembedProxy", url: "https://embed.bsky.app/oembed?url=" + encodeURIComponent(fullUrl) },
-                            async: false,
-                            timeout: 5000,
-                            success: function(data) {
-                                if (data.html) {
-                                    r.attributes.html = data.html;
-                                }
-                                if (data.author_name && (!r.name || r.name.length < 3)) {
-                                    r.name = data.author_name + "'s post";
-                                }
+                        var _bskyData = syncGetJSON("_server/ajaxServer.php?a=oembedProxy&url=" + encodeURIComponent("https://embed.bsky.app/oembed?url=" + encodeURIComponent(fullUrl)));
+                        if (_bskyData) {
+                            if (_bskyData.html) {
+                                r.attributes.html = _bskyData.html;
                             }
-                        });
+                            if (_bskyData.author_name && (!r.name || r.name.length < 3)) {
+                                r.name = _bskyData.author_name + "'s post";
+                            }
+                        }
                         return r;
                     }
                     return null;
@@ -1142,19 +1166,14 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                     var res = /(?:twitter\.com|x\.com)\/([a-zA-Z0-9_]+)\/status\/(\d+)/.exec(src);
                     if (res !== null) {
                         var r = createResource(src, "xtwitter", name);
-                        $.ajax({
-                            url: "https://publish.twitter.com/oembed?url=" + encodeURIComponent(src) + "&omit_script=true",
-                            async: false,
-                            timeout: 5000,
-                            success: function(data) {
-                                if (data.html) r.attributes.html = data.html;
-                                if (data.author_name && (!r.name || r.name.length < 3)) r.name = data.author_name + "'s post";
-                            },
-                            error: function() {
-                                r.type = 'urlpreview';
-                                r.attributes.originalType = 'xtwitter';
-                            }
-                        });
+                        var _twData = syncGetJSON("https://publish.twitter.com/oembed?url=" + encodeURIComponent(src) + "&omit_script=true");
+                        if (_twData) {
+                            if (_twData.html) r.attributes.html = _twData.html;
+                            if (_twData.author_name && (!r.name || r.name.length < 3)) r.name = _twData.author_name + "'s post";
+                        } else {
+                            r.type = 'urlpreview';
+                            r.attributes.originalType = 'xtwitter';
+                        }
                         return r;
                     }
                     return null;
@@ -1164,20 +1183,15 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                     var res = /tiktok\.com\/@([a-zA-Z0-9_.]+)\/video\/(\d+)/.exec(src);
                     if (res !== null) {
                         var r = createResource(src, "tiktok", name);
-                        $.ajax({
-                            url: "https://www.tiktok.com/oembed?url=" + encodeURIComponent(src),
-                            async: false,
-                            timeout: 5000,
-                            success: function(data) {
-                                if (data.html) r.attributes.html = data.html;
-                                if (data.thumbnail_url) r.thumb = data.thumbnail_url;
-                                if (data.title && (!r.name || r.name.length < 3)) r.name = data.title;
-                            },
-                            error: function() {
-                                r.type = 'urlpreview';
-                                r.attributes.originalType = 'tiktok';
-                            }
-                        });
+                        var _ttData = syncGetJSON("https://www.tiktok.com/oembed?url=" + encodeURIComponent(src));
+                        if (_ttData) {
+                            if (_ttData.html) r.attributes.html = _ttData.html;
+                            if (_ttData.thumbnail_url) r.thumb = _ttData.thumbnail_url;
+                            if (_ttData.title && (!r.name || r.name.length < 3)) r.name = _ttData.title;
+                        } else {
+                            r.type = 'urlpreview';
+                            r.attributes.originalType = 'tiktok';
+                        }
                         return r;
                     }
                     return null;
@@ -1194,16 +1208,10 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                         // Cross-instance: username contains a second @
                         if (res[2].indexOf('@') !== -1) {
                             var apiUrl = 'https://' + res[1] + '/api/v1/statuses/' + res[3];
-                            $.ajax({
-                                url: apiUrl,
-                                async: false,
-                                timeout: 5000,
-                                success: function(data) {
-                                    if (data.url) {
-                                        r.attributes.embedUrl = data.url + '/embed';
-                                    }
-                                }
-                            });
+                            var _mstData = syncGetJSON(apiUrl);
+                            if (_mstData && _mstData.url) {
+                                r.attributes.embedUrl = _mstData.url + '/embed';
+                            }
                         }
                         return r;
                     }
@@ -1217,16 +1225,12 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                         var r = createResource(src, "spotify", name, thumbSrc);
                         r.attributes.contentType = res[1];
                         r.attributes.contentId = res[2];
-                        $.ajax({
-                            url: "https://open.spotify.com/oembed?url=" + encodeURIComponent(src),
-                            async: false,
-                            timeout: 5000,
-                            success: function(data) {
-                                if (data.html) r.attributes.html = data.html;
-                                if (data.thumbnail_url) r.thumb = data.thumbnail_url;
-                                if (data.title && (!r.name || r.name.length < 3)) r.name = data.title;
-                            }
-                        });
+                        var _spData = syncGetJSON("https://open.spotify.com/oembed?url=" + encodeURIComponent(src));
+                        if (_spData) {
+                            if (_spData.html) r.attributes.html = _spData.html;
+                            if (_spData.thumbnail_url) r.thumb = _spData.thumbnail_url;
+                            if (_spData.title && (!r.name || r.name.length < 3)) r.name = _spData.title;
+                        }
                         return r;
                     }
                     return null;
@@ -1236,20 +1240,15 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                     var res = /slideshare\.net\/([^\/]+)\/([^\/\?]+)/.exec(src);
                     if (res !== null) {
                         var r = createResource(src, "slideshare", name);
-                        $.ajax({
-                            url: "https://www.slideshare.net/api/oembed/2?url=" + encodeURIComponent(src) + "&format=json",
-                            async: false,
-                            timeout: 5000,
-                            success: function(data) {
-                                if (data.html) r.attributes.html = data.html;
-                                if (data.thumbnail) r.thumb = data.thumbnail;
-                                if (data.title && (!r.name || r.name.length < 3)) r.name = data.title;
-                            },
-                            error: function() {
-                                r.type = 'urlpreview';
-                                r.attributes.originalType = 'slideshare';
-                            }
-                        });
+                        var _ssData = syncGetJSON("https://www.slideshare.net/api/oembed/2?url=" + encodeURIComponent(src) + "&format=json");
+                        if (_ssData) {
+                            if (_ssData.html) r.attributes.html = _ssData.html;
+                            if (_ssData.thumbnail) r.thumb = _ssData.thumbnail;
+                            if (_ssData.title && (!r.name || r.name.length < 3)) r.name = _ssData.title;
+                        } else {
+                            r.type = 'urlpreview';
+                            r.attributes.originalType = 'slideshare';
+                        }
                         return r;
                     }
                     return null;
@@ -1259,19 +1258,14 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                     var res = /reddit\.com\/r\/([^\/]+)\/comments\/([a-zA-Z0-9]+)/.exec(src);
                     if (res !== null) {
                         var r = createResource(src, "reddit", name);
-                        $.ajax({
-                            url: "https://www.reddit.com/oembed?url=" + encodeURIComponent(src),
-                            async: false,
-                            timeout: 5000,
-                            success: function(data) {
-                                if (data.html) r.attributes.html = data.html;
-                                if (data.author_name && (!r.name || r.name.length < 3)) r.name = data.author_name + "'s post";
-                            },
-                            error: function() {
-                                r.type = 'urlpreview';
-                                r.attributes.originalType = 'reddit';
-                            }
-                        });
+                        var _rdData = syncGetJSON("https://www.reddit.com/oembed?url=" + encodeURIComponent(src));
+                        if (_rdData) {
+                            if (_rdData.html) r.attributes.html = _rdData.html;
+                            if (_rdData.author_name && (!r.name || r.name.length < 3)) r.name = _rdData.author_name + "'s post";
+                        } else {
+                            r.type = 'urlpreview';
+                            r.attributes.originalType = 'reddit';
+                        }
                         return r;
                     }
                     return null;
@@ -1287,24 +1281,19 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                         var res = flickr_patterns[i].exec(src);
                         if (res !== null) {
                             var r = createResource(src, "flickr", name);
-                            $.ajax({
-                                url: "https://www.flickr.com/services/oembed/?url=" + encodeURIComponent(src) + "&format=json",
-                                async: false,
-                                timeout: 5000,
-                                success: function(data) {
-                                    if (data.type === 'photo') {
-                                        r.thumb = data.url;
-                                        r.attributes.photoUrl = data.url;
-                                    } else if (data.html) {
-                                        r.attributes.html = data.html;
-                                    }
-                                    if (data.title && (!r.name || r.name.length < 3)) r.name = data.title;
-                                },
-                                error: function() {
-                                    r.type = 'urlpreview';
-                                    r.attributes.originalType = 'flickr';
+                            var _flData = syncGetJSON("https://www.flickr.com/services/oembed/?url=" + encodeURIComponent(src) + "&format=json");
+                            if (_flData) {
+                                if (_flData.type === 'photo') {
+                                    r.thumb = _flData.url;
+                                    r.attributes.photoUrl = _flData.url;
+                                } else if (_flData.html) {
+                                    r.attributes.html = _flData.html;
                                 }
-                            });
+                                if (_flData.title && (!r.name || r.name.length < 3)) r.name = _flData.title;
+                            } else {
+                                r.type = 'urlpreview';
+                                r.attributes.originalType = 'flickr';
+                            }
                             return r;
                         }
                     }
@@ -1353,12 +1342,18 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
             for (var i in checkers) {
                 newResource = checkers[i](uriValue, nameValue);
                 if (newResource !== null) {
-                    $('.resourceInputMessage').attr('class', 'resourceInputMessage message active success').text(labels['MessageURLValid'] +': '+ newResource.type);
+                    if (currentUploadDialog) {
+                        var _msgEl = currentUploadDialog.querySelector('.resourceInputMessage');
+                        if (_msgEl) { _msgEl.className = 'resourceInputMessage message active success'; _msgEl.textContent = labels['MessageURLValid'] +': '+ newResource.type; }
+                    }
                     renderWebsitePreview(uriValue, newResource.type, newResource);
                     return newResource;
                     break;
                 } else {
-                    $('.resourceInputMessage').attr('class', 'resourceInputMessage message active error').text(labels['MessageURLNotValid']);
+                    if (currentUploadDialog) {
+                        var _msgEl2 = currentUploadDialog.querySelector('.resourceInputMessage');
+                        if (_msgEl2) { _msgEl2.className = 'resourceInputMessage message active error'; _msgEl2.textContent = labels['MessageURLNotValid']; }
+                    }
                 }
             }
 
@@ -1381,12 +1376,13 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
      */
     function renderWebsitePreview(uriValue, resourceType, resourceObj) {
 
-        $('#resourceInputTabURL .resourceURLPreview').empty();
-        $('.resourceInput[name="thumbnail"]').val('');
-        $('.resourceInput[name="embed"]').val('');
-        $('#resourceInputTabURL .corsWarning').removeClass('active');
+        if (!currentUploadDialog) return;
+        currentUploadDialog.querySelector('#resourceInputTabURL .resourceURLPreview').innerHTML = '';
+        currentUploadDialog.querySelector('.resourceInput[name="thumbnail"]').value = '';
+        currentUploadDialog.querySelector('.resourceInput[name="embed"]').value = '';
+        currentUploadDialog.querySelector('#resourceInputTabURL .corsWarning').classList.remove('active');
 
-        $('#resourceInputTabURL .resourceURLPreview').append('<div class="workingSpinner dark"></div>');
+        currentUploadDialog.querySelector('#resourceInputTabURL .resourceURLPreview').insertAdjacentHTML('beforeend', '<div class="workingSpinner dark"></div>');
 
         if ( uriValue.length > 3 ) {
 
@@ -1443,34 +1439,38 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
      * @return
      */
     function renderResourcePreviewElement(resourceType, resourceTitle, resourceThumb, resourceDescription, embed) {
-        $('.resourceInput[name="thumbnail"]').val(resourceThumb);
-        $('.resourceInput[name="embed"]').val(embed);
+        if (!currentUploadDialog) return;
+        currentUploadDialog.querySelector('.resourceInput[name="thumbnail"]').value = resourceThumb || '';
+        currentUploadDialog.querySelector('.resourceInput[name="embed"]').value = embed || '';
 
-        if ($('.resourceNameInput').val().length < 3 && 
-            resourceTitle != 'YouTube') {
-            $('.resourceNameInput').val(resourceTitle);
-            $('.resourceNameInput').trigger('change');
+        var _nameInput = currentUploadDialog.querySelector('.resourceNameInput');
+        if (_nameInput.value.length < 3 && resourceTitle != 'YouTube') {
+            _nameInput.value = resourceTitle;
+            _nameInput.dispatchEvent(new Event('change'));
         }
-        
-        var previewTitle = ($('.resourceNameInput').val().length > 3) ? $('.resourceNameInput').val() : resourceTitle;
+
+        var previewTitle = (_nameInput.value.length > 3) ? _nameInput.value : resourceTitle;
         var previewImageString = (resourceThumb) ? 'background-image:url('+ resourceThumb +')' : '';
-        
-        var previewElem = $('<div class="resourceThumb" data-type="'+ resourceType +'" style="'+ previewImageString +'">'
+
+        var _prevw = document.createElement('div');
+        _prevw.innerHTML = '<div class="resourceThumb" data-type="'+ resourceType +'" style="'+ previewImageString +'">'
                            +'    <div class="resourceOverlay">'
                            +'    </div>'
                            +'    <div class="resourceTitle">'+ previewTitle +'</div>'
-                           +'</div>');
-        
-        $('#resourceInputTabURL .resourceURLPreview .resourceThumb').remove();
-        $('#resourceInputTabURL .resourceURLPreview').append(previewElem);
+                           +'</div>';
+        var previewElem = _prevw.firstElementChild;
+
+        currentUploadDialog.querySelectorAll('#resourceInputTabURL .resourceURLPreview .resourceThumb').forEach(function(el) { el.remove(); });
+        currentUploadDialog.querySelector('#resourceInputTabURL .resourceURLPreview').appendChild(previewElem);
 
         if (embed && embed == 'forbidden') {
-            $('#resourceInputTabURL .corsWarning').addClass('active');
+            currentUploadDialog.querySelector('#resourceInputTabURL .corsWarning').classList.add('active');
         } else {
-            $('#resourceInputTabURL .corsWarning').removeClass('active');
+            currentUploadDialog.querySelector('#resourceInputTabURL .corsWarning').classList.remove('active');
         }
 
-        $('#resourceInputTabURL .resourceURLPreview .workingSpinner').remove();
+        var _spinner = currentUploadDialog.querySelector('#resourceInputTabURL .resourceURLPreview .workingSpinner');
+        if (_spinner) { _spinner.remove(); }
     }
 
 
@@ -1496,7 +1496,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
         }
         r.thumb = thumb;
         r.attributes = {};
-        if ($('.resourceInput[name="embed"]').val() == 'forbidden') {
+        if (currentUploadDialog && currentUploadDialog.querySelector('.resourceInput[name="embed"]').value == 'forbidden') {
             r.attributes['embed'] = 'forbidden';
         }
         return r;
@@ -1583,8 +1583,8 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 	 */
 	function renderList(targetElement, filter, key, condition, value) {
 
-		targetElement.empty();
-		targetElement.append('<div class="loadingScreen"><div class="workingSpinner dark"></div></div>');
+		targetElement.innerHTML = '';
+		targetElement.insertAdjacentHTML('beforeend', '<div class="loadingScreen"><div class="workingSpinner dark"></div></div>');
 
 
 		if (filter) {
@@ -1653,16 +1653,16 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 
 	    		renderResult(targetElement, database.resources);
 
-				targetElement.find('.loadingScreen').fadeOut(600, function() {
-                    $(this).remove();
-                });
+				var _ls = targetElement.querySelector('.loadingScreen');
+				if (_ls) { _ls.style.transition = 'opacity 0.6s'; _ls.style.opacity = '0'; setTimeout(function() { if (_ls.parentNode) { _ls.parentNode.removeChild(_ls); } }, 600); }
 
 			},
 
 			function(errorMessage){
 
-				targetElement.find('.loadingScreen').remove();
-				targetElement.append('<div class="loadingErrorMessage"><div class="message error active">' + errorMessage + '</div></div>');
+				var _lse = targetElement.querySelector('.loadingScreen');
+				if (_lse) { _lse.remove(); }
+				targetElement.insertAdjacentHTML('beforeend', '<div class="loadingErrorMessage"><div class="message error active">' + errorMessage + '</div></div>');
 
 			}
 
@@ -1705,7 +1705,8 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 				if (match) result[k] = v;
 			}
 			renderResult(targetElement, result);
-			targetElement.find('.loadingScreen').fadeOut(600, function() { $(this).remove(); });
+			var _ls2 = targetElement.querySelector('.loadingScreen');
+			if (_ls2) { _ls2.style.transition = 'opacity 0.6s'; _ls2.style.opacity = '0'; setTimeout(function() { if (_ls2.parentNode) { _ls2.parentNode.removeChild(_ls2); } }, 600); }
 			return;
 		}
 
@@ -1726,15 +1727,15 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 				renderResult(targetElement, data.result);
 			}
 
-			targetElement.find('.loadingScreen').fadeOut(600, function() {
-				$(this).remove();
-			});
+			var _ls3 = targetElement.querySelector('.loadingScreen');
+			if (_ls3) { _ls3.style.transition = 'opacity 0.6s'; _ls3.style.opacity = '0'; setTimeout(function() { if (_ls3.parentNode) { _ls3.parentNode.removeChild(_ls3); } }, 600); }
 
 		})
 		.catch(function() {
 
-			targetElement.find('.loadingScreen').remove();
-			targetElement.append('<div class="loadingErrorMessage"><div class="message error active">' + labels['ErrorGeneric'] + '</div></div>');
+			var _ls4 = targetElement.querySelector('.loadingScreen');
+			if (_ls4) { _ls4.remove(); }
+			targetElement.insertAdjacentHTML('beforeend', '<div class="loadingErrorMessage"><div class="message error active">' + labels['ErrorGeneric'] + '</div></div>');
 
 		});
 
@@ -1752,23 +1753,26 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 	 */
 	function renderResourcePicker(targetElement) {
 
-		var resourceDatabase 	= FrameTrail.module('Database').resources,
-			container		 	= $(	'<div class="resourcePicker">'
-									  + '    <div class="resourcePickerControls">'
-									  //+ '        <button class="manageResourcesButton">Manage Resources</button>'
-                                      + '        <button class="addResourcesButton" data-tooltip-right="'+ labels['ResourceAddNew'] +'"><span class="icon-doc-new"></span></button>'
-									  + '    </div>'
-									  + '    <div class="resourcePickerList"></div>'
-									  + '</div>'),
-			resourceList 		= container.find('.resourcePickerList'),
-			resourceThumb;
+		if (targetElement && targetElement.jquery) { targetElement = targetElement[0]; }
+		var resourceDatabase 	= FrameTrail.module('Database').resources;
+		var _cpw = document.createElement('div');
+		_cpw.innerHTML = '<div class="resourcePicker">'
+						  + '    <div class="resourcePickerControls">'
+						  //+ '        <button class="manageResourcesButton">Manage Resources</button>'
+                          + '        <button class="addResourcesButton" data-tooltip-right="'+ labels['ResourceAddNew'] +'"><span class="icon-doc-new"></span></button>'
+						  + '    </div>'
+						  + '    <div class="resourcePickerList"></div>'
+						  + '</div>';
+		var container = _cpw.firstElementChild;
+		var resourceList = container.querySelector('.resourcePickerList');
+		var resourceThumb;
 
-		container.find('.addResourcesButton').click(function() {
+		container.querySelector('.addResourcesButton').addEventListener('click', function() {
 
             FrameTrail.module('ResourceManager').uploadResource(function(){
 
                 FrameTrail.module('Database').loadResourceData(function() {
-                    targetElement.empty();
+                    targetElement.innerHTML = '';
                     renderResourcePicker(targetElement);
                 });
 
@@ -1777,7 +1781,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 		});
 
         if (!FrameTrail.module('StorageManager').canSave()) {
-            container.find('.addResourcesButton').prop('disabled', true);
+            container.querySelector('.addResourcesButton').disabled = true;
         }
 
 		for (var i in resourceDatabase) {
@@ -1823,14 +1827,14 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 						}
 					}
 				});
-			}(resourceThumb[0]));
+			}(resourceThumb));
 
-			resourceList.append(resourceThumb);
+			resourceList.appendChild(resourceThumb);
 
 		}
 
 
-		targetElement.append(container);
+		targetElement.appendChild(container);
 
 	}
 

@@ -319,7 +319,7 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
 
 	function initLayoutManager() {
 		
-		HypervideoLayoutContainer.empty();
+		HypervideoLayoutContainer.innerHTML = '';
 
 		var database   = FrameTrail.module('Database'),
 			hypervideo = database.hypervideo,
@@ -327,121 +327,122 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
 
 		var currentTheme = hypervideo.config.theme || database.config.theme || 'default';
 
-		var domElement = $('<div class="layoutManagerContainer">'
-						+  '    <div class="layoutManagerMain">'
-						+  '        <div class="layoutManager">'
-						+  '            <div data-area="areaTop" class="layoutArea">'
-						+  '                <div class="layoutAreaTabs"></div>'
-						+  '                <div class="layoutAreaContent"></div>'
-						+  '            </div>'
-						+  '            <div class="playerWrapper">'
-						+  '                <div data-area="areaLeft" class="layoutArea">'
-						+  '                    <div class="layoutAreaTabs"></div>'
-						+  '                    <div class="layoutAreaContent"></div>'
-						+  '                </div>'
-						+  '                <div class="playerArea">'
-						+  '                    <span class="icon-play-1"></span>'
-						+  '                </div>'
-						+  '                <div data-area="areaRight" class="layoutArea">'
-						+  '                    <div class="layoutAreaTabs"></div>'
-						+  '                    <div class="layoutAreaContent"></div>'
-						+  '                </div>'
-						+  '            </div>'
-						+  '            <div data-area="areaBottom" class="layoutArea">'
-						+  '                <div class="layoutAreaTabs"></div>'
-						+  '                <div class="layoutAreaContent"></div>'
-						+  '            </div>'
-						+  '        </div>'
-						+  '        <div class="layoutManagerThemePanel">'
-						+  '            <div class="themeContainer">'
-						+  '                <div class="message active">'+ labels['SettingsSelectColorTheme'] +'</div>'
-						+  '                <div class="themeItem" data-theme="default">'
-						+  '                    <div class="themeName">'+ labels['GenericDefault'] +'</div>'
-						+  '                    <div class="themeColorContainer">'
-						+  '                        <div class="primary-fg-color"></div>'
-						+  '                        <div class="secondary-bg-color"></div>'
-						+  '                        <div class="secondary-fg-color"></div>'
-						+  '                    </div>'
-						+  '                </div>'
-						+  '                <div class="themeItem" data-theme="dark">'
-						+  '                    <div class="themeName">Dark</div>'
-						+  '                    <div class="themeColorContainer">'
-						+  '                        <div class="primary-fg-color"></div>'
-						+  '                        <div class="secondary-bg-color"></div>'
-						+  '                        <div class="secondary-fg-color"></div>'
-						+  '                    </div>'
-						+  '                </div>'
-						+  '                <div class="themeItem" data-theme="bright">'
-						+  '                    <div class="themeName">Bright</div>'
-						+  '                    <div class="themeColorContainer">'
-						+  '                        <div class="primary-fg-color"></div>'
-						+  '                        <div class="secondary-bg-color"></div>'
-						+  '                        <div class="secondary-fg-color"></div>'
-						+  '                    </div>'
-						+  '                </div>'
-						+  '                <div class="themeItem" data-theme="blue">'
-						+  '                    <div class="themeName">Blue</div>'
-						+  '                    <div class="themeColorContainer">'
-						+  '                        <div class="primary-fg-color"></div>'
-						+  '                        <div class="secondary-bg-color"></div>'
-						+  '                        <div class="secondary-fg-color"></div>'
-						+  '                    </div>'
-						+  '                </div>'
-						+  '                <div class="themeItem" data-theme="green">'
-						+  '                    <div class="themeName">Green</div>'
-						+  '                    <div class="themeColorContainer">'
-						+  '                        <div class="primary-fg-color"></div>'
-						+  '                        <div class="secondary-bg-color"></div>'
-						+  '                        <div class="secondary-fg-color"></div>'
-						+  '                    </div>'
-						+  '                </div>'
-						+  '                <div class="themeItem" data-theme="orange">'
-						+  '                    <div class="themeName">Orange</div>'
-						+  '                    <div class="themeColorContainer">'
-						+  '                        <div class="primary-fg-color"></div>'
-						+  '                        <div class="secondary-bg-color"></div>'
-						+  '                        <div class="secondary-fg-color"></div>'
-						+  '                    </div>'
-						+  '                </div>'
-						+  '                <div class="themeItem" data-theme="grey">'
-						+  '                    <div class="themeName">Grey</div>'
-						+  '                    <div class="themeColorContainer">'
-						+  '                        <div class="primary-fg-color"></div>'
-						+  '                        <div class="secondary-bg-color"></div>'
-						+  '                        <div class="secondary-fg-color"></div>'
-						+  '                    </div>'
-						+  '                </div>'
-						+  '            </div>'
-						+  '        </div>'
-						+  '    </div>'
-						+  '    <div class="layoutManagerOptions">'
-						+  '        <div class="message active">'+ labels['MessageLayoutManagerDropContentViews'] +'</div>'
-						+  '        <div class="contentViewTemplate" data-type="TimedContent" data-size="small">'
-						+  '            <div class="contentViewTemplateType"><span class="icon-docs">'+ labels['GenericAnnotationCollection'] +'</span></div>'
-						+  '            <div class="contentViewTemplateSize"><span class="icon-coverflow"></span></div>'
-						+  '        </div>'
-						+  '        <div class="contentViewTemplate" data-type="TimedContent" data-size="medium">'
-						+  '            <div class="contentViewTemplateType"><span class="icon-docs">'+ labels['GenericAnnotationCollection'] +'</span></div>'
-						+  '            <div class="contentViewTemplateSize"><span class="icon-coverflow"></span></div>'
-						+  '        </div>'
-						+  '        <div class="contentViewTemplate" data-type="TimedContent" data-size="large">'
-						+  '            <div class="contentViewTemplateType"><span class="icon-docs">'+ labels['GenericAnnotationCollection'] +'</span></div>'
-						+  '            <div class="contentViewTemplateSize"><span class="icon-coverflow"></span></div>'
-						+  '        </div>'
-						+  '        <div class="contentViewTemplate" data-type="CustomHTML" data-size="medium">'
-						+  '            <div class="contentViewTemplateType"><span class="icon-file-code">'+ labels['GenericCustomHTML'] +'</span></div>'
-						+  '        </div>'
-						+  '        <div class="contentViewTemplate" data-type="Transcript" data-size="large">'
-						+  '            <div class="contentViewTemplateType"><span class="icon-doc-text">'+ labels['GenericTextTranscript'] +'</span></div>'
-						+  '        </div>'
-						+  '        <div class="contentViewTemplate" data-type="Timelines" data-size="large">'
-						+  '            <div class="contentViewTemplateType"><span class="icon-doc-text">'+ labels['GenericTimelines'] +'</span></div>'
-						+  '        </div>'
-						+  '    </div>'
-						+  '</div>'),
-
-		LayoutManager        = domElement.find('.layoutManager'),
-		LayoutManagerOptions = domElement.find('.layoutManagerOptions'),
+		var _lmWrapper = document.createElement('div');
+		_lmWrapper.innerHTML = '<div class="layoutManagerContainer">' +
+			'    <div class="layoutManagerMain">' +
+			'        <div class="layoutManager">' +
+			'            <div data-area="areaTop" class="layoutArea">' +
+			'                <div class="layoutAreaTabs"></div>' +
+			'                <div class="layoutAreaContent"></div>' +
+			'            </div>' +
+			'            <div class="playerWrapper">' +
+			'                <div data-area="areaLeft" class="layoutArea">' +
+			'                    <div class="layoutAreaTabs"></div>' +
+			'                    <div class="layoutAreaContent"></div>' +
+			'                </div>' +
+			'                <div class="playerArea">' +
+			'                    <span class="icon-play-1"></span>' +
+			'                </div>' +
+			'                <div data-area="areaRight" class="layoutArea">' +
+			'                    <div class="layoutAreaTabs"></div>' +
+			'                    <div class="layoutAreaContent"></div>' +
+			'                </div>' +
+			'            </div>' +
+			'            <div data-area="areaBottom" class="layoutArea">' +
+			'                <div class="layoutAreaTabs"></div>' +
+			'                <div class="layoutAreaContent"></div>' +
+			'            </div>' +
+			'        </div>' +
+			'        <div class="layoutManagerThemePanel">' +
+			'            <div class="themeContainer">' +
+			'                <div class="message active">'+ labels['SettingsSelectColorTheme'] +'</div>' +
+			'                <div class="themeItem" data-theme="default">' +
+			'                    <div class="themeName">'+ labels['GenericDefault'] +'</div>' +
+			'                    <div class="themeColorContainer">' +
+			'                        <div class="primary-fg-color"></div>' +
+			'                        <div class="secondary-bg-color"></div>' +
+			'                        <div class="secondary-fg-color"></div>' +
+			'                    </div>' +
+			'                </div>' +
+			'                <div class="themeItem" data-theme="dark">' +
+			'                    <div class="themeName">Dark</div>' +
+			'                    <div class="themeColorContainer">' +
+			'                        <div class="primary-fg-color"></div>' +
+			'                        <div class="secondary-bg-color"></div>' +
+			'                        <div class="secondary-fg-color"></div>' +
+			'                    </div>' +
+			'                </div>' +
+			'                <div class="themeItem" data-theme="bright">' +
+			'                    <div class="themeName">Bright</div>' +
+			'                    <div class="themeColorContainer">' +
+			'                        <div class="primary-fg-color"></div>' +
+			'                        <div class="secondary-bg-color"></div>' +
+			'                        <div class="secondary-fg-color"></div>' +
+			'                    </div>' +
+			'                </div>' +
+			'                <div class="themeItem" data-theme="blue">' +
+			'                    <div class="themeName">Blue</div>' +
+			'                    <div class="themeColorContainer">' +
+			'                        <div class="primary-fg-color"></div>' +
+			'                        <div class="secondary-bg-color"></div>' +
+			'                        <div class="secondary-fg-color"></div>' +
+			'                    </div>' +
+			'                </div>' +
+			'                <div class="themeItem" data-theme="green">' +
+			'                    <div class="themeName">Green</div>' +
+			'                    <div class="themeColorContainer">' +
+			'                        <div class="primary-fg-color"></div>' +
+			'                        <div class="secondary-bg-color"></div>' +
+			'                        <div class="secondary-fg-color"></div>' +
+			'                    </div>' +
+			'                </div>' +
+			'                <div class="themeItem" data-theme="orange">' +
+			'                    <div class="themeName">Orange</div>' +
+			'                    <div class="themeColorContainer">' +
+			'                        <div class="primary-fg-color"></div>' +
+			'                        <div class="secondary-bg-color"></div>' +
+			'                        <div class="secondary-fg-color"></div>' +
+			'                    </div>' +
+			'                </div>' +
+			'                <div class="themeItem" data-theme="grey">' +
+			'                    <div class="themeName">Grey</div>' +
+			'                    <div class="themeColorContainer">' +
+			'                        <div class="primary-fg-color"></div>' +
+			'                        <div class="secondary-bg-color"></div>' +
+			'                        <div class="secondary-fg-color"></div>' +
+			'                    </div>' +
+			'                </div>' +
+			'            </div>' +
+			'        </div>' +
+			'    </div>' +
+			'    <div class="layoutManagerOptions">' +
+			'        <div class="message active">'+ labels['MessageLayoutManagerDropContentViews'] +'</div>' +
+			'        <div class="contentViewTemplate" data-type="TimedContent" data-size="small">' +
+			'            <div class="contentViewTemplateType"><span class="icon-docs">'+ labels['GenericAnnotationCollection'] +'</span></div>' +
+			'            <div class="contentViewTemplateSize"><span class="icon-coverflow"></span></div>' +
+			'        </div>' +
+			'        <div class="contentViewTemplate" data-type="TimedContent" data-size="medium">' +
+			'            <div class="contentViewTemplateType"><span class="icon-docs">'+ labels['GenericAnnotationCollection'] +'</span></div>' +
+			'            <div class="contentViewTemplateSize"><span class="icon-coverflow"></span></div>' +
+			'        </div>' +
+			'        <div class="contentViewTemplate" data-type="TimedContent" data-size="large">' +
+			'            <div class="contentViewTemplateType"><span class="icon-docs">'+ labels['GenericAnnotationCollection'] +'</span></div>' +
+			'            <div class="contentViewTemplateSize"><span class="icon-coverflow"></span></div>' +
+			'        </div>' +
+			'        <div class="contentViewTemplate" data-type="CustomHTML" data-size="medium">' +
+			'            <div class="contentViewTemplateType"><span class="icon-file-code">'+ labels['GenericCustomHTML'] +'</span></div>' +
+			'        </div>' +
+			'        <div class="contentViewTemplate" data-type="Transcript" data-size="large">' +
+			'            <div class="contentViewTemplateType"><span class="icon-doc-text">'+ labels['GenericTextTranscript'] +'</span></div>' +
+			'        </div>' +
+			'        <div class="contentViewTemplate" data-type="Timelines" data-size="large">' +
+			'            <div class="contentViewTemplateType"><span class="icon-doc-text">'+ labels['GenericTimelines'] +'</span></div>' +
+			'        </div>' +
+			'    </div>' +
+			'</div>';
+		var domElement = _lmWrapper.firstElementChild,
+		LayoutManager        = domElement.querySelector('.layoutManager'),
+		LayoutManagerOptions = domElement.querySelector('.layoutManagerOptions'),
 		self = this;
 
 		HypervideoLayoutContainer.append(domElement);
@@ -471,21 +472,21 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
 				}
 			}
 		};
-		LayoutManagerOptions.find('.contentViewTemplate').each(function() { interact(this).draggable(draggableListeners); });
+		LayoutManagerOptions.querySelectorAll('.contentViewTemplate').forEach(function(el) { interact(el).draggable(draggableListeners); });
 
 		var dropzoneOpts = {
 				accept: '.contentViewTemplate, .contentViewPreview',
 				overlap: 'pointer',
-				ondropactivate:   function(e) { $(e.target).addClass('droppableActive'); },
-				ondropdeactivate: function(e) { $(e.target).removeClass('droppableActive droppableHover'); },
-				ondragenter:      function(e) { $(e.target).addClass('droppableHover'); },
-				ondragleave:      function(e) { $(e.target).removeClass('droppableHover'); },
+				ondropactivate:   function(e) { e.target.classList.add('droppableActive'); },
+				ondropdeactivate: function(e) { e.target.classList.remove('droppableActive', 'droppableHover'); },
+				ondragenter:      function(e) { e.target.classList.add('droppableHover'); },
+				ondragleave:      function(e) { e.target.classList.remove('droppableHover'); },
 				ondrop: function(e) {
-					var $orig = $(e.relatedTarget);
-					var layoutArea = $(e.target).parent().data('area'),
+					var orig = e.relatedTarget;
+					var layoutArea = e.target.parentElement.dataset.area,
 						contentAxis = (layoutArea == 'areaTop' || layoutArea == 'areaBottom') ? 'x' : 'y',
 						templateContentViewData = {
-							'type': $orig.data('type'),
+							'type': orig.dataset.type,
 							'name': '',
 							'description': '',
 							'cssClass': '',
@@ -499,7 +500,7 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
 							'transcriptSource': '',
 							'mode': 'slide',
 							'axis': contentAxis,
-							'contentSize': $orig.data('size') || '',
+							'contentSize': orig.dataset.size || '',
 							'autoSync': false,
 							'onClickContentItem': ''
 						};
@@ -544,7 +545,7 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
 					})(whichArea, JSON.parse(JSON.stringify(templateContentViewData)));
 				}
 		};
-		LayoutManager.find('.layoutAreaContent').each(function() { interact(this).dropzone(dropzoneOpts); });
+		LayoutManager.querySelectorAll('.layoutAreaContent').forEach(function(el) { interact(el).dropzone(dropzoneOpts); });
 		}());
 
 		initLayoutAreaPreview(contentViewsTop);
@@ -554,53 +555,58 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
 
 
 		// Theme selector
-		var themePanel = domElement.find('.layoutManagerThemePanel');
+	var themePanel = domElement.querySelector('.layoutManagerThemePanel');
 
-		themePanel.find('.themeItem').each(function() {
-			if (currentTheme == $(this).attr('data-theme')) {
-				$(this).addClass('active');
-			}
-		});
+	themePanel.querySelectorAll('.themeItem').forEach(function(item) {
+		if (currentTheme === item.dataset.theme) {
+			item.classList.add('active');
+		}
+	});
 
-		themePanel.find('.themeItem').click(function() {
-			var newTheme = $(this).attr('data-theme'),
-				oldTheme = hypervideo.config.theme || '';
+	themePanel.addEventListener('click', function(evt) {
+		var el = evt.target.closest('.themeItem');
+		if (!el) { return; }
 
-			if (newTheme === oldTheme || (!oldTheme && newTheme === (database.config.theme || 'default'))) {
-				return;
-			}
+		var newTheme = el.dataset.theme,
+			oldTheme = hypervideo.config.theme || '';
 
-			$(this).siblings('.themeItem').removeClass('active');
-			$(this).addClass('active');
+		if (newTheme === oldTheme || (!oldTheme && newTheme === (database.config.theme || 'default'))) {
+			return;
+		}
 
-			// Apply theme immediately
-			hypervideo.config.theme = newTheme;
-			$(FrameTrail.getState('target')).attr('data-frametrail-theme', newTheme);
+		themePanel.querySelectorAll('.themeItem').forEach(function(item) { item.classList.remove('active'); });
+		el.classList.add('active');
 
-			FrameTrail.module('HypervideoModel').newUnsavedChange('layout');
+		// Apply theme immediately
+		hypervideo.config.theme = newTheme;
+		document.querySelector(FrameTrail.getState('target')).setAttribute('data-frametrail-theme', newTheme);
 
-			// Register undo/redo
-			(function(prevTheme, nextTheme) {
-				FrameTrail.module('UndoManager').register({
-					category: 'layout',
-					description: labels['SidebarLayout'] + ' Theme',
-					undo: function() {
-						hypervideo.config.theme = prevTheme;
-						$(FrameTrail.getState('target')).attr('data-frametrail-theme', prevTheme || database.config.theme || 'default');
-						themePanel.find('.themeItem').removeClass('active');
-						themePanel.find('.themeItem[data-theme="'+ (prevTheme || database.config.theme || 'default') +'"]').addClass('active');
-						FrameTrail.module('HypervideoModel').newUnsavedChange('layout');
-					},
-					redo: function() {
-						hypervideo.config.theme = nextTheme;
-						$(FrameTrail.getState('target')).attr('data-frametrail-theme', nextTheme);
-						themePanel.find('.themeItem').removeClass('active');
-						themePanel.find('.themeItem[data-theme="'+ nextTheme +'"]').addClass('active');
-						FrameTrail.module('HypervideoModel').newUnsavedChange('layout');
-					}
-				});
-			})(oldTheme, newTheme);
-		});
+		FrameTrail.module('HypervideoModel').newUnsavedChange('layout');
+
+		// Register undo/redo
+		(function(prevTheme, nextTheme) {
+			FrameTrail.module('UndoManager').register({
+				category: 'layout',
+				description: labels['SidebarLayout'] + ' Theme',
+				undo: function() {
+					hypervideo.config.theme = prevTheme;
+					document.querySelector(FrameTrail.getState('target')).setAttribute('data-frametrail-theme', prevTheme || database.config.theme || 'default');
+					themePanel.querySelectorAll('.themeItem').forEach(function(item) { item.classList.remove('active'); });
+					var prevItem = themePanel.querySelector('.themeItem[data-theme="'+ (prevTheme || database.config.theme || 'default') +'"]');
+					if (prevItem) { prevItem.classList.add('active'); }
+					FrameTrail.module('HypervideoModel').newUnsavedChange('layout');
+				},
+				redo: function() {
+					hypervideo.config.theme = nextTheme;
+					document.querySelector(FrameTrail.getState('target')).setAttribute('data-frametrail-theme', nextTheme);
+					themePanel.querySelectorAll('.themeItem').forEach(function(item) { item.classList.remove('active'); });
+					var nextItem = themePanel.querySelector('.themeItem[data-theme="'+ nextTheme +'"]');
+					if (nextItem) { nextItem.classList.add('active'); }
+					FrameTrail.module('HypervideoModel').newUnsavedChange('layout');
+				}
+			});
+		})(oldTheme, newTheme);
+	});
 
 
 	}
@@ -830,7 +836,7 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
             }
             // Sync the area container data-size with the active content view
             for (var i in allAreas[a]) {
-                if (allAreas[a][i].contentViewContainer.hasClass('active')) {
+                if (allAreas[a][i].contentViewContainer.classList.contains('active')) {
                     allAreas[a][i].resizeLayoutArea(false, true);
                     break;
                 }
@@ -930,10 +936,12 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
      */
     function onChangeSlidePosition(newState, oldState) {
 
-    	// TODO: find way to avoid jQuery selector
-    	if ( newState == 'middle' ) {
-    		$(FrameTrail.getState('target')).find('.viewVideo').find('.collectionElement.open').removeClass('open');
-    	}
+    		if ( newState == 'middle' ) {
+    		var _targetEl = document.querySelector(FrameTrail.getState('target'));
+    		_targetEl.querySelectorAll('.viewVideo .collectionElement.open').forEach(function(el) {
+    			el.classList.remove('open');
+    		});
+    	};
 
     }
 
@@ -965,14 +973,6 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
 
 		getLayoutAreaData: getLayoutAreaData,
 
-		/*
-		get areaTopContainer()      { return areaTopContainer; },
-		get areaTopDetails()        { return areaTopDetails; },
-		get areaBottomContainer()   { return areaBottomContainer; },
-		get areaBottomDetails()     { return areaBottomDetails; },
-		get areaLeftContainer()     { return areaLeftContainer; },
-		get areaRightContainer()    { return areaRightContainer; }
-		*/
 	};
 
 });

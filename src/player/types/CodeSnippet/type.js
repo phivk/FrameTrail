@@ -28,7 +28,9 @@ FrameTrail.defineType(
 
                 this.data = data;
 
-                this.timelineElement  = $('<div class="timelineElement" data-type="codesnippet"><div class="timelineElementIcon"><span class="icon-code"></span></div><div class="timelineElementLabel"></div><div class="previewWrapper"></div></div>');
+                var _csWrapper = document.createElement('div');
+                _csWrapper.innerHTML = '<div class="timelineElement" data-type="codesnippet"><div class="timelineElementIcon"><span class="icon-code"></span></div><div class="timelineElementLabel"></div><div class="previewWrapper"></div></div>';
+                this.timelineElement = _csWrapper.firstElementChild;
                 this.codeSnippetFunction = new Function('');
 
 
@@ -96,20 +98,27 @@ FrameTrail.defineType(
 
                     // Set label from snippet name
                     var label = this.data.name || 'Code Snippet';
-                    this.timelineElement.find('.timelineElementLabel').text(label);
+                    this.timelineElement.querySelector('.timelineElementLabel').textContent = label;
 
-                    this.timelineElement.unbind('hover');
-                    this.timelineElement.hover(this.brushIn.bind(this), this.brushOut.bind(this));
+                    if (this._brushInHandler)  { this.timelineElement.removeEventListener('mouseenter', this._brushInHandler); }
+                    if (this._brushOutHandler) { this.timelineElement.removeEventListener('mouseleave', this._brushOutHandler); }
+                    this._brushInHandler  = this.brushIn.bind(this);
+                    this._brushOutHandler = this.brushOut.bind(this);
+                    this.timelineElement.addEventListener('mouseenter', this._brushInHandler);
+                    this.timelineElement.addEventListener('mouseleave', this._brushOutHandler);
 
                     // Preview wrapper with code snippet preview
                     var snippetPreview = this.data.snippet ? this.data.snippet.substring(0, 100) : '';
-                    this.timelineElement.find('.previewWrapper').empty().append(
-                        $('<div class="resourceThumb" data-type="text">')
-                            .append('<div class="resourceTextPreview">' + $('<span>').text(snippetPreview).html() + '</div>')
-                    );
+                    var _he = document.createElement('div'); _he.textContent = snippetPreview;
+                    var _escapedPreview = _he.innerHTML;
+                    var _pw = document.createElement('div');
+                    _pw.innerHTML = '<div class="resourceThumb" data-type="text"><div class="resourceTextPreview">' + _escapedPreview + '</div></div>';
+                    var previewEl = this.timelineElement.querySelector('.previewWrapper');
+                    previewEl.innerHTML = '';
+                    previewEl.append(_pw.firstElementChild);
 
-                    var timelineTarget = ViewVideo.CodeSnippetTimeline.find('.timelineScroller');
-                    (timelineTarget.length ? timelineTarget : ViewVideo.CodeSnippetTimeline).append(this.timelineElement);
+                    var timelineTarget = ViewVideo.CodeSnippetTimeline.querySelector('.timelineScroller');
+                    (timelineTarget || ViewVideo.CodeSnippetTimeline).appendChild(this.timelineElement);
                     this.updateTimelineElement();
 
 
@@ -157,18 +166,16 @@ FrameTrail.defineType(
                         videoDuration   = HypervideoModel.duration,
                         positionLeft    = 100 * ((this.data.start - HypervideoModel.offsetIn) / videoDuration);
 
-                    this.timelineElement.css({
-                        top: '',
-                        left:  positionLeft + '%',
-                        right: ''
-                    });
+                    this.timelineElement.style.top = '';
+                    this.timelineElement.style.left = positionLeft + '%';
+                    this.timelineElement.style.right = '';
 
-                    this.timelineElement.removeClass('previewPositionLeft previewPositionRight');
+                    this.timelineElement.classList.remove('previewPositionLeft', 'previewPositionRight');
 
                     if (positionLeft < 10) {
-                        this.timelineElement.addClass('previewPositionLeft');
+                        this.timelineElement.classList.add('previewPositionLeft');
                     } else if (positionLeft > 90) {
-                        this.timelineElement.addClass('previewPositionRight');
+                        this.timelineElement.classList.add('previewPositionRight');
                     }
 
                 },
@@ -183,7 +190,7 @@ FrameTrail.defineType(
 
                     this.activeState = true;
 
-                    this.timelineElement.addClass('active');
+                    this.timelineElement.classList.add('active');
 
                     try {
                         this.codeSnippetFunction(FrameTrail);
@@ -202,7 +209,7 @@ FrameTrail.defineType(
 
                     this.activeState = false;
 
-                    this.timelineElement.removeClass('active');
+                    this.timelineElement.classList.remove('active');
 
                 },
 
@@ -213,7 +220,7 @@ FrameTrail.defineType(
                  */
                 brushIn: function () {
 
-                    this.timelineElement.addClass('brushed');
+                    this.timelineElement.classList.add('brushed');
 
                 },
 
@@ -223,7 +230,7 @@ FrameTrail.defineType(
                  */
                 brushOut: function () {
 
-                    this.timelineElement.removeClass('brushed');
+                    this.timelineElement.classList.remove('brushed');
 
                 },
 
@@ -244,7 +251,7 @@ FrameTrail.defineType(
 
                     this.makeTimelineElementDraggable();
 
-                    this.timelineElement.on('click', function(){
+                    this._clickHandler = function(){
 
                         if (CodeSnippetsController.codeSnippetInFocus === self){
                             return CodeSnippetsController.codeSnippetInFocus = null;
@@ -255,7 +262,8 @@ FrameTrail.defineType(
 
                         FrameTrail.module('HypervideoController').currentTime = self.data.start;
 
-                    });
+                    };
+                    this.timelineElement.addEventListener('click', this._clickHandler);
 
 
                 },
@@ -268,12 +276,10 @@ FrameTrail.defineType(
                  */
                 stopEditing: function () {
 
-                    if (this.timelineElement[0]) {
-                        try { interact(this.timelineElement[0]).unset(); } catch (ex) {}
-                    }
-                    this.timelineElement.removeClass('ui-draggable ui-draggable-dragging');
+                    try { interact(this.timelineElement).unset(); } catch (ex) {}
+                    this.timelineElement.classList.remove('ui-draggable', 'ui-draggable-dragging');
 
-                    this.timelineElement.unbind('click');
+                    if (this._clickHandler) { this.timelineElement.removeEventListener('click', this._clickHandler); this._clickHandler = null; }
 
 
                 },
@@ -292,8 +298,8 @@ FrameTrail.defineType(
                     var self = this,
                         oldStart;
 
-                    var el = this.timelineElement[0];
-                    this.timelineElement.addClass('ui-draggable');
+                    var el = this.timelineElement;
+                    this.timelineElement.classList.add('ui-draggable');
 
                     interact(el).draggable({
                         listeners: {
@@ -321,18 +327,19 @@ FrameTrail.defineType(
                                 var parentWidth = e.target.parentElement.offsetWidth;
                                 var elWidth     = e.target.offsetWidth;
 
+                                var _gridlines = document.querySelectorAll(FrameTrail.getState('target') + ' .gridline');
                                 var closestGridline = FrameTrail.module('ViewVideo').closestToOffset(
-                                    $(FrameTrail.getState('target')).find('.gridline'),
+                                    _gridlines,
                                     { left: x, top: 0 }
                                 );
                                 var snapTolerance = 10;
 
                                 if (closestGridline) {
-                                    $(FrameTrail.getState('target')).find('.gridline').css('background-color', '#ff9900');
-                                    var glLeft = closestGridline.position().left;
+                                    _gridlines.forEach(function(gl) { gl.style.backgroundColor = '#ff9900'; });
+                                    var glLeft = closestGridline.getBoundingClientRect().left - closestGridline.parentElement.getBoundingClientRect().left;
                                     if (x - snapTolerance < glLeft && x + snapTolerance > glLeft) {
                                         x = glLeft;
-                                        closestGridline.css('background-color', '#00ff00');
+                                        closestGridline.style.backgroundColor = '#00ff00';
                                     }
                                 }
 
@@ -426,20 +433,22 @@ FrameTrail.defineType(
                     var EditPropertiesContainer = FrameTrail.module('ViewVideo').EditPropertiesContainer,
                         self = this;
 
-                    EditPropertiesContainer.empty();
+                    EditPropertiesContainer.innerHTML = '';
 
-                    var propertiesControls = $('<div>'
-                                             + '    <div class="propertiesTypeIcon" data-type="codesnippet"><span class="icon-code"></span></div>'
-                                             + '    <textarea class="codeSnippetCode">' + this.data.snippet + '</textarea>'
-                                             + '    <button class="deleteCodeSnippet">'+ this.labels['GenericDelete'] +'</button>'
-                                             + '    <button class="executeCodeSnippet">'+ this.labels['SettingsTestCode'] +'</button>'
-                                             + '</div>');
+                    var _pcWrapper = document.createElement('div');
+                    _pcWrapper.innerHTML = '<div>'
+                                        + '    <div class="propertiesTypeIcon" data-type="codesnippet"><span class="icon-code"></span></div>'
+                                        + '    <textarea class="codeSnippetCode">' + this.data.snippet + '</textarea>'
+                                        + '    <button class="deleteCodeSnippet">'+ this.labels['GenericDelete'] +'</button>'
+                                        + '    <button class="executeCodeSnippet">'+ this.labels['SettingsTestCode'] +'</button>'
+                                        + '</div>';
+                    var propertiesControls = _pcWrapper.firstElementChild;
 
-                    propertiesControls.find('.deleteCodeSnippet').click(function() {
+                    propertiesControls.querySelector('.deleteCodeSnippet').addEventListener('click', function() {
                         FrameTrail.module('CodeSnippetsController').deleteCodeSnippet(self);
                     });
 
-                    propertiesControls.find('.executeCodeSnippet').click(function() {
+                    propertiesControls.querySelector('.executeCodeSnippet').addEventListener('click', function() {
                         try {
                             var testRun = new Function('FrameTrail', self.data.snippet);
                             testRun(FrameTrail);
@@ -448,17 +457,21 @@ FrameTrail.defineType(
                         }
                     });
 
-                    EditPropertiesContainer.addClass('active').append(propertiesControls);
+                    EditPropertiesContainer.classList.add('active');
+                    EditPropertiesContainer.append(propertiesControls);
                     FrameTrail.module('ViewVideo').switchInfoTab('properties');
 
 
-                    var snippetElement = propertiesControls.find('.codeSnippetCode'),
-                        snippet = snippetElement.val();
+                    var snippetElement = propertiesControls.querySelector('.codeSnippetCode'),
+                        snippet = snippetElement.value;
 
                     var CM6 = window.FrameTrailCM6;
-                    var editorHeight = FrameTrail.module('ViewVideo').EditPropertiesContainer.height() - 70;
-                    var cm6Wrapper = $('<div class="cm6-wrapper"></div>').css('height', editorHeight + 'px');
-                    snippetElement.after(cm6Wrapper).hide();
+                    var editorHeight = EditPropertiesContainer.offsetHeight - 70;
+                    var cm6Wrapper = document.createElement('div');
+                    cm6Wrapper.className = 'cm6-wrapper';
+                    cm6Wrapper.style.height = editorHeight + 'px';
+                    snippetElement.insertAdjacentElement('afterend', cm6Wrapper);
+                    snippetElement.style.display = 'none';
 
                     // Capture initial value for undo
                     this._snippetBeforeEdit = this.data.snippet;
@@ -488,15 +501,15 @@ FrameTrail.defineType(
                                 })
                             ]
                         }),
-                        parent: cm6Wrapper[0]
+                        parent: cm6Wrapper
                     });
-                    cm6Wrapper[0]._cm6view = codeEditor;
+                    cm6Wrapper._cm6view = codeEditor;
 
                     this.codeEditorInstance = codeEditor;
                     this.cm6Wrapper = cm6Wrapper;
 
 
-                    this.timelineElement.addClass('highlighted');
+                    this.timelineElement.classList.add('highlighted');
 
 
                 },
@@ -552,11 +565,13 @@ FrameTrail.defineType(
                     this._snippetBeforeEdit = null;
                     this._snippetChanged = false;
 
-                    FrameTrail.module('ViewVideo').EditPropertiesContainer.removeClass('active').empty();
+                    var _ec = FrameTrail.module('ViewVideo').EditPropertiesContainer;
+                    _ec.classList.remove('active');
+                    _ec.innerHTML = '';
                     FrameTrail.module('ViewVideo').switchInfoTab('add');
 
                     this.codeEditorInstance = null;
-                    this.timelineElement.removeClass('highlighted');
+                    this.timelineElement.classList.remove('highlighted');
 
 
                 }

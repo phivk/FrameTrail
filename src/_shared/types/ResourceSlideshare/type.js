@@ -26,10 +26,12 @@ FrameTrail.defineType(
 
                 renderContent: function() {
 
-                    var container = $('<div class="resourceDetail" data-type="'+ this.resourceData.type +'"></div>');
+                    var container = document.createElement('div');
+                    container.className = 'resourceDetail';
+                    container.dataset.type = this.resourceData.type;
 
                     if (this.resourceData.attributes.html) {
-                        container.html(this.resourceData.attributes.html);
+                        container.innerHTML = this.resourceData.attributes.html;
                     }
 
                     return container;
@@ -52,15 +54,18 @@ FrameTrail.defineType(
 
                     var tagList = (this.resourceData.tags ? this.resourceData.tags.join(' ') : '');
 
-                    var thumbElement = $('<div class="resourceThumb '+ tagList +'" data-license-type="'+ this.resourceData.licenseType +'" data-resourceID="'+ trueID +'" data-type="'+ this.resourceData.type +'" style="'+ thumbBackground +'">'
-                        + '                  <div class="resourceOverlay">'
-                        + '                      <div class="resourceIcon"><span class="icon-window"></span></div>'
-                        + '                  </div>'
-                        + '                  <div class="resourceTitle">'+ this.resourceData.name +'</div>'
-                        + '              </div>');
+                    var _thumbWrapper = document.createElement('div');
+                    _thumbWrapper.innerHTML = '<div class="resourceThumb '+ tagList +'" data-license-type="'+ this.resourceData.licenseType +'" data-resourceID="'+ trueID +'" data-type="'+ this.resourceData.type +'" style="'+ thumbBackground +'">'
+                        + '<div class="resourceOverlay"><div class="resourceIcon"><span class="icon-window"></span></div></div>'
+                        + '<div class="resourceTitle">'+ this.resourceData.name +'</div>'
+                        + '</div>';
+                    var thumbElement = _thumbWrapper.firstElementChild;
 
-                    var previewButton = $('<div class="resourcePreviewButton"><span class="icon-eye"></span></div>').click(function(evt) {
-                        self.openPreview( $(this).parent() );
+                    var previewButton = document.createElement('div');
+                    previewButton.className = 'resourcePreviewButton';
+                    previewButton.innerHTML = '<span class="icon-eye"></span>';
+                    previewButton.addEventListener('click', function(evt) {
+                        self.openPreview(this.parentElement);
                         evt.stopPropagation();
                         evt.preventDefault();
                     });

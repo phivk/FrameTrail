@@ -342,22 +342,20 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
      */
     function stackTimelineView() {
 
-        var scroller = ViewVideo.OverlayTimeline.find('.timelineScroller');
-        if (scroller.length) {
+        var scroller = ViewVideo.OverlayTimeline.querySelector('.timelineScroller');
+        if (scroller) {
             // Reset inline heights first so elements resolve to their CSS-defined height
             // (avoids circular dependency: elements height:100% → scroller min-height:100% → inflated)
-            scroller.css({ height: '', 'flex-basis': '' });
-            ViewVideo.OverlayTimeline.css({ height: '', 'min-height': '', 'flex-basis': '' });
-            CollisionDetection(scroller[0], {spacing:0, includeVerticalMargins: true, exclude: '.timelinePlayhead', containerPadding: 4});
-            // Read the inline value CollisionDetection just wrote (not .css() which is affected by CSS min-height:100%)
-            var stackedHeight = scroller[0].style.height;
-            ViewVideo.OverlayTimeline.css({
-                height:        stackedHeight,
-                'flex-basis':  stackedHeight,
-                'flex-shrink': '0'
-            });
+            scroller.style.height = ''; scroller.style.flexBasis = '';
+            ViewVideo.OverlayTimeline.style.height = ''; ViewVideo.OverlayTimeline.style.minHeight = ''; ViewVideo.OverlayTimeline.style.flexBasis = '';
+            CollisionDetection(scroller, {spacing:0, includeVerticalMargins: true, exclude: '.timelinePlayhead', containerPadding: 4});
+            // Read the inline value CollisionDetection just wrote (not getComputedStyle which is affected by CSS min-height:100%)
+            var stackedHeight = scroller.style.height;
+            ViewVideo.OverlayTimeline.style.height = stackedHeight;
+            ViewVideo.OverlayTimeline.style.flexBasis = stackedHeight;
+            ViewVideo.OverlayTimeline.style.flexShrink = '0';
         } else {
-            CollisionDetection(ViewVideo.OverlayTimeline[0], {spacing:0, includeVerticalMargins: true});
+            CollisionDetection(ViewVideo.OverlayTimeline, {spacing:0, includeVerticalMargins: true});
         }
         ViewVideo.adjustLayout();
         ViewVideo.adjustHypervideo();
@@ -376,16 +374,14 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
      */
     function resetTimelineView() {
 
-        ViewVideo.OverlayTimeline.css({ height: '', 'min-height': '', 'flex-basis': '', 'flex-shrink': '' });
-        var target = ViewVideo.OverlayTimeline.find('.timelineScroller');
-        if (target.length) {
-            target.css({ height: '', 'flex-basis': '' });
+        ViewVideo.OverlayTimeline.style.height = ''; ViewVideo.OverlayTimeline.style.minHeight = ''; ViewVideo.OverlayTimeline.style.flexBasis = ''; ViewVideo.OverlayTimeline.style.flexShrink = '';
+        var target = ViewVideo.OverlayTimeline.querySelector('.timelineScroller');
+        if (target) {
+            target.style.height = ''; target.style.flexBasis = '';
         }
-        (target.length ? target : ViewVideo.OverlayTimeline).children('.timelineElement').css({
-            top:    '',
-            right:  '',
-            bottom: '',
-            height: ''
+        var _timelineSource = target || ViewVideo.OverlayTimeline;
+        _timelineSource.querySelectorAll('.timelineElement').forEach(function(el) {
+            el.style.top = ''; el.style.right = ''; el.style.bottom = ''; el.style.height = '';
         });
 
     };
@@ -409,38 +405,38 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
 
         if (droppable) {
 
-            interact(ViewVideo.OverlayContainer[0]).dropzone({
+            interact(ViewVideo.OverlayContainer).dropzone({
                 accept:  '.resourceThumb',
                 overlap: 'pointer',
-                ondropactivate:   function(e) { $(e.target).addClass('droppableActive'); },
-                ondropdeactivate: function(e) { $(e.target).removeClass('droppableActive droppableHover'); ViewVideo.PlayerProgress.find('.ui-slider-handle').removeClass('highlight'); },
-                ondragenter:      function(e) { $(e.target).addClass('droppableHover'); ViewVideo.PlayerProgress.find('.ui-slider-handle').addClass('highlight'); },
-                ondragleave:      function(e) { $(e.target).removeClass('droppableHover'); ViewVideo.PlayerProgress.find('.ui-slider-handle').removeClass('highlight'); },
+                ondropactivate:   function(e) { e.target.classList.add('droppableActive'); },
+                ondropdeactivate: function(e) { e.target.classList.remove('droppableActive', 'droppableHover'); var _sh = ViewVideo.PlayerProgress.querySelector('.ui-slider-handle'); if (_sh) _sh.classList.remove('highlight'); },
+                ondragenter:      function(e) { e.target.classList.add('droppableHover'); var _sh = ViewVideo.PlayerProgress.querySelector('.ui-slider-handle'); if (_sh) _sh.classList.add('highlight'); },
+                ondragleave:      function(e) { e.target.classList.remove('droppableHover'); var _sh = ViewVideo.PlayerProgress.querySelector('.ui-slider-handle'); if (_sh) _sh.classList.remove('highlight'); },
                 ondrop: function(e) {
-                    var $dragged        = $(e.relatedTarget),
-                        resourceID      = $dragged.attr('data-resourceID'),
+                    var $dragged        = e.relatedTarget,
+                        resourceID      = $dragged.getAttribute('data-resourceID'),
                         videoDuration   = FrameTrail.module('HypervideoModel').duration,
                         startTime       = FrameTrail.module('HypervideoController').currentTime,
                         endTime         = (startTime + 4 > videoDuration) ? videoDuration : startTime + 4,
-                        containerRect   = ViewVideo.OverlayContainer[0].getBoundingClientRect(),
+                        containerRect   = ViewVideo.OverlayContainer.getBoundingClientRect(),
                         _activeClone    = _ftDragClone || window._ftCurrentDragClone,
                         cloneLeft       = _activeClone ? parseFloat(_activeClone.style.left) : e.dragEvent.clientX,
                         cloneTop        = _activeClone ? parseFloat(_activeClone.style.top)  : e.dragEvent.clientY,
                         tmpOffsetLeft   = cloneLeft - containerRect.left,
                         tmpOffsetTop    = cloneTop  - containerRect.top,
-                        overlayPositionLeft = 100 * (tmpOffsetLeft / ViewVideo.OverlayContainer.width()),
-                        overlayPositionTop  = 100 * (tmpOffsetTop  / ViewVideo.OverlayContainer.height()),
+                        overlayPositionLeft = 100 * (tmpOffsetLeft / ViewVideo.OverlayContainer.offsetWidth),
+                        overlayPositionTop  = 100 * (tmpOffsetTop  / ViewVideo.OverlayContainer.offsetHeight),
                         newOverlay;
 
-                        if ($dragged.attr('data-type') == 'text') {
+                        if ($dragged.dataset.type == 'text') {
                             newOverlay = FrameTrail.module('HypervideoModel').newOverlay({
-                                "name": labels['ResourceCustomTextHTML'], "type": $dragged.attr('data-type'),
+                                "name": labels['ResourceCustomTextHTML'], "type": $dragged.dataset.type,
                                 "start": startTime, "end": endTime, "attributes": { "text": "" },
                                 "position": { "top": overlayPositionTop, "left": overlayPositionLeft, "width": 30, "height": 30 }
                             });
-                        } else if ($dragged.attr('data-type') == 'quiz') {
+                        } else if ($dragged.dataset.type == 'quiz') {
                             newOverlay = FrameTrail.module('HypervideoModel').newOverlay({
-                                "name": labels['ResourceTypeQuiz'], "type": $dragged.attr('data-type'),
+                                "name": labels['ResourceTypeQuiz'], "type": $dragged.dataset.type,
                                 "start": startTime, "end": endTime,
                                 "attributes": {
                                     "question": labels['SettingsQuizDefaultQuestion'],
@@ -454,9 +450,9 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
                                 },
                                 "position": { "top": overlayPositionTop, "left": overlayPositionLeft, "width": 30, "height": 30 }
                             });
-                        } else if ($dragged.attr('data-type') == 'hotspot') {
+                        } else if ($dragged.dataset.type == 'hotspot') {
                             newOverlay = FrameTrail.module('HypervideoModel').newOverlay({
-                                "name": "Hotspot / Link", "type": $dragged.attr('data-type'),
+                                "name": "Hotspot / Link", "type": $dragged.dataset.type,
                                 "start": startTime, "end": endTime,
                                 "attributes": { "color": "#0096ff", "linkUrl": "", "borderWidth": 5, "shape": "circle", "borderRadius": 10 },
                                 "position": { "top": overlayPositionTop, "left": overlayPositionLeft, "width": 20, "height": 30 }
@@ -501,13 +497,13 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
                         });
                     })(JSON.parse(JSON.stringify(newOverlay.data)));
 
-                    ViewVideo.PlayerProgress.find('.ui-slider-handle').removeClass('highlight');
+                    var _sh = ViewVideo.PlayerProgress.querySelector('.ui-slider-handle'); if (_sh) _sh.classList.remove('highlight');
                 }
             });
 
         } else {
 
-            interact(ViewVideo.OverlayContainer[0]).unset();
+            interact(ViewVideo.OverlayContainer).unset();
 
         }
 
@@ -555,16 +551,19 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
      */
     function renderPropertiesControls(propertiesControlsInterface) {
 
-        ViewVideo.EditPropertiesContainer.empty().addClass('active').append( propertiesControlsInterface.controlsContainer );
+        ViewVideo.EditPropertiesContainer.innerHTML = '';
+        ViewVideo.EditPropertiesContainer.classList.add('active');
+        ViewVideo.EditPropertiesContainer.appendChild(propertiesControlsInterface.controlsContainer);
 
         updateControlsStart        = propertiesControlsInterface.changeStart;
         updateControlsEnd          = propertiesControlsInterface.changeEnd;
         updateControlsDimensions   = propertiesControlsInterface.changeDimensions;
 
         ViewVideo.switchInfoTab('properties');
-        ViewVideo.EditPropertiesContainer.find('.overlayOptionsTabs').tabs('refresh');
+        var _otabs = ViewVideo.EditPropertiesContainer.querySelector('.overlayOptionsTabs');
+        if (_otabs) { FTTabs(_otabs, 'refresh'); } // Phase 2 bridge
 
-        var cm6Wrapper = ViewVideo.EditPropertiesContainer.find('.cm6-wrapper')[0];
+        var cm6Wrapper = ViewVideo.EditPropertiesContainer.querySelector('.cm6-wrapper');
         if ( cm6Wrapper && cm6Wrapper._cm6view ) { cm6Wrapper._cm6view.requestMeasure(); }
 
 
@@ -585,7 +584,7 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
 
         updateControlsDimensions = function(){};
 
-        ViewVideo.EditPropertiesContainer.removeClass('active').empty();
+        ViewVideo.EditPropertiesContainer.classList.remove('active'); ViewVideo.EditPropertiesContainer.innerHTML = '';
         ViewVideo.switchInfoTab('add');
 
     }
@@ -651,56 +650,63 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
      */
     function initEditOptions(){
 
-        ViewVideo.EditingOptions.empty();
+        ViewVideo.EditingOptions.innerHTML = '';
 
-        ViewVideo.EditingOptions.append(
-            '<div class="message active"><span class="icon-object-ungroup"></span> '+ labels['MessageHintDragOverlays'] +'</div>'
-        );
+        var _hint = document.createElement('div');
+        _hint.className = 'message active';
+        _hint.innerHTML = '<span class="icon-object-ungroup"></span> ' + labels['MessageHintDragOverlays'];
+        ViewVideo.EditingOptions.appendChild(_hint);
 
-        var overlayEditingOptions = $('<div class="overlayEditingTabs">'
-                                  +   '    <ul>'
-                                  +   '        <li>'
-                                  +   '            <a href="#CustomOverlay">'+ labels['ResourceAddCustomOverlay'] +'</a>'
-                                  +   '        </li>'
-                                  +   '        <li>'
-                                  +   '            <a href="#ResourceList">'+ labels['ResourceChoose'] +'</a>'
-                                  +   '        </li>'
-                                  +   '    </ul>'
-                                  +   '    <div id="CustomOverlay"></div>'
-                                  +   '    <div id="ResourceList"></div>'
-                                  +   '</div>')
-                                  .tabs({
-                                      heightStyle: "fill"
-                                  });
+        var _oeWrapper = document.createElement('div');
+        _oeWrapper.innerHTML = '<div class="overlayEditingTabs">'
+                            +  '    <ul>'
+                            +  '        <li>'
+                            +  '            <a href="#CustomOverlay">'+ labels['ResourceAddCustomOverlay'] +'</a>'
+                            +  '        </li>'
+                            +  '        <li>'
+                            +  '            <a href="#ResourceList">'+ labels['ResourceChoose'] +'</a>'
+                            +  '        </li>'
+                            +  '    </ul>'
+                            +  '    <div id="CustomOverlay"></div>'
+                            +  '    <div id="ResourceList"></div>'
+                            +  '</div>';
+        var overlayEditingOptions = _oeWrapper.firstElementChild;
+        FTTabs(overlayEditingOptions, { heightStyle: 'fill' }); // Phase 2 bridge
 
-        ViewVideo.EditingOptions.append(overlayEditingOptions);
+        ViewVideo.EditingOptions.appendChild(overlayEditingOptions);
 
         FrameTrail.module('ResourceManager').renderResourcePicker(
-            overlayEditingOptions.find('#ResourceList')
+            overlayEditingOptions.querySelector('#ResourceList')
         );
 
         /* Append custom text resource to 'Custom Overlay' tab */
         // TODO: Move to separate function
-        var textElement = $('<div class="resourceThumb" data-type="text">'
-                + '                  <div class="resourceOverlay">'
-                + '                      <div class="resourceIcon"><span class="icon-doc-text"></div>'
-                + '                  </div>'
-                + '                  <div class="resourceTitle">'+ labels['ResourceCustomTextHTML'] +'</div>'
-                + '              </div>');
+        var _tw = document.createElement('div');
+        _tw.innerHTML = '<div class="resourceThumb" data-type="text">'
+                + '    <div class="resourceOverlay">'
+                + '        <div class="resourceIcon"><span class="icon-doc-text"></div>'
+                + '    </div>'
+                + '    <div class="resourceTitle">'+ labels['ResourceCustomTextHTML'] +'</div>'
+                + '</div>';
+        var textElement = _tw.firstElementChild;
 
-        var quizElement = $('<div class="resourceThumb" data-type="quiz">'
-                + '                  <div class="resourceOverlay">'
-                + '                      <div class="resourceIcon"><span class="icon-question-circle-o"></div>'
-                + '                  </div>'
-                + '                  <div class="resourceTitle">Quiz</div>'
-                + '              </div>');
+        var _qw = document.createElement('div');
+        _qw.innerHTML = '<div class="resourceThumb" data-type="quiz">'
+                + '    <div class="resourceOverlay">'
+                + '        <div class="resourceIcon"><span class="icon-question-circle-o"></div>'
+                + '    </div>'
+                + '    <div class="resourceTitle">Quiz</div>'
+                + '</div>';
+        var quizElement = _qw.firstElementChild;
 
-        var hotspotElement = $('<div class="resourceThumb" data-type="hotspot">'
-                + '                  <div class="resourceOverlay">'
-                + '                      <div class="resourceIcon"><span class="icon-link"></div>'
-                + '                  </div>'
-                + '                  <div class="resourceTitle">Hotspot / Link</div>'
-                + '              </div>');
+        var _hw = document.createElement('div');
+        _hw.innerHTML = '<div class="resourceThumb" data-type="hotspot">'
+                + '    <div class="resourceOverlay">'
+                + '        <div class="resourceIcon"><span class="icon-link"></div>'
+                + '    </div>'
+                + '    <div class="resourceTitle">Hotspot / Link</div>'
+                + '</div>';
+        var hotspotElement = _hw.firstElementChild;
 
         var thumbDraggableOpts = {
             listeners: {
@@ -733,11 +739,11 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
                 }
             }
         };
-        [textElement[0], quizElement[0], hotspotElement[0]].forEach(function(el) {
+        [textElement, quizElement, hotspotElement].forEach(function(el) {
             interact(el).draggable(thumbDraggableOpts);
         });
 
-        overlayEditingOptions.find('#CustomOverlay').append(textElement, quizElement, hotspotElement);
+        overlayEditingOptions.querySelector('#CustomOverlay').append(textElement, quizElement, hotspotElement);
 
     };
 

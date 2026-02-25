@@ -43,14 +43,13 @@ FrameTrail.defineType(
                  */
                 renderContent: function() {
 
-                    var resourceDetail = $(
-                            '<iframe class="resourceDetail" data-type="'+ this.resourceData.type +'" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen src="'
+                    var _wrapper = document.createElement('div');
+                    _wrapper.innerHTML = '<iframe class="resourceDetail" data-type="'+ this.resourceData.type +'" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen src="'
                         +   this.resourceData.src.replace(/^\/\//, 'https://')
                         +   '?color=ffffff&portrait=0&byline=0&title=0&badge=0">'
-                        +   '</iframe>'
-                    ).bind('error', function() {
-                        return true;
-                    });
+                        +   '</iframe>';
+                    var resourceDetail = _wrapper.firstElementChild;
+                    resourceDetail.addEventListener('error', function() { return true; });
 
                 	return resourceDetail;
 
@@ -83,16 +82,19 @@ FrameTrail.defineType(
 
                     var tagList = (this.resourceData.tags ? this.resourceData.tags.join(' ') : '');
                     
-                    var thumbElement = $('<div class="resourceThumb '+ tagList +'" data-license-type="'+ this.resourceData.licenseType +'" data-resourceID="'+ trueID +'" data-type="'+ this.resourceData.type +'" style="'+ thumbBackground +'">'
-                        + '                  <div class="resourceOverlay">'
-                        + '                      <div class="resourceIcon"><span class="icon-vimeo-squared"></span></div>'
-                        + '                  </div>'
-                        + '                  <div class="resourceTitle">'+ this.resourceData.name +'</div>'
-                        + '              </div>');
+                    var _thumbWrapper = document.createElement('div');
+                    _thumbWrapper.innerHTML = '<div class="resourceThumb '+ tagList +'" data-license-type="'+ this.resourceData.licenseType +'" data-resourceID="'+ trueID +'" data-type="'+ this.resourceData.type +'" style="'+ thumbBackground +'">'
+                        + '<div class="resourceOverlay"><div class="resourceIcon"><span class="icon-vimeo-squared"></span></div></div>'
+                        + '<div class="resourceTitle">'+ this.resourceData.name +'</div>'
+                        + '</div>';
+                    var thumbElement = _thumbWrapper.firstElementChild;
 
-                    var previewButton = $('<div class="resourcePreviewButton"><span class="icon-eye"></span></div>').click(function(evt) {
+                    var previewButton = document.createElement('div');
+                    previewButton.className = 'resourcePreviewButton';
+                    previewButton.innerHTML = '<span class="icon-eye"></span>';
+                    previewButton.addEventListener('click', function(evt) {
                         // call the openPreview method (defined in abstract type: Resource)
-                        self.openPreview( $(this).parent() );
+                        self.openPreview(this.parentElement);
                         evt.stopPropagation();
                         evt.preventDefault();
                     });

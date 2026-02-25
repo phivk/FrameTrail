@@ -63,8 +63,9 @@ class StorageAdapterDownload extends StorageAdapter {
     showDownloadDialog(hypervideoID, frameTrailInstance) {
         this._frameTrailInstance = frameTrailInstance;
         var labels = frameTrailInstance.module('Localization').labels;
-        var dialog = $('<div class="downloadDialog">'
-            + '<p>' + labels['DownloadWhatToInclude'] + '</p>'
+        var dialog = document.createElement('div');
+        dialog.className = 'downloadDialog';
+        dialog.innerHTML = '<p>' + labels['DownloadWhatToInclude'] + '</p>'
             + '<div class="downloadOptions">'
             + '  <label><input type="checkbox" name="currentHv" checked> ' + labels['DownloadCurrentHypervideo'] + '</label>'
             + '  <small>hypervideo.json + annotations</small>'
@@ -73,8 +74,7 @@ class StorageAdapterDownload extends StorageAdapter {
             + '  <small>resources/_index.json</small>'
             + '  <label><input type="checkbox" name="config"> ' + labels['DownloadConfiguration'] + '</label>'
             + '  <small>config.json</small>'
-            + '</div>'
-            + '</div>');
+            + '</div>';
 
         var self = this;
         var dlgCtrl = Dialog({
@@ -88,10 +88,10 @@ class StorageAdapterDownload extends StorageAdapter {
                     text: labels['GenericDownload'],
                     click: function() {
                         var options = {
-                            currentHv: dialog.find('[name="currentHv"]').is(':checked'),
-                            allHv: dialog.find('[name="allHv"]').is(':checked'),
-                            resources: dialog.find('[name="resources"]').is(':checked'),
-                            config: dialog.find('[name="config"]').is(':checked')
+                            currentHv: dialog.querySelector('[name="currentHv"]').checked,
+                            allHv:     dialog.querySelector('[name="allHv"]').checked,
+                            resources: dialog.querySelector('[name="resources"]').checked,
+                            config:    dialog.querySelector('[name="config"]').checked
                         };
                         self._performDownload(hypervideoID, options);
                         dlgCtrl.close();

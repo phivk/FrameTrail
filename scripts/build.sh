@@ -105,7 +105,6 @@ JS_FILES=(
     # Libraries (order from index.html <head>)
     "_lib/hlsjs/hls.min.js"
     "_lib/parsers/vtt.min.js"
-    "_lib/jquery/jquery-3.7.1.min.js"
     "_lib/interactjs/interact.min.js"
     "_lib/quill/quill.min.js"
     "_lib/leaflet/leaflet.js"
@@ -160,7 +159,7 @@ JS_FILES=(
 
     # Dialog and tabs helpers (must come before modules that use them)
     "_lib/dialog/dialog.js"
-    "_lib/jquery.tabs/jquery.tabs.js"
+    "_lib/vanilla-tabs/vanilla-tabs.js"
 
     # Storage layer (must come before StorageManager and Database)
     "_shared/frametrail-core/storage/StorageAdapter.js"

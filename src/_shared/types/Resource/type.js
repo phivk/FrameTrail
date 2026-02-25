@@ -44,29 +44,49 @@ FrameTrail.defineType(
                  */
                 openPreview: function(elementOrigin) {
 
-                    var animationDiv = elementOrigin.clone(),
-                        originOffset = elementOrigin.offset(),
-                        finalTop = ($(window).height()/2) - 240,
-                        finalLeft = ($(window).width()/2) - 440,
-                        self = this;
+                    // Accept both DOM element and jQuery object
+                    if (elementOrigin && elementOrigin.jquery) {
+                        elementOrigin = elementOrigin[0];
+                    }
 
-                    animationDiv.addClass('resourceAnimationDiv').css({
-                        position: 'absolute',
-                        top: originOffset.top + 'px',
-                        left: originOffset.left + 'px',
-                        width: elementOrigin.width(),
-                        height: elementOrigin.height(),
-                        zIndex: 101
-                    }).appendTo('body');
+                    var rect = elementOrigin.getBoundingClientRect();
+                    var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    var scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+                    var originTop = rect.top + scrollTop;
+                    var originLeft = rect.left + scrollLeft;
+                    var originWidth = elementOrigin.offsetWidth;
+                    var originHeight = elementOrigin.offsetHeight;
+                    var finalTop = (window.innerHeight / 2) - 240;
+                    var finalLeft = (window.innerWidth / 2) - 440;
+                    var self = this;
 
-                    animationDiv.animate({
-                        top: finalTop + 'px',
-                        left: finalLeft + 'px',
-                        width: 880 + 'px',
-                        height: 480 + 'px'
-                    }, 300, function() {
-                        var previewContent = $('<div class="resourcePreviewDialog"></div>')
-                            .append(self.renderContent());
+                    var animationDiv = elementOrigin.cloneNode(true);
+                    animationDiv.classList.add('resourceAnimationDiv');
+                    animationDiv.style.position = 'absolute';
+                    animationDiv.style.top = originTop + 'px';
+                    animationDiv.style.left = originLeft + 'px';
+                    animationDiv.style.width = originWidth + 'px';
+                    animationDiv.style.height = originHeight + 'px';
+                    animationDiv.style.zIndex = 101;
+                    document.body.appendChild(animationDiv);
+
+                    var anim = animationDiv.animate([
+                        { top: originTop + 'px', left: originLeft + 'px', width: originWidth + 'px', height: originHeight + 'px' },
+                        { top: finalTop + 'px', left: finalLeft + 'px', width: '880px', height: '480px' }
+                    ], { duration: 300, easing: 'ease', fill: 'forwards' });
+
+                    anim.finished.then(function() {
+                        animationDiv.style.top = finalTop + 'px';
+                        animationDiv.style.left = finalLeft + 'px';
+                        animationDiv.style.width = '880px';
+                        animationDiv.style.height = '480px';
+                        anim.cancel();
+
+                        var previewContent = document.createElement('div');
+                        previewContent.className = 'resourcePreviewDialog';
+                        var contentEl = self.renderContent();
+                        if (contentEl && contentEl.jquery) { contentEl = contentEl[0]; }
+                        previewContent.appendChild(contentEl);
 
                         var previewDialogCtrl = Dialog({
                             title:     (self.resourceData.type == 'text') ? '' : self.resourceData.name,
@@ -80,7 +100,7 @@ FrameTrail.defineType(
                                 try {
                                     if (TogetherJS && TogetherJS.running) {
                                         var elementFinder = TogetherJS.require("elementFinder");
-                                        var location = elementFinder.elementLocation($(this)[0]);
+                                        var location = elementFinder.elementLocation(this);
                                         TogetherJS.send({
                                             type: "simulate-dialog-close",
                                             element: location
@@ -89,18 +109,22 @@ FrameTrail.defineType(
                                 } catch (e) {}
 
                                 previewDialogCtrl.destroy();
-                                animationDiv.animate({
-                                    top: originOffset.top + 'px',
-                                    left: originOffset.left + 'px',
-                                    width: elementOrigin.width(),
-                                    height: elementOrigin.height()
-                                }, 300, function() {
-                                    $('.resourceAnimationDiv').remove();
+                                animationDiv.style.top = finalTop + 'px';
+                                animationDiv.style.left = finalLeft + 'px';
+                                animationDiv.style.width = '880px';
+                                animationDiv.style.height = '480px';
+                                var reverseAnim = animationDiv.animate([
+                                    { top: originTop + 'px', left: originLeft + 'px', width: originWidth + 'px', height: originHeight + 'px' }
+                                ], { duration: 300, easing: 'ease', fill: 'forwards' });
+                                reverseAnim.finished.then(function() {
+                                    reverseAnim.cancel();
+                                    document.querySelectorAll('.resourceAnimationDiv').forEach(function(e) { e.remove(); });
                                 });
                             },
                             open: function() {
-                                if ($(this).find('.resourceDetail').data().map) {
-                                    $(this).find('.resourceDetail').data().map.invalidateSize();
+                                var mapEl = previewContent.querySelector('.resourceDetail');
+                                if (mapEl && mapEl._leafletMap) {
+                                    mapEl._leafletMap.invalidateSize();
                                 }
                             }
                         });
@@ -134,9 +158,13 @@ FrameTrail.defineType(
                 renderBasicPropertiesControls: function(overlay) {
 
                     var self = this,
-                        controlsContainer = $('<div class="controlsWrapper"></div>'),
-                        manualInputMode   = true,
-                        defaultControls   = $('<div class="timeControls">'
+                        manualInputMode   = true;
+
+                    var controlsContainer = document.createElement('div');
+                    controlsContainer.className = 'controlsWrapper';
+
+                    var _dcw = document.createElement('div');
+                    _dcw.innerHTML = '<div class="timeControls">'
                         					+ '    <div class="propertiesTypeIcon" data-type="' + overlay.data.type + '"><span class="icon-doc-inv"></span></div>'
                                             + '    <button class="deleteOverlay"><span class="icon-trash"></span></button>'
                                             + '    <label for="TimeStart">'+ this.labels['SettingsTimeStart'] +'</label>'
@@ -229,15 +257,17 @@ FrameTrail.defineType(
                                             + '            <div class="message active">'+ this.labels['MessageTestCode'] +'</div>'
                                             + '        </div>'
                                             + '    </div>'
-                                            + '</div>');
+                                            + '</div>';
 
-                    controlsContainer.append(defaultControls);
+                    while (_dcw.firstElementChild) {
+                        controlsContainer.appendChild(_dcw.firstElementChild);
+                    }
 
-                    controlsContainer.find('.overlayOptionsTabs').tabs({
+                    FTTabs(controlsContainer.querySelector('.overlayOptionsTabs'), {
                         heightStyle: 'fill',
                         activate: function(event, ui) {
-                            controlsContainer.find('.overlayOptionsTabs').tabs('refresh');
-                            var cm6Wrapper = ui.newPanel.find('.cm6-wrapper')[0];
+                            FTTabs(controlsContainer.querySelector('.overlayOptionsTabs'), 'refresh');
+                            var cm6Wrapper = ui.newPanel.querySelector('.cm6-wrapper');
                             if (cm6Wrapper && cm6Wrapper._cm6view) { cm6Wrapper._cm6view.requestMeasure(); }
                         }
                     });
@@ -245,11 +275,11 @@ FrameTrail.defineType(
                     var oldOverlayData;
 
                     (function() {
-                        var $ts = controlsContainer.find('#TimeStart');
-                        $ts.attr('max', FrameTrail.module('HypervideoModel').duration);
-                        $ts.parent().attr('data-input-id', $ts.attr('id'));
-                        oldOverlayData = jQuery.extend({}, overlay.data);
-                        $ts.on('input', function(evt) {
+                        var ts = controlsContainer.querySelector('#TimeStart');
+                        ts.setAttribute('max', FrameTrail.module('HypervideoModel').duration);
+                        ts.parentElement.setAttribute('data-input-id', ts.id);
+                        oldOverlayData = Object.assign({}, overlay.data);
+                        ts.addEventListener('input', function(evt) {
                             if(manualInputMode){
                                 overlay.data.start = parseFloat(this.value);
                                 overlay.updateTimelineElement();
@@ -262,9 +292,9 @@ FrameTrail.defineType(
                                 });
                             }
                         });
-                        $ts.on('change', function(evt) {
+                        ts.addEventListener('change', function(evt) {
                             if(manualInputMode){
-                                overlay.data.start = parseFloat($(evt.target).val());
+                                overlay.data.start = parseFloat(evt.target.value);
                                 overlay.updateTimelineElement();
                                 FrameTrail.module('HypervideoController').currentTime = overlay.data.start;
                                 FrameTrail.module('OverlaysController').stackTimelineView();
@@ -279,10 +309,10 @@ FrameTrail.defineType(
                     }());
 
                     (function() {
-                        var $te = controlsContainer.find('#TimeEnd');
-                        $te.attr('max', FrameTrail.module('HypervideoModel').duration);
-                        $te.parent().attr('data-input-id', $te.attr('id'));
-                        $te.on('input', function(evt) {
+                        var te = controlsContainer.querySelector('#TimeEnd');
+                        te.setAttribute('max', FrameTrail.module('HypervideoModel').duration);
+                        te.parentElement.setAttribute('data-input-id', te.id);
+                        te.addEventListener('input', function(evt) {
                             if(manualInputMode){
                                 overlay.data.end = parseFloat(this.value);
                                 overlay.updateTimelineElement();
@@ -295,9 +325,9 @@ FrameTrail.defineType(
                                 });
                             }
                         });
-                        $te.on('change', function(evt) {
+                        te.addEventListener('change', function(evt) {
                             if(manualInputMode){
-                                overlay.data.end = parseFloat($(evt.target).val());
+                                overlay.data.end = parseFloat(evt.target.value);
                                 overlay.updateTimelineElement();
                                 FrameTrail.module('HypervideoController').currentTime = overlay.data.end;
                                 FrameTrail.module('OverlaysController').stackTimelineView();
@@ -313,57 +343,61 @@ FrameTrail.defineType(
 
                     // Add undo support for time spinners
                     var timeBeforeEdit = {};
-                    controlsContainer.find('#TimeStart, #TimeEnd').on('focus', function() {
-                        timeBeforeEdit = {
-                            start: overlay.data.start,
-                            end: overlay.data.end
-                        };
-                    }).on('blur', function() {
-                        if (timeBeforeEdit.start !== overlay.data.start ||
-                            timeBeforeEdit.end !== overlay.data.end) {
-                            (function(overlayId, oldTime, newTime, labels) {
-                                var findOverlay = function() {
-                                    var overlays = FrameTrail.module('HypervideoModel').overlays;
-                                    for (var i = 0; i < overlays.length; i++) {
-                                        if (overlays[i].data.created === overlayId) {
-                                            return overlays[i];
+                    ['#TimeStart', '#TimeEnd'].forEach(function(sel) {
+                        var el = controlsContainer.querySelector(sel);
+                        el.addEventListener('focus', function() {
+                            timeBeforeEdit = {
+                                start: overlay.data.start,
+                                end: overlay.data.end
+                            };
+                        });
+                        el.addEventListener('blur', function() {
+                            if (timeBeforeEdit.start !== overlay.data.start ||
+                                timeBeforeEdit.end !== overlay.data.end) {
+                                (function(overlayId, oldTime, newTime, labels) {
+                                    var findOverlay = function() {
+                                        var overlays = FrameTrail.module('HypervideoModel').overlays;
+                                        for (var i = 0; i < overlays.length; i++) {
+                                            if (overlays[i].data.created === overlayId) {
+                                                return overlays[i];
+                                            }
                                         }
-                                    }
-                                    return null;
-                                };
-                                FrameTrail.module('UndoManager').register({
-                                    category: 'overlays',
-                                    description: labels['SidebarOverlays'] + ' Time',
-                                    undo: function() {
-                                        var o = findOverlay();
-                                        if (!o) return;
-                                        o.data.start = oldTime.start;
-                                        o.data.end = oldTime.end;
-                                        o.updateTimelineElement();
-                                        FrameTrail.module('OverlaysController').stackTimelineView();
-                                        FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-                                    },
-                                    redo: function() {
-                                        var o = findOverlay();
-                                        if (!o) return;
-                                        o.data.start = newTime.start;
-                                        o.data.end = newTime.end;
-                                        o.updateTimelineElement();
-                                        FrameTrail.module('OverlaysController').stackTimelineView();
-                                        FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-                                    }
-                                });
-                            })(overlay.data.created, 
-                               JSON.parse(JSON.stringify(timeBeforeEdit)), 
-                               { start: overlay.data.start, end: overlay.data.end }, 
-                               self.labels);
-                        }
+                                        return null;
+                                    };
+                                    FrameTrail.module('UndoManager').register({
+                                        category: 'overlays',
+                                        description: labels['SidebarOverlays'] + ' Time',
+                                        undo: function() {
+                                            var o = findOverlay();
+                                            if (!o) return;
+                                            o.data.start = oldTime.start;
+                                            o.data.end = oldTime.end;
+                                            o.updateTimelineElement();
+                                            FrameTrail.module('OverlaysController').stackTimelineView();
+                                            FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+                                        },
+                                        redo: function() {
+                                            var o = findOverlay();
+                                            if (!o) return;
+                                            o.data.start = newTime.start;
+                                            o.data.end = newTime.end;
+                                            o.updateTimelineElement();
+                                            FrameTrail.module('OverlaysController').stackTimelineView();
+                                            FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+                                        }
+                                    });
+                                })(overlay.data.created, 
+                                   JSON.parse(JSON.stringify(timeBeforeEdit)), 
+                                   { start: overlay.data.start, end: overlay.data.end }, 
+                                   self.labels);
+                            }
+                        });
                     });
 
                     function bindPositionInput(selector, prop, inputId) {
-                        var $elem = controlsContainer.find(selector);
-                        $elem.parent().attr('data-input-id', inputId);
-                        $elem.on('input', function(evt) {
+                        var elem = controlsContainer.querySelector(selector);
+                        elem.parentElement.setAttribute('data-input-id', inputId);
+                        elem.addEventListener('input', function(evt) {
                             if (manualInputMode) {
                                 overlay.data.position[prop] = parseFloat(this.value);
                                 overlay.updateOverlayElement();
@@ -375,9 +409,9 @@ FrameTrail.defineType(
                                 });
                             }
                         });
-                        $elem.on('change', function(evt) {
+                        elem.addEventListener('change', function(evt) {
                             if (manualInputMode) {
-                                overlay.data.position[prop] = parseFloat($(evt.target).val());
+                                overlay.data.position[prop] = parseFloat(evt.target.value);
                                 overlay.updateOverlayElement();
                                 FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
                                 FrameTrail.triggerEvent('userAction', {
@@ -389,7 +423,7 @@ FrameTrail.defineType(
                         });
                     }
 
-                    oldOverlayData = jQuery.extend({}, overlay.data);
+                    oldOverlayData = Object.assign({}, overlay.data);
                     bindPositionInput('.positionTop',    'top',    'PositionTop');
                     bindPositionInput('.positionLeft',   'left',   'PositionLeft');
                     bindPositionInput('.positionWidth',  'width',  'PositionWidth');
@@ -397,85 +431,89 @@ FrameTrail.defineType(
 
                     // Add undo support for position spinners
                     var positionBeforeEdit = {};
-                    controlsContainer.find('.positionTop, .positionLeft, .positionWidth, .positionHeight').on('focus', function() {
-                        positionBeforeEdit = {
-                            top: overlay.data.position.top,
-                            left: overlay.data.position.left,
-                            width: overlay.data.position.width,
-                            height: overlay.data.position.height
-                        };
-                    }).on('blur', function() {
-                        var currentPosition = overlay.data.position;
-                        if (positionBeforeEdit.top !== currentPosition.top ||
-                            positionBeforeEdit.left !== currentPosition.left ||
-                            positionBeforeEdit.width !== currentPosition.width ||
-                            positionBeforeEdit.height !== currentPosition.height) {
-                            (function(overlayId, oldPos, newPos, labels) {
-                                var findOverlay = function() {
-                                    var overlays = FrameTrail.module('HypervideoModel').overlays;
-                                    for (var i = 0; i < overlays.length; i++) {
-                                        if (overlays[i].data.created === overlayId) {
-                                            return overlays[i];
+                    ['.positionTop', '.positionLeft', '.positionWidth', '.positionHeight'].forEach(function(sel) {
+                        var el = controlsContainer.querySelector(sel);
+                        el.addEventListener('focus', function() {
+                            positionBeforeEdit = {
+                                top: overlay.data.position.top,
+                                left: overlay.data.position.left,
+                                width: overlay.data.position.width,
+                                height: overlay.data.position.height
+                            };
+                        });
+                        el.addEventListener('blur', function() {
+                            var currentPosition = overlay.data.position;
+                            if (positionBeforeEdit.top !== currentPosition.top ||
+                                positionBeforeEdit.left !== currentPosition.left ||
+                                positionBeforeEdit.width !== currentPosition.width ||
+                                positionBeforeEdit.height !== currentPosition.height) {
+                                (function(overlayId, oldPos, newPos, labels) {
+                                    var findOverlay = function() {
+                                        var overlays = FrameTrail.module('HypervideoModel').overlays;
+                                        for (var i = 0; i < overlays.length; i++) {
+                                            if (overlays[i].data.created === overlayId) {
+                                                return overlays[i];
+                                            }
                                         }
-                                    }
-                                    return null;
-                                };
-                                FrameTrail.module('UndoManager').register({
-                                    category: 'overlays',
-                                    description: labels['SidebarOverlays'] + ' Position',
-                                    undo: function() {
-                                        var o = findOverlay();
-                                        if (!o) return;
-                                        o.data.position.top = oldPos.top;
-                                        o.data.position.left = oldPos.left;
-                                        o.data.position.width = oldPos.width;
-                                        o.data.position.height = oldPos.height;
-                                        o.updateOverlayElement();
-                                        FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-                                    },
-                                    redo: function() {
-                                        var o = findOverlay();
-                                        if (!o) return;
-                                        o.data.position.top = newPos.top;
-                                        o.data.position.left = newPos.left;
-                                        o.data.position.width = newPos.width;
-                                        o.data.position.height = newPos.height;
-                                        o.updateOverlayElement();
-                                        FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-                                    }
-                                });
-                            })(overlay.data.created, 
-                               JSON.parse(JSON.stringify(positionBeforeEdit)), 
-                               JSON.parse(JSON.stringify(currentPosition)), 
-                               self.labels);
-                        }
+                                        return null;
+                                    };
+                                    FrameTrail.module('UndoManager').register({
+                                        category: 'overlays',
+                                        description: labels['SidebarOverlays'] + ' Position',
+                                        undo: function() {
+                                            var o = findOverlay();
+                                            if (!o) return;
+                                            o.data.position.top = oldPos.top;
+                                            o.data.position.left = oldPos.left;
+                                            o.data.position.width = oldPos.width;
+                                            o.data.position.height = oldPos.height;
+                                            o.updateOverlayElement();
+                                            FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+                                        },
+                                        redo: function() {
+                                            var o = findOverlay();
+                                            if (!o) return;
+                                            o.data.position.top = newPos.top;
+                                            o.data.position.left = newPos.left;
+                                            o.data.position.width = newPos.width;
+                                            o.data.position.height = newPos.height;
+                                            o.updateOverlayElement();
+                                            FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
+                                        }
+                                    });
+                                })(overlay.data.created, 
+                                   JSON.parse(JSON.stringify(positionBeforeEdit)), 
+                                   JSON.parse(JSON.stringify(currentPosition)), 
+                                   self.labels);
+                            }
+                        });
                     });
 
-                    if ($.isArray(overlay.data.attributes) && overlay.data.attributes.length < 1) {
+                    if (Array.isArray(overlay.data.attributes) && overlay.data.attributes.length < 1) {
                         overlay.data.attributes = {};
                     }
 
                     // Helper to sync appearance UI controls from current data
                     var syncAppearanceUI = function(a) {
-                        var c = $('#OverlayAppearance');
-                        if (!c.length) return;
-                        c.find('.opacityRange').val(a.opacity || 1);
-                        c.find('.animationInSelect').val(a.animationIn || 'none');
-                        c.find('.animationOutSelect').val(a.animationOut || 'none');
-                        c.find('.animationDurationRange').val(a.animationDuration || 300);
+                        var c = document.querySelector('#OverlayAppearance');
+                        if (!c) return;
+                        c.querySelector('.opacityRange').value = a.opacity || 1;
+                        c.querySelector('.animationInSelect').value = a.animationIn || 'none';
+                        c.querySelector('.animationOutSelect').value = a.animationOut || 'none';
+                        c.querySelector('.animationDurationRange').value = a.animationDuration || 300;
                     };
 
                     // --- Opacity Range ---
                     var opacityBeforeChange = overlay.data.attributes.opacity || 1;
-                    controlsContainer.find('.opacityRange').on('focus', function() {
+                    controlsContainer.querySelector('.opacityRange').addEventListener('focus', function() {
                         opacityBeforeChange = overlay.data.attributes.opacity || 1;
                     });
-                    controlsContainer.find('.opacityRange').on('input', function() {
+                    controlsContainer.querySelector('.opacityRange').addEventListener('input', function() {
                         overlay.data.attributes.opacity = parseFloat(this.value);
                         overlay.updateOverlayElement();
                         FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
                     });
-                    controlsContainer.find('.opacityRange').on('change', function() {
+                    controlsContainer.querySelector('.opacityRange').addEventListener('change', function() {
                         var newOpacity = parseFloat(this.value);
                         if (opacityBeforeChange !== newOpacity) {
                             (function(overlayId, oldOpacity, newOp, labels) {
@@ -515,16 +553,16 @@ FrameTrail.defineType(
                     // ANIMATION CONTROLS
                     // ==========================================
 
-                    controlsContainer.find('.animationInSelect').val(overlay.data.attributes.animationIn || 'none');
-                    controlsContainer.find('.animationOutSelect').val(overlay.data.attributes.animationOut || 'none');
+                    controlsContainer.querySelector('.animationInSelect').value = overlay.data.attributes.animationIn || 'none';
+                    controlsContainer.querySelector('.animationOutSelect').value = overlay.data.attributes.animationOut || 'none';
 
                     // --- Animation In Select ---
                     var animInBeforeChange = overlay.data.attributes.animationIn || 'none';
-                    controlsContainer.find('.animationInSelect').on('focus', function() {
+                    controlsContainer.querySelector('.animationInSelect').addEventListener('focus', function() {
                         animInBeforeChange = overlay.data.attributes.animationIn || 'none';
                     });
-                    controlsContainer.find('.animationInSelect').on('change', function() {
-                        var newValue = $(this).val();
+                    controlsContainer.querySelector('.animationInSelect').addEventListener('change', function() {
+                        var newValue = this.value;
                         var oldValue = animInBeforeChange;
                         overlay.data.attributes.animationIn = newValue;
                         FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
@@ -563,11 +601,11 @@ FrameTrail.defineType(
 
                     // --- Animation Out Select ---
                     var animOutBeforeChange = overlay.data.attributes.animationOut || 'none';
-                    controlsContainer.find('.animationOutSelect').on('focus', function() {
+                    controlsContainer.querySelector('.animationOutSelect').addEventListener('focus', function() {
                         animOutBeforeChange = overlay.data.attributes.animationOut || 'none';
                     });
-                    controlsContainer.find('.animationOutSelect').on('change', function() {
-                        var newValue = $(this).val();
+                    controlsContainer.querySelector('.animationOutSelect').addEventListener('change', function() {
+                        var newValue = this.value;
                         var oldValue = animOutBeforeChange;
                         overlay.data.attributes.animationOut = newValue;
                         FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
@@ -606,14 +644,14 @@ FrameTrail.defineType(
 
                     // --- Animation Duration Range ---
                     var durationBeforeChange = overlay.data.attributes.animationDuration || 300;
-                    controlsContainer.find('.animationDurationRange').on('focus', function() {
+                    controlsContainer.querySelector('.animationDurationRange').addEventListener('focus', function() {
                         durationBeforeChange = overlay.data.attributes.animationDuration || 300;
                     });
-                    controlsContainer.find('.animationDurationRange').on('input', function() {
+                    controlsContainer.querySelector('.animationDurationRange').addEventListener('input', function() {
                         overlay.data.attributes.animationDuration = parseInt(this.value, 10);
                         FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
                     });
-                    controlsContainer.find('.animationDurationRange').on('change', function() {
+                    controlsContainer.querySelector('.animationDurationRange').addEventListener('change', function() {
                         var newDuration = parseInt(this.value, 10);
                         if (durationBeforeChange !== newDuration) {
                             (function(overlayId, oldDuration, newDur, labels) {
@@ -647,17 +685,19 @@ FrameTrail.defineType(
                         durationBeforeChange = newDuration;
                     });
 
-                    controlsContainer.find('.arrangeTop').click( function() {
+                    var _arrangeTop = controlsContainer.querySelector('.arrangeTop');
+                    if (_arrangeTop) { _arrangeTop.addEventListener('click', function() {
                         // Move to top
                         FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-                    });
+                    }); }
 
-                    controlsContainer.find('.arrangeBottom').click( function() {
+                    var _arrangeBottom = controlsContainer.querySelector('.arrangeBottom');
+                    if (_arrangeBottom) { _arrangeBottom.addEventListener('click', function() {
                         // Move to bottom
                         FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
-                    });
+                    }); }
 
-                    controlsContainer.find('.deleteOverlay').click(function(){
+                    controlsContainer.querySelector('.deleteOverlay').addEventListener('click', function(){
 
                         FrameTrail.module('OverlaysController').deleteOverlay(overlay);
 
@@ -665,20 +705,23 @@ FrameTrail.defineType(
 
                     // Init CodeMirror 6 editors for Actions / Events
                     var CM6 = window.FrameTrailCM6;
-                    var codeTextareas = controlsContainer.find('.codeTextarea');
+                    var codeTextareas = controlsContainer.querySelectorAll('.codeTextarea');
 
                     for (var i=0; i<codeTextareas.length; i++) {
                         (function(textarea) {
-                            var eventName = textarea.data('eventname');
+                            var eventName = textarea.dataset.eventname;
                             var eventCodeBeforeEdit = null;
                             var eventCodeChanged = false;
 
-                            var cm6Wrapper = $('<div class="cm6-wrapper" style="height: calc(100% - 40px);"></div>');
-                            textarea.after(cm6Wrapper).hide();
+                            var cm6Wrapper = document.createElement('div');
+                            cm6Wrapper.className = 'cm6-wrapper';
+                            cm6Wrapper.style.height = 'calc(100% - 40px)';
+                            textarea.insertAdjacentElement('afterend', cm6Wrapper);
+                            textarea.style.display = 'none';
 
                             new CM6.EditorView({
                                 state: CM6.EditorState.create({
-                                    doc: textarea.val(),
+                                    doc: textarea.value,
                                     extensions: [
                                         CM6.oneDark,
                                         CM6.lineNumbers(),
@@ -738,19 +781,28 @@ FrameTrail.defineType(
                                         })
                                     ]
                                 }),
-                                parent: cm6Wrapper[0]
+                                parent: cm6Wrapper
                             });
-                        })(codeTextareas.eq(i));
+                        })(codeTextareas[i]);
                     }
 
-                    controlsContainer.find('.executeActionCode').click(function(evt) {
-                        var textarea = $(evt.currentTarget).siblings('textarea');
-                        try {
-                            var testRun = new Function('FrameTrail', textarea.val());
-                                testRun.call(overlay, FrameTrail);
-                        } catch (exception) {
-                            alert('Code contains errors: '+ exception.message);
-                        }
+                    controlsContainer.querySelectorAll('.executeActionCode').forEach(function(btn) {
+                        btn.addEventListener('click', function(evt) {
+                            var cmWrapper = evt.currentTarget.parentElement.querySelector('.cm6-wrapper');
+                            var code;
+                            if (cmWrapper && cmWrapper._cm6view) {
+                                code = cmWrapper._cm6view.state.doc.toString();
+                            } else {
+                                var ta = evt.currentTarget.parentElement.querySelector('textarea');
+                                code = ta ? ta.value : '';
+                            }
+                            try {
+                                var testRun = new Function('FrameTrail', code);
+                                    testRun.call(overlay, FrameTrail);
+                            } catch (exception) {
+                                alert('Code contains errors: '+ exception.message);
+                            }
+                        });
                     });
 
 
@@ -760,22 +812,22 @@ FrameTrail.defineType(
 
                         changeStart:  function(val) {
                             manualInputMode = false;
-                            controlsContainer.find('#TimeStart').val(val);
+                            controlsContainer.querySelector('#TimeStart').value = val;
                             manualInputMode = true;
                         },
 
                         changeEnd: function(val) {
                             manualInputMode = false;
-                            controlsContainer.find('#TimeEnd').val(val);
+                            controlsContainer.querySelector('#TimeEnd').value = val;
                             manualInputMode = true;
                         },
 
                         changeDimensions: function(val) {
                             manualInputMode = false;
-                            controlsContainer.find('.positionTop').val(val.top);
-                            controlsContainer.find('.positionLeft').val(val.left);
-                            controlsContainer.find('.positionWidth').val(val.width);
-                            controlsContainer.find('.positionHeight').val(val.height);
+                            controlsContainer.querySelector('.positionTop').value = val.top;
+                            controlsContainer.querySelector('.positionLeft').value = val.left;
+                            controlsContainer.querySelector('.positionWidth').value = val.width;
+                            controlsContainer.querySelector('.positionHeight').value = val.height;
                             manualInputMode = true;
                         }
 
@@ -809,19 +861,27 @@ FrameTrail.defineType(
                 renderBasicTimeControls: function(annotation) {
 
                     var self = this,
-                        controlsContainer = $('<div class="controlsWrapper"></div>'),
-                        manualInputMode   = true,
-                        defaultControls   = $('<div class="timeControls">'
+                        manualInputMode   = true;
+
+                    var controlsContainer = document.createElement('div');
+                    controlsContainer.className = 'controlsWrapper';
+
+                    var _dtcw = document.createElement('div');
+                    _dtcw.innerHTML = '<div class="timeControls">'
                                             + '    <div class="propertiesTypeIcon" data-type="' + annotation.data.type + '"><span class="icon-doc-inv"></span></div>'
                                             + '    <button class="deleteAnnotation"><span class="icon-trash"></span></button>'
                                             + '    <label for="TimeStart">'+ this.labels['SettingsTimeStart'] +'</label>'
                                             + '    <input id="TimeStart" type="number" min="0" step="0.1" value="' + annotation.data.start + '">'
                                             + '    <label for="TimeEnd">'+ this.labels['SettingsTimeEnd'] +'</label>'
                                             + '    <input id="TimeEnd" type="number" min="0" step="0.1" value="' + annotation.data.end + '">'
-                                            + '</div>'),
-                        thumbContainer    = $('<div class="previewThumbContainer"></div>');
+                                            + '</div>';
+                    var defaultControls = _dtcw.firstElementChild;
 
-                    var annotationOptions = $('<div class="annotationOptionsWrapper">'
+                    var thumbContainer = document.createElement('div');
+                    thumbContainer.className = 'previewThumbContainer';
+
+                    var _aow = document.createElement('div');
+                    _aow.innerHTML = '<div class="annotationOptionsWrapper">'
                                             + '    <div class="annotationOptionsTabs">'
                                             + '        <ul>'
                                             + '            <li><a href="#AnnotationOptions">'+ this.labels['GenericOptions'] +'</a></li>'
@@ -837,46 +897,56 @@ FrameTrail.defineType(
                                             + '            </div>'
                                             + '        </div>'
                                             + '    </div>'
-                                            + '</div>');
+                                            + '</div>';
+                    var annotationOptions = _aow.firstElementChild;
 
-                    thumbContainer.append(annotation.resourceItem.renderThumb());
+                    thumbContainer.appendChild(annotation.resourceItem.renderThumb());
 
-                    controlsContainer.append(defaultControls, thumbContainer, annotationOptions);
+                    controlsContainer.appendChild(defaultControls);
+                    controlsContainer.appendChild(thumbContainer);
+                    controlsContainer.appendChild(annotationOptions);
 
-                    controlsContainer.find('.annotationOptionsTabs').tabs({
+                    FTTabs(controlsContainer.querySelector('.annotationOptionsTabs'), {
                         heightStyle: 'fill',
                         activate: function(event, ui) {
-                            controlsContainer.find('.annotationOptionsTabs').tabs('refresh');
-                            var cm6Wrapper = ui.newPanel.find('.cm6-wrapper')[0];
+                            FTTabs(controlsContainer.querySelector('.annotationOptionsTabs'), 'refresh');
+                            var cm6Wrapper = ui.newPanel.querySelector('.cm6-wrapper');
                             if (cm6Wrapper && cm6Wrapper._cm6view) { cm6Wrapper._cm6view.requestMeasure(); }
                         }
                     });
 
                     // Tag Management
 
-                    var tagManagementUI = annotationOptions.find('#TagOptions');
+                    var tagManagementUI = annotationOptions.querySelector('#TagOptions');
 
                     updateExistingTags();
 
-                    tagManagementUI.find('.newTagButton').click(function() {
-                        tagManagementUI.find('.contextSelectButton').not($(this)).removeClass('active');
+                    tagManagementUI.querySelector('.newTagButton').addEventListener('click', function() {
+                        var _self = this;
+                        tagManagementUI.querySelectorAll('.contextSelectButton').forEach(function(el) {
+                            if (el !== _self) { el.classList.remove('active'); }
+                        });
 
                         updateTagSelectContainer();
-                        $(this).toggleClass('active');
+                        this.classList.toggle('active');
                     });
 
                     function updateExistingTags() {
-                        tagManagementUI.find('.existingTags').empty();
+                        tagManagementUI.querySelector('.existingTags').innerHTML = '';
 
                         for (var i=0; i<annotation.data.tags.length; i++) {
 
-                            var tagLabel = FrameTrail.module('TagModel').getTagLabelAndDescription(annotation.data.tags[i], 'de').label,
-                                tagItem = $('<div class="tagItem" data-tag="'+ annotation.data.tags[i] +'">'+ tagLabel +'</div>');
-                            var deleteButton = $('<div class="deleteItem"><span class="icon-cancel"></span></div>')
-                            deleteButton.click(function() {
+                            var tagLabel = FrameTrail.module('TagModel').getTagLabelAndDescription(annotation.data.tags[i], 'de').label;
+                            var _tiw = document.createElement('div');
+                            _tiw.innerHTML = '<div class="tagItem" data-tag="'+ annotation.data.tags[i] +'">'+ tagLabel +'</div>';
+                            var tagItem = _tiw.firstElementChild;
+                            var _dbw = document.createElement('div');
+                            _dbw.innerHTML = '<div class="deleteItem"><span class="icon-cancel"></span></div>';
+                            var deleteButton = _dbw.firstElementChild;
+                            deleteButton.addEventListener('click', function() {
 
                                 // Delete tag
-                                var tagToRemove = $(this).parent().attr('data-tag');
+                                var tagToRemove = this.parentElement.dataset.tag;
                                 annotation.data.tags.splice(annotation.data.tags.indexOf(tagToRemove), 1);
                                 updateExistingTags();
                                 FrameTrail.module('HypervideoModel').newUnsavedChange('annotations');
@@ -919,27 +989,29 @@ FrameTrail.defineType(
                                 })(annotation.data.created, tagToRemove, self.labels);
 
                             });
-                            tagItem.append(deleteButton);
-                            tagManagementUI.find('.existingTags').append(tagItem);
+                            tagItem.appendChild(deleteButton);
+                            tagManagementUI.querySelector('.existingTags').appendChild(tagItem);
 
                         }
                     }
 
                     function updateTagSelectContainer() {
 
-                        tagManagementUI.find('.newTagButton .contextSelectList').empty();
+                        tagManagementUI.querySelector('.newTagButton .contextSelectList').innerHTML = '';
 
                         var allTags = FrameTrail.module('TagModel').getAllTagLabelsAndDescriptions('de');
                         for (var tagID in allTags) {
                             if ( annotation.data.tags.indexOf(tagID) != -1 ) {
                                 continue;
                             }
-                            var tagLabel = allTags[tagID].label,
-                                tagItem = $('<div class="tagItem" data-tag="'+ tagID +'">'+ tagLabel +'</div>');
-                            tagItem.click(function() {
+                            var tagLabel = allTags[tagID].label;
+                            var _tiw2 = document.createElement('div');
+                            _tiw2.innerHTML = '<div class="tagItem" data-tag="'+ tagID +'">'+ tagLabel +'</div>';
+                            var tagItem = _tiw2.firstElementChild;
+                            tagItem.addEventListener('click', function() {
 
                                 // Add tag
-                                var tagToAdd = $(this).attr('data-tag');
+                                var tagToAdd = this.dataset.tag;
                                 annotation.data.tags.push(tagToAdd);
                                 updateExistingTags();
                                 FrameTrail.module('HypervideoModel').newUnsavedChange('annotations');
@@ -982,7 +1054,7 @@ FrameTrail.defineType(
                                 })(annotation.data.created, tagToAdd, self.labels);
 
                             });
-                            tagManagementUI.find('.newTagButton .contextSelectList').append(tagItem);
+                            tagManagementUI.querySelector('.newTagButton .contextSelectList').appendChild(tagItem);
                         }
 
                     }
@@ -992,11 +1064,11 @@ FrameTrail.defineType(
                     var oldAnnotationData;
 
                     (function() {
-                        var $ts = controlsContainer.find('#TimeStart');
-                        $ts.attr('max', FrameTrail.module('HypervideoModel').duration);
-                        $ts.parent().attr('data-input-id', $ts.attr('id'));
-                        oldAnnotationData = jQuery.extend({}, annotation.data);
-                        $ts.on('input', function(evt) {
+                        var ts = controlsContainer.querySelector('#TimeStart');
+                        ts.setAttribute('max', FrameTrail.module('HypervideoModel').duration);
+                        ts.parentElement.setAttribute('data-input-id', ts.id);
+                        oldAnnotationData = Object.assign({}, annotation.data);
+                        ts.addEventListener('input', function(evt) {
                             if(manualInputMode){
                                 annotation.data.start = parseFloat(this.value);
                                 annotation.updateTimelineElement();
@@ -1009,9 +1081,9 @@ FrameTrail.defineType(
                                 });
                             }
                         });
-                        $ts.on('change', function(evt) {
+                        ts.addEventListener('change', function(evt) {
                             if(manualInputMode){
-                                annotation.data.start = parseFloat($(evt.target).val());
+                                annotation.data.start = parseFloat(evt.target.value);
                                 annotation.updateTimelineElement();
                                 FrameTrail.module('HypervideoController').currentTime = annotation.data.start;
                                 FrameTrail.module('AnnotationsController').stackTimelineView();
@@ -1026,10 +1098,10 @@ FrameTrail.defineType(
                     }());
 
                     (function() {
-                        var $te = controlsContainer.find('#TimeEnd');
-                        $te.attr('max', FrameTrail.module('HypervideoModel').duration);
-                        $te.parent().attr('data-input-id', $te.attr('id'));
-                        $te.on('input', function(evt) {
+                        var te = controlsContainer.querySelector('#TimeEnd');
+                        te.setAttribute('max', FrameTrail.module('HypervideoModel').duration);
+                        te.parentElement.setAttribute('data-input-id', te.id);
+                        te.addEventListener('input', function(evt) {
                             if(manualInputMode){
                                 annotation.data.end = parseFloat(this.value);
                                 annotation.updateTimelineElement();
@@ -1042,9 +1114,9 @@ FrameTrail.defineType(
                                 });
                             }
                         });
-                        $te.on('change', function(evt) {
+                        te.addEventListener('change', function(evt) {
                             if(manualInputMode){
-                                annotation.data.end = parseFloat($(evt.target).val());
+                                annotation.data.end = parseFloat(evt.target.value);
                                 annotation.updateTimelineElement();
                                 FrameTrail.module('HypervideoController').currentTime = annotation.data.end;
                                 FrameTrail.module('AnnotationsController').stackTimelineView();
@@ -1060,59 +1132,63 @@ FrameTrail.defineType(
 
                     // Add undo support for annotation time spinners
                     var annotationTimeBeforeEdit = {};
-                    controlsContainer.find('#TimeStart, #TimeEnd').on('focus', function() {
-                        annotationTimeBeforeEdit = {
-                            start: annotation.data.start,
-                            end: annotation.data.end
-                        };
-                    }).on('blur', function() {
-                        if (annotationTimeBeforeEdit.start !== annotation.data.start ||
-                            annotationTimeBeforeEdit.end !== annotation.data.end) {
-                            (function(annotationId, oldTime, newTime, labels) {
-                                var findAnnotation = function() {
-                                    var annotations = FrameTrail.module('HypervideoModel').annotations;
-                                    for (var i = 0; i < annotations.length; i++) {
-                                        if (annotations[i].data.created === annotationId) {
-                                            return annotations[i];
+                    ['#TimeStart', '#TimeEnd'].forEach(function(sel) {
+                        var el = controlsContainer.querySelector(sel);
+                        el.addEventListener('focus', function() {
+                            annotationTimeBeforeEdit = {
+                                start: annotation.data.start,
+                                end: annotation.data.end
+                            };
+                        });
+                        el.addEventListener('blur', function() {
+                            if (annotationTimeBeforeEdit.start !== annotation.data.start ||
+                                annotationTimeBeforeEdit.end !== annotation.data.end) {
+                                (function(annotationId, oldTime, newTime, labels) {
+                                    var findAnnotation = function() {
+                                        var annotations = FrameTrail.module('HypervideoModel').annotations;
+                                        for (var i = 0; i < annotations.length; i++) {
+                                            if (annotations[i].data.created === annotationId) {
+                                                return annotations[i];
+                                            }
                                         }
-                                    }
-                                    return null;
-                                };
-                                FrameTrail.module('UndoManager').register({
-                                    category: 'annotations',
-                                    description: labels['SidebarMyAnnotations'] + ' Time',
-                                    undo: function() {
-                                        var a = findAnnotation();
-                                        if (!a) return;
-                                        a.data.start = oldTime.start;
-                                        a.data.end = oldTime.end;
-                                        a.updateTimelineElement();
-                                        FrameTrail.module('AnnotationsController').stackTimelineView();
-                                        FrameTrail.module('HypervideoModel').newUnsavedChange('annotations');
-                                    },
-                                    redo: function() {
-                                        var a = findAnnotation();
-                                        if (!a) return;
-                                        a.data.start = newTime.start;
-                                        a.data.end = newTime.end;
-                                        a.updateTimelineElement();
-                                        FrameTrail.module('AnnotationsController').stackTimelineView();
-                                        FrameTrail.module('HypervideoModel').newUnsavedChange('annotations');
-                                    }
-                                });
-                            })(annotation.data.created, 
-                               JSON.parse(JSON.stringify(annotationTimeBeforeEdit)), 
-                               { start: annotation.data.start, end: annotation.data.end }, 
-                               self.labels);
-                        }
+                                        return null;
+                                    };
+                                    FrameTrail.module('UndoManager').register({
+                                        category: 'annotations',
+                                        description: labels['SidebarMyAnnotations'] + ' Time',
+                                        undo: function() {
+                                            var a = findAnnotation();
+                                            if (!a) return;
+                                            a.data.start = oldTime.start;
+                                            a.data.end = oldTime.end;
+                                            a.updateTimelineElement();
+                                            FrameTrail.module('AnnotationsController').stackTimelineView();
+                                            FrameTrail.module('HypervideoModel').newUnsavedChange('annotations');
+                                        },
+                                        redo: function() {
+                                            var a = findAnnotation();
+                                            if (!a) return;
+                                            a.data.start = newTime.start;
+                                            a.data.end = newTime.end;
+                                            a.updateTimelineElement();
+                                            FrameTrail.module('AnnotationsController').stackTimelineView();
+                                            FrameTrail.module('HypervideoModel').newUnsavedChange('annotations');
+                                        }
+                                    });
+                                })(annotation.data.created,
+                                   JSON.parse(JSON.stringify(annotationTimeBeforeEdit)),
+                                   { start: annotation.data.start, end: annotation.data.end },
+                                   self.labels);
+                            }
+                        });
                     });
 
-                    controlsContainer.find('.deleteAnnotation').click(function(){
+                    controlsContainer.querySelector('.deleteAnnotation').addEventListener('click', function(){
 
                         try {
                             if (TogetherJS && TogetherJS.running) {
                                 var elementFinder = TogetherJS.require("elementFinder");
-                                var location = elementFinder.elementLocation($(this)[0]);
+                                var location = elementFinder.elementLocation(this);
                                 TogetherJS.send({
                                     type: "simulate-special-click", 
                                     element: location
@@ -1130,13 +1206,13 @@ FrameTrail.defineType(
 
                         changeStart:  function(val) {
                             manualInputMode = false;
-                            controlsContainer.find('#TimeStart').val(val);
+                            controlsContainer.querySelector('#TimeStart').value = val;
                             manualInputMode = true;
                         },
 
                         changeEnd: function(val) {
                             manualInputMode = false;
-                            controlsContainer.find('#TimeEnd').val(val);
+                            controlsContainer.querySelector('#TimeEnd').value = val;
                             manualInputMode = true;
                         }
 

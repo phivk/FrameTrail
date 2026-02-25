@@ -26,7 +26,8 @@ FrameTrail.defineType(
 
                 this.data = data;
 
-                this.subtitleElement = $('<div class="subtitleElement"></div>');
+                this.subtitleElement = document.createElement('div');
+                this.subtitleElement.className = 'subtitleElement';
 
             },
             prototype: {
@@ -64,9 +65,9 @@ FrameTrail.defineType(
 
                     var ViewVideo = FrameTrail.module('ViewVideo');
 
-                    ViewVideo.CaptionContainer.append(this.subtitleElement);
+                    ViewVideo.CaptionContainer.appendChild(this.subtitleElement);
 
-                    this.subtitleElement.empty().append( this.data.text );
+                    this.subtitleElement.innerHTML = this.data.text;
 
                 },
 
@@ -90,7 +91,7 @@ FrameTrail.defineType(
                  */
                 setActive: function () {
 
-                    this.subtitleElement.addClass('active');
+                    this.subtitleElement.classList.add('active');
                     this.activeState = true;
 
                 },
@@ -101,7 +102,7 @@ FrameTrail.defineType(
                  */
                 setInactive: function () {
 
-                    this.subtitleElement.removeClass('active');
+                    this.subtitleElement.classList.remove('active');
                     this.activeState = false;
 
                 }

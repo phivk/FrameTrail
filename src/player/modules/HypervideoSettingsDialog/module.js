@@ -182,10 +182,12 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
             messageLines.push('• ' + annotationsToTruncate + ' ' + labels['DurationChangeAnnotationsTruncated'] + ' ' + formattedTime);
         }
         
-        var confirmDialog = $('<div class="durationChangeConfirmDialog">'
-                            + '    <div class="message active">'+ labels['DurationChangeWarningMessage'] +'</div>'
-                            + '    <div class="affectedItems">' + messageLines.join('<br>') + '</div>'
-                            + '</div>');
+        var _cdw = document.createElement('div');
+        _cdw.innerHTML = '<div class="durationChangeConfirmDialog">'
+                        + '    <div class="message active">'+ labels['DurationChangeWarningMessage'] +'</div>'
+                        + '    <div class="affectedItems">' + messageLines.join('<br>') + '</div>'
+                        + '</div>';
+        var confirmDialog = _cdw.firstElementChild;
 
         var confirmDialogCtrl = Dialog({
             title:   labels['DurationChangeWarningTitle'],
@@ -243,29 +245,31 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
 
         var captionsVisible = hypervideo.config && hypervideo.config.captionsVisible && hypervideo.config.captionsVisible.toString() === 'true';
 
-        var EditHypervideoForm = $('<form method="POST" class="editHypervideoForm">'
-                                  + formBuilder.generateSettingsRow({
-                                        name: hypervideo.name || '',
-                                        description: hypervideo.description || '',
-                                        hidden: hypervideo.hidden && hypervideo.hidden.toString() === "true",
-                                        captionsVisible: captionsVisible,
-                                        showExistingSubtitles: true
-                                    })
-                                  +'    <hr>'
-                                  + formBuilder.generateVideoSourceSection({
-                                        duration: isCanvasVideo ? originalDuration : 120,  // Use existing duration or 2 minutes default
-                                        currentResourceId: originalResourceId || '',
-                                        currentSrc: originalSrc || '',
-                                        showUploadButton: true,
-                                        isEditMode: true
-                                    })
-                                  +'    <div class="message error"></div>'
-                                  +'</form>');
+        var _efw = document.createElement('div');
+        _efw.innerHTML = '<form method="POST" class="editHypervideoForm">'
+                        + formBuilder.generateSettingsRow({
+                                name: hypervideo.name || '',
+                                description: hypervideo.description || '',
+                                hidden: hypervideo.hidden && hypervideo.hidden.toString() === "true",
+                                captionsVisible: captionsVisible,
+                                showExistingSubtitles: true
+                            })
+                        + '    <hr>'
+                        + formBuilder.generateVideoSourceSection({
+                                duration: isCanvasVideo ? originalDuration : 120,  // Use existing duration or 2 minutes default
+                                currentResourceId: originalResourceId || '',
+                                currentSrc: originalSrc || '',
+                                showUploadButton: true,
+                                isEditMode: true
+                            })
+                        + '    <div class="message error"></div>'
+                        + '</form>';
+        var EditHypervideoForm = _efw.firstElementChild;
         
         // Helper to get duration from form input
         function getDurationFromForm() {
             if (!isCanvasVideo) return originalDuration;
-            return formBuilder.timeStringToSeconds(EditHypervideoForm.find('input[name="duration"]').val());
+            return formBuilder.timeStringToSeconds(EditHypervideoForm.querySelector('input[name="duration"]').value);
         }
 
         // Populate existing subtitles using shared module
@@ -276,8 +280,8 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
 
         // Video Source Tabs Initialization
         (function() {
-            var tabs = EditHypervideoForm.find('.videoSourceTabs');
-            var videoList = EditHypervideoForm.find('.videoResourceList');
+            var tabs = EditHypervideoForm.querySelector('.videoSourceTabs');
+            var videoList = EditHypervideoForm.querySelector('.videoResourceList');
             
             // Render video resources list
             FrameTrail.module('ResourceManager').renderList(videoList, true, 'type', 'contains', ['video', 'youtube', 'vimeo']);
@@ -285,16 +289,17 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
             // Pre-select current video resource after list is loaded (watch for loading screen removal)
             if (originalResourceId) {
                 var checkLoaded = setInterval(function() {
-                    if (videoList.find('.loadingScreen').length === 0) {
+                    if (!videoList.querySelector('.loadingScreen')) {
                         clearInterval(checkLoaded);
                         // Use data-resourceID (capital ID) to match the actual attribute
-                        videoList.find('.resourceThumb[data-resourceID="' + originalResourceId + '"]').addClass('selected');
+                        var _selThumb = videoList.querySelector('.resourceThumb[data-resourceID="' + originalResourceId + '"]');
+                        if (_selThumb) { _selThumb.classList.add('selected'); }
                     }
                 }, 100);
             }
             
-            // Initialize jQuery UI tabs with appropriate active tab
-            tabs.tabs({
+            // Initialize tabs with appropriate active tab
+            FTTabs(tabs, {
                 active: isCanvasVideo ? 1 : 0, // Empty Video tab if canvas, Choose Video tab otherwise
                 activate: function(event, ui) {
                     // Don't clear selection when switching tabs - preserve current selection
@@ -303,31 +308,33 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
         })();
 
         // Handle video resource selection
-        EditHypervideoForm.on('click', '.videoResourceList .resourceThumb', function() {
-            EditHypervideoForm.find('.videoResourceList .resourceThumb').removeClass('selected');
-            $(this).addClass('selected');
+        EditHypervideoForm.addEventListener('click', function(evt) {
+            var _thumb = evt.target.closest('.videoResourceList .resourceThumb');
+            if (!_thumb) return;
+            EditHypervideoForm.querySelectorAll('.videoResourceList .resourceThumb').forEach(function(el) { el.classList.remove('selected'); });
+            _thumb.classList.add('selected');
             
-            var resourceId = $(this).data('resourceid');
+            var resourceId = _thumb.dataset.resourceid;
             var resource = database.resources[resourceId];
             
-            EditHypervideoForm.find('input[name="newResourceId"]').val(resourceId);
-            EditHypervideoForm.find('input[name="newResourceSrc"]').val(resource ? resource.src : '');
+            EditHypervideoForm.querySelector('input[name="newResourceId"]').value = resourceId;
+            EditHypervideoForm.querySelector('input[name="newResourceSrc"]').value = resource ? resource.src : '';
             // Duration will be determined when video loads - for now use 0 as placeholder
-            EditHypervideoForm.find('input[name="newResourceDuration"]').val(resource ? (resource.duration || 0) : 0);
+            EditHypervideoForm.querySelector('input[name="newResourceDuration"]').value = resource ? (resource.duration || 0) : 0;
         });
 
         // Helper to get new empty video duration
         function getNewEmptyDuration() {
-            return formBuilder.timeStringToSeconds(EditHypervideoForm.find('input[name="duration"]').val());
+            return formBuilder.timeStringToSeconds(EditHypervideoForm.querySelector('input[name="duration"]').value);
         }
 
         // Check if source is being changed
         function isSourceChanging() {
-            var tabs = EditHypervideoForm.find('.videoSourceTabs');
-            var activeTabIndex = tabs.hasClass('ui-tabs') ? tabs.tabs('option', 'active') : 0;
+            var tabs = EditHypervideoForm.querySelector('.videoSourceTabs');
+            var activeTabIndex = tabs.classList.contains('ui-tabs') ? FTTabs(tabs, 'option', 'active') : 0;
             
             if (activeTabIndex === 0) { // Choose Video tab
-                var newResourceId = EditHypervideoForm.find('input[name="newResourceId"]').val();
+                var newResourceId = EditHypervideoForm.querySelector('input[name="newResourceId"]').value;
                 // Source is changing if a different resource is selected
                 return newResourceId && newResourceId != originalResourceId;
             } else if (activeTabIndex === 1) { // Empty Video tab
@@ -340,11 +347,11 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
 
         // Get the new source info
         function getNewSourceInfo() {
-            var tabs = EditHypervideoForm.find('.videoSourceTabs');
-            var activeTabIndex = tabs.hasClass('ui-tabs') ? tabs.tabs('option', 'active') : 0;
+            var tabs = EditHypervideoForm.querySelector('.videoSourceTabs');
+            var activeTabIndex = tabs.classList.contains('ui-tabs') ? FTTabs(tabs, 'option', 'active') : 0;
             
             if (activeTabIndex === 0) { // Choose Video tab
-                var newResourceId = EditHypervideoForm.find('input[name="newResourceId"]').val();
+                var newResourceId = EditHypervideoForm.querySelector('input[name="newResourceId"]').value;
                 var resource = database.resources[newResourceId];
                 return {
                     type: 'video',
@@ -368,14 +375,14 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
             // Only called when saving - apply changes to database
             var DatabaseEntry = FrameTrail.module('Database').hypervideos[thisID];
 
-            DatabaseEntry.name = EditHypervideoForm.find('input[name="name"]').val();
-            DatabaseEntry.description = EditHypervideoForm.find('textarea[name="description"]').val();
-            DatabaseEntry.hidden = EditHypervideoForm.find('input[name="hidden"]').is(':checked');
+            DatabaseEntry.name = EditHypervideoForm.querySelector('input[name="name"]').value;
+            DatabaseEntry.description = EditHypervideoForm.querySelector('textarea[name="description"]').value;
+            DatabaseEntry.hidden = EditHypervideoForm.querySelector('input[name="hidden"]').checked;
             
             if (DatabaseEntry.config) {
                 for (var configKey in DatabaseEntry.config) {
                     if (configKey === 'layoutArea' || configKey === 'theme') { continue; }
-                    var newConfigVal = EditHypervideoForm.find('input[data-configkey=' + configKey + ']').val();
+                    var newConfigVal = EditHypervideoForm.querySelector('input[data-configkey=' + configKey + ']').value;
                     newConfigVal = (newConfigVal === 'true')
                                     ? true
                                     : (newConfigVal === 'false')
@@ -436,8 +443,8 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
             }
             DatabaseEntry.subtitles.splice(0, DatabaseEntry.subtitles.length);
 
-            EditHypervideoForm.find('.existingSubtitlesItem').each(function () {
-                var lang = $(this).find('.subtitlesDelete').attr('data-lang');
+            EditHypervideoForm.querySelectorAll('.existingSubtitlesItem').forEach(function(item) {
+                var lang = item.querySelector('.subtitlesDelete').getAttribute('data-lang');
                 if (lang) {
                     DatabaseEntry.subtitles.push({
                         "src": lang +".vtt",
@@ -446,8 +453,8 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
                 }
             });
 
-            EditHypervideoForm.find('.newSubtitlesContainer').find('input[type=file]').each(function () {
-                var match = /subtitles\[(.+)\]/g.exec($(this).attr('name'));
+            EditHypervideoForm.querySelectorAll('.newSubtitlesContainer input[type=file]').forEach(function(fileInput) {
+                var match = /subtitles\[(.+)\]/g.exec(fileInput.getAttribute('name'));
                 if (match) {
                     DatabaseEntry.subtitles.push({
                         "src": match[1] +".vtt",
@@ -472,8 +479,8 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
                     if (thisID == FrameTrail.module('RouteNavigation').hypervideoID) {
                         FrameTrail.module('Database').hypervideo = FrameTrail.module('Database').hypervideos[thisID];
 
-                        var name = EditHypervideoForm.find('input[name="name"]').val(),
-                            description = EditHypervideoForm.find('textarea[name="description"]').val();
+                        var name = EditHypervideoForm.querySelector('input[name="name"]').value,
+                            description = EditHypervideoForm.querySelector('textarea[name="description"]').value;
 
                         FrameTrail.module('HypervideoModel').hypervideoName = name;
                         FrameTrail.module('HypervideoModel').description = description;
@@ -514,17 +521,19 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
                     }
                 },
                 function(){
-                    EditHypervideoForm.find('.message.error').addClass('active').html(labels['ErrorUpdatingHypervideoData']);
+                    EditHypervideoForm.querySelector('.message.error').classList.add('active');
+                EditHypervideoForm.querySelector('.message.error').innerHTML = labels['ErrorUpdatingHypervideoData'];
                 }
             );
         }
 
-        EditHypervideoForm.on('submit', function(e) {
+        EditHypervideoForm.addEventListener('submit', function(e) {
             e.preventDefault();
             var form = this;
 
             // Clear error messages
-            EditHypervideoForm.find('.message.error').removeClass('active').html('');
+            EditHypervideoForm.querySelector('.message.error').classList.remove('active');
+            EditHypervideoForm.querySelector('.message.error').innerHTML = '';
 
             // Check for video source change
             if (isSourceChanging() && !sourceChangeConfirmed) {
@@ -532,7 +541,8 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
 
                 // Validate empty video duration
                 if (newSourceInfo.type === 'empty' && newSourceInfo.duration < 4) {
-                    EditHypervideoForm.find('.message.error').addClass('active').html(labels['ErrorDurationMinimum4Seconds']);
+                    EditHypervideoForm.querySelector('.message.error').classList.add('active');
+                    EditHypervideoForm.querySelector('.message.error').innerHTML = labels['ErrorDurationMinimum4Seconds'];
                     return;
                 }
 
@@ -553,17 +563,18 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
                                 outOfRangeItems: outOfRangeItems
                             };
                             sourceChangeConfirmed = true;
-                            EditHypervideoForm.submit();
+                            EditHypervideoForm.requestSubmit();
                         }, function() {
-                            EditHypervideoForm.find('.videoResourceList .resourceThumb').removeClass('selected');
+                            EditHypervideoForm.querySelectorAll('.videoResourceList .resourceThumb').forEach(function(el) { el.classList.remove('selected'); });
                             if (originalResourceId) {
-                                EditHypervideoForm.find('.videoResourceList .resourceThumb[data-resourceID="' + originalResourceId + '"]').addClass('selected');
-                                EditHypervideoForm.find('input[name="newResourceId"]').val(originalResourceId);
+                                var _selThumb = EditHypervideoForm.querySelector('.videoResourceList .resourceThumb[data-resourceID="' + originalResourceId + '"]');
+                                if (_selThumb) { _selThumb.classList.add('selected'); }
+                                EditHypervideoForm.querySelector('input[name="newResourceId"]').value = originalResourceId;
                             } else {
-                                EditHypervideoForm.find('input[name="newResourceId"]').val('');
+                                EditHypervideoForm.querySelector('input[name="newResourceId"]').value = '';
                             }
-                            var tabs = EditHypervideoForm.find('.videoSourceTabs');
-                            tabs.tabs('option', 'active', isCanvasVideo ? 1 : 0);
+                            var tabs = EditHypervideoForm.querySelector('.videoSourceTabs');
+                            FTTabs(tabs, 'option', 'active', isCanvasVideo ? 1 : 0);
                         });
                         return;
                     }
@@ -585,7 +596,8 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
                 var newDuration = getDurationFromForm();
 
                 if (newDuration < 4) {
-                    EditHypervideoForm.find('.message.error').addClass('active').html(labels['ErrorDurationMinimum4Seconds']);
+                    EditHypervideoForm.querySelector('.message.error').classList.add('active');
+                    EditHypervideoForm.querySelector('.message.error').innerHTML = labels['ErrorDurationMinimum4Seconds'];
                     return;
                 }
 
@@ -595,9 +607,9 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
                     if (outOfRangeItems.hasAffectedItems && !pendingDurationChange) {
                         showDurationChangeConfirmation(newDuration, outOfRangeItems, function() {
                             pendingDurationChange = { newDuration: newDuration, outOfRangeItems: outOfRangeItems };
-                            EditHypervideoForm.submit();
+                            EditHypervideoForm.requestSubmit();
                         }, function() {
-                            EditHypervideoForm.find('input[name="duration"]').val(formBuilder.secondsToTimeString(originalDuration));
+                            EditHypervideoForm.querySelector('input[name="duration"]').value = formBuilder.secondsToTimeString(originalDuration);
                         });
                         return;
                     }
@@ -606,24 +618,29 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
 
             // Subtitles Validation
             var err = 0;
-            EditHypervideoForm.find('.subtitlesItem').each(function() {
-                $(this).css({'outline': ''});
-
-                if (($(this).find('input[type="file"]:first').attr('name') == 'subtitles[]') || ($(this).find('.subtitlesTmpKeySetter').first().val() == '')
-                        || ($(this).find('input[type="file"]:first').val().length == 0)) {
-                    $(this).css({'outline': '1px solid #cd0a0a'});
-                    EditHypervideoForm.find('.message.error').addClass('active').html(labels['ErrorSubtitlesEmptyFields']);
+            EditHypervideoForm.querySelectorAll('.subtitlesItem').forEach(function(subtitleItem) {
+                subtitleItem.style.outline = '';
+                var _fileInput = subtitleItem.querySelector('input[type="file"]');
+                var _keySetter = subtitleItem.querySelector('.subtitlesTmpKeySetter');
+                var _errMsg = EditHypervideoForm.querySelector('.message.error');
+                if ((_fileInput && _fileInput.getAttribute('name') == 'subtitles[]') || (_keySetter && _keySetter.value == '')
+                        || (_fileInput && _fileInput.value.length == 0)) {
+                    subtitleItem.style.outline = '1px solid #cd0a0a';
+                    _errMsg.classList.add('active');
+                    _errMsg.innerHTML = labels['ErrorSubtitlesEmptyFields'];
                     err++;
-                } else if ( !(new RegExp('(' + ['.vtt'].join('|').replace(/\./g, '\\.') + ')$')).test($(this).find('input[type="file"]:first').val()) ) {
-                    $(this).css({'outline': '1px solid #cd0a0a'});
-                    EditHypervideoForm.find('.message.error').addClass('active').html(labels['ErrorSubtitlesWrongFormat']);
+                } else if (_fileInput && !(new RegExp('(' + ['.vtt'].join('|').replace(/\./g, '\\.') + ')$')).test(_fileInput.value)) {
+                    subtitleItem.style.outline = '1px solid #cd0a0a';
+                    _errMsg.classList.add('active');
+                    _errMsg.innerHTML = labels['ErrorSubtitlesWrongFormat'];
                     err++;
                 }
-
-                if (EditHypervideoForm.find('.subtitlesItem input[type="file"][name="subtitles['+ $(this).find('.subtitlesTmpKeySetter:first').val() +']"]').length > 1
-                        || (EditHypervideoForm.find('.existingSubtitlesItem .subtitlesDelete[data-lang="'+ $(this).find('.subtitlesTmpKeySetter:first').val() +'"]').length > 0 ) ) {
-                    EditHypervideoForm.find('.message.error').addClass('active').html(labels['ErrorSubtitlesLanguageDuplicate']);
-                    return false;
+                var _keyVal = _keySetter ? _keySetter.value : '';
+                if (EditHypervideoForm.querySelectorAll('.subtitlesItem input[type="file"][name="subtitles['+ _keyVal +']"]').length > 1
+                        || EditHypervideoForm.querySelector('.existingSubtitlesItem .subtitlesDelete[data-lang="'+ _keyVal +'"]') ) {
+                    _errMsg.classList.add('active');
+                    _errMsg.innerHTML = labels['ErrorSubtitlesLanguageDuplicate'];
+                    err++;
                 }
             });
             if (err > 0) return;
@@ -659,7 +676,8 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
                         }
                         break;
                     default:
-                        EditHypervideoForm.find('.message.error').addClass('active').html('Error: '+ response['string']);
+                        EditHypervideoForm.querySelector('.message.error').classList.add('active');
+                    EditHypervideoForm.querySelector('.message.error').innerHTML = 'Error: '+ response['string'];
                         break;
                 }
             });
@@ -671,14 +689,16 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
          */
         function saveHypervideoLocally() {
             // Run the same beforeSerialize validation by triggering a fake submit check
-            EditHypervideoForm.find('.message.error').removeClass('active').html('');
+            EditHypervideoForm.querySelector('.message.error').classList.remove('active');
+            EditHypervideoForm.querySelector('.message.error').innerHTML = '';
 
             // Video source change validation
             if (isSourceChanging() && !sourceChangeConfirmed) {
                 var newSourceInfo = getNewSourceInfo();
 
                 if (newSourceInfo.type === 'empty' && newSourceInfo.duration < 4) {
-                    EditHypervideoForm.find('.message.error').addClass('active').html(labels['ErrorDurationMinimum4Seconds']);
+                    EditHypervideoForm.querySelector('.message.error').classList.add('active');
+                    EditHypervideoForm.querySelector('.message.error').innerHTML = labels['ErrorDurationMinimum4Seconds'];
                     return;
                 }
 
@@ -698,15 +718,16 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
                             sourceChangeConfirmed = true;
                             saveHypervideoLocally();
                         }, function() {
-                            EditHypervideoForm.find('.videoResourceList .resourceThumb').removeClass('selected');
+                            EditHypervideoForm.querySelectorAll('.videoResourceList .resourceThumb').forEach(function(el) { el.classList.remove('selected'); });
                             if (originalResourceId) {
-                                EditHypervideoForm.find('.videoResourceList .resourceThumb[data-resourceID="' + originalResourceId + '"]').addClass('selected');
-                                EditHypervideoForm.find('input[name="newResourceId"]').val(originalResourceId);
+                                var _selThumb2 = EditHypervideoForm.querySelector('.videoResourceList .resourceThumb[data-resourceID="' + originalResourceId + '"]');
+                                if (_selThumb2) { _selThumb2.classList.add('selected'); }
+                                EditHypervideoForm.querySelector('input[name="newResourceId"]').value = originalResourceId;
                             } else {
-                                EditHypervideoForm.find('input[name="newResourceId"]').val('');
+                                EditHypervideoForm.querySelector('input[name="newResourceId"]').value = '';
                             }
-                            var tabs = EditHypervideoForm.find('.videoSourceTabs');
-                            tabs.tabs('option', 'active', isCanvasVideo ? 1 : 0);
+                            var tabs = EditHypervideoForm.querySelector('.videoSourceTabs');
+                            FTTabs(tabs, 'option', 'active', isCanvasVideo ? 1 : 0);
                         });
                         return;
                     }
@@ -726,7 +747,8 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
             if (isCanvasVideo && !pendingSourceChange) {
                 var newDuration = getDurationFromForm();
                 if (newDuration < 4) {
-                    EditHypervideoForm.find('.message.error').addClass('active').html(labels['ErrorDurationMinimum4Seconds']);
+                    EditHypervideoForm.querySelector('.message.error').classList.add('active');
+                    EditHypervideoForm.querySelector('.message.error').innerHTML = labels['ErrorDurationMinimum4Seconds'];
                     return;
                 }
                 if (newDuration < originalDuration) {
@@ -736,7 +758,7 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
                             pendingDurationChange = { newDuration: newDuration, outOfRangeItems: outOfRangeItems };
                             saveHypervideoLocally();
                         }, function() {
-                            EditHypervideoForm.find('input[name="duration"]').val(formBuilder.secondsToTimeString(originalDuration));
+                            EditHypervideoForm.querySelector('input[name="duration"]').value = formBuilder.secondsToTimeString(originalDuration);
                         });
                         return;
                     }
@@ -745,23 +767,29 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
 
             // Subtitles validation
             var err = 0;
-            EditHypervideoForm.find('.subtitlesItem').each(function() {
-                $(this).css({'outline': ''});
-                if (($(this).find('input[type="file"]:first').attr('name') == 'subtitles[]') || ($(this).find('.subtitlesTmpKeySetter').first().val() == '')
-                        || ($(this).find('input[type="file"]:first').val().length == 0)) {
-                    $(this).css({'outline': '1px solid #cd0a0a'});
-                    EditHypervideoForm.find('.message.error').addClass('active').html(labels['ErrorSubtitlesEmptyFields']);
+            EditHypervideoForm.querySelectorAll('.subtitlesItem').forEach(function(subtitleItem) {
+                subtitleItem.style.outline = '';
+                var _fileInput = subtitleItem.querySelector('input[type="file"]');
+                var _keySetter = subtitleItem.querySelector('.subtitlesTmpKeySetter');
+                var _errMsg = EditHypervideoForm.querySelector('.message.error');
+                if ((_fileInput && _fileInput.getAttribute('name') == 'subtitles[]') || (_keySetter && _keySetter.value == '')
+                        || (_fileInput && _fileInput.value.length == 0)) {
+                    subtitleItem.style.outline = '1px solid #cd0a0a';
+                    _errMsg.classList.add('active');
+                    _errMsg.innerHTML = labels['ErrorSubtitlesEmptyFields'];
                     err++;
-                } else if ( !(new RegExp('(' + ['.vtt'].join('|').replace(/\./g, '\\.') + ')$')).test($(this).find('input[type="file"]:first').val()) ) {
-                    $(this).css({'outline': '1px solid #cd0a0a'});
-                    EditHypervideoForm.find('.message.error').addClass('active').html(labels['ErrorSubtitlesWrongFormat']);
+                } else if (_fileInput && !(new RegExp('(' + ['.vtt'].join('|').replace(/\./g, '\\.') + ')$')).test(_fileInput.value)) {
+                    subtitleItem.style.outline = '1px solid #cd0a0a';
+                    _errMsg.classList.add('active');
+                    _errMsg.innerHTML = labels['ErrorSubtitlesWrongFormat'];
                     err++;
                 }
-                if (EditHypervideoForm.find('.subtitlesItem input[type="file"][name="subtitles['+ $(this).find('.subtitlesTmpKeySetter:first').val() +']"]').length > 1
-                        || (EditHypervideoForm.find('.existingSubtitlesItem .subtitlesDelete[data-lang="'+ $(this).find('.subtitlesTmpKeySetter:first').val() +'"]').length > 0 ) ) {
-                    EditHypervideoForm.find('.message.error').addClass('active').html(labels['ErrorSubtitlesLanguageDuplicate']);
+                var _keyVal = _keySetter ? _keySetter.value : '';
+                if (EditHypervideoForm.querySelectorAll('.subtitlesItem input[type="file"][name="subtitles['+ _keyVal +']"]').length > 1
+                        || EditHypervideoForm.querySelector('.existingSubtitlesItem .subtitlesDelete[data-lang="'+ _keyVal +'"]') ) {
+                    _errMsg.classList.add('active');
+                    _errMsg.innerHTML = labels['ErrorSubtitlesLanguageDuplicate'];
                     err++;
-                    return false;
                 }
             });
             if (err > 0) { return; }
@@ -782,8 +810,8 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
 
             // Collect subtitle deletions and additions
             var subtitlesToDelete = [];
-            EditHypervideoForm.find('.existingSubtitlesItem.markedForDeletion').each(function() {
-                var lang = $(this).find('.subtitlesDelete').attr('data-lang');
+            EditHypervideoForm.querySelectorAll('.existingSubtitlesItem.markedForDeletion').forEach(function(item) {
+                var lang = item.querySelector('.subtitlesDelete').getAttribute('data-lang');
                 if (lang) { subtitlesToDelete.push(lang); }
             });
 
@@ -795,13 +823,13 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
             }
 
             // Write new subtitle files
-            EditHypervideoForm.find('.newSubtitlesContainer input[type=file]').each(function() {
-                var match = /subtitles\[(.+)\]/g.exec($(this).attr('name'));
-                if (match && this.files && this.files[0]) {
+            EditHypervideoForm.querySelectorAll('.newSubtitlesContainer input[type=file]').forEach(function(fileInput) {
+                var match = /subtitles\[(.+)\]/g.exec(fileInput.getAttribute('name'));
+                if (match && fileInput.files && fileInput.files[0]) {
                     writeTasks.push(
                         adapter.createDirectory(basePath + '/subtitles').then(function() {
-                            return adapter.writeFile(basePath + '/subtitles/' + match[1] + '.vtt', this.files[0]);
-                        }.bind(this))
+                            return adapter.writeFile(basePath + '/subtitles/' + match[1] + '.vtt', fileInput.files[0]);
+                        })
                     );
                 }
             });
@@ -814,7 +842,8 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
             }).then(function() {
                 completeUpdate();
             }).catch(function(err) {
-                EditHypervideoForm.find('.message.error').addClass('active').html('Local save failed: ' + (err ? err.message : ''));
+                EditHypervideoForm.querySelector('.message.error').classList.add('active');
+                EditHypervideoForm.querySelector('.message.error').innerHTML = 'Local save failed: ' + (err ? err.message : '');
             });
         }
 
@@ -848,8 +877,9 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
             }).catch(function() {});
         }
 
-        var hypervideoDialog = $('<div class="hypervideoSettingsDialog"></div>');
-        hypervideoDialog.append(EditHypervideoForm);
+        var hypervideoDialog = document.createElement('div');
+        hypervideoDialog.className = 'hypervideoSettingsDialog';
+        hypervideoDialog.appendChild(EditHypervideoForm);
 
         hypervideoDialogCtrl = Dialog({
             title:   labels['SettingsHypervideoSettings'],
@@ -866,7 +896,7 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
                         if (FrameTrail.getState('storageMode') === 'local') {
                             saveHypervideoLocally();
                         } else {
-                            EditHypervideoForm.submit();
+                            EditHypervideoForm.requestSubmit();
                         }
                     }
                 },

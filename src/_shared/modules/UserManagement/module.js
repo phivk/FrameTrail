@@ -31,112 +31,121 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 		userBoxCallback 		= null,
 		userBoxCallbackCancel 	= null,
 
-		domElement 	= $(	'<div class="UserBox">'
-						+   '    <div class="userStatusMessage message">'
-						+	'    </div>'
-						+   '    <div class="userTabs">'
-						+	'        <ul class="userTabMenu">'
-						+	'            <li class="userTabSettingsMenu">'
-						+   '                <a href="#UserTabSettings">'+ labels['UserMySettings'] +'</a>'
-						+   '            </li>'
-						+	'            <li class="userTabRegistrationMenu">'
-						+   '                <a href="#UserTabRegistration">'+ labels['UserRegister'] +'</a>'
-						+   '            </li>'
-						+	'            <li class="userTabAdministrationMenu">'
-						+   '                <a href="#UserTabAdministration">'+ labels['UserAdministration'] +'</a>'
-						+   '            </li>'
-						+	'        </ul>'
-						+	'        <div id="UserTabSettings">'
-						+   '             <form class="settingsForm" method="post">'
-						+	'             	<p class="settingsFormStatus message"></p>'
-						+   '             	<input type="text" name="name" id="SettingsForm_name" placeholder="'+ labels['UserName'] +'">'
-						+   '             	<input type="text" name="mail" id="SettingsForm_mail" placeholder="'+ labels['UserMail'] +'"><br>'
-						+	'				<div class="userColor"></div>'
-						+   '             	<input type="password" name="passwd" id="SettingsForm_passwd" placeholder="'+ labels['UserNewPassword'] +'"><br>'
-						+   '             	<br>'
-						+   '             	<input type="hidden" name="a" value="userChange">'
-						+	'             	<input type="hidden" name="userID" id="SettingsForm_userID" value="">'
-						+   '             	<input type="submit" value="'+ labels['UserChangeMySettings'] +'">'
-						+   '             </form>'
-						+	'        </div>'
-						+	'        <div id="UserTabRegistration">'
-						+	'             <form class="registrationForm" method="post">'
-						+	'             	<p class="registrationFormStatus message"></p>'
-						+	'             	<input type="text" name="name" placeholder="'+ labels['UserName'] +'">'
-						+	'             	<input type="text" name="mail" placeholder="'+ labels['UserMail'] +'">'
-						+	'             	<input type="password" name="passwd" placeholder="'+ labels['UserPassword'] +'">'
-						+	'             	<input type="hidden" name="a" value="userRegister">'
-						+	'             	<input type="submit" value="'+ labels['UserRegister'] +'">'
-						+	'             </form>'
-						+	'        </div>'
-						+	'        <div id="UserTabAdministration">'
-						+	'             <p class="administrationFormStatus message"></p>'
-						+   '             <button class="administrationFormRefresh">'+ labels['GenericRefresh'] +'</button>'
-						+   '             <form class="administrationForm" method="post">'
-                        +   '               <div class="custom-select" style="float: left; margin-top: 10px;">'
-						+   '                   <select name="userID" id="user_change_user">'
-						+  	'                       <option value="" selected disabled>'+ labels['UserSelect'] +'</option>'
-			            +   '                   </select>'
-                        +   '               </div>'
-                        +   '               <div class="userDataContainer">'
-						+   '             	    <input type="text" name="name" id="user_change_name" placeholder="'+ labels['UserName'] +'">'
-						+   '             	    <input type="text" name="mail" id="user_change_mail" placeholder="'+ labels['UserMail'] +'">'
-						+	'					<div id="user_change_colorContainer"></div>'
-						+   '             	    <input type="password" name="passwd" id="user_change_passwd" placeholder="'+ labels['UserPassword'] +'">'
-						+   '             	    <input type="radio" name="role" id="user_change_role_admin" value="admin">'
-                        +   '                   <label for="user_change_role_admin">'+ labels['UserRoleAdmin'] +'</label>'
-						+   '             	    <input type="radio" name="role" id="user_change_role_user" value="user">'
-                        +   '                   <label for="user_change_role_user">'+ labels['UserRoleUser'] +'</label>'
-						+   '             	    <input type="radio" name="active" id="user_change_active_1" value="1">'
-                        +   '                   <label for="user_change_active_1">'+ labels['UserActive'] +'</label>'
-						+   '             	    <input type="radio" name="active" id="user_change_active_0" value="0">'
-                        +   '                   <label for="user_change_active_0">'+ labels['UserInactive'] +'</label>'
-						+   '             	    <input type="hidden" name="a" value="userChange">'
-						+   '             	    <input type="submit" value="'+ labels['UserChangeSettings'] +'">'
-                        +   '               </div>'
-						+   '             </form>'
-						+	'        </div>'
-                        +   '    </div>'
-						+	'</div>'),
+		domElement = null,
 
-		loginBox = $(	'<div class="userLoginOverlay ui-blocking-overlay">'
-					+   '    <div class="loginBox ui-overlay-box">'
-					+   '        <div class="boxTitle">'
-					+   '            <span class="loginTabButton loginBoxTabButton">'+ labels['UserLogin'] +'</span>'
-					+   '            <span class="loginBoxOrDivider" style="color: #888; font-size: 17px;">'+ labels['UserDividerOr'] +'</span>'
-					+   '            <span class="createAccountTabButton loginBoxTabButton inactive">'+ labels['UserCreateAccount'] +'</span>'
-					+   '            <span class="loginBoxOrDivider" style="color: #888; font-size: 17px;">'+ labels['UserDividerOr'] +'</span>'
-					+   '            <span class="editAsGuestTabButton loginBoxTabButton inactive">'+ labels['UserEditAsGuest'] +'</span>'
-					+   '        </div>'
-					+	'        <div class="userTabLogin">'
-					+	'             <form class="loginForm" method="post">'
-					+	'             	<p class="loginFormStatus message"></p>'
-					+	'             	<input type="text" name="mail" placeholder="'+ labels['UserMail'] +'">'
-					+	'             	<input type="password" name="passwd" placeholder="'+ labels['UserPassword'] +'">'
-					+	'             	<input type="hidden" name="a" value="userLogin">'
-					+	'             	<input type="submit" value="Login">'
-					+	'             	<button type="button" class="loginBoxCancelButton">Cancel</button>'
-					+	'             </form>'
-					+	'        </div>'
-					+	'        <div class="userTabRegister">'
-					+	'             <form class="userRegistrationForm" method="post">'
-					+	'             	<p class="userRegistrationFormStatus" class="message"></p>'
-					+	'             	<input type="text" name="name" placeholder="'+ labels['UserName'] +'">'
-					+	'             	<input type="text" name="mail" placeholder="'+ labels['UserMail'] +'">'
-					+	'             	<input type="password" name="passwd" placeholder="'+ labels['UserPassword'] +'">'
-					+	'             	<input type="hidden" name="a" value="userRegister">'
-					+	'             	<input type="submit" value="'+ labels['UserCreateAccount'] +'">'
-					+	'             	<button type="button" class="loginBoxCancelButton">'+ labels['GenericCancel'] +'</button>'
-					+	'             </form>'
-					+	'        </div>'
-					+	'        <div class="userTabGuest">'
-					+	'             <div class="guestEditHint">'+ labels['UserGuestEditNote'] +'</div>'
-					+	'             <input type="text" class="guestNameInput" placeholder="'+ labels['UserGuestName'] +'">'
-					+	'             <button type="button" class="guestContinueButton">'+ labels['UserEditAsGuest'] +'</button>'
-					+	'             <button type="button" class="loginBoxCancelButton">'+ labels['GenericCancel'] +'</button>'
-					+	'        </div>'
-	                +   '    </div>'
-					+	'</div>');
+		loginBox = null;
+
+	var _dmw = document.createElement('div');
+	_dmw.innerHTML = '<div class="UserBox">'
+		+ '    <div class="userStatusMessage message">'
+		+ '    </div>'
+		+ '    <div class="userTabs">'
+		+ '        <ul class="userTabMenu">'
+		+ '            <li class="userTabSettingsMenu">'
+		+ '                <a href="#UserTabSettings">'+ labels['UserMySettings'] +'</a>'
+		+ '            </li>'
+		+ '            <li class="userTabRegistrationMenu">'
+		+ '                <a href="#UserTabRegistration">'+ labels['UserRegister'] +'</a>'
+		+ '            </li>'
+		+ '            <li class="userTabAdministrationMenu">'
+		+ '                <a href="#UserTabAdministration">'+ labels['UserAdministration'] +'</a>'
+		+ '            </li>'
+		+ '        </ul>'
+		+ '        <div id="UserTabSettings">'
+		+ '             <form class="settingsForm" method="post">'
+		+ '             \t<p class="settingsFormStatus message"></p>'
+		+ '             \t<input type="text" name="name" id="SettingsForm_name" placeholder="'+ labels['UserName'] +'">'
+		+ '             \t<input type="text" name="mail" id="SettingsForm_mail" placeholder="'+ labels['UserMail'] +'"><br>'
+		+ '\t\t\t\t<div class="userColor"></div>'
+		+ '             \t<input type="password" name="passwd" id="SettingsForm_passwd" placeholder="'+ labels['UserNewPassword'] +'"><br>'
+		+ '             \t<br>'
+		+ '             \t<input type="hidden" name="a" value="userChange">'
+		+ '             \t<input type="hidden" name="userID" id="SettingsForm_userID" value="">'
+		+ '             \t<input type="submit" value="'+ labels['UserChangeMySettings'] +'">'
+		+ '             </form>'
+		+ '        </div>'
+		+ '        <div id="UserTabRegistration">'
+		+ '             <form class="registrationForm" method="post">'
+		+ '             \t<p class="registrationFormStatus message"></p>'
+		+ '             \t<input type="text" name="name" placeholder="'+ labels['UserName'] +'">'
+		+ '             \t<input type="text" name="mail" placeholder="'+ labels['UserMail'] +'">'
+		+ '             \t<input type="password" name="passwd" placeholder="'+ labels['UserPassword'] +'">'
+		+ '             \t<input type="hidden" name="a" value="userRegister">'
+		+ '             \t<input type="submit" value="'+ labels['UserRegister'] +'">'
+		+ '             </form>'
+		+ '        </div>'
+		+ '        <div id="UserTabAdministration">'
+		+ '             <p class="administrationFormStatus message"></p>'
+		+ '             <button class="administrationFormRefresh">'+ labels['GenericRefresh'] +'</button>'
+		+ '             <form class="administrationForm" method="post">'
+		+ '               <div class=\"custom-select\" style=\"float: left; margin-top: 10px;\">'
+		+ '                   <select name="userID" id="user_change_user">'
+		+ '                       <option value="" selected disabled>'+ labels['UserSelect'] +'</option>'
+		+ '                   </select>'
+		+ '               </div>'
+		+ '               <div class="userDataContainer">'
+		+ '             \t    <input type="text" name="name" id="user_change_name" placeholder="'+ labels['UserName'] +'">'
+		+ '             \t    <input type="text" name="mail" id="user_change_mail" placeholder="'+ labels['UserMail'] +'">'
+		+ '\t\t\t\t\t<div id="user_change_colorContainer"></div>'
+		+ '             \t    <input type="password" name="passwd" id="user_change_passwd" placeholder="'+ labels['UserPassword'] +'">'
+		+ '             \t    <input type="radio" name="role" id="user_change_role_admin" value="admin">'
+		+ '                   <label for="user_change_role_admin">'+ labels['UserRoleAdmin'] +'</label>'
+		+ '             \t    <input type="radio" name="role" id="user_change_role_user" value="user">'
+		+ '                   <label for="user_change_role_user">'+ labels['UserRoleUser'] +'</label>'
+		+ '             \t    <input type="radio" name="active" id="user_change_active_1" value="1">'
+		+ '                   <label for="user_change_active_1">'+ labels['UserActive'] +'</label>'
+		+ '             \t    <input type="radio" name="active" id="user_change_active_0" value="0">'
+		+ '                   <label for="user_change_active_0">'+ labels['UserInactive'] +'</label>'
+		+ '             \t    <input type="hidden" name="a" value="userChange">'
+		+ '             \t    <input type="submit" value="'+ labels['UserChangeSettings'] +'">'
+		+ '               </div>'
+		+ '             </form>'
+		+ '        </div>'
+		+ '    </div>'
+		+ '</div>';
+	domElement = _dmw.firstElementChild;
+
+	var _lbw = document.createElement('div');
+	_lbw.innerHTML = '<div class="userLoginOverlay ui-blocking-overlay">'
+		+ '    <div class="loginBox ui-overlay-box">'
+		+ '        <div class="boxTitle">'
+		+ '            <span class="loginTabButton loginBoxTabButton">'+ labels['UserLogin'] +'</span>'
+		+ '            <span class="loginBoxOrDivider" style="color: #888; font-size: 17px;">'+ labels['UserDividerOr'] +'</span>'
+		+ '            <span class="createAccountTabButton loginBoxTabButton inactive">'+ labels['UserCreateAccount'] +'</span>'
+		+ '            <span class="loginBoxOrDivider" style="color: #888; font-size: 17px;">'+ labels['UserDividerOr'] +'</span>'
+		+ '            <span class="editAsGuestTabButton loginBoxTabButton inactive">'+ labels['UserEditAsGuest'] +'</span>'
+		+ '        </div>'
+		+ '        <div class="userTabLogin">'
+		+ '             <form class="loginForm" method="post">'
+		+ '             \t<p class="loginFormStatus message"></p>'
+		+ '             \t<input type="text" name="mail" placeholder="'+ labels['UserMail'] +'">'
+		+ '             \t<input type="password" name="passwd" placeholder="'+ labels['UserPassword'] +'">'
+		+ '             \t<input type="hidden" name="a" value="userLogin">'
+		+ '             \t<input type="submit" value="Login">'
+		+ '             \t<button type="button" class="loginBoxCancelButton">Cancel</button>'
+		+ '             </form>'
+		+ '        </div>'
+		+ '        <div class="userTabRegister">'
+		+ '             <form class="userRegistrationForm" method="post">'
+		+ '             \t<p class="userRegistrationFormStatus" class="message"></p>'
+		+ '             \t<input type="text" name="name" placeholder="'+ labels['UserName'] +'">'
+		+ '             \t<input type="text" name="mail" placeholder="'+ labels['UserMail'] +'">'
+		+ '             \t<input type="password" name="passwd" placeholder="'+ labels['UserPassword'] +'">'
+		+ '             \t<input type="hidden" name="a" value="userRegister">'
+		+ '             \t<input type="submit" value="'+ labels['UserCreateAccount'] +'">'
+		+ '             \t<button type="button" class="loginBoxCancelButton">'+ labels['GenericCancel'] +'</button>'
+		+ '             </form>'
+		+ '        </div>'
+		+ '        <div class="userTabGuest">'
+		+ '             <div class="guestEditHint">'+ labels['UserGuestEditNote'] +'</div>'
+		+ '             <input type="text" class="guestNameInput" placeholder="'+ labels['UserGuestName'] +'">'
+		+ '             <button type="button" class="guestContinueButton">'+ labels['UserEditAsGuest'] +'</button>'
+		+ '             <button type="button" class="loginBoxCancelButton">'+ labels['GenericCancel'] +'</button>'
+		+ '        </div>'
+		+ '    </div>'
+		+ '</div>';
+	loginBox = _lbw.firstElementChild;
+	loginBox.style.display = 'none';
 
 
 	/* Administration Box */
@@ -146,63 +155,65 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 		return fetch('_server/ajaxServer.php', { method: 'POST', body: body })
 			.then(function(r) { return r.json(); });
 	}
-	domElement.find('.userTabs').tabs({
-        heightStyle: "fill"
-    });
+	FTTabs(domElement.querySelector('.userTabs'), {
+		heightStyle: 'fill'
+	});
 
 
-	domElement.find('.registrationForm').on('submit', function(e) {
+	domElement.querySelector('.registrationForm').addEventListener('submit', function(e) {
 		e.preventDefault();
 		var _form = this;
 		_serverPost(new FormData(_form))
 		.then(function(response) {
+			var _st = domElement.querySelector('.registrationFormStatus');
 			switch(response.code){
 				case 0:
-					domElement.find('.registrationFormStatus').removeClass('error').addClass('active success').text(labels['MessageSuccessfullyRegistered']);
+					_st.classList.remove('error'); _st.classList.add('active', 'success'); _st.textContent = labels['MessageSuccessfullyRegistered'];
 					break;
 				case 1:
-					domElement.find('.registrationFormStatus').removeClass('success').addClass('active error').text(labels['ErrorEmptyFieldsMail']);
+					_st.classList.remove('success'); _st.classList.add('active', 'error'); _st.textContent = labels['ErrorEmptyFieldsMail'];
 					break;
 				case 2:
-					domElement.find('.registrationFormStatus').removeClass('success').addClass('active error').text(labels['ErrorMailExists']);
+					_st.classList.remove('success'); _st.classList.add('active', 'error'); _st.textContent = labels['ErrorMailExists'];
 					break;
 				case 3:
-					domElement.find('.registrationFormStatus').removeClass('success error').addClass('active').text(labels['MessageRegisteredActivationPending']);
+					_st.classList.remove('success', 'error'); _st.classList.add('active'); _st.textContent = labels['MessageRegisteredActivationPending'];
 					break;
 			}
 		});
 	});
 
 
-	domElement.find('.settingsForm').on('submit', function(e) {
+	domElement.querySelector('.settingsForm').addEventListener('submit', function(e) {
 		e.preventDefault();
 		var _form = this;
 		_serverPost(new FormData(_form))
 		.then(function(response) {
+			var _st = domElement.querySelector('.settingsFormStatus');
 			switch(response.code){
 				case 0:
 					FrameTrail.module('Database').users[FrameTrail.module('UserManagement').userID].color = response.response.color;
 					FrameTrail.changeState('username', response.response.name);
 					FrameTrail.changeState('userColor', response.response.color);
-					domElement.find('.settingsFormStatus').removeClass('error').addClass('active success').text(labels['MessageSettingsChanged']);
+					_st.classList.remove('error'); _st.classList.add('active', 'success'); _st.textContent = labels['MessageSettingsChanged'];
 					break;
 				case 1:
-					domElement.find('.settingsFormStatus').removeClass('success').addClass('active error').text(labels['ErrorUserDBNotFound']);
+					_st.classList.remove('success'); _st.classList.add('active', 'error'); _st.textContent = labels['ErrorUserDBNotFound'];
 					break;
 				case 2:
-					domElement.find('.settingsFormStatus').removeClass('success').addClass('active error').text(labels['ErrorUserChanged']);
+					_st.classList.remove('success'); _st.classList.add('active', 'error'); _st.textContent = labels['ErrorUserChanged'];
 					break;
 				case 3:
-					domElement.find('.settingsFormStatus').removeClass('success error').addClass('active').text(labels['MessageSettingsSavedExceptMail']);
+					_st.classList.remove('success', 'error'); _st.classList.add('active'); _st.textContent = labels['MessageSettingsSavedExceptMail'];
 					break;
 				case 4:
-					domElement.find('.settingsFormStatus').removeClass('success').addClass('active error').text(labels['ErrorNotLoggedInAnymore']);
+					_st.classList.remove('success'); _st.classList.add('active', 'error'); _st.textContent = labels['ErrorNotLoggedInAnymore'];
 					break;
 				case 5:
-					domElement.find('.settingsFormStatus').removeClass('success').addClass('active error').text(labels['ErrorAccountDeactivated']);
+					_st.classList.remove('success'); _st.classList.add('active', 'error'); _st.textContent = labels['ErrorAccountDeactivated'];
 					break;
 				case 6:
-					domElement.find('.settingsFormStatus').removeClass('success').addClass('active error').text(labels['ErrorUserNotFound']);
+					_st.classList.remove('success'); _st.classList.add('active', 'error'); _st.textContent = labels['ErrorUserNotFound'];
 					break;
 			}
 		});
@@ -212,8 +223,8 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 	var refreshAdministrationForm = function(){
 
 
-		domElement.find('.administrationForm')[0].reset();
-        domElement.find('.userDataContainer').hide();
+		domElement.querySelector('.administrationForm').reset();
+		domElement.querySelector('.userDataContainer').style.display = 'none';
 
 
 		fetch('_server/ajaxServer.php', {
@@ -230,10 +241,10 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 
 			var allUsers = data.response.user;
 
-			domElement.find("#user_change_user").html('<option value="" selected disabled>'+ labels['UserSelect'] +'</option>');
+			domElement.querySelector('#user_change_user').innerHTML = '<option value="" selected disabled>'+ labels['UserSelect'] +'</option>';
 
 			for (var id in allUsers) {
-				domElement.find("#user_change_user").append('<option value="' + id + '">' + allUsers[id].name + '</option>');
+				domElement.querySelector('#user_change_user').insertAdjacentHTML('beforeend', '<option value="' + id + '">' + allUsers[id].name + '</option>');
 			}
 
 		});
@@ -241,33 +252,34 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 	}
 
 	// Bind change event once on the native select element
-	domElement.find("#user_change_user").on('change', function(evt){
+	domElement.querySelector('#user_change_user').addEventListener('change', function(evt) {
 
-		var selectedUserID = $(this).val();
+		var selectedUserID = evt.target.value;
 		fetch('_server/ajaxServer.php', {
 			method: 'POST',
 			body: new URLSearchParams({ a: 'userGet', userID: selectedUserID })
 		})
 		.then(function(r) { return r.json(); })
 		.then(function(ret) {
-			domElement.find("#user_change_name").val(ret["response"]["name"]);
-			domElement.find("#user_change_mail").val(ret["response"]["mail"]);
-			domElement.find("#user_change_color").val(ret["response"]["color"]);
-			domElement.find("#user_change_passwd").val("");
-			domElement.find(".administrationForm input[name='role']").prop("checked",false).removeAttr("checked");
-			domElement.find(".administrationForm input#user_change_role_"+ret["response"]["role"]).prop("checked",true).attr("checked","checked");
-			domElement.find(".administrationForm input[name='active']").prop("checked",false).removeAttr("checked");
-			domElement.find(".administrationForm input#user_change_active_"+ret["response"]["active"]).prop("checked",true).attr("checked","checked");
+			domElement.querySelector('#user_change_name').value = ret['response']['name'];
+			domElement.querySelector('#user_change_mail').value = ret['response']['mail'];
+			domElement.querySelector('#user_change_passwd').value = '';
+			domElement.querySelectorAll(".administrationForm input[name='role']").forEach(function(el) { el.checked = false; el.removeAttribute('checked'); });
+			domElement.querySelector('.administrationForm input#user_change_role_' + ret['response']['role']).checked = true;
+			domElement.querySelector('.administrationForm input#user_change_role_' + ret['response']['role']).setAttribute('checked', 'checked');
+			domElement.querySelectorAll(".administrationForm input[name='active']").forEach(function(el) { el.checked = false; el.removeAttribute('checked'); });
+			domElement.querySelector('.administrationForm input#user_change_active_' + ret['response']['active']).checked = true;
+			domElement.querySelector('.administrationForm input#user_change_active_' + ret['response']['active']).setAttribute('checked', 'checked');
 			getUserColorCollection(function() {
-				renderUserColorCollectionForm(ret["response"]["color"],"#user_change_colorContainer");
+				renderUserColorCollectionForm(ret['response']['color'], domElement.querySelector('#user_change_colorContainer'));
 			});
-			domElement.find('.userDataContainer').show();
+			domElement.querySelector('.userDataContainer').style.display = '';
 		});
 
 	});
 
 
-	domElement.find('.administrationFormRefresh').click(refreshAdministrationForm);
+	domElement.querySelector('.administrationFormRefresh').addEventListener('click', refreshAdministrationForm);
 
 	if (FrameTrail.module('RouteNavigation').environment.server &&
         !FrameTrail.getState('videoElement') &&
@@ -277,51 +289,58 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
     }
 
 
-	domElement.find(".administrationForm").on('submit', function(e) {
+	domElement.querySelector('.administrationForm').addEventListener('submit', function(e) {
 		e.preventDefault();
 		var _form = this;
 		_serverPost(new FormData(_form))
 		.then(function(response) {
 			// TODO: Update client userData Object if Admin edited himself via this view instead of "Settings" Tab
 			refreshAdministrationForm();
+			var _st = domElement.querySelector('.administrationFormStatus');
 			switch(response.code){
 				case 0:
-					domElement.find('.administrationFormStatus').removeClass('error').addClass('active success').text(labels['MessageSettingsChanged']);
+					_st.classList.remove('error'); _st.classList.add('active', 'success'); _st.textContent = labels['MessageSettingsChanged'];
 					break;
 				case 1:
-					domElement.find('.administrationFormStatus').removeClass('success').addClass('active error').text(labels['ErrorUserDBNotFound']);
+					_st.classList.remove('success'); _st.classList.add('active', 'error'); _st.textContent = labels['ErrorUserDBNotFound'];
 					break;
 				case 2:
-					domElement.find('.administrationFormStatus').removeClass('success').addClass('active error').text(labels['ErrorUserNotAdmin']);
+					_st.classList.remove('success'); _st.classList.add('active', 'error'); _st.textContent = labels['ErrorUserNotAdmin'];
 					break;
 				case 3:
-					domElement.find('.administrationFormStatus').removeClass('error success').addClass('active').text(labels['MessageSettingsSavedExceptMail']);
+					_st.classList.remove('error', 'success'); _st.classList.add('active'); _st.textContent = labels['MessageSettingsSavedExceptMail'];
 					break;
 				case 4:
-					domElement.find('.administrationFormStatus').removeClass('success').addClass('active error').text(labels['ErrorNotLoggedInAnymore']);
+					_st.classList.remove('success'); _st.classList.add('active', 'error'); _st.textContent = labels['ErrorNotLoggedInAnymore'];
 					break;
 				case 5:
-					domElement.find('.administrationFormStatus').removeClass('success').addClass('active error').text(labels['ErrorAccountDeactivated']);
+					_st.classList.remove('success'); _st.classList.add('active', 'error'); _st.textContent = labels['ErrorAccountDeactivated'];
 					break;
 				case 6:
-					domElement.find('.administrationFormStatus').removeClass('success').addClass('active error').text(labels['ErrorUserNotFound']);
+					_st.classList.remove('success'); _st.classList.add('active', 'error'); _st.textContent = labels['ErrorUserNotFound'];
 					break;
 			}
 		});
 	});
 
 	function renderUserColorCollectionForm(selectedColor, targetElement) {
-		var elem = $("<div class='userColorCollectionContainer'><input type='hidden' name='color' value='"+ selectedColor +"'>"+ labels['UserColor'] +":<div class='userColorCollection'></div></div>");
+		var _ew = document.createElement('div');
+		_ew.innerHTML = "<div class='userColorCollectionContainer'><input type='hidden' name='color' value='"+ selectedColor +"'>"+ labels['UserColor'] +":<div class='userColorCollection'></div></div>";
+		var elem = _ew.firstElementChild;
 		for (var c in userColorCollection) {
-			elem.find(".userColorCollection").append("<div class='userColorCollectionItem"+((userColorCollection[c] == selectedColor) ? " selected" : "")+"' style='background-color:#"+userColorCollection[c]+"' data-color='"+userColorCollection[c]+"'></div>");
+			elem.querySelector('.userColorCollection').insertAdjacentHTML('beforeend', "<div class='userColorCollectionItem"+((userColorCollection[c] == selectedColor) ? " selected" : "")+"' style='background-color:#"+userColorCollection[c]+"' data-color='"+userColorCollection[c]+"'></div>");
 		}
-		elem.on("click", ".userColorCollectionItem", function() {
-			elem.find(".userColorCollectionItem.selected").removeClass("selected");
-			$(this).addClass("selected");
-			elem.find("input[name='color']").val($(this).data("color"));
+		elem.addEventListener('click', function(evt) {
+			var item = evt.target.closest('.userColorCollectionItem');
+			if (!item) return;
+			elem.querySelectorAll('.userColorCollectionItem.selected').forEach(function(el) { el.classList.remove('selected'); });
+			item.classList.add('selected');
+			elem.querySelector("input[name='color']").value = item.dataset.color;
 		});
 
-		$(targetElement).html(elem);
+		var _target = (typeof targetElement === 'string') ? domElement.querySelector(targetElement) : targetElement;
+		_target.innerHTML = '';
+		_target.appendChild(elem);
 	}
 
 	function getUserColorCollection(callback) {
@@ -370,65 +389,70 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 
 	/* Login Box */
 
-    loginBox.find('.guestContinueButton').click(function() {
-    	var name = loginBox.find('.guestNameInput').val().trim();
+    loginBox.querySelector('.guestContinueButton').addEventListener('click', function() {
+    	var name = loginBox.querySelector('.guestNameInput').value.trim();
     	if (!name) {
-    		loginBox.find('.guestNameInput').focus();
+    		loginBox.querySelector('.guestNameInput').focus();
     		return;
     	}
     	loginAsGuest(name);
     });
 
-    loginBox.find('.guestNameInput').on('keypress', function(e) {
-    	if (e.which === 13) { loginBox.find('.guestContinueButton').click(); }
+    loginBox.querySelector('.guestNameInput').addEventListener('keypress', function(e) {
+    	if (e.which === 13) { loginBox.querySelector('.guestContinueButton').click(); }
     });
 
-    loginBox.find('.loginBoxCancelButton').click(function() {
-    	if(typeof userBoxCallbackCancel === 'function'){
-			userBoxCallbackCancel.call();
-		}
-		closeLoginBox();
+    loginBox.querySelectorAll('.loginBoxCancelButton').forEach(function(btn) {
+    	btn.addEventListener('click', function() {
+    		if(typeof userBoxCallbackCancel === 'function'){
+				userBoxCallbackCancel.call();
+			}
+			closeLoginBox();
+    	});
     });
 
-    loginBox.find('.loginBoxTabButton').click(function(evt) {
+    loginBox.querySelectorAll('.loginBoxTabButton').forEach(function(tabBtn) {
+    	tabBtn.addEventListener('click', function(evt) {
 
-    	loginBox.find('.loginBoxTabButton').removeClass('inactive');
+    		loginBox.querySelectorAll('.loginBoxTabButton').forEach(function(el) { el.classList.remove('inactive'); });
 
-    	if ( $(this).hasClass('loginTabButton') ) {
+    		if ( this.classList.contains('loginTabButton') ) {
 
-    		loginBox.find('.createAccountTabButton').addClass('inactive');
-    		loginBox.find('.editAsGuestTabButton').addClass('inactive');
-    		loginBox.find('.userTabRegister').hide();
-    		loginBox.find('.userTabGuest').hide();
-    		loginBox.find('.userTabLogin').show();
+    			loginBox.querySelector('.createAccountTabButton').classList.add('inactive');
+    			loginBox.querySelector('.editAsGuestTabButton').classList.add('inactive');
+    			loginBox.querySelector('.userTabRegister').style.display = 'none';
+    			loginBox.querySelector('.userTabGuest').style.display = 'none';
+    			loginBox.querySelector('.userTabLogin').style.display = '';
 
-    	} else if ( $(this).hasClass('createAccountTabButton') ) {
+    		} else if ( this.classList.contains('createAccountTabButton') ) {
 
-    		loginBox.find('.loginTabButton').addClass('inactive');
-    		loginBox.find('.editAsGuestTabButton').addClass('inactive');
-    		loginBox.find('.userTabLogin').hide();
-    		loginBox.find('.userTabGuest').hide();
-    		loginBox.find('.userTabRegister').show();
+    			loginBox.querySelector('.loginTabButton').classList.add('inactive');
+    			loginBox.querySelector('.editAsGuestTabButton').classList.add('inactive');
+    			loginBox.querySelector('.userTabLogin').style.display = 'none';
+    			loginBox.querySelector('.userTabGuest').style.display = 'none';
+    			loginBox.querySelector('.userTabRegister').style.display = '';
 
-    	} else {
+    		} else {
 
-    		// editAsGuestTabButton
-    		loginBox.find('.loginTabButton').addClass('inactive');
-    		loginBox.find('.createAccountTabButton').addClass('inactive');
-    		loginBox.find('.userTabLogin').hide();
-    		loginBox.find('.userTabRegister').hide();
-    		loginBox.find('.userTabGuest').show();
+    			// editAsGuestTabButton
+    			loginBox.querySelector('.loginTabButton').classList.add('inactive');
+    			loginBox.querySelector('.createAccountTabButton').classList.add('inactive');
+    			loginBox.querySelector('.userTabLogin').style.display = 'none';
+    			loginBox.querySelector('.userTabRegister').style.display = 'none';
+    			loginBox.querySelector('.userTabGuest').style.display = '';
 
-    	}
+    		}
 
+    	});
     });
 
-    loginBox.find('.loginForm').on('submit', function(e) {
+    loginBox.querySelector('.loginForm').addEventListener('submit', function(e) {
 		e.preventDefault();
 		var _form = this;
 		_serverPost(new FormData(_form))
 		.then(function(response) {
 			//console.log(response);
+			var _st = loginBox.querySelector('.loginFormStatus');
 			switch(response.code){
 				case 0:
 					userSessionLifetime = parseInt(response.session_lifetime);
@@ -440,7 +464,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 						userRole: response.userdata.role,
 						userMail: response.userdata.mail
 					});
-					loginBox.find('.loginFormStatus').removeClass('active error success').text('');
+					_st.classList.remove('active', 'error', 'success'); _st.textContent = '';
 					updateView(true);
 					if(typeof userBoxCallback === 'function'){
 						userBoxCallback.call();
@@ -448,34 +472,36 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 					}
 					break;
 				case 1:
-					loginBox.find('.loginFormStatus').removeClass('success').addClass('active error').text(labels['ErrorEmptyFields']);
+					_st.classList.remove('success'); _st.classList.add('active', 'error'); _st.textContent = labels['ErrorEmptyFields'];
 					break;
 				case 2:
-					loginBox.find('.loginFormStatus').removeClass('success').addClass('active error').text(labels['ErrorUserNotFound']);
+					_st.classList.remove('success'); _st.classList.add('active', 'error'); _st.textContent = labels['ErrorUserNotFound'];
 					break;
 				case 3:
-					loginBox.find('.loginFormStatus').removeClass('success').addClass('active error').text(labels['ErrorWrongPassword']);
+					_st.classList.remove('success'); _st.classList.add('active', 'error'); _st.textContent = labels['ErrorWrongPassword'];
 					break;
 				case 4:
-					loginBox.find('.loginFormStatus').removeClass('success').addClass('active error').text(labels['ErrorUserDBNotFound']);
+					_st.classList.remove('success'); _st.classList.add('active', 'error'); _st.textContent = labels['ErrorUserDBNotFound'];
 					break;
 				case 5:
-					loginBox.find('.loginFormStatus').removeClass('success').addClass('active error').text(labels['ErrorNotActivated']);
+					_st.classList.remove('success'); _st.classList.add('active', 'error'); _st.textContent = labels['ErrorNotActivated'];
 					break;
 			}
 		});
 	});
 
 
-	loginBox.find('.userRegistrationForm').on('submit', function(e) {
+	loginBox.querySelector('.userRegistrationForm').addEventListener('submit', function(e) {
 		e.preventDefault();
 		var _form = this;
 		_serverPost(new FormData(_form))
 		.then(function(response) {
+			var _lfs = loginBox.querySelector('.loginFormStatus');
+			var _rfs = loginBox.querySelector('.userRegistrationFormStatus');
 			switch(response.code){
 				case 0:
-					loginBox.find('.loginFormStatus').removeClass('error').addClass('active success').text(labels['MessageSuccessfullyRegistered']);
-					loginBox.find('.loginTabButton').click();
+					_lfs.classList.remove('error'); _lfs.classList.add('active', 'success'); _lfs.textContent = labels['MessageSuccessfullyRegistered'];
+					loginBox.querySelector('.loginTabButton').click();
 					FrameTrail.module('InterfaceModal').showStatusMessage(labels['MessageUpdatingClientData']);
 					FrameTrail.module('Database').loadData(function() {
 						FrameTrail.module('InterfaceModal').showStatusMessage(labels['MessageClientDataUpdated']);
@@ -485,19 +511,19 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 					});
 					break;
 				case 1:
-					loginBox.find('.userRegistrationFormStatus').removeClass('success').addClass('active error').text(labels['ErrorEmptyFieldsMail']);
+					_rfs.classList.remove('success'); _rfs.classList.add('active', 'error'); _rfs.textContent = labels['ErrorEmptyFieldsMail'];
 					break;
 				case 2:
-					loginBox.find('.userRegistrationFormStatus').removeClass('success').addClass('active error').text(labels['ErrorMailExists']);
+					_rfs.classList.remove('success'); _rfs.classList.add('active', 'error'); _rfs.textContent = labels['ErrorMailExists'];
 					break;
 				case 3:
-					loginBox.find('.userRegistrationFormStatus').removeClass('error').addClass('active success').text(labels['MessageRegisteredActivationPending']);
+					_rfs.classList.remove('error'); _rfs.classList.add('active', 'success'); _rfs.textContent = labels['MessageRegisteredActivationPending'];
 					break;
 			}
 		});
 	});
 
-	$(FrameTrail.getState('target')).append(loginBox);
+	document.querySelector(FrameTrail.getState('target')).append(loginBox);
 
 
 
@@ -656,7 +682,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 		FrameTrail.changeState('userColor', userData.color);
 		FrameTrail.changeState('loggedIn', true);
 
-		$(FrameTrail.getState('target')).addClass('loggedIn');
+		document.querySelector(FrameTrail.getState('target')).classList.add('loggedIn');
 
 		updateView(true);
 
@@ -685,7 +711,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 		FrameTrail.changeState('userColor', '#666666');
 		FrameTrail.changeState('loggedIn', true);
 
-		$(FrameTrail.getState('target')).addClass('loggedIn');
+		document.querySelector(FrameTrail.getState('target')).classList.add('loggedIn');
 
 		// Push user info into the active adapter so adapter.userInfo-dependent code works
 		var _adapter = FrameTrail.module('StorageManager').getAdapter();
@@ -725,7 +751,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 				username: '',
 				userColor: ''
 			});
-			$(FrameTrail.getState('target')).removeClass('loggedIn');
+			document.querySelector(FrameTrail.getState('target')).classList.remove('loggedIn');
 			updateView(false);
 			return;
 		}
@@ -738,9 +764,9 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 		.then(function(data) {
 
 			if (userID != '') {
-				var loggedOutDialog = $('<div class="loggedOutDialog">'
-                                  + '    <div class="message success active">'+ labels['MessageUserLoggedOut'] +'</div>'
-                                  + '</div>');
+				var _lodw = document.createElement('div');
+				_lodw.innerHTML = '<div class="loggedOutDialog"><div class="message success active">'+ labels['MessageUserLoggedOut'] +'</div></div>';
+				var loggedOutDialog = _lodw.firstElementChild;
 
 	                var loggedOutDialogCtrl = Dialog({
 						resizable: false,
@@ -750,7 +776,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 							try {
 								if (TogetherJS && TogetherJS.running) {
 	                                var elementFinder = TogetherJS.require("elementFinder");
-	                                var location = elementFinder.elementLocation(loggedOutDialog[0]);
+	                                var location = elementFinder.elementLocation(loggedOutDialog);
 	                                TogetherJS.send({
 	                                    type: "simulate-dialog-close",
 	                                    element: location
@@ -789,7 +815,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 					userColor: ''
 				});
 
-				$(FrameTrail.getState('target')).removeClass('loggedIn');
+				document.querySelector(FrameTrail.getState('target')).classList.remove('loggedIn');
 
 				updateView(false);
 
@@ -817,20 +843,20 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 
 			//domElement.find('#UserStatusMessage').addClass('active').text('Hello! Your are logged in, '+ FrameTrail.getState('username') +'.');
 
-			domElement.find('.userTabSettingsMenu').show();
+			domElement.querySelector('.userTabSettingsMenu').style.display = '';
 			updateSettings();
 
 			if (userRole === 'admin'){
-				domElement.find('.userTabAdministrationMenu').show();
-				$(FrameTrail.getState('target')).addClass('frametrail-admin');
+				domElement.querySelector('.userTabAdministrationMenu').style.display = '';
+				document.querySelector(FrameTrail.getState('target')).classList.add('frametrail-admin');
 			}
 
 
 		} else {
 
-			domElement.find('.userTabSettingsMenu').hide();
-			domElement.find('.userTabAdministrationMenu').hide();
-			$(FrameTrail.getState('target')).removeClass('frametrail-admin');
+			domElement.querySelector('.userTabSettingsMenu').style.display = 'none';
+			domElement.querySelector('.userTabAdministrationMenu').style.display = 'none';
+			document.querySelector(FrameTrail.getState('target')).classList.remove('frametrail-admin');
 
 		}
 
@@ -845,11 +871,11 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 	 */
 	function updateSettings() {
 
-		domElement.find('#SettingsForm_name')[0].value   = FrameTrail.getState('username');
-		domElement.find('#SettingsForm_mail')[0].value   = userMail;
-		//domElement.find('#SettingsForm_color')[0].value  = userColor;
-		domElement.find('#SettingsForm_passwd')[0].value = '';
-		domElement.find('#SettingsForm_userID')[0].value = userID;
+		domElement.querySelector('#SettingsForm_name').value   = FrameTrail.getState('username');
+		domElement.querySelector('#SettingsForm_mail').value   = userMail;
+		//domElement.querySelector('#SettingsForm_color').value  = userColor;
+		domElement.querySelector('#SettingsForm_passwd').value = '';
+		domElement.querySelector('#SettingsForm_userID').value = userID;
 
 	}
 
@@ -864,14 +890,14 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 	function showLoginBox(disallowCancel) {
 
 		if (disallowCancel) {
-			loginBox.find('.loginBoxCancelButton').hide();
+			loginBox.querySelectorAll('.loginBoxCancelButton').forEach(function(el) { el.style.display = 'none'; });
 		} else {
-			loginBox.find('.loginBoxCancelButton').show();
+			loginBox.querySelectorAll('.loginBoxCancelButton').forEach(function(el) { el.style.display = ''; });
 		}
 
-		loginBox.find('.message').removeClass('active error').text('');
-		loginBox.find('.loginForm')[0].reset();
-		loginBox.find('.userRegistrationForm')[0].reset();
+		loginBox.querySelectorAll('.message').forEach(function(el) { el.classList.remove('active', 'error'); el.textContent = ''; });
+		loginBox.querySelector('.loginForm').reset();
+		loginBox.querySelector('.userRegistrationForm').reset();
 
 		// Pre-fill guest name from localStorage if available
 		var savedGuest = localStorage.getItem('frametrail_guest_user');
@@ -879,7 +905,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 			try {
 				var guestData = JSON.parse(savedGuest);
 				if (guestData && guestData.name) {
-					loginBox.find('.guestNameInput').val(guestData.name);
+					loginBox.querySelector('.guestNameInput').value = guestData.name;
 				}
 			} catch(e) {}
 		}
@@ -887,19 +913,19 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 		// In non-server mode, show only the Edit as Guest tab
 		var storageMode = FrameTrail.getState('storageMode');
 		if (storageMode !== 'server') {
-			loginBox.find('.loginTabButton').hide();
-			loginBox.find('.createAccountTabButton').hide();
-			loginBox.find('.loginBoxOrDivider').hide();
-			loginBox.find('.editAsGuestTabButton').click();
+			loginBox.querySelector('.loginTabButton').style.display = 'none';
+			loginBox.querySelector('.createAccountTabButton').style.display = 'none';
+			loginBox.querySelectorAll('.loginBoxOrDivider').forEach(function(el) { el.style.display = 'none'; });
+			loginBox.querySelector('.editAsGuestTabButton').click();
 		} else {
-			loginBox.find('.loginTabButton').show();
-			loginBox.find('.createAccountTabButton').show();
-			loginBox.find('.loginBoxOrDivider').show();
+			loginBox.querySelector('.loginTabButton').style.display = '';
+			loginBox.querySelector('.createAccountTabButton').style.display = '';
+			loginBox.querySelectorAll('.loginBoxOrDivider').forEach(function(el) { el.style.display = ''; });
 			// Reset to login tab when showing in server mode
-			loginBox.find('.loginTabButton').click();
+			loginBox.querySelector('.loginTabButton').click();
 		}
 
-		loginBox.fadeIn();
+		loginBox.style.display = '';
 
 	}
 
@@ -914,7 +940,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 		userBoxCallback = null;
 		userBoxCallbackCancel = null;
 
-		loginBox.fadeOut();
+		loginBox.style.display = 'none';
 
 	}
 
@@ -937,7 +963,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 				height: 460,
 		        open: function() {
 		            updateView(true);
-		            domElement.find('.userTabs').tabs('refresh');
+		            FTTabs(domElement.querySelector('.userTabs'), 'refresh');
 					getUserColorCollection(function() {
 						renderUserColorCollectionForm(FrameTrail.getState('userColor'),".userColor")
 					});

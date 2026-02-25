@@ -63,21 +63,21 @@ FrameTrail.defineType(
 
                     var self = this;
 
-                    self.contentViewTab.attr('data-type', self.contentViewData.type);
-                    self.contentViewTab.find('.contentViewTabName').html(self.contentViewData.name);
+                    self.contentViewTab.setAttribute('data-type', self.contentViewData.type);
+                    self.contentViewTab.querySelector('.contentViewTabName').textContent = self.contentViewData.name;
 
-                    self.contentViewContainer.attr('data-type', self.contentViewData.type);
-                    self.contentViewContainer.attr('data-size', self.contentViewData.contentSize);
+                    self.contentViewContainer.setAttribute('data-type', self.contentViewData.type);
+                    self.contentViewContainer.setAttribute('data-size', self.contentViewData.contentSize);
 
                     if (self.contentViewData.initClosed) {
-                        self.getLayoutAreaContainer().addClass('closed');
+                        self.getLayoutAreaContainer().classList.add('closed');
                     }
 
                     switch (this.contentViewData.type) {
 
                         case 'TimedContent':
 
-                            self.contentViewContainer.find('.customhtmlContainer, .transcriptContainer').remove();
+                            self.contentViewContainer.querySelectorAll('.customhtmlContainer, .transcriptContainer').forEach(function(el) { el.remove(); });
 
                             if (!self.contentViewData.collectionFilter) {
                                 return;
@@ -133,13 +133,17 @@ FrameTrail.defineType(
                                 self.removeContentCollectionElements(contentItem);
                             });
 
-                            var customhtmlContainer = $('<div class="customhtmlContainer">'+ self.contentViewData.html +'</div>');
+                            var customhtmlContainer = document.createElement('div');
+                            customhtmlContainer.className = 'customhtmlContainer';
+                            customhtmlContainer.innerHTML = self.contentViewData.html;
 
-                            self.contentViewContainer.find('.contentViewContents').empty().append(customhtmlContainer);
+                            var _cvContents = self.contentViewContainer.querySelector('.contentViewContents');
+                            _cvContents.innerHTML = '';
+                            _cvContents.appendChild(customhtmlContainer);
 
-                            customhtmlContainer.click(function(evt) {
-                                if ( $(evt.target).hasClass('timebased') ) {
-                                    FrameTrail.module('HypervideoController').currentTime = parseFloat($(evt.target).attr('data-start')) + 0.05;
+                            customhtmlContainer.addEventListener('click', function(evt) {
+                                if ( evt.target.classList.contains('timebased') ) {
+                                    FrameTrail.module('HypervideoController').currentTime = parseFloat(evt.target.getAttribute('data-start')) + 0.05;
                                 }
                             });
 
@@ -151,20 +155,26 @@ FrameTrail.defineType(
                                 self.removeContentCollectionElements(contentItem);
                             });
 
-                            var transcriptContainer = $('<div class="transcriptContainer"></div>');
+                            var transcriptContainer = document.createElement('div');
+                            transcriptContainer.className = 'transcriptContainer';
 
-                            self.contentViewContainer.find('.contentViewContents').empty().append(transcriptContainer);
+                            var _cvContents2 = self.contentViewContainer.querySelector('.contentViewContents');
+                            _cvContents2.innerHTML = '';
+                            _cvContents2.appendChild(transcriptContainer);
 
                             var subtitles = FrameTrail.module('Database').subtitles[self.contentViewData.transcriptSource];
                             if ( subtitles ) {
                                 for (var i=0; i<subtitles.cues.length; i++) {
-                                    var cueElement = $('<span data-start="'+ subtitles.cues[i].startTime +'" data-end="'+ subtitles.cues[i].endTime +'">'+ subtitles.cues[i].text +' </span>');
-                                    transcriptContainer.append(cueElement);
+                                    var cueElement = document.createElement('span');
+                                    cueElement.setAttribute('data-start', subtitles.cues[i].startTime);
+                                    cueElement.setAttribute('data-end', subtitles.cues[i].endTime);
+                                    cueElement.textContent = subtitles.cues[i].text + ' ';
+                                    transcriptContainer.appendChild(cueElement);
                                 }
                             }
 
-        	                transcriptContainer.click(function(evt) {
-                                FrameTrail.module('HypervideoController').currentTime = parseFloat($(evt.target).attr('data-start')) + 0.05;
+        	                transcriptContainer.addEventListener('click', function(evt) {
+                                FrameTrail.module('HypervideoController').currentTime = parseFloat(evt.target.getAttribute('data-start')) + 0.05;
                             });
 
 
@@ -185,8 +195,11 @@ FrameTrail.defineType(
                                 self.contentViewData.collectionFilter.types
                             );
 
-                            var timelinesContainer = $('<div class="timelinesContainer"></div>');
-                            var timelineList = $('<div class="timelineList" data-zoom-level="1"></div>');
+                            var timelinesContainer = document.createElement('div');
+                            timelinesContainer.className = 'timelinesContainer';
+                            var timelineList = document.createElement('div');
+                            timelineList.className = 'timelineList';
+                            timelineList.setAttribute('data-zoom-level', '1');
 
                             //TODO: remove timeout (needed right now because video duration is not known)
                             //window.setTimeout(function() {
@@ -194,13 +207,15 @@ FrameTrail.defineType(
 
                                 timelinesContainer.append(timelineList);
 
-                                self.contentViewContainer.find('.contentViewContents').empty().append(timelinesContainer);
+                                var _cvContents3 = self.contentViewContainer.querySelector('.contentViewContents');
+                                _cvContents3.innerHTML = '';
+                                _cvContents3.appendChild(timelinesContainer);
                             //}, 2000);
                             
 
-                            timelinesContainer.click(function(evt) {
-                                if ( $(evt.target).hasClass('timebased') ) {
-                                    FrameTrail.module('HypervideoController').currentTime = $(evt.target).attr('data-start') - 0.5;
+                            timelinesContainer.addEventListener('click', function(evt) {
+                                if ( evt.target.classList.contains('timebased') ) {
+                                    FrameTrail.module('HypervideoController').currentTime = evt.target.getAttribute('data-start') - 0.5;
                                 }
                             });
 
@@ -219,11 +234,12 @@ FrameTrail.defineType(
 
                 appendContentCollectionElements: function(contentItem, appendAtIndex) {
                     
-                    var collectionElement = $('<div class="collectionElement"></div>'),
-                        self = this;
+                    var collectionElement = document.createElement('div');
+                    collectionElement.className = 'collectionElement';
+                    var self = this;
 
                     if ( self.contentViewData.onClickContentItem.length != 0 ) {
-                        collectionElement.click(function() {
+                        collectionElement.addEventListener('click', function() {
                             try {
                                 var thisFunction = new Function(self.contentViewData.onClickContentItem);
                                 thisFunction.call(contentItem);
@@ -235,12 +251,12 @@ FrameTrail.defineType(
                     }
 
                     if ( self.contentViewData.contentSize == 'large' ) {
-                        collectionElement.append(contentItem.resourceItem.renderContent());
+                        collectionElement.appendChild(contentItem.resourceItem.renderContent());
                     } else {
-                        collectionElement.append(contentItem.resourceItem.renderThumb());
+                        collectionElement.appendChild(contentItem.resourceItem.renderThumb());
                     }
 
-                    self.appendElementAtIndex(self.contentViewContainer.find('.contentViewContents'), collectionElement, appendAtIndex);
+                    self.appendElementAtIndex(self.contentViewContainer.querySelector('.contentViewContents'), collectionElement, appendAtIndex);
                     contentItem.contentViewElements.push(collectionElement);
 
                     // Append Detail Element if contentView size is not large
@@ -248,20 +264,23 @@ FrameTrail.defineType(
                     // ONLY APPLY TO TOP & BOTTOM DETAILS
                     if ( self.contentViewData.contentSize != 'large' && (self.whichArea == 'top' || self.whichArea == 'bottom') ) {
 
-                        var detailElement = $('<div class="collectionElement"></div>');
+                        var detailElement = document.createElement('div');
+                        detailElement.className = 'collectionElement';
 
-                        detailElement.append(contentItem.resourceItem.renderContent());
+                        detailElement.appendChild(contentItem.resourceItem.renderContent());
 
-                        self.appendElementAtIndex(self.contentViewDetailsContainer.find('.contentViewDetailsContents'), detailElement, appendAtIndex);
+                        self.appendElementAtIndex(self.contentViewDetailsContainer.querySelector('.contentViewDetailsContents'), detailElement, appendAtIndex);
                         contentItem.contentViewDetailElements.push(detailElement);
 
-                        collectionElement.click(function() {
-                            if ( !$(this).hasClass('open') ) {
-                                $(this).siblings('.collectionElement').removeClass('open');
-                                self.contentViewDetailsContainer.find('.collectionElement').removeClass('open');
+                        collectionElement.addEventListener('click', function() {
+                            if ( !this.classList.contains('open') ) {
+                                Array.from(this.parentElement.children).forEach(function(s) { if (s.classList.contains('collectionElement')) s.classList.remove('open'); });
+                                self.contentViewDetailsContainer.querySelectorAll('.collectionElement').forEach(function(el) { el.classList.remove('open'); });
 
-                                $(this).addClass('open');
-                                self.contentViewDetailsContainer.find('.collectionElement').eq($(this).index()).addClass('open');
+                                this.classList.add('open');
+                                var _idx = Array.from(this.parentElement.children).indexOf(this);
+                                var _detailEls = self.contentViewDetailsContainer.querySelectorAll('.collectionElement');
+                                if (_detailEls[_idx]) _detailEls[_idx].classList.add('open');
 
                                 self.updateCollectionSlider(true);
 
@@ -274,17 +293,18 @@ FrameTrail.defineType(
                                 });
 
                             } else {
-                                $(this).removeClass('open');
-                                self.contentViewDetailsContainer.find('.collectionElement').removeClass('open');
+                                this.classList.remove('open');
+                                self.contentViewDetailsContainer.querySelectorAll('.collectionElement').forEach(function(el) { el.classList.remove('open'); });
                                 FrameTrail.module('ViewVideo').shownDetails = null;
                             }
                         });
                     }
 
                     if ( self.whichArea == 'left' || self.whichArea == 'right' ) {
-                        collectionElement.click(function() {
+                        collectionElement.addEventListener('click', function() {
                             if ( self.contentViewData.contentSize == 'small' ) {
-                                $(this).find('.resourcePreviewButton').click();
+                                var _btn = this.querySelector('.resourcePreviewButton');
+                                if (_btn) _btn.click();
 
                                 var annoData = contentItem.data;
                                 FrameTrail.triggerEvent('userAction', {
@@ -299,9 +319,11 @@ FrameTrail.defineType(
 
                 appendElementAtIndex: function(targetElement, element, index) {
                     if(index === 0) {
-                        targetElement.prepend(element);        
+                        targetElement.prepend(element);
                     } else {
-                        $(targetElement).children().eq(index-1).after(element);
+                        var _ref = Array.from(targetElement.children)[index-1];
+                        if (_ref) _ref.after(element);
+                        else targetElement.appendChild(element);
                     }
                 },
 
@@ -347,8 +369,8 @@ FrameTrail.defineType(
 
                 getContentViewElementFromContentItem: function(contentItem) {
                     for (var i=0; i<contentItem.contentViewElements.length; i++) {
-                        if ( this.contentViewContainer.find(contentItem.contentViewElements[i]).length != 0 ) {
-                            return this.contentViewContainer.find(contentItem.contentViewElements[i]);
+                        if ( this.contentViewContainer.contains(contentItem.contentViewElements[i]) ) {
+                            return contentItem.contentViewElements[i];
                         }
                     }
 
@@ -358,8 +380,8 @@ FrameTrail.defineType(
 
                 getDetailElementFromContentItem: function(contentItem) {
                     for (var i=0; i<contentItem.contentViewDetailElements.length; i++) {
-                        if ( this.contentViewDetailsContainer.find(contentItem.contentViewDetailElements[i]).length != 0 ) {
-                            return this.contentViewDetailsContainer.find(contentItem.contentViewDetailElements[i]);
+                        if ( this.contentViewDetailsContainer.contains(contentItem.contentViewDetailElements[i]) ) {
+                            return contentItem.contentViewDetailElements[i];
                         }
                     }
 
@@ -404,17 +426,18 @@ FrameTrail.defineType(
                         areaContainer = this.getLayoutAreaContainer();
 
                     var self = this;
-                    contentViewContainer.hover(function() {
+                    contentViewContainer.addEventListener('mouseenter', function() {
                         self.isMouseOver = true;
-                    }, function() {
+                    });
+                    contentViewContainer.addEventListener('mouseleave', function() {
                         self.isMouseOver = false;
                     });
 
                     this.contentViewTab = contentViewTab;
                     this.contentViewContainer = contentViewContainer;
 
-                    areaContainer.find('.layoutAreaTabs').append( contentViewTab );
-                    areaContainer.find('.layoutAreaContent').append( contentViewContainer );
+                    areaContainer.querySelector('.layoutAreaTabs').appendChild(contentViewTab);
+                    areaContainer.querySelector('.layoutAreaContent').appendChild(contentViewContainer);
 
                     // Append Details Containers
                     var contentViewDetailsContainer = this.renderContentViewDetailsContainer(),
@@ -422,7 +445,7 @@ FrameTrail.defineType(
 
                     this.contentViewDetailsContainer = contentViewDetailsContainer;
 
-                    areaDetailsContainer.append(contentViewDetailsContainer);
+                    areaDetailsContainer.appendChild(contentViewDetailsContainer);
 
                     this.activateContentView();
 
@@ -438,11 +461,11 @@ FrameTrail.defineType(
                     this.contentViewTab.remove();
                     this.contentViewDetailsContainer.remove();
 
-                    if (this.contentViewPreviewElement.length != 0) {
+                    if (this.contentViewPreviewElement) {
                         this.contentViewPreviewElement.remove();
                     }
 
-                    if (this.contentViewPreviewTab.length != 0) {
+                    if (this.contentViewPreviewTab) {
                         this.contentViewPreviewTab.remove();
                     }
                 },
@@ -464,25 +487,25 @@ FrameTrail.defineType(
                             break;
                         case 'CustomHTML':
 
-                            var timebasedElements = self.contentViewContainer.find('.customhtmlContainer').find('.timebased');
+                            var timebasedElements = self.contentViewContainer.querySelectorAll('.customhtmlContainer .timebased');
 
                             if ( timebasedElements.length != 0 ) {
-                                timebasedElements.each(function() {
-                                    var startTime = parseFloat($(this).attr('data-start')),
-                                        endTime = parseFloat($(this).attr('data-end'));
+                                timebasedElements.forEach(function(el) {
+                                    var startTime = parseFloat(el.getAttribute('data-start')),
+                                        endTime = parseFloat(el.getAttribute('data-end'));
                                     if ( startTime-0.5 <= currentTime && endTime-0.5 >= currentTime ) {
-                                        if ( !$(this).hasClass('active') ) {
-                                            $(this).addClass('active');
-                                            var timebasedTabParent = $(this).parents('.tab-pane.timebasedTab');
-                                            if (timebasedTabParent.length != 0) {
+                                        if ( !el.classList.contains('active') ) {
+                                            el.classList.add('active');
+                                            var timebasedTabParent = el.closest('.tab-pane.timebasedTab');
+                                            if (timebasedTabParent) {
                                                 scrollTimebasedElements(timebasedTabParent);
                                             } else {
                                                 scrollTimebasedElements();
                                             }
                                             
                                         }
-                                    } else if ( $(this).hasClass('active') ) {
-                                        $(this).removeClass('active');
+                                    } else if ( el.classList.contains('active') ) {
+                                        el.classList.remove('active');
                                     }
                                 });
                             }
@@ -492,22 +515,21 @@ FrameTrail.defineType(
                                 if (self.isMouseOver) {
                                     return;
                                 }
-                                var customhtmlContainer = (elementToScroll) ? elementToScroll : self.contentViewContainer.find('.customhtmlContainer'),
-                                    firstActiveElement = customhtmlContainer.find('.timebased.active').eq(0);
+                                var customhtmlContainer = (elementToScroll) ? elementToScroll : self.contentViewContainer.querySelector('.customhtmlContainer'),
+                                    firstActiveElement = customhtmlContainer ? customhtmlContainer.querySelector('.timebased.active') : null;
 
 
-                                if ( !self.contentViewContainer.hasClass('active') || firstActiveElement.length == 0 ) {
+                                if ( !self.contentViewContainer.classList.contains('active') || !firstActiveElement ) {
                                     return;
                                 }
 
-                                var activeElementPosition = firstActiveElement.position();
+                                var activeElementPosition = firstActiveElement.offsetTop;
 
-                                if ( activeElementPosition.top <
-                                    customhtmlContainer.height()/2 + customhtmlContainer.scrollTop()
-                                    || activeElementPosition.top > customhtmlContainer.height()/2 + customhtmlContainer.scrollTop() ) {
+                                if ( activeElementPosition <
+                                    customhtmlContainer.clientHeight/2 + customhtmlContainer.scrollTop
+                                    || activeElementPosition > customhtmlContainer.clientHeight/2 + customhtmlContainer.scrollTop ) {
 
-                                    var newPos = activeElementPosition.top + customhtmlContainer.scrollTop() - customhtmlContainer.height()/2;
-                                    customhtmlContainer.stop().animate({scrollTop : newPos},400);
+                                    customhtmlContainer.scrollTop = activeElementPosition + customhtmlContainer.scrollTop - customhtmlContainer.clientHeight/2;
                                 }
 
                             }
@@ -515,19 +537,19 @@ FrameTrail.defineType(
                             break;
                         case 'Transcript':
 
-                            var transcriptElements = self.contentViewContainer.find('.transcriptContainer').find('span');
+                            var transcriptElements = self.contentViewContainer.querySelectorAll('.transcriptContainer span');
 
                             if ( transcriptElements.length != 0 ) {
-                                transcriptElements.each(function() {
-                                    var startTime = parseFloat($(this).attr('data-start')),
-                                        endTime = parseFloat($(this).attr('data-end'));
+                                transcriptElements.forEach(function(el) {
+                                    var startTime = parseFloat(el.getAttribute('data-start')),
+                                        endTime = parseFloat(el.getAttribute('data-end'));
                                     if ( startTime-0.5 <= currentTime && endTime-0.5 >= currentTime ) {
-                                        if ( !$(this).hasClass('active') ) {
-                                            $(this).addClass('active');
+                                        if ( !el.classList.contains('active') ) {
+                                            el.classList.add('active');
                                             scrollTranscript();
                                         }
-                                    } else if ( $(this).hasClass('active') ) {
-                                        $(this).removeClass('active');
+                                    } else if ( el.classList.contains('active') ) {
+                                        el.classList.remove('active');
                                     }
                                 });
                             }
@@ -537,21 +559,20 @@ FrameTrail.defineType(
                                 if (self.isMouseOver) {
                                     return;
                                 }
-                                var transcriptContainer = self.contentViewContainer.find('.transcriptContainer'),
-                                    firstActiveElement = transcriptContainer.find('span.active').eq(0);
+                                var transcriptContainer = self.contentViewContainer.querySelector('.transcriptContainer'),
+                                    firstActiveElement = transcriptContainer ? transcriptContainer.querySelector('span.active') : null;
 
-                                if ( !self.contentViewContainer.hasClass('active') || firstActiveElement.length == 0 ) {
+                                if ( !self.contentViewContainer.classList.contains('active') || !firstActiveElement ) {
                                     return;
                                 }
 
-                                var activeElementPosition = firstActiveElement.position();
+                                var activeElementPosition = firstActiveElement.offsetTop;
 
-                                if ( activeElementPosition.top <
-                                    transcriptContainer.height()/2 + transcriptContainer.scrollTop()
-                                    || activeElementPosition.top > transcriptContainer.height()/2 + transcriptContainer.scrollTop() ) {
+                                if ( activeElementPosition <
+                                    transcriptContainer.clientHeight/2 + transcriptContainer.scrollTop
+                                    || activeElementPosition > transcriptContainer.clientHeight/2 + transcriptContainer.scrollTop ) {
 
-                                    var newPos = activeElementPosition.top + transcriptContainer.scrollTop() - transcriptContainer.height()/2;
-                                    transcriptContainer.stop().animate({scrollTop : newPos},400);
+                                    transcriptContainer.scrollTop = activeElementPosition + transcriptContainer.scrollTop - transcriptContainer.clientHeight/2;
                                 }
 
                             }
@@ -564,7 +585,8 @@ FrameTrail.defineType(
                                 timeWithOffset = currentTime-HypervideoModel.offsetIn,
                                 timePercent = 100 * (timeWithOffset / HypervideoModel.duration);
                                 
-                            self.contentViewContainer.find('.timelineProgressRange').css('width', timePercent + '%');
+                            var _tlRange = self.contentViewContainer.querySelector('.timelineProgressRange');
+                            if (_tlRange) _tlRange.style.width = timePercent + '%';
 
                             break;
                     }
@@ -580,7 +602,7 @@ FrameTrail.defineType(
 
                     //console.log(HypervideoDuration);
 
-                    if (!self.contentViewContainer.hasClass('active')) {
+                    if (!self.contentViewContainer.classList.contains('active')) {
                         return;
                     }
 
@@ -612,35 +634,33 @@ FrameTrail.defineType(
                 updateCompareTimelineItems: function() {
                     var self = this;
                         HypervideoDuration = FrameTrail.module('HypervideoModel').duration,
-                        timelineList = self.contentViewContainer.find('.timelineList');
+                        timelineList = self.contentViewContainer.querySelector('.timelineList');
 
-                    if (HypervideoDuration && !timelineList.hasClass('initialized')) {
+                    if (HypervideoDuration && timelineList && !timelineList.classList.contains('initialized')) {
                         
-                        var timelineItems = timelineList.find('.compareTimelineElement');
+                        var timelineItems = timelineList.querySelectorAll('.compareTimelineElement');
 
-                        timelineItems.each(function() {
-                            var originTimeStart = parseFloat($(this).data('start')),
-                                originTimeEnd   = parseFloat($(this).data('end')),
+                        timelineItems.forEach(function(el) {
+                            var originTimeStart = parseFloat(el.dataset.start),
+                                originTimeEnd   = parseFloat(el.dataset.end),
                                 timeStart       = originTimeStart - FrameTrail.module('HypervideoModel').offsetIn,
                                 timeEnd         = originTimeEnd - FrameTrail.module('HypervideoModel').offsetOut;
                                 positionLeft    = 100 * (timeStart / HypervideoDuration),
                                 width           = 100 * ((originTimeEnd - originTimeStart) / HypervideoDuration);
 
-                            $(this).css({
-                                left:  positionLeft + '%',
-                                width: width + '%'
-                            });
+                            el.style.left  = positionLeft + '%';
+                            el.style.width = width + '%';
 
-                            $(this).removeClass('previewPositionLeft previewPositionRight');
+                            el.classList.remove('previewPositionLeft', 'previewPositionRight');
 
                             if (positionLeft < 10 && width < 10) {
-                                $(this).addClass('previewPositionLeft');
+                                el.classList.add('previewPositionLeft');
                             } else if (positionLeft > 90) {
-                                $(this).addClass('previewPositionRight');
+                                el.classList.add('previewPositionRight');
                             }
                         });
 
-                        timelineList.addClass('initialized');
+                        timelineList.classList.add('initialized');
                     }
                     
 
@@ -664,8 +684,8 @@ FrameTrail.defineType(
                     self.contentViewPreviewTab = contentViewPreviewTab;
                     self.contentViewPreviewElement = contentViewPreviewElement;
 
-                    areaContainer.find('.layoutAreaTabs').append( contentViewPreviewTab );
-                    areaContainer.find('.layoutAreaContent').append( contentViewPreviewElement );
+                    areaContainer.querySelector('.layoutAreaTabs').appendChild(contentViewPreviewTab);
+                    areaContainer.querySelector('.layoutAreaContent').appendChild(contentViewPreviewElement);
 
                     self.activateContentViewPreview();
 
@@ -687,12 +707,13 @@ FrameTrail.defineType(
 
                     var self = this;
 
-                    self.contentViewPreviewTab.attr('data-type', self.contentViewData.type);
-                    self.contentViewPreviewTab.find('.contentViewTabName').html(self.contentViewData.name);
+                    self.contentViewPreviewTab.setAttribute('data-type', self.contentViewData.type);
+                    self.contentViewPreviewTab.querySelector('.contentViewTabName').innerHTML = self.contentViewData.name;
 
-                    self.contentViewPreviewElement.attr('data-type', self.contentViewData.type);
-                    self.contentViewPreviewElement.attr('data-size', self.contentViewData.contentSize);
-                    self.contentViewPreviewElement.find('.schematicPreview').replaceWith(self.generateSchematicPreview());
+                    self.contentViewPreviewElement.setAttribute('data-type', self.contentViewData.type);
+                    self.contentViewPreviewElement.setAttribute('data-size', self.contentViewData.contentSize);
+                    var oldSchematic = self.contentViewPreviewElement.querySelector('.schematicPreview');
+                    if (oldSchematic) { oldSchematic.replaceWith(self.generateSchematicPreview()); }
 
                     self.resizeLayoutAreaPreview();
 
@@ -708,12 +729,12 @@ FrameTrail.defineType(
                 renderContentViewTab: function() {
 
                     var self = this;
-                        tabElement = $('<div class="contentViewTab" '
-                                    +   'data-type="'+ self.contentViewData.type +'">'
-                                    +   '    <div class="contentViewTabName">'+ self.contentViewData.name +'</div>'
-                                    +   '</div>');
+                    var tabElement = document.createElement('div');
+                    tabElement.className = 'contentViewTab';
+                    tabElement.setAttribute('data-type', self.contentViewData.type);
+                    tabElement.innerHTML = '    <div class="contentViewTabName">'+ self.contentViewData.name +'</div>';
 
-                    tabElement.click(function() {
+                    tabElement.addEventListener('click', function() {
                         self.activateContentView();
                     });
 
@@ -731,12 +752,12 @@ FrameTrail.defineType(
                 renderContentViewPreviewTab: function() {
 
                     var self = this;
-                        tabElement = $('<div class="contentViewTab" '
-                                    +   'data-type="'+ self.contentViewData.type +'">'
-                                    +   '    <div class="contentViewTabName">'+ self.contentViewData.name +'</div>'
-                                    +   '</div>');
+                    var tabElement = document.createElement('div');
+                    tabElement.className = 'contentViewTab';
+                    tabElement.setAttribute('data-type', self.contentViewData.type);
+                    tabElement.innerHTML = '    <div class="contentViewTabName">'+ self.contentViewData.name +'</div>';
 
-                    tabElement.click(function() {
+                    tabElement.addEventListener('click', function() {
                         self.activateContentViewPreview();
                     });
 
@@ -754,77 +775,83 @@ FrameTrail.defineType(
                 renderContentViewContainer: function() {
 
                     var self = this,
-                        containerElement = $('<div class="contentViewContainer" '
-                                            +'data-size="'+ self.contentViewData.contentSize +'" '
-                                            +'data-type="'+ self.contentViewData.type +'">'
-                                            +'    <div class="contentViewContents"></div>'
-                                            +'</div>');
+                        _w = document.createElement('div');
+                    _w.innerHTML = '<div class="contentViewContainer"'
+                                 + ' data-size="'+ self.contentViewData.contentSize +'"'
+                                 + ' data-type="'+ self.contentViewData.type +'">'
+                                 + '    <div class="contentViewContents"></div>'
+                                 + '</div>';
+                    var containerElement = _w.firstElementChild;
 
                     if ( self.whichArea == 'top' || self.whichArea == 'bottom' ) {
-                        var slideLeftButton  = $('<div class="slideButton slideLeft">'
-                                                +'    <span class="icon-left-open-big"></span>'
-                                                +'</div>');
-                        var slideRightButton = $('<div class="slideButton slideRight">'
-                                                +'    <span class="icon-right-open-big"></span>'
-                                                +'</div>');
+                        var slideLeftButton = document.createElement('div');
+                        slideLeftButton.className = 'slideButton slideLeft';
+                        slideLeftButton.innerHTML = '    <span class="icon-left-open-big"></span>';
 
-                        slideLeftButton.click(function() {
-                            var container = self.contentViewContainer.find('.contentViewContents'),
-                                slideAmount = container.parent().width() / 3,
-                                leftValue = parseInt(container.css('left')) + slideAmount;
+                        var slideRightButton = document.createElement('div');
+                        slideRightButton.className = 'slideButton slideRight';
+                        slideRightButton.innerHTML = '    <span class="icon-right-open-big"></span>';
+
+                        slideLeftButton.addEventListener('click', function() {
+                            var container = self.contentViewContainer.querySelector('.contentViewContents'),
+                                slideAmount = container.parentElement.offsetWidth / 3,
+                                leftValue = parseInt(container.style.left) + slideAmount;
 
                             if ( leftValue >= 10 ) {
-                                container.css('left', '');
+                                container.style.left = '';
                             } else {
-                                container.css('left', leftValue + 'px');
+                                container.style.left = leftValue + 'px';
                             }
                         });
-                        slideRightButton.click(function() {
-                            var container = self.contentViewContainer.find('.contentViewContents'),
-                                slideAmount = container.parent().width() / 3,
-                                leftValue = parseInt(container.css('left')) - slideAmount;
+                        slideRightButton.addEventListener('click', function() {
+                            var container = self.contentViewContainer.querySelector('.contentViewContents'),
+                                slideAmount = container.parentElement.offsetWidth / 3,
+                                leftValue = parseInt(container.style.left) - slideAmount;
 
-                            if ( leftValue <= - ( container.outerWidth() - container.parent().width() ) ) {
-                                container.css('left', - ( container.outerWidth() - container.parent().width() ) );
+                            if ( leftValue <= - ( container.offsetWidth - container.parentElement.offsetWidth ) ) {
+                                container.style.left = - ( container.offsetWidth - container.parentElement.offsetWidth ) + 'px';
                             } else {
-                                container.css('left', leftValue + 'px');
+                                container.style.left = leftValue + 'px';
                             }
                         });
 
-                        containerElement.append(slideLeftButton, slideRightButton);
+                        containerElement.appendChild(slideLeftButton);
+                        containerElement.appendChild(slideRightButton);
 
                     } else {
-                        var slideTopButton    = $('<div class="slideButton slideTop">'
-                                                + '    <span class="icon-up-open-big"></span>'
-                                                + '</div>');
-                        var slideBottomButton = $('<div class="slideButton slideBottom">'
-                                                + '    <span class="icon-down-open-big"></span>'
-                                                + '</div>');
+                        var slideTopButton = document.createElement('div');
+                        slideTopButton.className = 'slideButton slideTop';
+                        slideTopButton.innerHTML = '    <span class="icon-up-open-big"></span>';
 
-                        slideTopButton.click(function() {
-                            var container = self.contentViewContainer.find('.contentViewContents'),
-                                slideAmount = container.parent().height() / 3,
-                                topValue = parseInt(container.css('top')) + slideAmount;
+                        var slideBottomButton = document.createElement('div');
+                        slideBottomButton.className = 'slideButton slideBottom';
+                        slideBottomButton.innerHTML = '    <span class="icon-down-open-big"></span>';
+
+                        slideTopButton.addEventListener('click', function() {
+                            var container = self.contentViewContainer.querySelector('.contentViewContents'),
+                                slideAmount = container.parentElement.offsetHeight / 3,
+                                topValue = parseInt(container.style.top) + slideAmount;
 
                             if ( topValue >= 10 ) {
-                                container.css('top', '');
+                                container.style.top = '';
                             } else {
-                                container.css('top', topValue + 'px');
+                                container.style.top = topValue + 'px';
                             }
                         });
-                        slideBottomButton.click(function() {
-                            var container = self.contentViewContainer.find('.contentViewContents'),
-                                slideAmount = container.parent().height() / 3,
-                                topValue = parseInt(container.css('top')) - slideAmount;
+                        slideBottomButton.addEventListener('click', function() {
+                            var container = self.contentViewContainer.querySelector('.contentViewContents'),
+                                slideAmount = container.parentElement.offsetHeight / 3,
+                                topValue = parseInt(container.style.top) - slideAmount;
 
-                            if ( topValue <= - ( container.outerHeight() - container.parent().height() ) ) {
-                                container.css('top', - ( container.outerHeight() - container.parent().height() ) );
+                            if ( topValue <= - ( container.offsetHeight - container.parentElement.offsetHeight ) ) {
+                                container.style.top = - ( container.offsetHeight - container.parentElement.offsetHeight ) + 'px';
                             } else {
-                                container.css('top', topValue + 'px');
+                                container.style.top = topValue + 'px';
                             }
                         });
 
-                        containerElement.append(slideTopButton, slideBottomButton);
+                        containerElement.appendChild(slideTopButton);
+                        containerElement.appendChild(slideBottomButton);
                     }
 
                     return containerElement;
@@ -842,27 +869,33 @@ FrameTrail.defineType(
                 renderContentViewDetailsContainer: function() {
 
                     var self = this,
-                        detailsContainerElement = $('<div class="contentViewDetailsContainer">'
-                                                +   '    <div class="contentViewDetailsContents"></div>'
-                                                +   '    <div class="slideButton slideLeft" title="'+ self.labels['MessageHintTryUsingArrowKeys'] +'">'
-                                                +   '        <span class="icon-left-open-big"></span>'
-                                                +   '    </div>'
-                                                +   '    <div class="slideButton slideRight" title="'+ self.labels['MessageHintTryUsingArrowKeys'] +'">'
-                                                +   '        <span class="icon-right-open-big"></span>'
-                                                +   '    </div>'
-                                                +   '</div>');
+                        _wd = document.createElement('div');
+                    _wd.innerHTML = '<div class="contentViewDetailsContainer">'
+                                  + '    <div class="contentViewDetailsContents"></div>'
+                                  + '    <div class="slideButton slideLeft" title="'+ self.labels['MessageHintTryUsingArrowKeys'] +'">'
+                                  + '        <span class="icon-left-open-big"></span>'
+                                  + '    </div>'
+                                  + '    <div class="slideButton slideRight" title="'+ self.labels['MessageHintTryUsingArrowKeys'] +'">'
+                                  + '        <span class="icon-right-open-big"></span>'
+                                  + '    </div>'
+                                  + '</div>';
+                    var detailsContainerElement = _wd.firstElementChild;
 
-                    detailsContainerElement.find('.slideButton.slideLeft').click(function() {
-                        var activeElement = self.contentViewContainer.find('.collectionElement.open');
+                    detailsContainerElement.querySelector('.slideButton.slideLeft').addEventListener('click', function() {
+                        var activeElement = self.contentViewContainer.querySelector('.collectionElement.open');
                         if ( activeElement ) {
-                            activeElement.prev('.collectionElement').click();
+                            var prev = activeElement.previousElementSibling;
+                            while (prev && !prev.classList.contains('collectionElement')) { prev = prev.previousElementSibling; }
+                            if (prev) { prev.click(); }
                         }
                     });
 
-                    detailsContainerElement.find('.slideButton.slideRight').click(function() {
-                        var activeElement = self.contentViewContainer.find('.collectionElement.open');
+                    detailsContainerElement.querySelector('.slideButton.slideRight').addEventListener('click', function() {
+                        var activeElement = self.contentViewContainer.querySelector('.collectionElement.open');
                         if ( activeElement ) {
-                            activeElement.next('.collectionElement').click();
+                            var next = activeElement.nextElementSibling;
+                            while (next && !next.classList.contains('collectionElement')) { next = next.nextElementSibling; }
+                            if (next) { next.click(); }
                         }
                     });
 
@@ -884,7 +917,8 @@ FrameTrail.defineType(
                         size = self.contentViewData.contentSize,
                         area = self.whichArea,
                         isHorizontal = (area == 'top' || area == 'bottom'),
-                        schematic = $('<div class="schematicPreview"></div>');
+                        schematic = document.createElement('div');
+                    schematic.className = 'schematicPreview';
 
                     switch (type) {
 
@@ -892,47 +926,51 @@ FrameTrail.defineType(
                             if (isHorizontal) {
                                 var cardCount = (size == 'small') ? 5 : (size == 'medium') ? 4 : 3;
                                 for (var i = 0; i < cardCount; i++) {
-                                    var card = $('<div class="schematicCard" data-size="'+ size +'"></div>');
-                                    var thumb = $('<div class="schematicThumb"></div>');
-                                    card.append(thumb);
+                                    var card = document.createElement('div');
+                                    card.className = 'schematicCard';
+                                    card.setAttribute('data-size', size);
+                                    card.insertAdjacentHTML('beforeend', '<div class="schematicThumb"></div>');
                                     if (size == 'medium' || size == 'large') {
-                                        card.append('<div class="schematicTitle"></div>');
+                                        card.insertAdjacentHTML('beforeend', '<div class="schematicTitle"></div>');
                                     }
                                     if (size == 'large') {
-                                        card.append('<div class="schematicBody"><div class="schematicLine"></div><div class="schematicLine short"></div></div>');
+                                        card.insertAdjacentHTML('beforeend', '<div class="schematicBody"><div class="schematicLine"></div><div class="schematicLine short"></div></div>');
                                     }
-                                    if (i === 1) card.addClass('active');
-                                    schematic.append(card);
+                                    if (i === 1) card.classList.add('active');
+                                    schematic.appendChild(card);
                                 }
                             } else {
                                 var cardCount = (size == 'small') ? 5 : (size == 'medium') ? 3 : 1;
                                 for (var i = 0; i < cardCount; i++) {
-                                    var card = $('<div class="schematicCard vertical" data-size="'+ size +'"></div>');
+                                    var card = document.createElement('div');
+                                    card.className = 'schematicCard vertical';
+                                    card.setAttribute('data-size', size);
                                     if (size == 'small') {
-                                        card.append('<div class="schematicThumb"></div>');
+                                        card.insertAdjacentHTML('beforeend', '<div class="schematicThumb"></div>');
                                     } else if (size == 'medium') {
-                                        card.append('<div class="schematicThumb"></div><div class="schematicMeta"><div class="schematicTitle"></div></div>');
+                                        card.insertAdjacentHTML('beforeend', '<div class="schematicThumb"></div><div class="schematicMeta"><div class="schematicTitle"></div></div>');
                                     } else {
-                                        card.append('<div class="schematicThumb large"></div><div class="schematicMeta"><div class="schematicTitle"></div><div class="schematicLine"></div><div class="schematicLine short"></div></div>');
+                                        card.insertAdjacentHTML('beforeend', '<div class="schematicThumb large"></div><div class="schematicMeta"><div class="schematicTitle"></div><div class="schematicLine"></div><div class="schematicLine short"></div></div>');
                                     }
-                                    if (i === 0) card.addClass('active');
-                                    schematic.append(card);
+                                    if (i === 0) card.classList.add('active');
+                                    schematic.appendChild(card);
                                 }
                             }
                             break;
 
                         case 'CustomHTML':
-                            var container = $('<div class="schematicCustomHTML">'
-                                + '<p>Custom HTML content area</p>'
+                            var container = document.createElement('div');
+                            container.className = 'schematicCustomHTML';
+                            container.innerHTML = '<p>Custom HTML content area</p>'
                                 + '<p><span class="schematicHighlight">time-based element</span> with interactive text</p>'
-                                + '<p>Additional content goes here...</p>'
-                                + '</div>');
-                            schematic.append(container);
+                                + '<p>Additional content goes here...</p>';
+                            schematic.appendChild(container);
                             break;
 
                         case 'Transcript':
-                            var container = $('<div class="schematicTranscript">'
-                                + '<span>Welcome</span> '
+                            var container = document.createElement('div');
+                            container.className = 'schematicTranscript';
+                            container.innerHTML = '<span>Welcome</span> '
                                 + '<span>to</span> '
                                 + '<span>this</span> '
                                 + '<span class="active">video.</span> '
@@ -949,13 +987,13 @@ FrameTrail.defineType(
                                 + '<span>with</span> '
                                 + '<span>the</span> '
                                 + '<span>video</span> '
-                                + '<span>timeline.</span>'
-                                + '</div>');
-                            schematic.append(container);
+                                + '<span>timeline.</span>';
+                            schematic.appendChild(container);
                             break;
 
                         case 'Timelines':
-                            var container = $('<div class="schematicTimelines"></div>');
+                            var container = document.createElement('div');
+                            container.className = 'schematicTimelines';
                             var rows = [
                                 { label: 'User 1', offset: '10%', width: '35%' },
                                 { label: 'User 1', offset: '55%', width: '20%' },
@@ -968,16 +1006,17 @@ FrameTrail.defineType(
                             for (var i = 0; i < rows.length; i++) {
                                 if (rows[i].label !== currentLabel) {
                                     currentLabel = rows[i].label;
-                                    row = $('<div class="schematicTimelineRow"></div>');
-                                    row.append('<span class="schematicTimelineLabel">'+ rows[i].label +'</span>');
-                                    row.append('<div class="schematicTimelineTrack"></div>');
-                                    container.append(row);
+                                    row = document.createElement('div');
+                                    row.className = 'schematicTimelineRow';
+                                    row.insertAdjacentHTML('beforeend', '<span class="schematicTimelineLabel">'+ rows[i].label +'</span>');
+                                    row.insertAdjacentHTML('beforeend', '<div class="schematicTimelineTrack"></div>');
+                                    container.appendChild(row);
                                 }
-                                row.find('.schematicTimelineTrack').append(
+                                row.querySelector('.schematicTimelineTrack').insertAdjacentHTML('beforeend',
                                     '<div class="schematicTimelineBar" style="left:'+ rows[i].offset +';width:'+ rows[i].width +'"></div>'
                                 );
                             }
-                            schematic.append(container);
+                            schematic.appendChild(container);
                             break;
                     }
 
@@ -989,34 +1028,42 @@ FrameTrail.defineType(
                 renderContentViewPreviewElement: function() {
 
                     var self = this,
-                        previewElement = $('<div class="contentViewPreview" '
-                                    +   'data-size="'+ self.contentViewData.contentSize +'" '
-                                    +   'data-type="'+ self.contentViewData.type +'">'
-                                    +   '    <div class="contentViewOptions">'
-                                    +   '        <button class="editContentView"><span class="icon-pencil"></span></button>'
-                                    +   '        <button class="deleteContentView"><span class="icon-trash"></span></button>'
-                                    +   '    </div>'
-                                    +   '</div>');
+                        _wp = document.createElement('div');
+                    _wp.innerHTML = '<div class="contentViewPreview"'
+                                  + ' data-size="'+ self.contentViewData.contentSize +'"'
+                                  + ' data-type="'+ self.contentViewData.type +'">'
+                                  + '    <div class="contentViewOptions">'
+                                  + '        <button class="editContentView"><span class="icon-pencil"></span></button>'
+                                  + '        <button class="deleteContentView"><span class="icon-trash"></span></button>'
+                                  + '    </div>'
+                                  + '</div>';
+                    var previewElement = _wp.firstElementChild;
 
-                    previewElement.append(self.generateSchematicPreview());
+                    previewElement.appendChild(self.generateSchematicPreview());
 
-                    previewElement.find('.editContentView').click(function() {
+                    previewElement.querySelector('.editContentView').addEventListener('click', function() {
                         self.editContentView();
                     });
 
-                    previewElement.find('.deleteContentView').click(function() {
+                    previewElement.querySelector('.deleteContentView').addEventListener('click', function() {
 
-                        // TODO: use closest()
-                        var closestContentViewTab = (self.contentViewTab.prev('.contentViewTab').length != 0) ? self.contentViewTab.prev('.contentViewTab') : self.contentViewTab.next('.contentViewTab');
-                        if ( closestContentViewTab.length != 0 ) {
+                        var prevTab = self.contentViewTab.previousElementSibling;
+                        while (prevTab && !prevTab.classList.contains('contentViewTab')) { prevTab = prevTab.previousElementSibling; }
+                        var nextTab = self.contentViewTab.nextElementSibling;
+                        while (nextTab && !nextTab.classList.contains('contentViewTab')) { nextTab = nextTab.nextElementSibling; }
+                        var closestContentViewTab = prevTab || nextTab;
+                        if ( closestContentViewTab ) {
                             closestContentViewTab.click();
                         } else {
                             self.resizeLayoutArea(true);
                         }
 
-                        // TODO: use closest()
-                        var closestContentViewPreviewTab = (self.contentViewPreviewTab.prev('.contentViewTab').length != 0) ? self.contentViewPreviewTab.prev('.contentViewTab') : self.contentViewPreviewTab.next('.contentViewTab');
-                        if ( closestContentViewPreviewTab.length != 0 ) {
+                        var prevPTab = self.contentViewPreviewTab.previousElementSibling;
+                        while (prevPTab && !prevPTab.classList.contains('contentViewTab')) { prevPTab = prevPTab.previousElementSibling; }
+                        var nextPTab = self.contentViewPreviewTab.nextElementSibling;
+                        while (nextPTab && !nextPTab.classList.contains('contentViewTab')) { nextPTab = nextPTab.nextElementSibling; }
+                        var closestContentViewPreviewTab = prevPTab || nextPTab;
+                        if ( closestContentViewPreviewTab ) {
                             closestContentViewPreviewTab.click();
                         } else {
                             self.resizeLayoutAreaPreview(true);
@@ -1040,19 +1087,25 @@ FrameTrail.defineType(
 
                     var self = this;
 
-                    if (self.contentViewContainer.length == 0) {
+                    if (!self.contentViewContainer) {
                         self.resizeLayoutArea(true);
                         return;
                     }
 
-                    self.contentViewTab.siblings('.contentViewTab').removeClass('active');
-                    self.contentViewTab.addClass('active');
+                    Array.from(self.contentViewTab.parentElement.querySelectorAll('.contentViewTab')).forEach(function(el) {
+                        if (el !== self.contentViewTab) { el.classList.remove('active'); }
+                    });
+                    self.contentViewTab.classList.add('active');
 
-                    self.contentViewContainer.siblings('.contentViewContainer').removeClass('active');
-                    self.contentViewContainer.addClass('active');
+                    Array.from(self.contentViewContainer.parentElement.querySelectorAll('.contentViewContainer')).forEach(function(el) {
+                        if (el !== self.contentViewContainer) { el.classList.remove('active'); }
+                    });
+                    self.contentViewContainer.classList.add('active');
 
-                    self.contentViewDetailsContainer.siblings('.contentViewDetailsContainer').removeClass('active');
-                    self.contentViewDetailsContainer.addClass('active');
+                    Array.from(self.contentViewDetailsContainer.parentElement.querySelectorAll('.contentViewDetailsContainer')).forEach(function(el) {
+                        if (el !== self.contentViewDetailsContainer) { el.classList.remove('active'); }
+                    });
+                    self.contentViewDetailsContainer.classList.add('active');
 
                     if (FrameTrail.module('ViewVideo').shownDetails) {
                         FrameTrail.module('ViewVideo').shownDetails = null;
@@ -1081,16 +1134,20 @@ FrameTrail.defineType(
 
                     var self = this;
 
-                    if (self.contentViewPreviewElement.length == 0) {
+                    if (!self.contentViewPreviewElement) {
                         self.resizeLayoutAreaPreview(true);
                         return;
                     }
 
-                    self.contentViewPreviewTab.siblings('.contentViewTab').removeClass('active');
-                    self.contentViewPreviewTab.addClass('active');
+                    Array.from(self.contentViewPreviewTab.parentElement.querySelectorAll('.contentViewTab')).forEach(function(el) {
+                        if (el !== self.contentViewPreviewTab) { el.classList.remove('active'); }
+                    });
+                    self.contentViewPreviewTab.classList.add('active');
 
-                    self.contentViewPreviewElement.siblings('.contentViewPreview').removeClass('active');
-                    self.contentViewPreviewElement.addClass('active');
+                    Array.from(self.contentViewPreviewElement.parentElement.querySelectorAll('.contentViewPreview')).forEach(function(el) {
+                        if (el !== self.contentViewPreviewElement) { el.classList.remove('active'); }
+                    });
+                    self.contentViewPreviewElement.classList.add('active');
 
                     self.resizeLayoutAreaPreview();
 
@@ -1109,9 +1166,9 @@ FrameTrail.defineType(
                         areaContainer = self.getLayoutAreaContainer();
 
                     if (isEmpty) {
-                        areaContainer.removeAttr('data-size');
+                        areaContainer.removeAttribute('data-size');
                     } else {
-                        areaContainer.attr('data-size', self.contentViewData.contentSize);
+                        areaContainer.setAttribute('data-size', self.contentViewData.contentSize);
                     }
 
                     if (!preventViewSizeChange) {
@@ -1132,9 +1189,9 @@ FrameTrail.defineType(
                         areaContainer = self.getLayoutAreaPreviewContainer();
 
                     if (isEmpty) {
-                        areaContainer.removeAttr('data-size');
+                        areaContainer.removeAttribute('data-size');
                     } else {
-                        areaContainer.attr('data-size', self.contentViewData.contentSize);
+                        areaContainer.setAttribute('data-size', self.contentViewData.contentSize);
                     }
 
                 },
@@ -1157,7 +1214,7 @@ FrameTrail.defineType(
                             // Rescale elements in type "large" contentViews
                             var domElement = this.getContentViewElementFromContentItem(currentContentItem);
                             if  (domElement) {
-                                rescale(domElement, domElement.width());
+                                rescale(domElement, domElement.offsetWidth);
                             }
 
                             // TODO: RESCALE DETAIL ELEMENTS
@@ -1167,31 +1224,29 @@ FrameTrail.defineType(
 
                         function rescale(element, referenceWidth) {
 
-                            var elementToScale = element.find('.resourceDetail'),
+                            var elementToScale = element.querySelector('.resourceDetail'),
                                 wrapperElement = element,
                                 scaleBase = 400;
 
+                            if (!elementToScale) { return; }
+
                             if (referenceWidth >= scaleBase) {
-                                elementToScale.css({
-                                    top: 0,
-                                    left: 0,
-                                    height: '',
-                                    width: '',
-                                    transform: "none"
-                                });
+                                elementToScale.style.top = '0';
+                                elementToScale.style.left = '0';
+                                elementToScale.style.height = '';
+                                elementToScale.style.width = '';
+                                elementToScale.style.transform = 'none';
                                 return;
                             }
 
                             var scale = referenceWidth / scaleBase,
                                 negScale = 1/scale;
 
-                            elementToScale.css({
-                                top: 50 + '%',
-                                left: 50 + '%',
-                                width: scaleBase + 'px',
-                                height: wrapperElement.height() * negScale + 'px',
-                                transform: "translate(-50%, -50%) scale(" + scale + ")"
-                            });
+                            elementToScale.style.top = '50%';
+                            elementToScale.style.left = '50%';
+                            elementToScale.style.width = scaleBase + 'px';
+                            elementToScale.style.height = wrapperElement.offsetHeight * negScale + 'px';
+                            elementToScale.style.transform = 'translate(-50%, -50%) scale(' + scale + ')';
 
                         }
                     }
@@ -1216,7 +1271,7 @@ FrameTrail.defineType(
                         annotations         = self.contentCollection,
                         videoDuration       = FrameTrail.module('HypervideoModel').duration,
                         sliderParent        = self.contentViewContainer,
-                        containerElement    = self.contentViewContainer.find('.contentViewContents'),
+                        containerElement    = self.contentViewContainer.querySelector('.contentViewContents'),
                         groupCnt            = 0,
                         gap                 = 4 + 4,
                         thisElement         = null,
@@ -1228,17 +1283,17 @@ FrameTrail.defineType(
                         desiredPosition,
                         finalPosition;
 
-                    containerElement.children().removeAttr('data-group-id');
-                    containerElement.children().css({
-                        position: '',
-                        left:     ''
+                    Array.from(containerElement.children).forEach(function(el) {
+                        el.removeAttribute('data-group-id');
+                        el.style.position = '';
+                        el.style.left = '';
                     });
 
                     function getTotalWidth(collection, addition){
 
                         var totalWidth = 0;
-                        collection.each(function() {
-                            totalWidth += $(this).outerWidth()+addition+1;
+                        Array.from(collection).forEach(function(el) {
+                            totalWidth += el.offsetWidth + addition + 1;
                         });
                         return totalWidth;
 
@@ -1249,8 +1304,8 @@ FrameTrail.defineType(
                         var offsetCorrection,
                             mostRightPos = leftPosition + collectionWidth + (gap*2);
 
-                        if ( mostRightPos >= sliderParent.width() ) {
-                            offsetCorrection = mostRightPos - sliderParent.width();
+                        if ( mostRightPos >= sliderParent.offsetWidth ) {
+                            offsetCorrection = mostRightPos - sliderParent.offsetWidth;
 
                             return offsetCorrection;
 
@@ -1260,11 +1315,11 @@ FrameTrail.defineType(
                     }
 
                     // Cancel if total width > container width
-                    if ( getTotalWidth(containerElement.children(), 4) > sliderParent.width() ) {
-                        containerElement.width( getTotalWidth(containerElement.children(), 4) );
+                    if ( getTotalWidth(containerElement.children, 4) > sliderParent.offsetWidth ) {
+                        containerElement.style.width = getTotalWidth(containerElement.children, 4) + 'px';
                         return;
                     } else {
-                        containerElement.width('');
+                        containerElement.style.width = '';
                     }
 
                     // Distribute Items
@@ -1280,24 +1335,22 @@ FrameTrail.defineType(
                             if (!previousElement) {
                                 continue;
                             }
-                            previousElementRightPos = previousElement.position().left + previousElement.width();
+                            previousElementRightPos = previousElement.offsetLeft + previousElement.offsetWidth;
                         }
 
                         startTime   = annotations[i].data.start;
                         endTime     = annotations[i].data.end;
                         middleTime  = (startTime + ( (endTime-startTime)/2 )) - FrameTrail.module('HypervideoModel').offsetIn;
 
-                        desiredPosition = ( (sliderParent.width() / videoDuration) * middleTime ) - ( thisElement.width()/2 );
+                        desiredPosition = ( (sliderParent.offsetWidth / videoDuration) * middleTime ) - ( thisElement.offsetWidth/2 );
                         //console.log(desiredPosition);
 
-                        thisElement.attr({
-                            'data-in':  startTime,
-                            'data-out': endTime
-                        });
+                        thisElement.setAttribute('data-in',  startTime);
+                        thisElement.setAttribute('data-out', endTime);
 
                         if (desiredPosition <= 0) {
                             finalPosition = 0;
-                            thisElement.removeAttr('data-group-id');
+                            thisElement.removeAttribute('data-group-id');
                             groupCnt++;
 
                         } else if (desiredPosition < previousElementRightPos + gap) {
@@ -1305,31 +1358,31 @@ FrameTrail.defineType(
 
                             finalPosition = previousElementRightPos + gap;
 
-                            if (previousElement.attr('data-group-id')) {
+                            if (previousElement.getAttribute('data-group-id')) {
 
-                                containerElement.children('[data-group-id="'+ previousElement.attr('data-group-id') +'"]').attr('data-group-id', groupCnt);
+                                Array.from(containerElement.querySelectorAll('[data-group-id="'+ previousElement.getAttribute('data-group-id') +'"]')).forEach(function(el) {
+                                    el.setAttribute('data-group-id', groupCnt);
+                                });
 
                             } else {
 
-                                previousElement.attr('data-group-id', groupCnt);
+                                previousElement.setAttribute('data-group-id', groupCnt);
 
                             }
 
-                            thisElement.attr('data-group-id', groupCnt);
+                            thisElement.setAttribute('data-group-id', groupCnt);
                             groupCnt++;
 
                         } else {
 
                             finalPosition = desiredPosition;
-                            thisElement.removeAttr('data-group-id');
+                            thisElement.removeAttribute('data-group-id');
                             groupCnt++;
 
                         }
 
-                        thisElement.css({
-                            position: "absolute",
-                            left: finalPosition + "px"
-                        });
+                        thisElement.style.position = 'absolute';
+                        thisElement.style.left = finalPosition + 'px';
 
                     }
 
@@ -1352,9 +1405,9 @@ FrameTrail.defineType(
 
                         groupIDs = [];
 
-                        containerElement.children('[data-group-id]').each(function() {
-                            if ( groupIDs.indexOf( $(this).attr('data-group-id') ) == -1 ) {
-                                groupIDs.push($(this).attr('data-group-id'));
+                        containerElement.querySelectorAll('[data-group-id]').forEach(function(el) {
+                            if ( groupIDs.indexOf( el.getAttribute('data-group-id') ) == -1 ) {
+                                groupIDs.push(el.getAttribute('data-group-id'));
                             }
                         });
 
@@ -1362,7 +1415,7 @@ FrameTrail.defineType(
 
                             var g = groupIDs[i];
 
-                            groupCollection = containerElement.children('[data-group-id="'+ g +'"]');
+                            groupCollection = Array.from(containerElement.querySelectorAll('[data-group-id="'+ g +'"]'));
 
                             if (groupCollection.length < 1) {
                                 continue;
@@ -1370,46 +1423,45 @@ FrameTrail.defineType(
 
                             if ( groupIDs[i-1] ) {
                                 p = groupIDs[i-1];
-                                previousGroupCollection         = containerElement.children('[data-group-id="'+ p +'"]');
-                                previousGroupCollectionRightPos = previousGroupCollection.eq(0).position().left + getTotalWidth( previousGroupCollection, 4 );
+                                previousGroupCollection         = Array.from(containerElement.querySelectorAll('[data-group-id="'+ p +'"]'));
+                                previousGroupCollectionRightPos = previousGroupCollection[0].offsetLeft + getTotalWidth( previousGroupCollection, 4 );
                             }
 
                             totalWidth      = getTotalWidth( groupCollection, 4 );
 
-                            groupStartTime  = parseInt(groupCollection.eq(0).attr('data-in'));
-                            groupEndTime    = parseInt(groupCollection.eq(groupCollection.length-1).attr('data-out'));
+                            groupStartTime  = parseInt(groupCollection[0].getAttribute('data-in'));
+                            groupEndTime    = parseInt(groupCollection[groupCollection.length-1].getAttribute('data-out'));
                             groupMiddleTime = (groupStartTime + ( (groupEndTime-groupStartTime)/2 )) - FrameTrail.module('HypervideoModel').offsetIn;
 
-                            desiredGroupPosition = ( (sliderParent.width() / videoDuration) * groupMiddleTime ) - ( totalWidth/2 );
+                            desiredGroupPosition = ( (sliderParent.offsetWidth / videoDuration) * groupMiddleTime ) - ( totalWidth/2 );
 
-                            correction = groupCollection.eq(0).position().left - desiredGroupPosition;
+                            correction = groupCollection[0].offsetLeft - desiredGroupPosition;
 
-                            if ( groupCollection.eq(0).position().left - correction >= 0 && desiredGroupPosition > previousGroupCollectionRightPos + gap ) {
+                            if ( groupCollection[0].offsetLeft - correction >= 0 && desiredGroupPosition > previousGroupCollectionRightPos + gap ) {
 
-                                groupCollection.each(function() {
-                                    $(this).css('left', '-='+ correction +'');
+                                groupCollection.forEach(function(el) {
+                                    el.style.left = (parseFloat(el.style.left) - correction) + 'px';
                                 });
 
-                            } else if ( groupCollection.eq(0).position().left - correction >= 0 && desiredGroupPosition < previousGroupCollectionRightPos + gap ) {
+                            } else if ( groupCollection[0].offsetLeft - correction >= 0 && desiredGroupPosition < previousGroupCollectionRightPos + gap ) {
 
-                                var  attachCorrection = groupCollection.eq(0).position().left - previousGroupCollectionRightPos;
-                                groupCollection.each(function() {
+                                var  attachCorrection = groupCollection[0].offsetLeft - previousGroupCollectionRightPos;
+                                groupCollection.forEach(function(el) {
 
-                                    $(this).css('left', '-='+ attachCorrection +'');
+                                    el.style.left = (parseFloat(el.style.left) - attachCorrection) + 'px';
 
                                 });
 
-                                if ( groupCollection.eq(0).prev().length ) {
+                                var prevElem = groupCollection[0].previousElementSibling;
+                                if ( prevElem ) {
 
-                                    var prevElem = groupCollection.eq(0).prev();
+                                    if ( prevElem.getAttribute('data-group-id') ) {
 
-                                    if ( prevElem.attr('data-group-id') ) {
-
-                                        previousGroupCollection.attr('data-group-id', g);
+                                        Array.from(previousGroupCollection).forEach(function(el) { el.setAttribute('data-group-id', g); });
 
                                     } else {
 
-                                        prevElem.attr('data-group-id', g);
+                                        prevElem.setAttribute('data-group-id', g);
 
                                     }
 
@@ -1442,26 +1494,27 @@ FrameTrail.defineType(
 
                             var g = undefined;
 
-                            if ( thisElement.attr('data-group-id') ) {
-                                g = thisElement.attr('data-group-id');
-                                groupCollection = containerElement.children('[data-group-id="'+ g +'"]');
+                            if ( thisElement.getAttribute('data-group-id') ) {
+                                g = thisElement.getAttribute('data-group-id');
+                                groupCollection = Array.from(containerElement.querySelectorAll('[data-group-id="'+ g +'"]'));
                             } else {
-                                groupCollection = thisElement;
+                                groupCollection = [thisElement];
                             }
 
-                            if (groupCollection.eq(0).prev().length) {
+                            var prevSibling = groupCollection[0].previousElementSibling;
+                            if (prevSibling) {
 
-                                previousElement = groupCollection.eq(0).prev();
+                                previousElement = prevSibling;
 
-                                if ( previousElement.attr('data-group-id') ) {
+                                if ( previousElement.getAttribute('data-group-id') ) {
 
-                                    previousGroupCollection         = containerElement.children('[data-group-id="'+ previousElement.attr('data-group-id') +'"]');
-                                    previousGroupCollectionRightPos = previousGroupCollection.eq(0).position().left + getTotalWidth( previousGroupCollection, 4 );
+                                    previousGroupCollection         = Array.from(containerElement.querySelectorAll('[data-group-id="'+ previousElement.getAttribute('data-group-id') +'"]'));
+                                    previousGroupCollectionRightPos = previousGroupCollection[0].offsetLeft + getTotalWidth( previousGroupCollection, 4 );
 
                                 } else {
 
-                                    previousGroupCollection         = previousElement;
-                                    previousGroupCollectionRightPos = previousElement.position().left + previousElement.width() + gap;
+                                    previousGroupCollection         = [previousElement];
+                                    previousGroupCollectionRightPos = previousElement.offsetLeft + previousElement.offsetWidth + gap;
 
                                 }
 
@@ -1472,8 +1525,8 @@ FrameTrail.defineType(
 
                             totalWidth = getTotalWidth( groupCollection, 4 );
 
-                            currentGroupCollectionLeft = groupCollection.eq(0).position().left;
-                            currentGroupCollectionRightPos = groupCollection.eq(0).position().left + totalWidth;
+                            currentGroupCollectionLeft = groupCollection[0].offsetLeft;
+                            currentGroupCollectionRightPos = groupCollection[0].offsetLeft + totalWidth;
 
                             negativeOffsetRightCorrection = getNegativeOffsetRightCorrection(currentGroupCollectionLeft, totalWidth);
 
@@ -1481,30 +1534,32 @@ FrameTrail.defineType(
 
                                 if ( currentGroupCollectionLeft - negativeOffsetRightCorrection > previousGroupCollectionRightPos + gap ) {
 
-                                    groupCollection.each(function() {
-                                        $(this).css('left', '-='+ negativeOffsetRightCorrection +'');
+                                    groupCollection.forEach(function(el) {
+                                        el.style.left = (parseFloat(el.style.left) - negativeOffsetRightCorrection) + 'px';
                                     });
 
                                 } else if ( currentGroupCollectionLeft - negativeOffsetRightCorrection < previousGroupCollectionRightPos + gap ) {
 
                                     var attachCorrection = currentGroupCollectionLeft - previousGroupCollectionRightPos;
-                                    groupCollection.each(function() {
-                                        $(this).css('left', '-='+ attachCorrection +'');
+                                    groupCollection.forEach(function(el) {
+                                        el.style.left = (parseFloat(el.style.left) - attachCorrection) + 'px';
                                     });
 
-                                    if ( !g && previousElement.length && previousElement.attr('data-group-id') ) {
+                                    if ( !g && prevSibling && prevSibling.getAttribute('data-group-id') ) {
 
-                                        thisElement.attr('data-group-id', previousElement.attr('data-group-id'));
+                                        thisElement.setAttribute('data-group-id', prevSibling.getAttribute('data-group-id'));
 
                                     }
 
-                                    if ( previousElement.attr('data-group-id') ) {
+                                    if ( prevSibling && prevSibling.getAttribute('data-group-id') ) {
 
-                                        containerElement.children('[data-group-id="'+ previousElement.attr('data-group-id') +'"]').attr('data-group-id', g);
+                                        Array.from(containerElement.querySelectorAll('[data-group-id="'+ prevSibling.getAttribute('data-group-id') +'"]')).forEach(function(el) {
+                                            el.setAttribute('data-group-id', g);
+                                        });
 
-                                    } else {
+                                    } else if (prevSibling) {
 
-                                        previousElement.attr('data-group-id', g);
+                                        prevSibling.setAttribute('data-group-id', g);
 
                                     }
 
@@ -1544,21 +1599,21 @@ FrameTrail.defineType(
                         gap                     = (details || self.contentViewData.contentSize == 'large') ? 10 : 4,
                         slideAxis               = (self.whichArea == 'top' || self.whichArea == 'bottom') ? 'x' : 'y',
                         sliderParent            = (details) ? self.contentViewDetailsContainer : self.contentViewContainer,
-                        sliderElement           = (details) ? self.contentViewDetailsContainer.find('.contentViewDetailsContents') : self.contentViewContainer.find('.contentViewContents');
+                        sliderElement           = (details) ? self.contentViewDetailsContainer.querySelector('.contentViewDetailsContents') : self.contentViewContainer.querySelector('.contentViewContents');
 
                     if ( self.contentCollection.length == 0
                         || ( (self.whichArea == 'left' || self.whichArea == 'right') && self.contentViewData.contentSize == 'large')
-                        || !sliderParent.hasClass('active') ) {
+                        || !sliderParent.classList.contains('active') ) {
 
                         if (slideAxis == 'x') {
-                            sliderElement.width('');
-                            sliderElement.css('left', '');
+                            sliderElement.style.width = '';
+                            sliderElement.style.left = '';
                         } else {
-                            sliderElement.height('');
-                            sliderElement.css('top', '');
+                            sliderElement.style.height = '';
+                            sliderElement.style.top = '';
                         }
 
-                        sliderParent.find('.slideButton').hide();
+                        sliderParent.querySelectorAll('.slideButton').forEach(function(el) { el.style.display = 'none'; });
 
                         return;
                     }
@@ -1571,18 +1626,18 @@ FrameTrail.defineType(
                             var element = (details) ? self.getDetailElementFromContentItem(self.contentCollection[idx]) : self.getContentViewElementFromContentItem(self.contentCollection[idx]);
                             // TODO: Check why element is null after changing collection
                             if (element) {
-                                widthOfSlider += element.outerWidth() + gap;
+                                widthOfSlider += element.offsetWidth + gap;
                             }
 
                         }
 
-                        if ( widthOfSlider > sliderParent.width() ) {
-                            sliderElement.width(widthOfSlider);
-                            sliderParent.find('.slideButton').show();
+                        if ( widthOfSlider > sliderParent.offsetWidth ) {
+                            sliderElement.style.width = widthOfSlider + 'px';
+                            sliderParent.querySelectorAll('.slideButton').forEach(function(el) { el.style.display = ''; });
                         } else {
-                            sliderElement.width('');
-                            sliderElement.css('left', gap + 'px');
-                            sliderParent.find('.slideButton').hide();
+                            sliderElement.style.width = '';
+                            sliderElement.style.left = gap + 'px';
+                            sliderParent.querySelectorAll('.slideButton').forEach(function(el) { el.style.display = 'none'; });
                             return;
                         }
 
@@ -1591,17 +1646,17 @@ FrameTrail.defineType(
                             var element = (details) ? self.getDetailElementFromContentItem(self.contentCollection[idx]) : self.getContentViewElementFromContentItem(self.contentCollection[idx]);
                             //. TODO: Check why element is null after changing collection
                             if (element) {
-                                heightOfSlider += element.outerHeight() + gap;
+                                heightOfSlider += element.offsetHeight + gap;
                             }
                         }
 
-                        if ( heightOfSlider > sliderParent.height() ) {
-                            sliderElement.height(heightOfSlider);
-                            sliderParent.find('.slideButton').show();
+                        if ( heightOfSlider > sliderParent.offsetHeight ) {
+                            sliderElement.style.height = heightOfSlider + 'px';
+                            sliderParent.querySelectorAll('.slideButton').forEach(function(el) { el.style.display = ''; });
                         } else {
-                            sliderElement.height('');
-                            sliderElement.css('top', gap + 'px');
-                            sliderParent.find('.slideButton').hide();
+                            sliderElement.style.height = '';
+                            sliderElement.style.top = gap + 'px';
+                            sliderParent.querySelectorAll('.slideButton').forEach(function(el) { el.style.display = 'none'; });
                             return;
                         }
 
@@ -1613,8 +1668,8 @@ FrameTrail.defineType(
 
                     if (details) {
 
-                        self.contentViewDetailsContainer.find('.collectionElement.open').each(function() {
-                            activeAnnotations.push($(this));
+                        self.contentViewDetailsContainer.querySelectorAll('.collectionElement.open').forEach(function(el) {
+                            activeAnnotations.push(el);
                         });
 
                     } else {
@@ -1636,24 +1691,24 @@ FrameTrail.defineType(
                     }
 
                     var activeAnnotationElement = (details) ? activeAnnotations[0] : self.getContentViewElementFromContentItem(activeAnnotations[0]),
-                        activeElementPosition   = activeAnnotationElement.position();
+                        activeElementPosition   = { left: activeAnnotationElement.offsetLeft, top: activeAnnotationElement.offsetTop };
 
                     if ( slideAxis == 'x' ) {
 
-                        if ( widthOfSlider > sliderParent.width() ) {
+                        if ( widthOfSlider > sliderParent.offsetWidth ) {
 
                             var leftOffset = -1 * (     activeElementPosition.left
                                                       - 1
-                                                      - sliderParent.innerWidth() / 2
-                                                      + activeAnnotationElement.outerWidth() / 2
+                                                      - sliderParent.clientWidth / 2
+                                                      + activeAnnotationElement.offsetWidth / 2
                                             );
 
                             if ( !details && leftOffset > 0 ) {
-                                sliderElement.css('left', gap + 'px');
-                            } else if ( !details && leftOffset < - (widthOfSlider - sliderParent.width()) ) {
-                                sliderElement.css('left', - (widthOfSlider - sliderParent.width()));
+                                sliderElement.style.left = gap + 'px';
+                            } else if ( !details && leftOffset < - (widthOfSlider - sliderParent.offsetWidth) ) {
+                                sliderElement.style.left = - (widthOfSlider - sliderParent.offsetWidth) + 'px';
                             } else {
-                                sliderElement.css('left', leftOffset);
+                                sliderElement.style.left = leftOffset + 'px';
                             }
 
                         }
@@ -1661,20 +1716,20 @@ FrameTrail.defineType(
 
                     } else {
 
-                        if ( heightOfSlider > sliderParent.height() ) {
+                        if ( heightOfSlider > sliderParent.offsetHeight ) {
 
                             var topOffset = -1 * (      activeElementPosition.top
                                                       - 1
-                                                      - sliderParent.innerHeight() / 2
-                                                      + activeAnnotationElement.outerHeight() / 2
+                                                      - sliderParent.clientHeight / 2
+                                                      + activeAnnotationElement.offsetHeight / 2
                                             );
 
                             if ( !details && topOffset > 0 ) {
-                                sliderElement.css('top', gap + 'px');
-                            } else if ( !details && topOffset < - (heightOfSlider - sliderParent.height()) ) {
-                                sliderElement.css('top', - (heightOfSlider - sliderParent.height()));
+                                sliderElement.style.top = gap + 'px';
+                            } else if ( !details && topOffset < - (heightOfSlider - sliderParent.offsetHeight) ) {
+                                sliderElement.style.top = - (heightOfSlider - sliderParent.offsetHeight) + 'px';
                             } else {
-                                sliderElement.css('top', topOffset);
+                                sliderElement.style.top = topOffset + 'px';
                             }
 
                         }
@@ -1694,33 +1749,41 @@ FrameTrail.defineType(
                 editContentView: function(isNew) {
 
                     var elementOrigin = this.contentViewPreviewElement,
-                        animationDiv = elementOrigin.clone(),
-                        originOffset = elementOrigin.offset(),
-                        finalTop = ($(window).height()/2) - 300,
-                        finalLeft = ($(window).width()/2) - 407,
+                        animationDiv = elementOrigin.cloneNode(true),
+                        originRect = elementOrigin.getBoundingClientRect(),
+                        originOffset = { top: originRect.top + window.scrollY, left: originRect.left + window.scrollX },
+                        originWidth = elementOrigin.offsetWidth,
+                        originHeight = elementOrigin.offsetHeight,
+                        finalTop = (window.innerHeight/2) - 300,
+                        finalLeft = (window.innerWidth/2) - 407,
                         self = this;
 
-                    animationDiv.addClass('contentViewAnimationDiv').css({
-                        position: 'absolute',
-                        top: originOffset.top + 'px',
-                        left: originOffset.left + 'px',
-                        width: elementOrigin.width(),
-                        height: elementOrigin.height(),
-                        zIndex: 99
-                    }).appendTo('body');
+                    animationDiv.classList.add('contentViewAnimationDiv');
+                    animationDiv.style.position = 'absolute';
+                    animationDiv.style.top = originOffset.top + 'px';
+                    animationDiv.style.left = originOffset.left + 'px';
+                    animationDiv.style.width = originWidth + 'px';
+                    animationDiv.style.height = originHeight + 'px';
+                    animationDiv.style.zIndex = '99';
+                    document.body.appendChild(animationDiv);
 
-                    animationDiv.animate({
-                        top: finalTop + 'px',
-                        left: finalLeft + 'px',
-                        width: 814 + 'px',
-                        height: 600 + 'px'
-                    }, 300, function() {
+                    var anim = animationDiv.animate([
+                        { top: originOffset.top + 'px', left: originOffset.left + 'px', width: originWidth + 'px', height: originHeight + 'px' },
+                        { top: finalTop + 'px', left: finalLeft + 'px', width: '814px', height: '600px' }
+                    ], { duration: 300, easing: 'ease', fill: 'forwards' });
 
+                    anim.finished.then(function() {
+                        animationDiv.style.top = finalTop + 'px';
+                        animationDiv.style.left = finalLeft + 'px';
+                        animationDiv.style.width = '814px';
+                        animationDiv.style.height = '600px';
+                        anim.cancel();
 
                         var dialogTitle = (isNew) ? self.labels['SettingsContentViewNew'] : self.labels['SettingsContentViewEdit'],
-                            editDialog = $('<div class="editContentViewDialog"></div>');
+                            editDialog = document.createElement('div');
+                        editDialog.className = 'editContentViewDialog';
 
-                        editDialog.append(self.renderContentViewPreviewEditingUI());
+                        editDialog.appendChild(self.renderContentViewPreviewEditingUI());
 
                         var editDialogCtrl = Dialog({
                             title:     dialogTitle,
@@ -1731,18 +1794,17 @@ FrameTrail.defineType(
                             modal:     true,
                             close: function() {
                                 editDialogCtrl.destroy();
-                                animationDiv.animate({
-                                    top: originOffset.top + 'px',
-                                    left: originOffset.left + 'px',
-                                    width: elementOrigin.width(),
-                                    height: elementOrigin.height()
-                                }, 300, function() {
-                                    $('.contentViewAnimationDiv').remove();
+                                var closeAnim = animationDiv.animate([
+                                    { top: finalTop + 'px', left: finalLeft + 'px', width: '814px', height: '600px' },
+                                    { top: originOffset.top + 'px', left: originOffset.left + 'px', width: originWidth + 'px', height: originHeight + 'px' }
+                                ], { duration: 300, easing: 'ease', fill: 'forwards' });
+                                closeAnim.finished.then(function() {
+                                    document.querySelectorAll('.contentViewAnimationDiv').forEach(function(el) { el.remove(); });
                                 });
                             },
                             open: function() {
-                                $(this).find('.cm6-wrapper').each(function() {
-                                    if (this._cm6view) { this._cm6view.requestMeasure(); }
+                                editDialog.querySelectorAll('.cm6-wrapper').forEach(function(el) {
+                                    if (el._cm6view) { el._cm6view.requestMeasure(); }
                                 });
                             },
                             buttons: [
@@ -1751,7 +1813,7 @@ FrameTrail.defineType(
                                         // Capture old data before changes
                                         var oldContentViewData = JSON.parse(JSON.stringify(self.contentViewData));
 
-                                        var newContentViewData = self.getDataFromEditingUI($(this));
+                                        var newContentViewData = self.getDataFromEditingUI(editDialog);
 
                                         self.contentViewData = newContentViewData;
 
@@ -1814,8 +1876,9 @@ FrameTrail.defineType(
 
                     var self = this,
                         contentViewData = this.contentViewData,
-                        editingUI = $('<div class="contentViewEditingUI">'
-                                    +'    <div class="layoutRow">'
+                        editingUI = document.createElement('div');
+                    editingUI.className = 'contentViewEditingUI';
+                    editingUI.innerHTML = '    <div class="layoutRow">'
                                     +'        <div class="contentViewData column-6" data-property="type" data-value="'+ contentViewData.type +'">'
                                     +'            <label>'+ self.labels['GenericType'] +':</label>'
                                     +'            <div '+ (contentViewData.type == 'TimedContent' ? 'class="active"' : '') +' data-value="TimedContent">'+ self.labels['GenericAnnotationCollection'] +'</div>'
@@ -1835,7 +1898,7 @@ FrameTrail.defineType(
                                     +'    <div class="layoutRow">'
                                     +'        <div class="generic column-3">'
                                     +'            <label>'+ self.labels['GenericName'] +':</label>'
-                                    +'            <input type="text" class="contentViewData" data-property="name" data-value="'+ contentViewData.name +'" value="'+ contentViewData.name +'" placeholder="('+ self.labels['GenericRequired'] +')"/>'
+                                    +'            <input type="text" class="contentViewData" data-property="name" data-value="'+ contentViewData.name +'" value="'+ contentViewData.name +'" placeholder="('+ self.labels['GenericRequired'] +')">'
                                     +'        </div>'
                                     +'        <div class="generic column-9">'
                                     +'            <label>'+ self.labels['GenericDescription'] +':</label>'
@@ -1844,7 +1907,7 @@ FrameTrail.defineType(
                                     +'    </div>'
                                     +'    <div class="generic" style="display: none;">'
                                     +'        <label>CSS Class:</label>'
-                                    +'        <input type="text" class="contentViewData" data-property="cssClass" data-value="'+ contentViewData.cssClass +'" value="'+ contentViewData.cssClass +'" placeholder="('+ self.labels['GenericOptional'] +')"/>'
+                                    +'        <input type="text" class="contentViewData" data-property="cssClass" data-value="'+ contentViewData.cssClass +'" value="'+ contentViewData.cssClass +'" placeholder="('+ self.labels['GenericOptional'] +')">'
                                     +'    </div>'
                                     +'    <hr>'
                                     +'    <div class="typeSpecific '+ (contentViewData.type == 'TimedContent' ? 'active' : '') +'" data-type="TimedContent">'
@@ -1858,7 +1921,7 @@ FrameTrail.defineType(
                                     +'                    <span class="icon-plus">'+ self.labels['GenericAdd'] +'</span>'
                                     +'                    <div class="contextSelectList"></div>'
                                     +'                </div>'
-                                    +'                <input type="hidden" class="contentViewData" data-property="collectionFilter-tags" data-value="'+ contentViewData.collectionFilter.tags +'" value="'+ contentViewData.collectionFilter.tags +'" placeholder="('+ self.labels['GenericOptional'] +')"/>'
+                                    +'                <input type="hidden" class="contentViewData" data-property="collectionFilter-tags" data-value="'+ contentViewData.collectionFilter.tags +'" value="'+ contentViewData.collectionFilter.tags +'" placeholder="('+ self.labels['GenericOptional'] +')">'
                                     +'            </div>'
                                     +'            <div class="column-3">'
                                     +'                <label>'+ self.labels['SettingsFilterByTypes'] +'</label>'
@@ -1867,7 +1930,7 @@ FrameTrail.defineType(
                                     +'                    <span class="icon-plus">'+ self.labels['GenericAdd'] +'</span>'
                                     +'                    <div class="contextSelectList"></div>'
                                     +'                </div>'
-                                    +'                <input type="hidden" class="contentViewData" data-property="collectionFilter-types" data-value="'+ contentViewData.collectionFilter.types +'" value="'+ contentViewData.collectionFilter.types +'" placeholder="('+ self.labels['GenericOptional'] +')"/>'
+                                    +'                <input type="hidden" class="contentViewData" data-property="collectionFilter-types" data-value="'+ contentViewData.collectionFilter.types +'" value="'+ contentViewData.collectionFilter.types +'" placeholder="('+ self.labels['GenericOptional'] +')">'
                                     +'            </div>'
                                     +'            <div class="column-3">'
                                     +'                <label>'+ self.labels['SettingsFilterByUsers'] +'</label>'
@@ -1876,11 +1939,11 @@ FrameTrail.defineType(
                                     +'                    <span class="icon-plus">'+ self.labels['GenericAdd'] +'</span>'
                                     +'                    <div class="contextSelectList"></div>'
                                     +'                </div>'
-                                    +'                <input type="hidden" class="contentViewData" data-property="collectionFilter-users" data-value="'+ contentViewData.collectionFilter.users +'" value="'+ contentViewData.collectionFilter.users +'" placeholder="('+ self.labels['GenericOptional'] +')"/>'
+                                    +'                <input type="hidden" class="contentViewData" data-property="collectionFilter-users" data-value="'+ contentViewData.collectionFilter.users +'" value="'+ contentViewData.collectionFilter.users +'" placeholder="('+ self.labels['GenericOptional'] +')">'
                                     +'            </div>'
                                     +'            <div class="column-3">'
                                     +'                <label>'+ self.labels['SettingsFilterByName'] +'</label>'
-                                    +'                <input type="text" class="contentViewData" data-property="collectionFilter-text" data-value="'+ contentViewData.collectionFilter.text +'" value="'+ contentViewData.collectionFilter.text +'" placeholder="('+ self.labels['GenericOptional'] +')"/>'
+                                    +'                <input type="text" class="contentViewData" data-property="collectionFilter-text" data-value="'+ contentViewData.collectionFilter.text +'" value="'+ contentViewData.collectionFilter.text +'" placeholder="('+ self.labels['GenericOptional'] +')">'
                                     +'            </div>'
                                     +'        </div>'
                                     +'        <div class="message active">'+ self.labels['SettingsItemsInCollection'] +': <span class="collectionCounter"></span></div>'
@@ -1902,30 +1965,34 @@ FrameTrail.defineType(
                                     +'        <label>'+ self.labels['SettingsTranscriptSource'] +':</label>'
                                     +'        <div class="message active">'+ self.labels['MessageHintNewTranscriptsUpload'] +'</div>'
                                     +'        <div class="existingTranscripts"></div>'
-                                    +'        <input type="hidden" class="contentViewData" data-property="transcriptSource" data-value="'+ contentViewData.transcriptSource +'" value="'+ contentViewData.transcriptSource +'" />'
-                                    +'    </div>'
-                                    +'</div>');
+                                    +'        <input type="hidden" class="contentViewData" data-property="transcriptSource" data-value="'+ contentViewData.transcriptSource +'" value="'+ contentViewData.transcriptSource +'">'
+                                    +'    </div>';
 
-                    editingUI.find('.contentViewData').each(function() {
+                    editingUI.querySelectorAll('.contentViewData').forEach(function(el) {
 
-                        var datachoices = $(this).children('div[data-value]');
+                        var datachoices = Array.from(el.querySelectorAll(':scope > div[data-value]'));
 
                         if (datachoices.length != 0) {
-                            datachoices.click(function() {
-                                $(this).siblings('div[data-value]').removeClass('active');
-                                $(this).addClass('active');
+                            datachoices.forEach(function(choice) {
+                                choice.addEventListener('click', function() {
+                                    Array.from(this.parentElement.querySelectorAll('div[data-value]')).forEach(function(sib) {
+                                        sib.classList.remove('active');
+                                    });
+                                    this.classList.add('active');
 
-                                var parent = $(this).parent('.contentViewData');
+                                    var parent = this.closest('.contentViewData');
 
-                                parent.attr('data-value', $(this).attr('data-value'));
+                                    parent.setAttribute('data-value', this.getAttribute('data-value'));
 
-                                if (parent.attr('data-property') == 'type') {
-                                    editingUI.find('.typeSpecific').removeClass('active');
-                                    editingUI.find('.typeSpecific[data-type="'+ parent.attr('data-value') +'"]').addClass('active');
-                                }
+                                    if (parent.getAttribute('data-property') == 'type') {
+                                        editingUI.querySelectorAll('.typeSpecific').forEach(function(el) { el.classList.remove('active'); });
+                                        var typeSpecific = editingUI.querySelector('.typeSpecific[data-type="'+ parent.getAttribute('data-value') +'"]');
+                                        if (typeSpecific) { typeSpecific.classList.add('active'); }
+                                    }
 
-                                editingUI.find('.cm6-wrapper').each(function() {
-                                    if (this._cm6view) { this._cm6view.requestMeasure(); }
+                                    editingUI.querySelectorAll('.cm6-wrapper').forEach(function(el) {
+                                        if (el._cm6view) { el._cm6view.requestMeasure(); }
+                                    });
                                 });
                             });
                         }
@@ -1935,7 +2002,7 @@ FrameTrail.defineType(
                     // Transcripts
 
                     function updateExistingTranscripts() {
-                        editingUI.find('.existingTranscripts').empty();
+                        editingUI.querySelector('.existingTranscripts').innerHTML = '';
 
                         var database = FrameTrail.module('Database');
 
@@ -1945,18 +2012,21 @@ FrameTrail.defineType(
 
                             for (var i=0; i < database.hypervideo.subtitles.length; i++) {
                                 var currentSubtitles = database.hypervideo.subtitles[i],
-                                    existingSubtitlesItem = $('<div class="existingSubtitlesItem" data-srclang="'+ currentSubtitles.srclang +'"><span>'+ langMapping[currentSubtitles.srclang] +'</span></div>');
+                                    existingSubtitlesItem = document.createElement('div');
+                                existingSubtitlesItem.className = 'existingSubtitlesItem';
+                                existingSubtitlesItem.setAttribute('data-srclang', currentSubtitles.srclang);
+                                existingSubtitlesItem.innerHTML = '<span>'+ langMapping[currentSubtitles.srclang] +'</span>';
 
-                                if ( editingUI.find('.contentViewData[data-property="transcriptSource"]').val() == currentSubtitles.srclang ) {
-                                    existingSubtitlesItem.addClass('active');
+                                if ( editingUI.querySelector('.contentViewData[data-property="transcriptSource"]').value == currentSubtitles.srclang ) {
+                                    existingSubtitlesItem.classList.add('active');
                                 }
-                                existingSubtitlesItem.click(function(evt) {
-                                    var thisSourceLang = $(this).attr('data-srclang');
-                                    editingUI.find('.contentViewData[data-property="transcriptSource"]').val(thisSourceLang);
+                                existingSubtitlesItem.addEventListener('click', function(evt) {
+                                    var thisSourceLang = this.getAttribute('data-srclang');
+                                    editingUI.querySelector('.contentViewData[data-property="transcriptSource"]').value = thisSourceLang;
                                     updateExistingTranscripts();
-                                }).appendTo(existingSubtitlesItem);
+                                });
 
-                                editingUI.find('.existingTranscripts').append(existingSubtitlesItem);
+                                editingUI.querySelector('.existingTranscripts').appendChild(existingSubtitlesItem);
                             }
                         }
                     }
@@ -1973,32 +2043,40 @@ FrameTrail.defineType(
 
                     updateExistingTagFilters();
 
-                    editingUI.find('.newTagButton').click(function() {
-                        editingUI.find('.contextSelectButton').not($(this)).removeClass('active');
+                    editingUI.querySelector('.newTagButton').addEventListener('click', function() {
+                        var _this = this;
+                        editingUI.querySelectorAll('.contextSelectButton').forEach(function(btn) {
+                            if (btn !== _this) btn.classList.remove('active');
+                        });
 
                         updateTagSelectContainer();
-                        $(this).toggleClass('active');
+                        _this.classList.toggle('active');
                     });
 
                     function updateExistingTagFilters() {
                         updateCollectionFilterValues();
-                        editingUI.find('.existingTags').empty();
+                        editingUI.querySelector('.existingTags').innerHTML = '';
 
                         for (var i=0; i<tagFilters.length; i++) {
                             var tagLabel = FrameTrail.module('TagModel').getTagLabelAndDescription(tagFilters[i], 'de').label,
-                                tagItem = $('<div class="tagItem" data-tag="'+ tagFilters[i] +'">'+ tagLabel +'</div>');
-                            var deleteButton = $('<div class="deleteItem"><span class="icon-cancel"></span></div>')
-                            deleteButton.click(function() {
-                                tagFilters.splice(tagFilters.indexOf($(this).parent().attr('data-tag')), 1);
+                                tagItem = document.createElement('div');
+                            tagItem.className = 'tagItem';
+                            tagItem.setAttribute('data-tag', tagFilters[i]);
+                            tagItem.textContent = tagLabel;
+                            var deleteButton = document.createElement('div');
+                            deleteButton.className = 'deleteItem';
+                            deleteButton.innerHTML = '<span class="icon-cancel"></span>';
+                            deleteButton.addEventListener('click', function() {
+                                tagFilters.splice(tagFilters.indexOf(this.parentElement.getAttribute('data-tag')), 1);
                                 updateExistingTagFilters();
                             });
-                            tagItem.append(deleteButton);
-                            editingUI.find('.existingTags').append(tagItem);
+                            tagItem.appendChild(deleteButton);
+                            editingUI.querySelector('.existingTags').appendChild(tagItem);
                         }
                     }
 
                     function updateTagSelectContainer() {
-                        editingUI.find('.newTagButton .contextSelectList').empty();
+                        editingUI.querySelector('.newTagButton .contextSelectList').innerHTML = '';
 
                         var allTags = FrameTrail.module('TagModel').getAllTagLabelsAndDescriptions('de');
                         for (var tagID in allTags) {
@@ -2006,12 +2084,15 @@ FrameTrail.defineType(
                                 continue;
                             }
                             var tagLabel = allTags[tagID].label,
-                                tagItem = $('<div class="tagItem" data-tag="'+ tagID +'">'+ tagLabel +'</div>');
-                            tagItem.click(function() {
-                                tagFilters.push( $(this).attr('data-tag') );
+                                tagItem = document.createElement('div');
+                            tagItem.className = 'tagItem';
+                            tagItem.setAttribute('data-tag', tagID);
+                            tagItem.textContent = tagLabel;
+                            tagItem.addEventListener('click', function() {
+                                tagFilters.push( this.getAttribute('data-tag') );
                                 updateExistingTagFilters();
                             });
-                            editingUI.find('.newTagButton .contextSelectList').append(tagItem);
+                            editingUI.querySelector('.newTagButton .contextSelectList').appendChild(tagItem);
                         }
                     }
 
@@ -2019,31 +2100,39 @@ FrameTrail.defineType(
 
                     updateExistingTypeFilters();
 
-                    editingUI.find('.newTypeButton').click(function() {
-                        editingUI.find('.contextSelectButton').not($(this)).removeClass('active');
+                    editingUI.querySelector('.newTypeButton').addEventListener('click', function() {
+                        var _this = this;
+                        editingUI.querySelectorAll('.contextSelectButton').forEach(function(btn) {
+                            if (btn !== _this) btn.classList.remove('active');
+                        });
 
                         updateTypeSelectContainer();
-                        $(this).toggleClass('active');
+                        _this.classList.toggle('active');
                     });
 
                     function updateExistingTypeFilters() {
                         updateCollectionFilterValues();
-                        editingUI.find('.existingTypes').empty();
+                        editingUI.querySelector('.existingTypes').innerHTML = '';
 
                         for (var i=0; i<typeFilters.length; i++) {
-                            var typeItem = $('<div class="typeItem" data-type="'+ typeFilters[i] +'">'+ typeFilters[i].charAt(0).toUpperCase() + typeFilters[i].substring(1) +'</div>');
-                            var deleteButton = $('<div class="deleteItem"><span class="icon-cancel"></span></div>')
-                            deleteButton.click(function() {
-                                typeFilters.splice(typeFilters.indexOf($(this).parent().attr('data-type')), 1);
+                            var typeItem = document.createElement('div');
+                            typeItem.className = 'typeItem';
+                            typeItem.setAttribute('data-type', typeFilters[i]);
+                            typeItem.textContent = typeFilters[i].charAt(0).toUpperCase() + typeFilters[i].substring(1);
+                            var deleteButton = document.createElement('div');
+                            deleteButton.className = 'deleteItem';
+                            deleteButton.innerHTML = '<span class="icon-cancel"></span>';
+                            deleteButton.addEventListener('click', function() {
+                                typeFilters.splice(typeFilters.indexOf(this.parentElement.getAttribute('data-type')), 1);
                                 updateExistingTypeFilters();
                             });
-                            typeItem.append(deleteButton);
-                            editingUI.find('.existingTypes').append(typeItem);
+                            typeItem.appendChild(deleteButton);
+                            editingUI.querySelector('.existingTypes').appendChild(typeItem);
                         }
                     }
 
                     function updateTypeSelectContainer() {
-                        editingUI.find('.newTypeButton .contextSelectList').empty();
+                        editingUI.querySelector('.newTypeButton .contextSelectList').innerHTML = '';
 
                         var allTypes = [];
 
@@ -2056,12 +2145,15 @@ FrameTrail.defineType(
                             if ( typeFilters.indexOf(allTypes[t]) != -1 ) {
                                 continue;
                             }
-                            var typeItem = $('<div class="typeItem" data-type="'+ allTypes[t] +'">'+ allTypes[t].charAt(0).toUpperCase() + allTypes[t].substring(1) +'</div>');
-                            typeItem.click(function() {
-                                typeFilters.push( $(this).attr('data-type') );
+                            var typeItem = document.createElement('div');
+                            typeItem.className = 'typeItem';
+                            typeItem.setAttribute('data-type', allTypes[t]);
+                            typeItem.textContent = allTypes[t].charAt(0).toUpperCase() + allTypes[t].substring(1);
+                            typeItem.addEventListener('click', function() {
+                                typeFilters.push( this.getAttribute('data-type') );
                                 updateExistingTypeFilters();
                             });
-                            editingUI.find('.newTypeButton .contextSelectList').append(typeItem);
+                            editingUI.querySelector('.newTypeButton .contextSelectList').appendChild(typeItem);
                         }
                     }
 
@@ -2069,50 +2161,61 @@ FrameTrail.defineType(
 
                     updateExistingUserFilters();
 
-                    editingUI.find('.newUserButton').click(function() {
-                        editingUI.find('.contextSelectButton').not($(this)).removeClass('active');
+                    editingUI.querySelector('.newUserButton').addEventListener('click', function() {
+                        var _this = this;
+                        editingUI.querySelectorAll('.contextSelectButton').forEach(function(btn) {
+                            if (btn !== _this) btn.classList.remove('active');
+                        });
 
                         updateUserSelectContainer();
-                        $(this).toggleClass('active');
+                        _this.classList.toggle('active');
                     });
 
                     function updateExistingUserFilters() {
                         updateCollectionFilterValues();
-                        editingUI.find('.existingUsers').empty();
+                        editingUI.querySelector('.existingUsers').innerHTML = '';
 
                         for (var u=0; u<userFilters.length; u++) {
                             var userLabel = FrameTrail.module('Database').users[userFilters[u]].name,
-                                userItem = $('<div class="userItem" data-user="'+ userFilters[u] +'">'+ userLabel +'</div>');
-                            var deleteButton = $('<div class="deleteItem"><span class="icon-cancel"></span></div>')
-                            deleteButton.click(function() {
-                                userFilters.splice(userFilters.indexOf($(this).parent().attr('data-user')), 1);
+                                userItem = document.createElement('div');
+                            userItem.className = 'userItem';
+                            userItem.setAttribute('data-user', userFilters[u]);
+                            userItem.textContent = userLabel;
+                            var deleteButton = document.createElement('div');
+                            deleteButton.className = 'deleteItem';
+                            deleteButton.innerHTML = '<span class="icon-cancel"></span>';
+                            deleteButton.addEventListener('click', function() {
+                                userFilters.splice(userFilters.indexOf(this.parentElement.getAttribute('data-user')), 1);
                                 updateExistingUserFilters();
                             });
-                            userItem.append(deleteButton);
-                            editingUI.find('.existingUsers').append(userItem);
+                            userItem.appendChild(deleteButton);
+                            editingUI.querySelector('.existingUsers').appendChild(userItem);
                         }
                     }
 
                     function updateUserSelectContainer() {
-                        editingUI.find('.newUserButton .contextSelectList').empty();
+                        editingUI.querySelector('.newUserButton .contextSelectList').innerHTML = '';
 
                         var allUsers = FrameTrail.module('Database').users;
                         for (var user in allUsers) {
                             if ( userFilters.indexOf(user) != -1 ) {
                                 continue;
                             }
-                            var userItem = $('<div class="userItem" data-user="'+ user +'">'+ allUsers[user].name +'</div>');
-                            userItem.click(function() {
-                                userFilters.push( $(this).attr('data-user') );
+                            var userItem = document.createElement('div');
+                            userItem.className = 'userItem';
+                            userItem.setAttribute('data-user', user);
+                            userItem.textContent = allUsers[user].name;
+                            userItem.addEventListener('click', function() {
+                                userFilters.push( this.getAttribute('data-user') );
                                 updateExistingUserFilters();
                             });
-                            editingUI.find('.newUserButton .contextSelectList').append(userItem);
+                            editingUI.querySelector('.newUserButton .contextSelectList').appendChild(userItem);
                         }
                     }
 
                     // Update Collection Filter Values from UI Elements
 
-                    editingUI.find('.contentViewData[data-property="collectionFilter-text"]').keyup(function() {
+                    editingUI.querySelector('.contentViewData[data-property="collectionFilter-text"]').addEventListener('keyup', function() {
                         updateCollectionFilterValues();
                     });
 
@@ -2122,34 +2225,40 @@ FrameTrail.defineType(
                                 false,
                                 true,
                                 userFilters,
-                                editingUI.find('.contentViewData[data-property="collectionFilter-text"]').val(),
+                                editingUI.querySelector('.contentViewData[data-property="collectionFilter-text"]').value,
                                 typeFilters
                             ).length;
-                        editingUI.find('.collectionCounter').text(numberOfAnnotations);
+                        editingUI.querySelector('.collectionCounter').textContent = numberOfAnnotations;
+                        var counterMsg = editingUI.querySelector('.collectionCounter').closest('.message');
                         if ( numberOfAnnotations == 0 ) {
-                            editingUI.find('.collectionCounter').parent('.message').removeClass('success').addClass('error');
+                            counterMsg.classList.remove('success');
+                            counterMsg.classList.add('error');
                         } else {
-                            editingUI.find('.collectionCounter').parent('.message').removeClass('error').addClass('success');
+                            counterMsg.classList.remove('error');
+                            counterMsg.classList.add('success');
                         }
 
                         var tagFilterString = tagFilters.join(',');
-                        editingUI.find('.contentViewData[data-property="collectionFilter-tags"]').val(tagFilterString);
+                        editingUI.querySelector('.contentViewData[data-property="collectionFilter-tags"]').value = tagFilterString;
                         var typeFilterString = typeFilters.join(',');
-                        editingUI.find('.contentViewData[data-property="collectionFilter-types"]').val(typeFilterString);
+                        editingUI.querySelector('.contentViewData[data-property="collectionFilter-types"]').value = typeFilterString;
                         var userFilterString = userFilters.join(',');
-                        editingUI.find('.contentViewData[data-property="collectionFilter-users"]').val(userFilterString);
+                        editingUI.querySelector('.contentViewData[data-property="collectionFilter-users"]').value = userFilterString;
                     }
 
                     // Init CodeMirror 6 for onClickContentItem
 
                     var CM6 = window.FrameTrailCM6;
-                    var textarea = editingUI.find('.contentViewData[data-property="onClickContentItem"]');
-                    var cm6WrapperJS = $('<div class="cm6-wrapper" style="height: 100%;"></div>');
-                    textarea.after(cm6WrapperJS).hide();
+                    var textarea = editingUI.querySelector('.contentViewData[data-property="onClickContentItem"]');
+                    var cm6WrapperJS = document.createElement('div');
+                    cm6WrapperJS.className = 'cm6-wrapper';
+                    cm6WrapperJS.style.height = '100%';
+                    textarea.insertAdjacentElement('afterend', cm6WrapperJS);
+                    textarea.style.display = 'none';
 
                     var codeEditor = new CM6.EditorView({
                         state: CM6.EditorState.create({
-                            doc: textarea.val(),
+                            doc: textarea.value,
                             extensions: [
                                 CM6.oneDark,
                                 CM6.lineNumbers(),
@@ -2165,23 +2274,27 @@ FrameTrail.defineType(
                                 CM6.EditorView.updateListener.of(function(update) {
                                     if (!update.docChanged) { return; }
                                     var val = update.state.doc.toString();
-                                    textarea.attr('data-value', val).val(val);
+                                    textarea.setAttribute('data-value', val);
+                                    textarea.value = val;
                                 })
                             ]
                         }),
-                        parent: cm6WrapperJS[0]
+                        parent: cm6WrapperJS
                     });
-                    cm6WrapperJS[0]._cm6view = codeEditor;
+                    cm6WrapperJS._cm6view = codeEditor;
 
                     // Init CodeMirror 6 for Custom HTML
 
-                    var htmlTextarea = editingUI.find('.contentViewData[data-property="html"]');
-                    var cm6WrapperHTML = $('<div class="cm6-wrapper" style="height: 100%;"></div>');
-                    htmlTextarea.after(cm6WrapperHTML).hide();
+                    var htmlTextarea = editingUI.querySelector('.contentViewData[data-property="html"]');
+                    var cm6WrapperHTML = document.createElement('div');
+                    cm6WrapperHTML.className = 'cm6-wrapper';
+                    cm6WrapperHTML.style.height = '100%';
+                    htmlTextarea.insertAdjacentElement('afterend', cm6WrapperHTML);
+                    htmlTextarea.style.display = 'none';
 
                     var htmlCodeEditor = new CM6.EditorView({
                         state: CM6.EditorState.create({
-                            doc: htmlTextarea.val(),
+                            doc: htmlTextarea.value,
                             extensions: [
                                 CM6.oneDark,
                                 CM6.lineNumbers(),
@@ -2197,13 +2310,14 @@ FrameTrail.defineType(
                                 CM6.EditorView.updateListener.of(function(update) {
                                     if (!update.docChanged) { return; }
                                     var val = update.state.doc.toString();
-                                    htmlTextarea.attr('data-value', val).val(val);
+                                    htmlTextarea.setAttribute('data-value', val);
+                                    htmlTextarea.value = val;
                                 })
                             ]
                         }),
-                        parent: cm6WrapperHTML[0]
+                        parent: cm6WrapperHTML
                     });
-                    cm6WrapperHTML[0]._cm6view = htmlCodeEditor;
+                    cm6WrapperHTML._cm6view = htmlCodeEditor;
 
 
                     return editingUI;
@@ -2223,20 +2337,20 @@ FrameTrail.defineType(
 
                     var newDataObject = {};
 
-                    editingUIContainer.find('.contentViewData').each(function() {
+                    editingUIContainer.querySelectorAll('.contentViewData').forEach(function(el) {
 
                         var newValue;
-                        if ( $(this).is('input') || $(this).is('textarea') ) {
-                            newValue = $(this).val();
-                            if ( $(this).attr('data-property').indexOf('collectionFilter') != -1 && $(this).attr('data-property') != 'collectionFilter-text' ) {
-                                if ( $(this).val().length != 0 ) {
-                                    newValue = $(this).val().split(',');
+                        if ( el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' ) {
+                            newValue = el.value;
+                            if ( el.getAttribute('data-property').indexOf('collectionFilter') != -1 && el.getAttribute('data-property') != 'collectionFilter-text' ) {
+                                if ( el.value.length != 0 ) {
+                                    newValue = el.value.split(',');
                                 } else {
                                     newValue = [];
                                 }
                             }
                         } else {
-                            newValue = $(this).attr('data-value');
+                            newValue = el.getAttribute('data-value');
                         }
 
                         if (newValue == 'true') {
@@ -2245,8 +2359,8 @@ FrameTrail.defineType(
                             newValue = false;
                         }
 
-                        if ( $(this).attr('data-property').indexOf('-') != -1 ) {
-                            var splitProperty = $(this).attr('data-property').split('-'),
+                        if ( el.getAttribute('data-property').indexOf('-') != -1 ) {
+                            var splitProperty = el.getAttribute('data-property').split('-'),
                                 subObject = splitProperty[0],
                                 subProperty = splitProperty[1];
                             if ( !newDataObject[subObject] ) {
@@ -2254,7 +2368,7 @@ FrameTrail.defineType(
                             }
                             newDataObject[subObject][subProperty] = newValue;
                         } else {
-                            newDataObject[$(this).attr('data-property')] = newValue;
+                            newDataObject[el.getAttribute('data-property')] = newValue;
                         }
                     });
 
@@ -2338,16 +2452,16 @@ FrameTrail.defineType(
 
                     switch (this.whichArea) {
                         case 'top':
-                            areaContainer = HypervideoLayoutContainer.find('.layoutArea[data-area="areaTop"]');
+                            areaContainer = HypervideoLayoutContainer.querySelector('.layoutArea[data-area="areaTop"]');
                             break;
                         case 'bottom':
-                            areaContainer = HypervideoLayoutContainer.find('.layoutArea[data-area="areaBottom"]');
+                            areaContainer = HypervideoLayoutContainer.querySelector('.layoutArea[data-area="areaBottom"]');
                             break;
                         case 'left':
-                            areaContainer = HypervideoLayoutContainer.find('.layoutArea[data-area="areaLeft"]');
+                            areaContainer = HypervideoLayoutContainer.querySelector('.layoutArea[data-area="areaLeft"]');
                             break;
                         case 'right':
-                            areaContainer = HypervideoLayoutContainer.find('.layoutArea[data-area="areaRight"]');
+                            areaContainer = HypervideoLayoutContainer.querySelector('.layoutArea[data-area="areaRight"]');
                             break;
                     }
 

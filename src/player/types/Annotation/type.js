@@ -36,7 +36,9 @@ FrameTrail.defineType(
                     data
                 )
 
-                this.timelineElement   = $('<div class="timelineElement" data-type="'+ this.data.type +'" data-uri="'+ this.data.uri +'"><div class="timelineElementIcon"></div><div class="timelineElementLabel"></div><div class="previewWrapper"></div></div>');
+                var _anWrapper = document.createElement('div');
+                _anWrapper.innerHTML = '<div class="timelineElement" data-type="'+ this.data.type +'" data-uri="'+ this.data.uri +'"><div class="timelineElementIcon"></div><div class="timelineElementLabel"></div><div class="previewWrapper"></div></div>';
+                this.timelineElement = _anWrapper.firstElementChild;
                 this.contentViewElements = [];
                 this.contentViewDetailElements = [];
 
@@ -92,22 +94,18 @@ FrameTrail.defineType(
 
                     var ViewVideo = FrameTrail.module('ViewVideo');
 
-                    var timelineTarget = ViewVideo.AnnotationTimeline.find('.timelineScroller');
-                    (timelineTarget.length ? timelineTarget : ViewVideo.AnnotationTimeline).append(this.timelineElement);
+                    var timelineTarget = ViewVideo.AnnotationTimeline.querySelector('.timelineScroller');
+                    (timelineTarget || ViewVideo.AnnotationTimeline).appendChild(this.timelineElement);
 
-                    this.timelineElement.find('.previewWrapper').empty().append(
-                        this.resourceItem.renderThumb()
-                    );
+                    var _pw = this.timelineElement.querySelector('.previewWrapper');
+                    _pw.innerHTML = '';
+                    _pw.append(this.resourceItem.renderThumb());
 
                     // Set icon from resourceItem
-                    this.timelineElement.find('.timelineElementIcon').html(
-                        '<span class="' + this.resourceItem.iconClass + '"></span>'
-                    );
+                    this.timelineElement.querySelector('.timelineElementIcon').innerHTML = '<span class="' + this.resourceItem.iconClass + '"></span>';
 
                     // Set label from resourceItem
-                    this.timelineElement.find('.timelineElementLabel').text(
-                        this.resourceItem.getDisplayLabel()
-                    );
+                    this.timelineElement.querySelector('.timelineElementLabel').textContent = this.resourceItem.getDisplayLabel();
 
                     this.updateTimelineElement();
 
@@ -122,10 +120,14 @@ FrameTrail.defineType(
                     ViewVideo.AreaBottomTileSlider.append(this.tileElement);
                     */
 
-                    this.timelineElement.unbind('hover');
+                    if (this._brushInHandler)  { this.timelineElement.removeEventListener('mouseenter', this._brushInHandler); }
+                    if (this._brushOutHandler) { this.timelineElement.removeEventListener('mouseleave', this._brushOutHandler); }
                     //this.tileElement.unbind('hover');
                     //this.tileElement.unbind('click')
-                    this.timelineElement.hover(this.brushIn.bind(this), this.brushOut.bind(this));
+                    this._brushInHandler  = this.brushIn.bind(this);
+                    this._brushOutHandler = this.brushOut.bind(this);
+                    this.timelineElement.addEventListener('mouseenter', this._brushInHandler);
+                    this.timelineElement.addEventListener('mouseleave', this._brushOutHandler);
                     //this.tileElement.hover(this.brushIn.bind(this), this.brushOut.bind(this));
 
                     // self = this necessary as self can not be kept in anonymous handler function
@@ -138,7 +140,8 @@ FrameTrail.defineType(
                         } else {
                             self.openAnnotation();
                         }
-                    });
+                    };
+                    this.timelineElement.addEventListener('click', this._annotationClickHandler);
                     */
 
                 },
@@ -157,19 +160,17 @@ FrameTrail.defineType(
                         positionLeft    = 100 * ((this.data.start - HypervideoModel.offsetIn) / videoDuration),
                         width           = 100 * ((this.data.end - this.data.start) / videoDuration);
 
-                    this.timelineElement.css({
-                        top: '',
-                        left:  positionLeft + '%',
-                        right: '',
-                        width: width + '%'
-                    });
+                    this.timelineElement.style.top = '';
+                    this.timelineElement.style.left = positionLeft + '%';
+                    this.timelineElement.style.right = '';
+                    this.timelineElement.style.width = width + '%';
 
-                    this.timelineElement.removeClass('previewPositionLeft previewPositionRight');
+                    this.timelineElement.classList.remove('previewPositionLeft', 'previewPositionRight');
 
                     if (positionLeft < 10 && width < 10) {
-                        this.timelineElement.addClass('previewPositionLeft');
+                        this.timelineElement.classList.add('previewPositionLeft');
                     } else if (positionLeft > 90) {
-                        this.timelineElement.addClass('previewPositionRight');
+                        this.timelineElement.classList.add('previewPositionRight');
                     }
 
                 },
@@ -195,7 +196,7 @@ FrameTrail.defineType(
                  * @method brushIn
                  */
                 brushIn: function () {
-                    this.timelineElement.addClass('brushed');
+                    this.timelineElement.classList.add('brushed');
                 },
 
 
@@ -204,7 +205,7 @@ FrameTrail.defineType(
                  * @method brushOut
                  */
                 brushOut: function () {
-                    this.timelineElement.removeClass('brushed');
+                    this.timelineElement.classList.remove('brushed');
                 },
 
 
@@ -215,7 +216,7 @@ FrameTrail.defineType(
                 setActive: function () {
 
                     this.activeState = true;
-                    this.timelineElement.addClass('active');
+                    this.timelineElement.classList.add('active');
 
                 },
 
@@ -227,7 +228,7 @@ FrameTrail.defineType(
                 setInactive: function () {
 
                     this.activeState = false;
-                    this.timelineElement.removeClass('active');
+                    this.timelineElement.classList.remove('active');
 
                 },
 
@@ -250,9 +251,9 @@ FrameTrail.defineType(
 
                     FrameTrail.module('AnnotationsController').openedAnnotation = this;
 
-                    this.timelineElement.addClass('open');
+                    this.timelineElement.classList.add('open');
 
-                    ViewVideo.ExpandButton.one('click', this.closeAnnotation.bind(this));
+                    ViewVideo.ExpandButton.addEventListener('click', this.closeAnnotation.bind(this), { once: true });
                     
                 },
 
@@ -286,7 +287,7 @@ FrameTrail.defineType(
                         self.makeTimelineElementResizeable();
                     }, 50);
                     
-                    this.timelineElement.on('click', function(){
+                    this._annotationClickHandler = function(){
 
                         if (AnnotationsController.annotationInFocus === self){
                             return AnnotationsController.annotationInFocus = null;
@@ -297,7 +298,7 @@ FrameTrail.defineType(
 
                         FrameTrail.module('HypervideoController').currentTime = self.data.start;
 
-                    });
+                    };
 
                 },
 
@@ -309,13 +310,11 @@ FrameTrail.defineType(
                  */
                 stopEditing: function () {
 
-                    if (this.timelineElement[0]) {
-                        try { interact(this.timelineElement[0]).unset(); } catch (ex) {}
-                    }
-                    this.timelineElement.removeClass('ui-draggable ui-draggable-dragging ui-resizable');
-                    this.timelineElement.find('.ui-resizable-handle').remove();
+                    try { interact(this.timelineElement).unset(); } catch (ex) {}
+                    this.timelineElement.classList.remove('ui-draggable', 'ui-draggable-dragging', 'ui-resizable');
+                    this.timelineElement.querySelectorAll('.ui-resizable-handle').forEach(function(h) { h.remove(); });
 
-                    this.timelineElement.unbind('click');
+                    if (this._annotationClickHandler) { this.timelineElement.removeEventListener('click', this._annotationClickHandler); this._annotationClickHandler = null; }
 
                 },
 
@@ -333,8 +332,8 @@ FrameTrail.defineType(
                     var self = this,
                         oldAnnotationData;
 
-                    var el = this.timelineElement[0];
-                    this.timelineElement.addClass('ui-draggable');
+                    var el = this.timelineElement;
+                    this.timelineElement.classList.add('ui-draggable');
 
                     interact(el).draggable({
                         ignoreFrom: '.ui-resizable-handle',
@@ -345,7 +344,7 @@ FrameTrail.defineType(
                                     FrameTrail.module('AnnotationsController').annotationInFocus = self;
                                 }
 
-                                oldAnnotationData = jQuery.extend({}, self.data);
+                                oldAnnotationData = Object.assign({}, self.data);
 
                                 e.target.dataset.ftX    = e.target.offsetLeft;
                                 e.target.dataset.ftRawX = e.target.offsetLeft;
@@ -362,18 +361,19 @@ FrameTrail.defineType(
                                 var parentWidth = e.target.parentElement.offsetWidth;
                                 var elWidth     = e.target.offsetWidth;
 
+                                var _gridlines = Array.from(document.querySelectorAll(FrameTrail.getState('target') + ' .gridline'));
                                 var closestGridline = FrameTrail.module('ViewVideo').closestToOffset(
-                                    $(FrameTrail.getState('target')).find('.gridline'),
+                                    _gridlines,
                                     { left: x, top: 0 }
                                 );
                                 var snapTolerance = 10;
 
                                 if (closestGridline) {
-                                    $(FrameTrail.getState('target')).find('.gridline').css('background-color', '#ff9900');
-                                    var glLeft = closestGridline.position().left;
+                                    _gridlines.forEach(function(gl) { gl.style.backgroundColor = '#ff9900'; });
+                                    var glLeft = closestGridline.getBoundingClientRect().left - closestGridline.parentElement.getBoundingClientRect().left;
                                     if (x - snapTolerance < glLeft && x + snapTolerance > glLeft) {
                                         x = glLeft;
-                                        closestGridline.css('background-color', '#00ff00');
+                                        closestGridline.style.backgroundColor = '#00ff00';
                                     }
                                 }
 
@@ -509,7 +509,7 @@ FrameTrail.defineType(
                         endHandleGrabbed,
                         oldAnnotationData;
 
-                    var el = this.timelineElement[0];
+                    var el = this.timelineElement;
 
                     // Inject resize handles if not yet present
                     if (!el.querySelector('.ui-resizable-e')) {
@@ -535,7 +535,7 @@ FrameTrail.defineType(
                                     FrameTrail.module('AnnotationsController').annotationInFocus = self;
                                 }
 
-                                oldAnnotationData = jQuery.extend({}, self.data);
+                                oldAnnotationData = Object.assign({}, self.data);
 
                                 e.target.dataset.ftLeft  = e.target.offsetLeft;
                                 e.target.dataset.ftWidth = e.target.offsetWidth;
@@ -551,27 +551,28 @@ FrameTrail.defineType(
                                 var parentWidth = e.target.parentElement.offsetWidth;
 
                                 var checkLeft = endHandleGrabbed ? (newLeft + newWidth) : newLeft;
+                                var _gridlines2 = Array.from(document.querySelectorAll(FrameTrail.getState('target') + ' .gridline'));
                                 var closestGridline = FrameTrail.module('ViewVideo').closestToOffset(
-                                    $(FrameTrail.getState('target')).find('.gridline'),
+                                    _gridlines2,
                                     { left: checkLeft, top: 0 }
                                 );
                                 var snapTolerance = 10;
 
                                 if (closestGridline) {
-                                    $(FrameTrail.getState('target')).find('.gridline').css('background-color', '#ff9900');
-                                    var glLeft = closestGridline.position().left;
+                                    _gridlines2.forEach(function(gl) { gl.style.backgroundColor = '#ff9900'; });
+                                    var glLeft = closestGridline.getBoundingClientRect().left - closestGridline.parentElement.getBoundingClientRect().left;
                                     if (!endHandleGrabbed &&
                                         newLeft - snapTolerance < glLeft &&
                                         newLeft + snapTolerance > glLeft) {
                                         var diff = newLeft - glLeft;
                                         newWidth += diff;
                                         newLeft   = glLeft;
-                                        closestGridline.css('background-color', '#00ff00');
+                                        closestGridline.style.backgroundColor = '#00ff00';
                                     } else if (endHandleGrabbed &&
                                                newLeft + newWidth - snapTolerance < glLeft &&
                                                newLeft + newWidth + snapTolerance > glLeft) {
                                         newWidth = glLeft - newLeft;
-                                        closestGridline.css('background-color', '#00ff00');
+                                        closestGridline.style.backgroundColor = '#00ff00';
                                     }
                                 }
 
@@ -714,7 +715,7 @@ FrameTrail.defineType(
                         this.resourceItem.renderTimeControls(this)
                     );
 
-                    this.timelineElement.addClass('highlighted');
+                    this.timelineElement.classList.add('highlighted');
 
                 },
 
@@ -731,7 +732,7 @@ FrameTrail.defineType(
                  */
                 removedFromFocus: function () {
 
-                    this.timelineElement.removeClass('highlighted');
+                    this.timelineElement.classList.remove('highlighted');
 
                 },
 
@@ -755,28 +756,7 @@ FrameTrail.defineType(
                     
                     var cleanStart = FrameTrail.module('HypervideoController').formatTime(this.data.start),
                         cleanEnd = FrameTrail.module('HypervideoController').formatTime(this.data.end),
-                        compareTimelineElement = $(
-                            '<div class="compareTimelineElement" '
-                        +   ' data-type="'
-                        +   this.data.type
-                        +   '" data-uri="'
-                        +   this.data.uri
-                        +   '" data-start="'
-                        +   this.data.start
-                        +   '" data-end="'
-                        +   this.data.end
-                        +   '">'
-                        +   '    <div class="previewWrapper"></div>'
-                        +   '    <div class="compareTimelineElementTime">'
-                        +   '        <div class="compareTimeStart">'
-                        +   cleanStart
-                        +   '        </div>'
-                        +   '        <div class="compareTimeEnd">'
-                        +   cleanEnd
-                        +   '        </div>'
-                        +   '    </div>'
-                        +   '</div>'
-                    ),
+                        compareTimelineElement = document.createElement('div'),
 
                         HypervideoModel = FrameTrail.module('HypervideoModel'),
                         timeStart       = this.data.start - HypervideoModel.offsetIn,
@@ -785,11 +765,22 @@ FrameTrail.defineType(
                         positionLeft    = 100 * (timeStart / videoDuration),
                         width           = 100 * ((this.data.end - this.data.start) / videoDuration);
 
+                    compareTimelineElement.className = 'compareTimelineElement';
+                    compareTimelineElement.setAttribute('data-type', this.data.type);
+                    compareTimelineElement.setAttribute('data-uri', this.data.uri);
+                    compareTimelineElement.setAttribute('data-start', this.data.start);
+                    compareTimelineElement.setAttribute('data-end', this.data.end);
+                    compareTimelineElement.innerHTML = '<div class="previewWrapper"></div>'
+                        + '<div class="compareTimelineElementTime">'
+                        + '<div class="compareTimeStart">' + cleanStart + '</div>'
+                        + '<div class="compareTimeEnd">' + cleanEnd + '</div>'
+                        + '</div>';
+
                     if (this.data.end > HypervideoModel.offsetOut) {
-                        compareTimelineElement.addClass('overlapRight');
+                        compareTimelineElement.classList.add('overlapRight');
                     }
                     if (HypervideoModel.offsetIn > this.data.start) {
-                        compareTimelineElement.addClass('overlapLeft');
+                        compareTimelineElement.classList.add('overlapLeft');
                     }
 
                     var numericValue = false,
@@ -836,44 +827,38 @@ FrameTrail.defineType(
 
                     if (numericValue || annotationValueIndex) {
                         if (numericValue && Array.isArray(numericValue)) {
-                            compareTimelineElement.attr({
-                                'data-origin-type': dataType,
-                                'data-numeric-value': numericValue,
-                                'data-numeric-min': '0',
-                                'data-numeric-max': maxNumericValue
-                            });
+                            compareTimelineElement.setAttribute('data-origin-type', dataType);
+                            compareTimelineElement.setAttribute('data-numeric-value', numericValue);
+                            compareTimelineElement.setAttribute('data-numeric-min', '0');
+                            compareTimelineElement.setAttribute('data-numeric-max', maxNumericValue);
                             if (dataType == 'ao:EvolvingValuesAnnotationType') {
                                 var svgElem = this.renderEvolvingValues(numericValue, maxNumericValue);
-                                compareTimelineElement.append(svgElem);
-                                //jQuery SVG Hack
-                                compareTimelineElement.html(compareTimelineElement.html());
+                                compareTimelineElement.appendChild(svgElem);
                             } else if (dataType == 'ao:ContrastingValuesAnnotationType') {
                                 var highestNumericValue = Math.max.apply(null, numericValue),
                                     relativeHeight = 100 * (highestNumericValue / maxNumericValue)
                                 var contrastingElems = this.renderContrastingValues(numericValue, maxNumericValue, highestNumericValue);
-                                compareTimelineElement.append(contrastingElems);
-                                compareTimelineElement.css('height', relativeHeight + '%');
+                                compareTimelineElement.appendChild(contrastingElems);
+                                compareTimelineElement.style.height = relativeHeight + '%';
                             }
-                        } else {
+                            } else {
                             
                             var numericRatio = numericValue / maxNumericValue,
                                 relativeHeight = 100 * (numericRatio),
                                 timelineColor = (numericValue) ? Math.round(numericRatio * 12) : annotationValueIndex;
                             
-                            compareTimelineElement.attr({
-                                'data-origin-type': dataType,
-                                'data-numeric-value': numericValue,
-                                'data-numeric-min': '0',
-                                'data-numeric-max': maxNumericValue
-                            });
+                            compareTimelineElement.setAttribute('data-origin-type', dataType);
+                            compareTimelineElement.setAttribute('data-numeric-value', numericValue);
+                            compareTimelineElement.setAttribute('data-numeric-min', '0');
+                            compareTimelineElement.setAttribute('data-numeric-max', maxNumericValue);
                             if (annotationType.indexOf('ColourAccent') != -1) {
                                 var tmpText = this.data.name;
-                                compareTimelineElement.attr('data-timeline-color', tmpText);
-                                compareTimelineElement.append('<div class="barchartFraction" style="height: 100%; top: 0%; background-color: '+ tmpText +';" data-timeline-color="'+ tmpText +'"></div>');
+                                compareTimelineElement.setAttribute('data-timeline-color', tmpText);
+                                compareTimelineElement.insertAdjacentHTML('beforeend', '<div class="barchartFraction" style="height: 100%; top: 0%; background-color: '+ tmpText +';" data-timeline-color="'+ tmpText +'"></div>');
                             } else {
-                                compareTimelineElement.attr('data-timeline-color', timelineColor);
+                                compareTimelineElement.setAttribute('data-timeline-color', timelineColor);
                             }
-                            compareTimelineElement.css('height', relativeHeight + '%');
+                            compareTimelineElement.style.height = relativeHeight + '%';
                             //compareTimelineElement.css('opacity', numericRatio);
                         }
                     } else {
@@ -896,31 +881,31 @@ FrameTrail.defineType(
                         }
                         if (multipleAnnotationValues) {
                             //console.log('HERE', multipleAnnotationValues);
-                            compareTimelineElement.attr('data-origin-type', dataType);
+                            compareTimelineElement.setAttribute('data-origin-type', dataType);
                             var multipleElems = renderMultipleValues(annotationType, multipleAnnotationValues);
-                            compareTimelineElement.append(multipleElems);
+                            compareTimelineElement.appendChild(multipleElems);
                         }
                     }
 
                     if (this.data.type == 'text' || this.data.type == 'entity') {
-                        var decoded_string = $("<div/>").html(this.data.attributes.text).text();
-                        compareTimelineElement.attr('title', decoded_string);
+                        var _dh = document.createElement('div');
+                        _dh.innerHTML = this.data.attributes.text || '';
+                        var decoded_string = _dh.textContent;
+                        compareTimelineElement.setAttribute('title', decoded_string);
                     }
 
-                    compareTimelineElement.css({
-                        left:  positionLeft + '%',
-                        width: width + '%'
-                    });
+                    compareTimelineElement.style.left = positionLeft + '%';
+                    compareTimelineElement.style.width = width + '%';
 
-                    compareTimelineElement.removeClass('previewPositionLeft previewPositionRight');
+                    compareTimelineElement.classList.remove('previewPositionLeft', 'previewPositionRight');
 
                     if (positionLeft < 10 && width < 10) {
-                        compareTimelineElement.addClass('previewPositionLeft');
+                        compareTimelineElement.classList.add('previewPositionLeft');
                     } else if (positionLeft > 90) {
-                        compareTimelineElement.addClass('previewPositionRight');
+                        compareTimelineElement.classList.add('previewPositionRight');
                     }
 
-                    compareTimelineElement.find('.previewWrapper').append(
+                    compareTimelineElement.querySelector('.previewWrapper').appendChild(
                         this.resourceItem.renderThumb()
                     );
 
@@ -928,18 +913,18 @@ FrameTrail.defineType(
 
                     if (self.data.graphData) {
                     	if (self.data.graphDataType == 'soundwave') {
-                    		compareTimelineElement.append(self.renderSoundwave(self.data.graphData));
+                    		compareTimelineElement.appendChild(self.renderSoundwave(self.data.graphData));
                     	} else if (self.data.graphDataType == 'barchart') {
-                    		compareTimelineElement.append(self.renderBarchart(self.data.graphData));
+                    		compareTimelineElement.appendChild(self.renderBarchart(self.data.graphData));
                     	}
                     }
 
                     // Store origin data directly on element so drop handlers can read it
-                    compareTimelineElement.data('originResourceData', self.data);
+                    compareTimelineElement._originResourceData = self.data;
 
                     (function() {
                         var dragClone = null;
-                        interact(compareTimelineElement[0]).draggable({
+                        interact(compareTimelineElement).draggable({
                             listeners: {
                                 start: function(e) {
                                     var rect = e.target.getBoundingClientRect();
@@ -971,8 +956,8 @@ FrameTrail.defineType(
                         });
                     }());
 
-                    compareTimelineElement.click(function() {
-                        FrameTrail.module('HypervideoController').currentTime = parseFloat($(this).data('start')) + 0.05;
+                    compareTimelineElement.addEventListener('click', function() {
+                        FrameTrail.module('HypervideoController').currentTime = parseFloat(this.getAttribute('data-start')) + 0.05;
                     });
 
 
@@ -982,15 +967,18 @@ FrameTrail.defineType(
 
                 renderSoundwave: function(soundwaveDataString) {
 
-    				var graphDataElem = $('<div class="graphDataContainer"></div>');
+    				var graphDataElem = document.createElement('div');
+    				graphDataElem.className = 'graphDataContainer';
 
 					var width = 8000,
 						height = 60,
 						max_val = 100,
 						data = soundwaveDataString.split(" "),
-						canvas = $('<canvas>').attr('width', width).attr('height', height)[0];
+						canvas = document.createElement('canvas');
+						canvas.width = width;
+						canvas.height = height;
 
-						graphDataElem.append(canvas);
+						graphDataElem.appendChild(canvas);
 
 						var bar_width = width / data.length;
 						var context = canvas.getContext("2d");
@@ -1013,7 +1001,8 @@ FrameTrail.defineType(
 
                 renderBarchart: function(barchartDataString) {
 
-    				var graphDataElem = $('<div class="graphDataContainer"></div>');
+    				var graphDataElem = document.createElement('div');
+    				graphDataElem.className = 'graphDataContainer';
 
                     var width = 30000,
                         height = 60,
@@ -1031,12 +1020,12 @@ FrameTrail.defineType(
                     for (i=0,j=data.length; i<j; i+=finalChunkSize) {
                         dataChunk = data.slice(i,i+finalChunkSize);
 
-                        var canvas = $('<canvas>')
-                            .attr('width', width)
-                            .attr('height', height)
-                            .attr('style', 'width: ' + canvasPercentWidth + '%;')[0];
+                        var canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        canvas.style.width = canvasPercentWidth + '%';
 
-                        graphDataElem.append(canvas);
+                        graphDataElem.appendChild(canvas);
 
                         var bar_width = width / dataChunk.length;
                         var context = canvas.getContext("2d");
@@ -1059,9 +1048,15 @@ FrameTrail.defineType(
                 },
 
                 renderEvolvingValues: function(values, maxValue) {
-                    var svg = $('<svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"></svg>'),
+                    var svgNS = 'http://www.w3.org/2000/svg',
+                        svg = document.createElementNS(svgNS, 'svg'),
                         stepWidth = 100 / (values.length - 1),
                         invertedValues = [];
+
+                    svg.setAttribute('width', '100%');
+                    svg.setAttribute('height', '100%');
+                    svg.setAttribute('viewBox', '0 0 100 100');
+                    svg.setAttribute('preserveAspectRatio', 'none');
 
                     for (var i = 0; i < values.length; i++) {
                         var numericRatio = values[i] / maxValue,
@@ -1076,10 +1071,12 @@ FrameTrail.defineType(
                     }
 
                     path += " L 100 100 L 0 100 Z";
-                    svg.append('<path d="' + path + '"></path>');
+                    var pathElem = document.createElementNS(svgNS, 'path');
+                    pathElem.setAttribute('d', path);
+                    svg.appendChild(pathElem);
 
                     var timelineColor = Math.round(numericRatio * 12);
-                    svg.attr('data-timeline-color', timelineColor);
+                    svg.setAttribute('data-timeline-color', timelineColor);
 
                     return svg;
                 },
@@ -1099,7 +1096,11 @@ FrameTrail.defineType(
                         barchartFractions += '<div class="barchartFraction" style="height: '+ fractionPercentage +'%" data-timeline-color="'+ timelineColor +'"></div>';
                     }
 
-                    return $(barchartFractions);
+                    var _tmp = document.createElement('div');
+                    _tmp.innerHTML = barchartFractions;
+                    var fragment = document.createDocumentFragment();
+                    while (_tmp.firstChild) { fragment.appendChild(_tmp.firstChild); }
+                    return fragment;
                 },
 
                 renderMultipleValues: function(annotationType, values) {
@@ -1123,7 +1124,11 @@ FrameTrail.defineType(
                         console.log('FrameTrail used outside AdA project context (getAnnotationValueIndex not defined)');
                     }
                     
-                    return $(barchartFractions);
+                    var _tmp = document.createElement('div');
+                    _tmp.innerHTML = barchartFractions;
+                    var fragment = document.createDocumentFragment();
+                    while (_tmp.firstChild) { fragment.appendChild(_tmp.firstChild); }
+                    return fragment;
                     
                 },
 
@@ -1132,14 +1137,16 @@ FrameTrail.defineType(
                 setActiveInContentView: function (contentView) {
 
                     for (var i=0; i<this.contentViewElements.length; i++) {
-                        this.contentViewElements[i].addClass('active');
+                        this.contentViewElements[i].classList.add('active');
 
                         if ( this.data.type == 'location'
                             && contentView.contentViewData.contentSize == 'large'
-                            && (contentView.whichArea == 'left' || contentView.whichArea == 'right')
-                            && this.contentViewElements[i].children('.resourceDetail').data('map') ) {
+                            && (contentView.whichArea == 'left' || contentView.whichArea == 'right') ) {
 
-                            this.contentViewElements[i].children('.resourceDetail').data('map').invalidateSize();
+                            var _resourceDetail = this.contentViewElements[i].querySelector('.resourceDetail');
+                            if (_resourceDetail && _resourceDetail._leafletMap) {
+                                _resourceDetail._leafletMap.invalidateSize();
+                            }
                         }
                     }
                     //console.log(this, 'setActiveInContentView', contentView);
@@ -1152,7 +1159,7 @@ FrameTrail.defineType(
                 setInactiveInContentView: function (contentView) {
 
                     for (var i=0; i<this.contentViewElements.length; i++) {
-                        this.contentViewElements[i].removeClass('active');
+                        this.contentViewElements[i].classList.remove('active');
                     }
                     //console.log(this, 'setInactiveInContentView', contentView);
 

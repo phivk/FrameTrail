@@ -26,13 +26,18 @@ FrameTrail.defineType(
 
                 renderContent: function() {
 
-                    var container = $('<div class="resourceDetail" data-type="'+ this.resourceData.type +'"></div>');
+                    var container = document.createElement('div');
+                    container.className = 'resourceDetail';
+                    container.dataset.type = this.resourceData.type;
 
                     if (this.resourceData.attributes.photoUrl) {
-                        var img = $('<img src="' + this.resourceData.attributes.photoUrl + '" alt="' + this.resourceData.name + '" style="max-width: 100%; max-height: 100%; object-fit: contain;">');
+                        var img = document.createElement('img');
+                        img.src = this.resourceData.attributes.photoUrl;
+                        img.alt = this.resourceData.name;
+                        img.style.cssText = 'max-width: 100%; max-height: 100%; object-fit: contain;';
                         container.append(img);
                     } else if (this.resourceData.attributes.html) {
-                        container.html(this.resourceData.attributes.html);
+                        container.innerHTML = this.resourceData.attributes.html;
 
                         if (!document.querySelector('script[src*="embedr.flickr.com"]')) {
                             var tag = document.createElement('script');
@@ -63,15 +68,18 @@ FrameTrail.defineType(
 
                     var tagList = (this.resourceData.tags ? this.resourceData.tags.join(' ') : '');
 
-                    var thumbElement = $('<div class="resourceThumb '+ tagList +'" data-license-type="'+ this.resourceData.licenseType +'" data-resourceID="'+ trueID +'" data-type="'+ this.resourceData.type +'" style="'+ thumbBackground +'">'
-                        + '                  <div class="resourceOverlay">'
-                        + '                      <div class="resourceIcon"><span class="icon-picture"></span></div>'
-                        + '                  </div>'
-                        + '                  <div class="resourceTitle">'+ this.resourceData.name +'</div>'
-                        + '              </div>');
+                    var _thumbWrapper = document.createElement('div');
+                    _thumbWrapper.innerHTML = '<div class="resourceThumb '+ tagList +'" data-license-type="'+ this.resourceData.licenseType +'" data-resourceID="'+ trueID +'" data-type="'+ this.resourceData.type +'" style="'+ thumbBackground +'">'
+                        + '<div class="resourceOverlay"><div class="resourceIcon"><span class="icon-picture"></span></div></div>'
+                        + '<div class="resourceTitle">'+ this.resourceData.name +'</div>'
+                        + '</div>';
+                    var thumbElement = _thumbWrapper.firstElementChild;
 
-                    var previewButton = $('<div class="resourcePreviewButton"><span class="icon-eye"></span></div>').click(function(evt) {
-                        self.openPreview( $(this).parent() );
+                    var previewButton = document.createElement('div');
+                    previewButton.className = 'resourcePreviewButton';
+                    previewButton.innerHTML = '<span class="icon-eye"></span>';
+                    previewButton.addEventListener('click', function(evt) {
+                        self.openPreview(this.parentElement);
                         evt.stopPropagation();
                         evt.preventDefault();
                     });
