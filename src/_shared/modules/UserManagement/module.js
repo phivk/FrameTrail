@@ -87,15 +87,15 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 		+ '             \t    <input type="text" name="name" id="user_change_name" placeholder="'+ labels['UserName'] +'">'
 		+ '             \t    <input type="text" name="mail" id="user_change_mail" placeholder="'+ labels['UserMail'] +'">'
 		+ '\t\t\t\t\t<div id="user_change_colorContainer"></div>'
-		+ '             \t    <input type="password" name="passwd" id="user_change_passwd" placeholder="'+ labels['UserPassword'] +'">'
+		+ '             \t    <input type="password" name="passwd" id="user_change_passwd" placeholder="'+ labels['UserPassword'] +'"><br>'
 		+ '             \t    <input type="radio" name="role" id="user_change_role_admin" value="admin">'
 		+ '                   <label for="user_change_role_admin">'+ labels['UserRoleAdmin'] +'</label>'
 		+ '             \t    <input type="radio" name="role" id="user_change_role_user" value="user">'
-		+ '                   <label for="user_change_role_user">'+ labels['UserRoleUser'] +'</label>'
+		+ '                   <label for="user_change_role_user">'+ labels['UserRoleUser'] +'</label><br>'
 		+ '             \t    <input type="radio" name="active" id="user_change_active_1" value="1">'
 		+ '                   <label for="user_change_active_1">'+ labels['UserActive'] +'</label>'
 		+ '             \t    <input type="radio" name="active" id="user_change_active_0" value="0">'
-		+ '                   <label for="user_change_active_0">'+ labels['UserInactive'] +'</label>'
+		+ '                   <label for="user_change_active_0">'+ labels['UserInactive'] +'</label><br>'
 		+ '             \t    <input type="hidden" name="a" value="userChange">'
 		+ '             \t    <input type="submit" value="'+ labels['UserChangeSettings'] +'">'
 		+ '               </div>'
@@ -273,7 +273,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 			getUserColorCollection(function() {
 				renderUserColorCollectionForm(ret['response']['color'], domElement.querySelector('#user_change_colorContainer'));
 			});
-			domElement.querySelector('.userDataContainer').style.display = '';
+			domElement.querySelector('.userDataContainer').style.display = 'block';
 		});
 
 	});
