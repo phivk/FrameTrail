@@ -300,6 +300,8 @@ FrameTrail.defineType(
 
                     };
 
+                    this.timelineElement.addEventListener('click', this._annotationClickHandler);
+
                 },
 
                 /**
