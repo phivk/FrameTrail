@@ -57,7 +57,23 @@ FrameTrail.defineType(
                 whichArea: null,
                 contentViewData:    null,
                 contentCollection: null,
+                _AREA_KEYS: { top: 'Top', bottom: 'Bottom', left: 'Left', right: 'Right' },
 
+
+                _getFilteredCollection: function() {
+                    var f = this.contentViewData.collectionFilter;
+                    return FrameTrail.module('TagModel').getContentCollection(
+                        f.tags, false, true, f.users, f.text, f.types
+                    );
+                },
+
+                _clearContentCollection: function() {
+                    var self = this;
+                    self.contentCollection.forEach(function(contentItem) {
+                        self.removeContentCollectionElements(contentItem);
+                    });
+                    self.contentCollection = [];
+                },
 
                 updateContent: function() {
 
@@ -85,14 +101,7 @@ FrameTrail.defineType(
 
                             var old_contentCollection = self.contentCollection;
 
-                            self.contentCollection = FrameTrail.module('TagModel').getContentCollection(
-                                self.contentViewData.collectionFilter.tags,
-                                false,
-                                true,
-                                self.contentViewData.collectionFilter.users,
-                                self.contentViewData.collectionFilter.text,
-                                self.contentViewData.collectionFilter.types
-                            );
+                            self.contentCollection = self._getFilteredCollection();
 
                             if ( (this.previousContentSize == 'large' && this.contentViewData.contentSize != 'large') ||
                                  (this.previousContentSize != 'large' && this.contentViewData.contentSize == 'large') ) {
@@ -129,9 +138,7 @@ FrameTrail.defineType(
 
                         case 'CustomHTML':
 
-                            self.contentCollection.forEach(function (contentItem) {
-                                self.removeContentCollectionElements(contentItem);
-                            });
+                            self._clearContentCollection();
 
                             var customhtmlContainer = document.createElement('div');
                             customhtmlContainer.className = 'customhtmlContainer';
@@ -151,9 +158,7 @@ FrameTrail.defineType(
 
                         case 'Transcript':
 
-                            self.contentCollection.forEach(function (contentItem) {
-                                self.removeContentCollectionElements(contentItem);
-                            });
+                            self._clearContentCollection();
 
                             var transcriptContainer = document.createElement('div');
                             transcriptContainer.className = 'transcriptContainer';
@@ -180,20 +185,11 @@ FrameTrail.defineType(
 
                             break;
 
-                        case 'Timelines': 
+                        case 'Timelines':
 
-                            self.contentCollection.forEach(function (contentItem) {
-                                self.removeContentCollectionElements(contentItem);
-                            });
+                            self._clearContentCollection();
 
-                            self.contentCollection = FrameTrail.module('TagModel').getContentCollection(
-                                self.contentViewData.collectionFilter.tags,
-                                false,
-                                true,
-                                self.contentViewData.collectionFilter.users,
-                                self.contentViewData.collectionFilter.text,
-                                self.contentViewData.collectionFilter.types
-                            );
+                            self.contentCollection = self._getFilteredCollection();
 
                             var timelinesContainer = document.createElement('div');
                             timelinesContainer.className = 'timelinesContainer';
@@ -476,6 +472,18 @@ FrameTrail.defineType(
 
                     var self = this;
 
+                    function scrollActiveElement(container, activeSelector) {
+                        if (!container || self.isMouseOver) { return; }
+                        if (!self.contentViewContainer.classList.contains('active')) { return; }
+                        var firstActiveElement = container.querySelector(activeSelector);
+                        if (!firstActiveElement) { return; }
+                        var activeElementPosition = firstActiveElement.offsetTop;
+                        if ( activeElementPosition < container.clientHeight/2 + container.scrollTop
+                            || activeElementPosition > container.clientHeight/2 + container.scrollTop ) {
+                            container.scrollTop = activeElementPosition + container.scrollTop - container.clientHeight/2;
+                        }
+                    }
+
                     switch (self.contentViewData.type) {
                         case 'TimedContent':
                             // Annotations are already updated by ViewLayout module!
@@ -497,41 +505,15 @@ FrameTrail.defineType(
                                         if ( !el.classList.contains('active') ) {
                                             el.classList.add('active');
                                             var timebasedTabParent = el.closest('.tab-pane.timebasedTab');
-                                            if (timebasedTabParent) {
-                                                scrollTimebasedElements(timebasedTabParent);
-                                            } else {
-                                                scrollTimebasedElements();
-                                            }
-                                            
+                                            scrollActiveElement(
+                                                timebasedTabParent || self.contentViewContainer.querySelector('.customhtmlContainer'),
+                                                '.timebased.active'
+                                            );
                                         }
                                     } else if ( el.classList.contains('active') ) {
                                         el.classList.remove('active');
                                     }
                                 });
-                            }
-
-                            function scrollTimebasedElements(elementToScroll) {
-                                
-                                if (self.isMouseOver) {
-                                    return;
-                                }
-                                var customhtmlContainer = (elementToScroll) ? elementToScroll : self.contentViewContainer.querySelector('.customhtmlContainer'),
-                                    firstActiveElement = customhtmlContainer ? customhtmlContainer.querySelector('.timebased.active') : null;
-
-
-                                if ( !self.contentViewContainer.classList.contains('active') || !firstActiveElement ) {
-                                    return;
-                                }
-
-                                var activeElementPosition = firstActiveElement.offsetTop;
-
-                                if ( activeElementPosition <
-                                    customhtmlContainer.clientHeight/2 + customhtmlContainer.scrollTop
-                                    || activeElementPosition > customhtmlContainer.clientHeight/2 + customhtmlContainer.scrollTop ) {
-
-                                    customhtmlContainer.scrollTop = activeElementPosition + customhtmlContainer.scrollTop - customhtmlContainer.clientHeight/2;
-                                }
-
                             }
 
                             break;
@@ -546,35 +528,15 @@ FrameTrail.defineType(
                                     if ( startTime-0.5 <= currentTime && endTime-0.5 >= currentTime ) {
                                         if ( !el.classList.contains('active') ) {
                                             el.classList.add('active');
-                                            scrollTranscript();
+                                            scrollActiveElement(
+                                                self.contentViewContainer.querySelector('.transcriptContainer'),
+                                                'span.active'
+                                            );
                                         }
                                     } else if ( el.classList.contains('active') ) {
                                         el.classList.remove('active');
                                     }
                                 });
-                            }
-
-                            function scrollTranscript() {
-
-                                if (self.isMouseOver) {
-                                    return;
-                                }
-                                var transcriptContainer = self.contentViewContainer.querySelector('.transcriptContainer'),
-                                    firstActiveElement = transcriptContainer ? transcriptContainer.querySelector('span.active') : null;
-
-                                if ( !self.contentViewContainer.classList.contains('active') || !firstActiveElement ) {
-                                    return;
-                                }
-
-                                var activeElementPosition = firstActiveElement.offsetTop;
-
-                                if ( activeElementPosition <
-                                    transcriptContainer.clientHeight/2 + transcriptContainer.scrollTop
-                                    || activeElementPosition > transcriptContainer.clientHeight/2 + transcriptContainer.scrollTop ) {
-
-                                    transcriptContainer.scrollTop = activeElementPosition + transcriptContainer.scrollTop - transcriptContainer.clientHeight/2;
-                                }
-
                             }
 
                             break;
@@ -720,6 +682,17 @@ FrameTrail.defineType(
                 },
 
 
+                _renderTab: function(onActivate) {
+                    var self = this,
+                        tabElement = document.createElement('div');
+                    tabElement.className = 'contentViewTab';
+                    tabElement.setAttribute('data-type', self.contentViewData.type);
+                    tabElement.innerHTML = '    <div class="contentViewTabName">'+ self.contentViewData.name +'</div>';
+                    tabElement.addEventListener('click', function() { onActivate.call(self); });
+                    return tabElement;
+                },
+
+
                 /**
                  * I render a ContentView tab.
                  *
@@ -727,19 +700,7 @@ FrameTrail.defineType(
                  * @return {HTMLElement} tabElement
                  */
                 renderContentViewTab: function() {
-
-                    var self = this;
-                    var tabElement = document.createElement('div');
-                    tabElement.className = 'contentViewTab';
-                    tabElement.setAttribute('data-type', self.contentViewData.type);
-                    tabElement.innerHTML = '    <div class="contentViewTabName">'+ self.contentViewData.name +'</div>';
-
-                    tabElement.addEventListener('click', function() {
-                        self.activateContentView();
-                    });
-
-                    return tabElement;
-
+                    return this._renderTab(this.activateContentView);
                 },
 
 
@@ -750,19 +711,7 @@ FrameTrail.defineType(
                  * @return {HTMLElement} tabElement
                  */
                 renderContentViewPreviewTab: function() {
-
-                    var self = this;
-                    var tabElement = document.createElement('div');
-                    tabElement.className = 'contentViewTab';
-                    tabElement.setAttribute('data-type', self.contentViewData.type);
-                    tabElement.innerHTML = '    <div class="contentViewTabName">'+ self.contentViewData.name +'</div>';
-
-                    tabElement.addEventListener('click', function() {
-                        self.activateContentViewPreview();
-                    });
-
-                    return tabElement;
-
+                    return this._renderTab(this.activateContentViewPreview);
                 },
 
 
@@ -2039,179 +1988,116 @@ FrameTrail.defineType(
                     var typeFilters = self.contentViewData.collectionFilter.types;
                     var userFilters = self.contentViewData.collectionFilter.users;
 
-                    // Tag Filter UI
+                    function createFilterSection(config) {
+                        // config: { filters, attrName, itemClass, containerSel, buttonSel, getLabel, getAllItems }
 
-                    updateExistingTagFilters();
+                        function updateExisting() {
+                            updateCollectionFilterValues();
+                            var containerEl = editingUI.querySelector(config.containerSel);
+                            containerEl.innerHTML = '';
+                            config.filters.forEach(function(id) {
+                                var item = document.createElement('div');
+                                item.className = config.itemClass;
+                                item.setAttribute('data-' + config.attrName, id);
+                                item.textContent = config.getLabel(id);
+                                var deleteButton = document.createElement('div');
+                                deleteButton.className = 'deleteItem';
+                                deleteButton.innerHTML = '<span class="icon-cancel"></span>';
+                                deleteButton.addEventListener('click', function() {
+                                    config.filters.splice(config.filters.indexOf(this.parentElement.getAttribute('data-' + config.attrName)), 1);
+                                    updateExisting();
+                                });
+                                item.appendChild(deleteButton);
+                                containerEl.appendChild(item);
+                            });
+                        }
 
-                    editingUI.querySelector('.newTagButton').addEventListener('click', function() {
-                        var _this = this;
-                        editingUI.querySelectorAll('.contextSelectButton').forEach(function(btn) {
-                            if (btn !== _this) btn.classList.remove('active');
+                        function updateSelectList() {
+                            var listEl = editingUI.querySelector(config.buttonSel + ' .contextSelectList');
+                            listEl.innerHTML = '';
+                            config.getAllItems().forEach(function(entry) {
+                                if (config.filters.indexOf(entry.id) !== -1) { return; }
+                                var item = document.createElement('div');
+                                item.className = config.itemClass;
+                                item.setAttribute('data-' + config.attrName, entry.id);
+                                item.textContent = entry.label;
+                                item.addEventListener('click', function() {
+                                    config.filters.push(this.getAttribute('data-' + config.attrName));
+                                    updateExisting();
+                                });
+                                listEl.appendChild(item);
+                            });
+                        }
+
+                        editingUI.querySelector(config.buttonSel).addEventListener('click', function() {
+                            var _this = this;
+                            editingUI.querySelectorAll('.contextSelectButton').forEach(function(btn) {
+                                if (btn !== _this) { btn.classList.remove('active'); }
+                            });
+                            updateSelectList();
+                            _this.classList.toggle('active');
                         });
 
-                        updateTagSelectContainer();
-                        _this.classList.toggle('active');
+                        updateExisting();
+                    }
+
+                    // Tag Filter UI
+                    createFilterSection({
+                        filters:    tagFilters,
+                        attrName:   'tag',
+                        itemClass:  'tagItem',
+                        containerSel: '.existingTags',
+                        buttonSel:  '.newTagButton',
+                        getLabel: function(id) {
+                            return FrameTrail.module('TagModel').getTagLabelAndDescription(id, 'de').label;
+                        },
+                        getAllItems: function() {
+                            var allTags = FrameTrail.module('TagModel').getAllTagLabelsAndDescriptions('de'),
+                                result = [];
+                            for (var tagID in allTags) { result.push({ id: tagID, label: allTags[tagID].label }); }
+                            return result;
+                        }
                     });
-
-                    function updateExistingTagFilters() {
-                        updateCollectionFilterValues();
-                        editingUI.querySelector('.existingTags').innerHTML = '';
-
-                        for (var i=0; i<tagFilters.length; i++) {
-                            var tagLabel = FrameTrail.module('TagModel').getTagLabelAndDescription(tagFilters[i], 'de').label,
-                                tagItem = document.createElement('div');
-                            tagItem.className = 'tagItem';
-                            tagItem.setAttribute('data-tag', tagFilters[i]);
-                            tagItem.textContent = tagLabel;
-                            var deleteButton = document.createElement('div');
-                            deleteButton.className = 'deleteItem';
-                            deleteButton.innerHTML = '<span class="icon-cancel"></span>';
-                            deleteButton.addEventListener('click', function() {
-                                tagFilters.splice(tagFilters.indexOf(this.parentElement.getAttribute('data-tag')), 1);
-                                updateExistingTagFilters();
-                            });
-                            tagItem.appendChild(deleteButton);
-                            editingUI.querySelector('.existingTags').appendChild(tagItem);
-                        }
-                    }
-
-                    function updateTagSelectContainer() {
-                        editingUI.querySelector('.newTagButton .contextSelectList').innerHTML = '';
-
-                        var allTags = FrameTrail.module('TagModel').getAllTagLabelsAndDescriptions('de');
-                        for (var tagID in allTags) {
-                            if ( tagFilters.indexOf(tagID) != -1 ) {
-                                continue;
-                            }
-                            var tagLabel = allTags[tagID].label,
-                                tagItem = document.createElement('div');
-                            tagItem.className = 'tagItem';
-                            tagItem.setAttribute('data-tag', tagID);
-                            tagItem.textContent = tagLabel;
-                            tagItem.addEventListener('click', function() {
-                                tagFilters.push( this.getAttribute('data-tag') );
-                                updateExistingTagFilters();
-                            });
-                            editingUI.querySelector('.newTagButton .contextSelectList').appendChild(tagItem);
-                        }
-                    }
 
                     // Type Filter UI
-
-                    updateExistingTypeFilters();
-
-                    editingUI.querySelector('.newTypeButton').addEventListener('click', function() {
-                        var _this = this;
-                        editingUI.querySelectorAll('.contextSelectButton').forEach(function(btn) {
-                            if (btn !== _this) btn.classList.remove('active');
-                        });
-
-                        updateTypeSelectContainer();
-                        _this.classList.toggle('active');
+                    createFilterSection({
+                        filters:    typeFilters,
+                        attrName:   'type',
+                        itemClass:  'typeItem',
+                        containerSel: '.existingTypes',
+                        buttonSel:  '.newTypeButton',
+                        getLabel: function(id) {
+                            return id.charAt(0).toUpperCase() + id.substring(1);
+                        },
+                        getAllItems: function() {
+                            var result = [];
+                            for (var typeDef in FrameTrail.types) {
+                                if (typeDef.indexOf('Resource') !== -1 && typeDef !== 'Resource' && typeDef !== 'ResourceText') {
+                                    result.push({ id: typeDef.split('Resource')[1].toLowerCase(), label: '' });
+                                }
+                            }
+                            result.forEach(function(e) { e.label = e.id.charAt(0).toUpperCase() + e.id.substring(1); });
+                            return result;
+                        }
                     });
-
-                    function updateExistingTypeFilters() {
-                        updateCollectionFilterValues();
-                        editingUI.querySelector('.existingTypes').innerHTML = '';
-
-                        for (var i=0; i<typeFilters.length; i++) {
-                            var typeItem = document.createElement('div');
-                            typeItem.className = 'typeItem';
-                            typeItem.setAttribute('data-type', typeFilters[i]);
-                            typeItem.textContent = typeFilters[i].charAt(0).toUpperCase() + typeFilters[i].substring(1);
-                            var deleteButton = document.createElement('div');
-                            deleteButton.className = 'deleteItem';
-                            deleteButton.innerHTML = '<span class="icon-cancel"></span>';
-                            deleteButton.addEventListener('click', function() {
-                                typeFilters.splice(typeFilters.indexOf(this.parentElement.getAttribute('data-type')), 1);
-                                updateExistingTypeFilters();
-                            });
-                            typeItem.appendChild(deleteButton);
-                            editingUI.querySelector('.existingTypes').appendChild(typeItem);
-                        }
-                    }
-
-                    function updateTypeSelectContainer() {
-                        editingUI.querySelector('.newTypeButton .contextSelectList').innerHTML = '';
-
-                        var allTypes = [];
-
-                        for (var typeDef in FrameTrail.types) {
-                            if ( typeDef.indexOf('Resource') != -1 && typeDef != 'Resource' && typeDef != 'ResourceText' ) {
-                                allTypes.push( typeDef.split('Resource')[1].toLowerCase() );
-                            }
-                        };
-                        for (var t=0; t<allTypes.length; t++) {
-                            if ( typeFilters.indexOf(allTypes[t]) != -1 ) {
-                                continue;
-                            }
-                            var typeItem = document.createElement('div');
-                            typeItem.className = 'typeItem';
-                            typeItem.setAttribute('data-type', allTypes[t]);
-                            typeItem.textContent = allTypes[t].charAt(0).toUpperCase() + allTypes[t].substring(1);
-                            typeItem.addEventListener('click', function() {
-                                typeFilters.push( this.getAttribute('data-type') );
-                                updateExistingTypeFilters();
-                            });
-                            editingUI.querySelector('.newTypeButton .contextSelectList').appendChild(typeItem);
-                        }
-                    }
 
                     // User Filter UI
-
-                    updateExistingUserFilters();
-
-                    editingUI.querySelector('.newUserButton').addEventListener('click', function() {
-                        var _this = this;
-                        editingUI.querySelectorAll('.contextSelectButton').forEach(function(btn) {
-                            if (btn !== _this) btn.classList.remove('active');
-                        });
-
-                        updateUserSelectContainer();
-                        _this.classList.toggle('active');
+                    createFilterSection({
+                        filters:    userFilters,
+                        attrName:   'user',
+                        itemClass:  'userItem',
+                        containerSel: '.existingUsers',
+                        buttonSel:  '.newUserButton',
+                        getLabel: function(id) {
+                            return FrameTrail.module('Database').users[id].name;
+                        },
+                        getAllItems: function() {
+                            var allUsers = FrameTrail.module('Database').users,
+                                result = [];
+                            for (var user in allUsers) { result.push({ id: user, label: allUsers[user].name }); }
+                            return result;
+                        }
                     });
-
-                    function updateExistingUserFilters() {
-                        updateCollectionFilterValues();
-                        editingUI.querySelector('.existingUsers').innerHTML = '';
-
-                        for (var u=0; u<userFilters.length; u++) {
-                            var userLabel = FrameTrail.module('Database').users[userFilters[u]].name,
-                                userItem = document.createElement('div');
-                            userItem.className = 'userItem';
-                            userItem.setAttribute('data-user', userFilters[u]);
-                            userItem.textContent = userLabel;
-                            var deleteButton = document.createElement('div');
-                            deleteButton.className = 'deleteItem';
-                            deleteButton.innerHTML = '<span class="icon-cancel"></span>';
-                            deleteButton.addEventListener('click', function() {
-                                userFilters.splice(userFilters.indexOf(this.parentElement.getAttribute('data-user')), 1);
-                                updateExistingUserFilters();
-                            });
-                            userItem.appendChild(deleteButton);
-                            editingUI.querySelector('.existingUsers').appendChild(userItem);
-                        }
-                    }
-
-                    function updateUserSelectContainer() {
-                        editingUI.querySelector('.newUserButton .contextSelectList').innerHTML = '';
-
-                        var allUsers = FrameTrail.module('Database').users;
-                        for (var user in allUsers) {
-                            if ( userFilters.indexOf(user) != -1 ) {
-                                continue;
-                            }
-                            var userItem = document.createElement('div');
-                            userItem.className = 'userItem';
-                            userItem.setAttribute('data-user', user);
-                            userItem.textContent = allUsers[user].name;
-                            userItem.addEventListener('click', function() {
-                                userFilters.push( this.getAttribute('data-user') );
-                                updateExistingUserFilters();
-                            });
-                            editingUI.querySelector('.newUserButton .contextSelectList').appendChild(userItem);
-                        }
-                    }
 
                     // Update Collection Filter Values from UI Elements
 
@@ -2228,96 +2114,68 @@ FrameTrail.defineType(
                                 editingUI.querySelector('.contentViewData[data-property="collectionFilter-text"]').value,
                                 typeFilters
                             ).length;
-                        editingUI.querySelector('.collectionCounter').textContent = numberOfAnnotations;
-                        var counterMsg = editingUI.querySelector('.collectionCounter').closest('.message');
-                        if ( numberOfAnnotations == 0 ) {
-                            counterMsg.classList.remove('success');
-                            counterMsg.classList.add('error');
-                        } else {
-                            counterMsg.classList.remove('error');
-                            counterMsg.classList.add('success');
-                        }
+                        var counterEl = editingUI.querySelector('.collectionCounter');
+                        counterEl.textContent = numberOfAnnotations;
+                        var counterMsg = counterEl.closest('.message');
+                        counterMsg.classList.toggle('error', numberOfAnnotations === 0);
+                        counterMsg.classList.toggle('success', numberOfAnnotations > 0);
 
-                        var tagFilterString = tagFilters.join(',');
-                        editingUI.querySelector('.contentViewData[data-property="collectionFilter-tags"]').value = tagFilterString;
-                        var typeFilterString = typeFilters.join(',');
-                        editingUI.querySelector('.contentViewData[data-property="collectionFilter-types"]').value = typeFilterString;
-                        var userFilterString = userFilters.join(',');
-                        editingUI.querySelector('.contentViewData[data-property="collectionFilter-users"]').value = userFilterString;
+                        [['tags', tagFilters], ['types', typeFilters], ['users', userFilters]].forEach(function(pair) {
+                            editingUI.querySelector('.contentViewData[data-property="collectionFilter-' + pair[0] + '"]').value = pair[1].join(',');
+                        });
                     }
 
-                    // Init CodeMirror 6 for onClickContentItem
+                    // Init CodeMirror 6 editors
+
+                    function createCM6Editor(targetTextarea, langMode, linter) {
+                        var CM6 = window.FrameTrailCM6,
+                            wrapper = document.createElement('div');
+                        wrapper.className = 'cm6-wrapper';
+                        wrapper.style.height = '100%';
+                        targetTextarea.insertAdjacentElement('afterend', wrapper);
+                        targetTextarea.style.display = 'none';
+                        var editor = new CM6.EditorView({
+                            state: CM6.EditorState.create({
+                                doc: targetTextarea.value,
+                                extensions: [
+                                    CM6.oneDark,
+                                    CM6.lineNumbers(),
+                                    CM6.highlightActiveLine(),
+                                    CM6.highlightActiveLineGutter(),
+                                    CM6.drawSelection(),
+                                    CM6.history(),
+                                    CM6.keymap.of([].concat(CM6.defaultKeymap, CM6.historyKeymap)),
+                                    CM6.EditorView.lineWrapping,
+                                    CM6.StreamLanguage.define(langMode),
+                                    linter,
+                                    CM6.lintGutter(),
+                                    CM6.EditorView.updateListener.of(function(update) {
+                                        if (!update.docChanged) { return; }
+                                        var val = update.state.doc.toString();
+                                        targetTextarea.setAttribute('data-value', val);
+                                        targetTextarea.value = val;
+                                    })
+                                ]
+                            }),
+                            parent: wrapper
+                        });
+                        wrapper._cm6view = editor;
+                        return editor;
+                    }
 
                     var CM6 = window.FrameTrailCM6;
-                    var textarea = editingUI.querySelector('.contentViewData[data-property="onClickContentItem"]');
-                    var cm6WrapperJS = document.createElement('div');
-                    cm6WrapperJS.className = 'cm6-wrapper';
-                    cm6WrapperJS.style.height = '100%';
-                    textarea.insertAdjacentElement('afterend', cm6WrapperJS);
-                    textarea.style.display = 'none';
 
-                    var codeEditor = new CM6.EditorView({
-                        state: CM6.EditorState.create({
-                            doc: textarea.value,
-                            extensions: [
-                                CM6.oneDark,
-                                CM6.lineNumbers(),
-                                CM6.highlightActiveLine(),
-                                CM6.highlightActiveLineGutter(),
-                                CM6.drawSelection(),
-                                CM6.history(),
-                                CM6.keymap.of([].concat(CM6.defaultKeymap, CM6.historyKeymap)),
-                                CM6.EditorView.lineWrapping,
-                                CM6.StreamLanguage.define(CM6.legacyModes.javascript),
-                                window.FrameTrailCM6Linters.js,
-                                CM6.lintGutter(),
-                                CM6.EditorView.updateListener.of(function(update) {
-                                    if (!update.docChanged) { return; }
-                                    var val = update.state.doc.toString();
-                                    textarea.setAttribute('data-value', val);
-                                    textarea.value = val;
-                                })
-                            ]
-                        }),
-                        parent: cm6WrapperJS
-                    });
-                    cm6WrapperJS._cm6view = codeEditor;
+                    createCM6Editor(
+                        editingUI.querySelector('.contentViewData[data-property="onClickContentItem"]'),
+                        CM6.legacyModes.javascript,
+                        window.FrameTrailCM6Linters.js
+                    );
 
-                    // Init CodeMirror 6 for Custom HTML
-
-                    var htmlTextarea = editingUI.querySelector('.contentViewData[data-property="html"]');
-                    var cm6WrapperHTML = document.createElement('div');
-                    cm6WrapperHTML.className = 'cm6-wrapper';
-                    cm6WrapperHTML.style.height = '100%';
-                    htmlTextarea.insertAdjacentElement('afterend', cm6WrapperHTML);
-                    htmlTextarea.style.display = 'none';
-
-                    var htmlCodeEditor = new CM6.EditorView({
-                        state: CM6.EditorState.create({
-                            doc: htmlTextarea.value,
-                            extensions: [
-                                CM6.oneDark,
-                                CM6.lineNumbers(),
-                                CM6.highlightActiveLine(),
-                                CM6.highlightActiveLineGutter(),
-                                CM6.drawSelection(),
-                                CM6.history(),
-                                CM6.keymap.of([].concat(CM6.defaultKeymap, CM6.historyKeymap)),
-                                CM6.EditorView.lineWrapping,
-                                CM6.StreamLanguage.define(CM6.legacyModes.html),
-                                window.FrameTrailCM6Linters.html,
-                                CM6.lintGutter(),
-                                CM6.EditorView.updateListener.of(function(update) {
-                                    if (!update.docChanged) { return; }
-                                    var val = update.state.doc.toString();
-                                    htmlTextarea.setAttribute('data-value', val);
-                                    htmlTextarea.value = val;
-                                })
-                            ]
-                        }),
-                        parent: cm6WrapperHTML
-                    });
-                    cm6WrapperHTML._cm6view = htmlCodeEditor;
+                    createCM6Editor(
+                        editingUI.querySelector('.contentViewData[data-property="html"]'),
+                        CM6.legacyModes.html,
+                        window.FrameTrailCM6Linters.html
+                    );
 
 
                     return editingUI;
@@ -2384,27 +2242,8 @@ FrameTrail.defineType(
                  * @return {HTMLElement} areaContainer
                  */
                 getLayoutAreaContainer: function() {
-
-                    var ViewVideo = FrameTrail.module('ViewVideo'),
-                        areaContainer;
-
-                    switch (this.whichArea) {
-                        case 'top':
-                            areaContainer = ViewVideo.AreaTopContainer;
-                            break;
-                        case 'bottom':
-                            areaContainer = ViewVideo.AreaBottomContainer;
-                            break;
-                        case 'left':
-                            areaContainer = ViewVideo.AreaLeftContainer;
-                            break;
-                        case 'right':
-                            areaContainer = ViewVideo.AreaRightContainer;
-                            break;
-                    }
-
-                    return areaContainer;
-
+                    var ViewVideo = FrameTrail.module('ViewVideo');
+                    return ViewVideo['Area' + this._AREA_KEYS[this.whichArea] + 'Container'];
                 },
 
 
@@ -2415,27 +2254,8 @@ FrameTrail.defineType(
                  * @return {HTMLElement} areaDetailsContainer
                  */
                 getLayoutAreaDetailsContainer: function() {
-
-                    var ViewVideo = FrameTrail.module('ViewVideo'),
-                        areaDetailsContainer;
-
-                    switch (this.whichArea) {
-                        case 'top':
-                            areaDetailsContainer = ViewVideo.AreaTopDetails;
-                            break;
-                        case 'bottom':
-                            areaDetailsContainer = ViewVideo.AreaBottomDetails;
-                            break;
-                        case 'left':
-                            areaDetailsContainer = ViewVideo.AreaLeftDetails;
-                            break;
-                        case 'right':
-                            areaDetailsContainer = ViewVideo.AreaRightDetails;
-                            break;
-                    }
-
-                    return areaDetailsContainer;
-
+                    var ViewVideo = FrameTrail.module('ViewVideo');
+                    return ViewVideo['Area' + this._AREA_KEYS[this.whichArea] + 'Details'];
                 },
 
 
@@ -2446,27 +2266,8 @@ FrameTrail.defineType(
                  * @return {HTMLElement} areaContainer
                  */
                 getLayoutAreaPreviewContainer: function() {
-
-                    var HypervideoLayoutContainer = FrameTrail.module('ViewVideo').HypervideoLayoutContainer,
-                        areaContainer;
-
-                    switch (this.whichArea) {
-                        case 'top':
-                            areaContainer = HypervideoLayoutContainer.querySelector('.layoutArea[data-area="areaTop"]');
-                            break;
-                        case 'bottom':
-                            areaContainer = HypervideoLayoutContainer.querySelector('.layoutArea[data-area="areaBottom"]');
-                            break;
-                        case 'left':
-                            areaContainer = HypervideoLayoutContainer.querySelector('.layoutArea[data-area="areaLeft"]');
-                            break;
-                        case 'right':
-                            areaContainer = HypervideoLayoutContainer.querySelector('.layoutArea[data-area="areaRight"]');
-                            break;
-                    }
-
-                    return areaContainer;
-
+                    return FrameTrail.module('ViewVideo').HypervideoLayoutContainer
+                        .querySelector('.layoutArea[data-area="area' + this._AREA_KEYS[this.whichArea] + '"]');
                 }
 
 
