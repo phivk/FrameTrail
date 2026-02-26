@@ -590,6 +590,8 @@ FrameTrail.defineType(
 
                     self.scaleDetailElements();
 
+                    self.updateCollectionSlider();
+
                 },
 
 
@@ -744,7 +746,7 @@ FrameTrail.defineType(
                         slideLeftButton.addEventListener('click', function() {
                             var container = self.contentViewContainer.querySelector('.contentViewContents'),
                                 slideAmount = container.parentElement.offsetWidth / 3,
-                                leftValue = parseInt(container.style.left) + slideAmount;
+                                leftValue = (parseInt(container.style.left) || 0) + slideAmount;
 
                             if ( leftValue >= 10 ) {
                                 container.style.left = '';
@@ -755,7 +757,7 @@ FrameTrail.defineType(
                         slideRightButton.addEventListener('click', function() {
                             var container = self.contentViewContainer.querySelector('.contentViewContents'),
                                 slideAmount = container.parentElement.offsetWidth / 3,
-                                leftValue = parseInt(container.style.left) - slideAmount;
+                                leftValue = (parseInt(container.style.left) || 0) - slideAmount;
 
                             if ( leftValue <= - ( container.offsetWidth - container.parentElement.offsetWidth ) ) {
                                 container.style.left = - ( container.offsetWidth - container.parentElement.offsetWidth ) + 'px';
@@ -779,7 +781,7 @@ FrameTrail.defineType(
                         slideTopButton.addEventListener('click', function() {
                             var container = self.contentViewContainer.querySelector('.contentViewContents'),
                                 slideAmount = container.parentElement.offsetHeight / 3,
-                                topValue = parseInt(container.style.top) + slideAmount;
+                                topValue = (parseInt(container.style.top) || 0) + slideAmount;
 
                             if ( topValue >= 10 ) {
                                 container.style.top = '';
@@ -790,7 +792,7 @@ FrameTrail.defineType(
                         slideBottomButton.addEventListener('click', function() {
                             var container = self.contentViewContainer.querySelector('.contentViewContents'),
                                 slideAmount = container.parentElement.offsetHeight / 3,
-                                topValue = parseInt(container.style.top) - slideAmount;
+                                topValue = (parseInt(container.style.top) || 0) - slideAmount;
 
                             if ( topValue <= - ( container.offsetHeight - container.parentElement.offsetHeight ) ) {
                                 container.style.top = - ( container.offsetHeight - container.parentElement.offsetHeight ) + 'px';
@@ -1217,317 +1219,121 @@ FrameTrail.defineType(
                     }
 
                     var self = this,
-                        annotations         = self.contentCollection,
-                        videoDuration       = FrameTrail.module('HypervideoModel').duration,
-                        sliderParent        = self.contentViewContainer,
-                        containerElement    = self.contentViewContainer.querySelector('.contentViewContents'),
-                        groupCnt            = 0,
-                        gap                 = 4 + 4,
-                        thisElement         = null,
-                        previousElement,
-                        previousElementRightPos,
-                        startTime,
-                        endTime,
-                        middleTime,
-                        desiredPosition,
-                        finalPosition;
+                        annotations      = self.contentCollection,
+                        videoDuration    = FrameTrail.module('HypervideoModel').duration,
+                        offsetIn         = FrameTrail.module('HypervideoModel').offsetIn,
+                        sliderParent     = self.contentViewContainer,
+                        containerElement = self.contentViewContainer.querySelector('.contentViewContents'),
+                        containerWidth   = sliderParent.offsetWidth,
+                        gap              = 4,
+                        scale            = containerWidth / videoDuration;
+
+                    // Helper: total pixel width of a group (items + gaps between them)
+                    function groupTotalWidth(group) {
+                        var w = 0;
+                        for (var j = 0; j < group.items.length; j++) { w += group.items[j].width; }
+                        w += (group.items.length - 1) * gap;
+                        return w;
+                    }
+
+                    // --- Pre-read pass: collect element widths from DOM (single reflow) ---
+
+                    var items = [];
+                    for (var i = 0; i < annotations.length; i++) {
+                        var el = self.getContentViewElementFromContentItem(annotations[i]);
+                        if (!el) { continue; }
+                        items.push({
+                            el:        el,
+                            width:     el.offsetWidth,
+                            startTime: annotations[i].data.start,
+                            endTime:   annotations[i].data.end
+                        });
+                    }
+
+                    // --- Pre-check: if total width exceeds container, expand and hand off to slider ---
+
+                    var totalWidth = 0;
+                    for (var i = 0; i < items.length; i++) { totalWidth += items[i].width + gap; }
+
+                    if (totalWidth > containerWidth) {
+                        // Reset to normal flow in case items were absolutely positioned from a previous run
+                        Array.from(containerElement.children).forEach(function(el) {
+                            el.style.position = '';
+                            el.style.left = '';
+                        });
+                        containerElement.style.left = '';
+                        containerElement.style.width = totalWidth + 'px';
+                        return;
+                    } else {
+                        containerElement.style.width = '';
+                        containerElement.style.left = '';   // clear stale scroll offset from before any resize
+                    }
+
+                    // --- Phase 1: Build groups — items that naturally overlap are grouped ---
+
+                    var groups = [];
+                    var prevDesiredRight = 0;
+
+                    for (var i = 0; i < items.length; i++) {
+                        var item = items[i];
+                        var midTime = (item.startTime + item.endTime) / 2 - offsetIn;
+                        var desired = scale * midTime - item.width / 2;
+
+                        if (desired >= prevDesiredRight) {
+                            groups.push({ items: [item], left: Math.max(0, desired) });
+                        } else {
+                            groups[groups.length - 1].items.push(item);
+                        }
+
+                        prevDesiredRight = desired + item.width;
+                    }
+
+                    // --- Phase 2: Centre each group over its combined time span ---
+
+                    prevGroupRight = -gap;
+
+                    for (var i = 0; i < groups.length; i++) {
+                        var group = groups[i];
+                        var firstItem = group.items[0];
+                        var lastItem  = group.items[group.items.length - 1];
+                        var groupMidTime = (firstItem.startTime + lastItem.endTime) / 2 - offsetIn;
+                        var gw = groupTotalWidth(group);
+                        var desiredLeft = scale * groupMidTime - gw / 2;
+
+                        group.left = Math.max(prevGroupRight + gap, desiredLeft);
+                        prevGroupRight = group.left + gw;
+                    }
+
+                    // --- Phase 3: Right-to-left sweep — clamp groups within container ---
+
+                    var rightBoundary = containerWidth - 2 * gap;
+
+                    for (var i = groups.length - 1; i >= 0; i--) {
+                        var group = groups[i];
+                        var gw = groupTotalWidth(group);
+                        group.left = Math.min(group.left, rightBoundary - gw);
+                        rightBoundary = group.left - gap;
+                    }
+
+                    // --- Phase 4: Write positions to DOM ---
 
                     Array.from(containerElement.children).forEach(function(el) {
-                        el.removeAttribute('data-group-id');
                         el.style.position = '';
                         el.style.left = '';
                     });
 
-                    function getTotalWidth(collection, addition){
-
-                        var totalWidth = 0;
-                        Array.from(collection).forEach(function(el) {
-                            totalWidth += el.offsetWidth + addition + 1;
-                        });
-                        return totalWidth;
-
+                    for (var i = 0; i < groups.length; i++) {
+                        var group = groups[i];
+                        var x = group.left;
+                        for (var j = 0; j < group.items.length; j++) {
+                            var item = group.items[j];
+                            item.el.style.position = 'absolute';
+                            item.el.style.left = x + 'px';
+                            item.el.setAttribute('data-in',  item.startTime);
+                            item.el.setAttribute('data-out', item.endTime);
+                            x += item.width + gap;
+                        }
                     }
-
-                    function getNegativeOffsetRightCorrection(leftPosition, collectionWidth) {
-
-                        var offsetCorrection,
-                            mostRightPos = leftPosition + collectionWidth + (gap*2);
-
-                        if ( mostRightPos >= sliderParent.offsetWidth ) {
-                            offsetCorrection = mostRightPos - sliderParent.offsetWidth;
-
-                            return offsetCorrection;
-
-                        }
-
-                        return 0;
-                    }
-
-                    // Cancel if total width > container width
-                    if ( getTotalWidth(containerElement.children, 4) > sliderParent.offsetWidth ) {
-                        containerElement.style.width = getTotalWidth(containerElement.children, 4) + 'px';
-                        return;
-                    } else {
-                        containerElement.style.width = '';
-                    }
-
-                    // Distribute Items
-                    for (var i = 0; i < annotations.length; i++) {
-
-                        thisElement = self.getContentViewElementFromContentItem(annotations[i]);
-                        if (!thisElement) {
-                            continue;
-                        }
-                        //console.log(thisElement);
-                        if (i > 0) {
-                            previousElement         = self.getContentViewElementFromContentItem(annotations[i-1]);
-                            if (!previousElement) {
-                                continue;
-                            }
-                            previousElementRightPos = previousElement.offsetLeft + previousElement.offsetWidth;
-                        }
-
-                        startTime   = annotations[i].data.start;
-                        endTime     = annotations[i].data.end;
-                        middleTime  = (startTime + ( (endTime-startTime)/2 )) - FrameTrail.module('HypervideoModel').offsetIn;
-
-                        desiredPosition = ( (sliderParent.offsetWidth / videoDuration) * middleTime ) - ( thisElement.offsetWidth/2 );
-                        //console.log(desiredPosition);
-
-                        thisElement.setAttribute('data-in',  startTime);
-                        thisElement.setAttribute('data-out', endTime);
-
-                        if (desiredPosition <= 0) {
-                            finalPosition = 0;
-                            thisElement.removeAttribute('data-group-id');
-                            groupCnt++;
-
-                        } else if (desiredPosition < previousElementRightPos + gap) {
-
-
-                            finalPosition = previousElementRightPos + gap;
-
-                            if (previousElement.getAttribute('data-group-id')) {
-
-                                Array.from(containerElement.querySelectorAll('[data-group-id="'+ previousElement.getAttribute('data-group-id') +'"]')).forEach(function(el) {
-                                    el.setAttribute('data-group-id', groupCnt);
-                                });
-
-                            } else {
-
-                                previousElement.setAttribute('data-group-id', groupCnt);
-
-                            }
-
-                            thisElement.setAttribute('data-group-id', groupCnt);
-                            groupCnt++;
-
-                        } else {
-
-                            finalPosition = desiredPosition;
-                            thisElement.removeAttribute('data-group-id');
-                            groupCnt++;
-
-                        }
-
-                        thisElement.style.position = 'absolute';
-                        thisElement.style.left = finalPosition + 'px';
-
-                    }
-
-                    // Re-Arrange Groups
-
-                    var groupCollection,
-                        p,
-                        previousGroupCollection,
-                        previousGroupCollectionRightPos,
-                        totalWidth,
-                        groupStartTime,
-                        groupEndTime,
-                        groupMiddleTime,
-                        desiredGroupPosition,
-                        correction,
-                        negativeOffsetRightCorrection,
-                        groupIDs;
-
-                    function arrangeGroups() {
-
-                        groupIDs = [];
-
-                        containerElement.querySelectorAll('[data-group-id]').forEach(function(el) {
-                            if ( groupIDs.indexOf( el.getAttribute('data-group-id') ) == -1 ) {
-                                groupIDs.push(el.getAttribute('data-group-id'));
-                            }
-                        });
-
-                        for (var i=0; i < groupIDs.length; i++) {
-
-                            var g = groupIDs[i];
-
-                            groupCollection = Array.from(containerElement.querySelectorAll('[data-group-id="'+ g +'"]'));
-
-                            if (groupCollection.length < 1) {
-                                continue;
-                            }
-
-                            if ( groupIDs[i-1] ) {
-                                p = groupIDs[i-1];
-                                previousGroupCollection         = Array.from(containerElement.querySelectorAll('[data-group-id="'+ p +'"]'));
-                                previousGroupCollectionRightPos = previousGroupCollection[0].offsetLeft + getTotalWidth( previousGroupCollection, 4 );
-                            }
-
-                            totalWidth      = getTotalWidth( groupCollection, 4 );
-
-                            groupStartTime  = parseInt(groupCollection[0].getAttribute('data-in'));
-                            groupEndTime    = parseInt(groupCollection[groupCollection.length-1].getAttribute('data-out'));
-                            groupMiddleTime = (groupStartTime + ( (groupEndTime-groupStartTime)/2 )) - FrameTrail.module('HypervideoModel').offsetIn;
-
-                            desiredGroupPosition = ( (sliderParent.offsetWidth / videoDuration) * groupMiddleTime ) - ( totalWidth/2 );
-
-                            correction = groupCollection[0].offsetLeft - desiredGroupPosition;
-
-                            if ( groupCollection[0].offsetLeft - correction >= 0 && desiredGroupPosition > previousGroupCollectionRightPos + gap ) {
-
-                                groupCollection.forEach(function(el) {
-                                    el.style.left = (parseFloat(el.style.left) - correction) + 'px';
-                                });
-
-                            } else if ( groupCollection[0].offsetLeft - correction >= 0 && desiredGroupPosition < previousGroupCollectionRightPos + gap ) {
-
-                                var  attachCorrection = groupCollection[0].offsetLeft - previousGroupCollectionRightPos;
-                                groupCollection.forEach(function(el) {
-
-                                    el.style.left = (parseFloat(el.style.left) - attachCorrection) + 'px';
-
-                                });
-
-                                var prevElem = groupCollection[0].previousElementSibling;
-                                if ( prevElem ) {
-
-                                    if ( prevElem.getAttribute('data-group-id') ) {
-
-                                        Array.from(previousGroupCollection).forEach(function(el) { el.setAttribute('data-group-id', g); });
-
-                                    } else {
-
-                                        prevElem.setAttribute('data-group-id', g);
-
-                                    }
-
-                                }
-
-                            }
-
-                        }
-
-                    }
-
-                    arrangeGroups();
-
-
-
-                    // Deal with edge case > elements outside container on right side
-
-                    var repeatIteration;
-
-                    function solveRightEdgeOverlap() {
-
-                        repeatIteration = false;
-
-                        for (var i = 0; i < annotations.length; i++) {
-
-                            thisElement = self.getContentViewElementFromContentItem(annotations[i]);
-                            if (!thisElement) {
-                                continue;
-                            }
-
-                            var g = undefined;
-
-                            if ( thisElement.getAttribute('data-group-id') ) {
-                                g = thisElement.getAttribute('data-group-id');
-                                groupCollection = Array.from(containerElement.querySelectorAll('[data-group-id="'+ g +'"]'));
-                            } else {
-                                groupCollection = [thisElement];
-                            }
-
-                            var prevSibling = groupCollection[0].previousElementSibling;
-                            if (prevSibling) {
-
-                                previousElement = prevSibling;
-
-                                if ( previousElement.getAttribute('data-group-id') ) {
-
-                                    previousGroupCollection         = Array.from(containerElement.querySelectorAll('[data-group-id="'+ previousElement.getAttribute('data-group-id') +'"]'));
-                                    previousGroupCollectionRightPos = previousGroupCollection[0].offsetLeft + getTotalWidth( previousGroupCollection, 4 );
-
-                                } else {
-
-                                    previousGroupCollection         = [previousElement];
-                                    previousGroupCollectionRightPos = previousElement.offsetLeft + previousElement.offsetWidth + gap;
-
-                                }
-
-
-                            } else {
-                                previousGroupCollectionRightPos = 0;
-                            }
-
-                            totalWidth = getTotalWidth( groupCollection, 4 );
-
-                            currentGroupCollectionLeft = groupCollection[0].offsetLeft;
-                            currentGroupCollectionRightPos = groupCollection[0].offsetLeft + totalWidth;
-
-                            negativeOffsetRightCorrection = getNegativeOffsetRightCorrection(currentGroupCollectionLeft, totalWidth);
-
-                            if ( currentGroupCollectionLeft - negativeOffsetRightCorrection >= 0  && negativeOffsetRightCorrection > 1 ) {
-
-                                if ( currentGroupCollectionLeft - negativeOffsetRightCorrection > previousGroupCollectionRightPos + gap ) {
-
-                                    groupCollection.forEach(function(el) {
-                                        el.style.left = (parseFloat(el.style.left) - negativeOffsetRightCorrection) + 'px';
-                                    });
-
-                                } else if ( currentGroupCollectionLeft - negativeOffsetRightCorrection < previousGroupCollectionRightPos + gap ) {
-
-                                    var attachCorrection = currentGroupCollectionLeft - previousGroupCollectionRightPos;
-                                    groupCollection.forEach(function(el) {
-                                        el.style.left = (parseFloat(el.style.left) - attachCorrection) + 'px';
-                                    });
-
-                                    if ( !g && prevSibling && prevSibling.getAttribute('data-group-id') ) {
-
-                                        thisElement.setAttribute('data-group-id', prevSibling.getAttribute('data-group-id'));
-
-                                    }
-
-                                    if ( prevSibling && prevSibling.getAttribute('data-group-id') ) {
-
-                                        Array.from(containerElement.querySelectorAll('[data-group-id="'+ prevSibling.getAttribute('data-group-id') +'"]')).forEach(function(el) {
-                                            el.setAttribute('data-group-id', g);
-                                        });
-
-                                    } else if (prevSibling) {
-
-                                        prevSibling.setAttribute('data-group-id', g);
-
-                                    }
-
-
-                                    repeatIteration = false;
-
-                                }
-
-                            }
-
-                        }
-
-                        if ( repeatIteration ) {
-                            solveRightEdgeOverlap();
-                        }
-
-                    }
-
-                    solveRightEdgeOverlap();
 
                 },
 
@@ -1582,7 +1388,7 @@ FrameTrail.defineType(
 
                         if ( widthOfSlider > sliderParent.offsetWidth ) {
                             sliderElement.style.width = widthOfSlider + 'px';
-                            sliderParent.querySelectorAll('.slideButton').forEach(function(el) { el.style.display = ''; });
+                            sliderParent.querySelectorAll('.slideButton').forEach(function(el) { el.style.display = 'flex'; });
                         } else {
                             sliderElement.style.width = '';
                             sliderElement.style.left = gap + 'px';
@@ -1601,7 +1407,7 @@ FrameTrail.defineType(
 
                         if ( heightOfSlider > sliderParent.offsetHeight ) {
                             sliderElement.style.height = heightOfSlider + 'px';
-                            sliderParent.querySelectorAll('.slideButton').forEach(function(el) { el.style.display = ''; });
+                            sliderParent.querySelectorAll('.slideButton').forEach(function(el) { el.style.display = 'flex'; });
                         } else {
                             sliderElement.style.height = '';
                             sliderElement.style.top = gap + 'px';
@@ -1646,18 +1452,37 @@ FrameTrail.defineType(
 
                         if ( widthOfSlider > sliderParent.offsetWidth ) {
 
-                            var leftOffset = -1 * (     activeElementPosition.left
-                                                      - 1
-                                                      - sliderParent.clientWidth / 2
-                                                      + activeAnnotationElement.offsetWidth / 2
-                                            );
+                            if (details) {
 
-                            if ( !details && leftOffset > 0 ) {
-                                sliderElement.style.left = gap + 'px';
-                            } else if ( !details && leftOffset < - (widthOfSlider - sliderParent.offsetWidth) ) {
-                                sliderElement.style.left = - (widthOfSlider - sliderParent.offsetWidth) + 'px';
+                                // Details path: centre on the opened item (one-time click action)
+                                var leftOffset = -1 * (     activeElementPosition.left
+                                                          - 1
+                                                          - sliderParent.clientWidth / 2
+                                                          + activeAnnotationElement.offsetWidth / 2
+                                                );
+                                sliderElement.style.left = Math.max(-(widthOfSlider - sliderParent.offsetWidth),
+                                                               Math.min(gap, leftOffset)) + 'px';
+
                             } else {
-                                sliderElement.style.left = leftOffset + 'px';
+
+                                // Playback path: page forward/back only when element leaves the viewport
+                                var currentLeft = parseFloat(sliderElement.style.left) || gap;
+                                var viewportW   = sliderParent.clientWidth;
+                                var pageStep    = viewportW / 3;
+                                var maxLeft     = -(widthOfSlider - viewportW);
+                                var visibleLeft = activeElementPosition.left + currentLeft;
+                                // Use the rightmost active annotation for the right-side check so that
+                                // a long annotation active from the start doesn't block scrolling to later elements
+                                var lastActiveElX = self.getContentViewElementFromContentItem(activeAnnotations[activeAnnotations.length - 1]) || activeAnnotationElement;
+                                var visibleRightEdge = lastActiveElX.offsetLeft + lastActiveElX.offsetWidth + currentLeft;
+
+                                if (visibleLeft < 0) {
+                                    sliderElement.style.left = Math.min(gap, currentLeft + pageStep) + 'px';
+                                } else if (visibleRightEdge > viewportW) {
+                                    sliderElement.style.left = Math.max(maxLeft, currentLeft - pageStep) + 'px';
+                                }
+                                // element is visible → don't touch scroll position
+
                             }
 
                         }
@@ -1667,18 +1492,36 @@ FrameTrail.defineType(
 
                         if ( heightOfSlider > sliderParent.offsetHeight ) {
 
-                            var topOffset = -1 * (      activeElementPosition.top
-                                                      - 1
-                                                      - sliderParent.clientHeight / 2
-                                                      + activeAnnotationElement.offsetHeight / 2
-                                            );
+                            if (details) {
 
-                            if ( !details && topOffset > 0 ) {
-                                sliderElement.style.top = gap + 'px';
-                            } else if ( !details && topOffset < - (heightOfSlider - sliderParent.offsetHeight) ) {
-                                sliderElement.style.top = - (heightOfSlider - sliderParent.offsetHeight) + 'px';
+                                // Details path: centre on the opened item
+                                var topOffset = -1 * (      activeElementPosition.top
+                                                          - 1
+                                                          - sliderParent.clientHeight / 2
+                                                          + activeAnnotationElement.offsetHeight / 2
+                                                );
+                                sliderElement.style.top = Math.max(-(heightOfSlider - sliderParent.offsetHeight),
+                                                              Math.min(gap, topOffset)) + 'px';
+
                             } else {
-                                sliderElement.style.top = topOffset + 'px';
+
+                                // Playback path: page up/down only when element leaves the viewport
+                                var currentTop = parseFloat(sliderElement.style.top) || gap;
+                                var viewportH  = sliderParent.clientHeight;
+                                var pageStep   = viewportH / 3;
+                                var maxTop     = -(heightOfSlider - viewportH);
+                                var visibleTop = activeElementPosition.top + currentTop;
+                                // Use the bottommost active annotation for the bottom-side check
+                                var lastActiveElY = self.getContentViewElementFromContentItem(activeAnnotations[activeAnnotations.length - 1]) || activeAnnotationElement;
+                                var visibleBottomEdge = lastActiveElY.offsetTop + lastActiveElY.offsetHeight + currentTop;
+
+                                if (visibleTop < 0) {
+                                    sliderElement.style.top = Math.min(gap, currentTop + pageStep) + 'px';
+                                } else if (visibleBottomEdge > viewportH) {
+                                    sliderElement.style.top = Math.max(maxTop, currentTop - pageStep) + 'px';
+                                }
+                                // element is visible → don't touch scroll position
+
                             }
 
                         }
