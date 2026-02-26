@@ -622,11 +622,6 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
             PlayerContainer.style.marginBottom = '';
         }
 
-        slideArea.querySelectorAll('svg').forEach(function(el) {
-            el.style.width = document.documentElement.offsetWidth + 'px';
-            el.style.height = slideArea.offsetHeight + 'px';
-        });
-
     };
 
 
