@@ -24,15 +24,14 @@
 
 .resourceDetail[data-type="quiz"] .resourceQuizAnswersContainer {
     display: flex;
-    flex-wrap: wrap;
-    flex-direction: row;
-    align-content: normal;
-    height: 100%;
+    flex-direction: column;
+    flex: 1;
 }
 
 .resourceDetail[data-type="quiz"] .resourceQuizAnswersContainer button {
     font-size: 24px;
     width: 100%;
+    flex: 1;
     margin-top: 10px;
 }
 

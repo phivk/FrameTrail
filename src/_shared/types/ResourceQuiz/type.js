@@ -154,8 +154,6 @@ FrameTrail.defineType(
                             }
                         }
                     });
-                    resourceDetail.append('<div class="resourceOptions"><div class="licenseInformation">'+ licenseString +'</div><div class="resourceButtons"></div>');
-
                     resourceDetail.insertAdjacentHTML('beforeend', '<div class="resourceOptions"><div class="licenseInformation">'+ licenseString +'</div><div class="resourceButtons"></div>');
 
                     return resourceDetail;
@@ -652,8 +650,10 @@ FrameTrail.defineType(
                     var updateQuizVisuals = function(el) {
                         if (el.overlayElement) {
                             // Re-render overlay content
-                            el.overlayElement.children('.resourceDetail').remove();
-                            el.overlayElement.append(el.resourceItem.renderContent());
+                            var _oldRd = el.overlayElement.querySelector('.resourceDetail');
+                            if (_oldRd) _oldRd.remove();
+                            el.overlayElement.appendChild(el.resourceItem.renderContent());
+                            //el.scaleOverlayElement();
                         } else {
                             // Re-render annotation content in all content views
                             el.contentViewDetailElements.forEach(function(detailEl) {

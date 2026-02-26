@@ -350,11 +350,13 @@ FrameTrail.defineType(
                         if (!elementToScale) { return; }
 
                         if (scaleBase / wrapperElement.offsetWidth < 1 && this.data.type != 'text') {
-                            elementToScale.style.top       = '';
-                            elementToScale.style.left      = '';
-                            elementToScale.style.height    = '';
-                            elementToScale.style.width     = '';
-                            elementToScale.style.transform = 'none';
+                            elementToScale.style.top             = '';
+                            elementToScale.style.left            = '';
+                            elementToScale.style.height          = '';
+                            elementToScale.style.minHeight       = '';
+                            elementToScale.style.width           = '';
+                            elementToScale.style.transform       = 'none';
+                            elementToScale.style.transformOrigin = '';
                             return;
                         }
 
@@ -363,11 +365,13 @@ FrameTrail.defineType(
                             negScale = 1/scale,
                             newWidth = (this.data.type == 'text') ? wrapperElement.offsetWidth * negScale : scaleBase;
 
-                        elementToScale.style.top       = '50%';
-                        elementToScale.style.left      = '50%';
-                        elementToScale.style.width     = newWidth + 'px';
-                        elementToScale.style.height    = wrapperElement.offsetHeight * negScale + 'px';
-                        elementToScale.style.transform = 'translate(-50%, -50%) scale(' + scale + ')';
+                        elementToScale.style.top             = '50%';
+                        elementToScale.style.left            = '50%';
+                        elementToScale.style.width           = newWidth + 'px';
+                        elementToScale.style.height          = wrapperElement.offsetHeight * negScale + 'px';
+                        elementToScale.style.minHeight       = '';
+                        elementToScale.style.transformOrigin = '';
+                        elementToScale.style.transform       = 'translate(-50%, -50%) scale(' + scale + ')';
 
                     }
 
@@ -1280,6 +1284,8 @@ FrameTrail.defineType(
                                     height: newHeight / parent.offsetHeight * 100
                                 });
 
+                                self.scaleOverlayElement();
+
                             },
 
                             end: function(e) {
@@ -1307,6 +1313,7 @@ FrameTrail.defineType(
                                 self.data.position.height = newPosition.height;
 
                                 self.updateOverlayElement();
+                                self.scaleOverlayElement();
 
                                 FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
 
