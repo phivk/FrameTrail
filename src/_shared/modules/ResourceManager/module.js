@@ -620,8 +620,8 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                         }
 
                         if (uploadQueue.length > 0) {
-                            uploadDialog.querySelector('.uploadQueue').style.display = '';
-                            uploadDialog.querySelector('.queueSummary').style.display = '';
+                            uploadDialog.querySelector('.uploadQueue').style.display = 'block';
+                            uploadDialog.querySelector('.queueSummary').style.display = 'block';
                             updateQueueUI();
                             setTimeout(function() {
                                 var buttons = uploadDialogCtrl.getButtons();
