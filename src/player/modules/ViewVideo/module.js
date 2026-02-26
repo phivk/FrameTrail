@@ -963,7 +963,6 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
     function enterAnnotationMode() {
         initEditMode();
         AnnotationTimeline.classList.add('editable');
-        OtherUsersContainer.classList.add('active');
 
         EditPropertiesContainer.setAttribute('data-editmode', 'annotations');
     }

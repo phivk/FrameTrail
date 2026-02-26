@@ -592,20 +592,30 @@
         /* Render other users' annotation timelines in the main view container */
         var otherUsersContainer = ViewVideo.OtherUsersContainer;
         otherUsersContainer.innerHTML = '';
-        otherUsersContainer.insertAdjacentHTML('beforeend',
-            '<div class="message active">'+ labels['MessageDragAnnotationsIntoTimeline'] +'</div>'
-        );
-        var timelineList = document.createElement('div');
-        timelineList.className = 'timelineList';
-        timelineList.dataset.zoomLevel = '1';
-        otherUsersContainer.appendChild(timelineList);
-        renderAnnotationTimelines(annotations, timelineList, 'creatorId', 'label', false);
+        var currentUserID = FrameTrail.module('UserManagement').userID;
+        var hasOtherUsersAnnotations = Object.values(annotations).some(function(anno) {
+            return anno.data.creatorId !== currentUserID;
+        });
 
-        // Register the timeline zoom wrapper as a follower to sync zoom/scroll with main timelines
-        var timelineZoomWrapper = timelineList.querySelector('.timelineZoomWrapper');
-        var timelineZoomScroller = timelineList.querySelector('.timelineZoomScroller');
-        if (timelineZoomWrapper && timelineZoomScroller) {
-            FrameTrail.module('TimelineController').registerFollowerTimeline(timelineZoomWrapper, timelineZoomScroller);
+        if (hasOtherUsersAnnotations) {
+            otherUsersContainer.insertAdjacentHTML('beforeend',
+                '<div class="message active">'+ labels['MessageDragAnnotationsIntoTimeline'] +'</div>'
+            );
+            var timelineList = document.createElement('div');
+            timelineList.className = 'timelineList';
+            timelineList.dataset.zoomLevel = '1';
+            otherUsersContainer.appendChild(timelineList);
+            renderAnnotationTimelines(annotations, timelineList, 'creatorId', 'label', false);
+
+            // Register the timeline zoom wrapper as a follower to sync zoom/scroll with main timelines
+            var timelineZoomWrapper = timelineList.querySelector('.timelineZoomWrapper');
+            var timelineZoomScroller = timelineList.querySelector('.timelineZoomScroller');
+            if (timelineZoomWrapper && timelineZoomScroller) {
+                FrameTrail.module('TimelineController').registerFollowerTimeline(timelineZoomWrapper, timelineZoomScroller);
+            }
+            otherUsersContainer.classList.add('active');
+        } else {
+            otherUsersContainer.classList.remove('active');
         }
 
     }
@@ -1012,8 +1022,8 @@
 
         for (var i=0; i<collectedAnnotationsPerAspectData.length; i++) {
 
-            if (collectedAnnotationsPerAspectData[i].userID === FrameTrail.module('UserManagement').userID) {
-                //continue;
+            if (filterAspect === 'creatorId' && collectedAnnotationsPerAspectData[i].userID === FrameTrail.module('UserManagement').userID) {
+                continue;
             }
                         
             var aspectLabel =  collectedAnnotationsPerAspectData[i].label,
