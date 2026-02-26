@@ -381,8 +381,8 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
             
             if (DatabaseEntry.config) {
                 for (var configKey in DatabaseEntry.config) {
-                    if (configKey === 'layoutArea' || configKey === 'theme') { continue; }
-                    var newConfigVal = EditHypervideoForm.querySelector('input[data-configkey=' + configKey + ']').value;
+                    if (configKey === 'layoutArea' || configKey === 'theme' || configKey === 'captionsVisible') { continue; }
+                    var newConfigVal = (EditHypervideoForm.querySelector('input[data-configkey="' + configKey + '"]') || {value: undefined}).value;
                     newConfigVal = (newConfigVal === 'true')
                                     ? true
                                     : (newConfigVal === 'false')
@@ -391,6 +391,10 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
                                             ? DatabaseEntry.config[configKey]
                                             : newConfigVal;
                     DatabaseEntry.config[configKey] = newConfigVal;
+                }
+                var captionsCheckbox = EditHypervideoForm.querySelector('input[name="config[captionsVisible]"]');
+                if (captionsCheckbox) {
+                    DatabaseEntry.config.captionsVisible = captionsCheckbox.checked;
                 }
             }
 

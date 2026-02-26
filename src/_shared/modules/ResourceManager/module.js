@@ -1446,7 +1446,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
         var _nameInput = currentUploadDialog.querySelector('.resourceNameInput');
         if (_nameInput.value.length < 3 && resourceTitle != 'YouTube') {
             _nameInput.value = resourceTitle;
-            _nameInput.dispatchEvent(new Event('change'));
+            _nameInput.dispatchEvent(new Event('input', { bubbles: true }));
         }
 
         var previewTitle = (_nameInput.value.length > 3) ? _nameInput.value : resourceTitle;
