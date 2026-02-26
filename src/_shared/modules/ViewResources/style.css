@@ -104,6 +104,20 @@
     width: 100%;
     overflow: auto;
     flex: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    align-content: start;
+    gap: 12px;
+    padding: 12px 0px;
+    box-sizing: border-box;
+}
+
+.videoResourceList {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    align-content: start;
+    gap: 12px;
+    box-sizing: border-box;
 }
 
 .viewResources .resourcesList.onlyCC .resourceThumb:not([data-license-type^="CC-"]) {
@@ -111,18 +125,17 @@
 }
 
 .viewResources .resourcesList .resourceThumb, .videoResourceList .resourceThumb {
-    float: left;
     position: relative;
-    width: 120px;
+    width: auto;
     height: 80px;
-    margin: 6px;
+    margin: 0;
 }
 
 .viewResources .resourcesList .resourceThumb.selected, .videoResourceList .resourceThumb.selected {
     outline: 4px solid #FF9900;
 }
 
-.viewResources .resourcesList .resourceThumb.markedForDeletion { 
+.viewResources .resourcesList .resourceThumb.markedForDeletion {
     box-shadow: 0 0 2px 2px #cd0a0a;
 }
 
@@ -132,18 +145,22 @@
 
 /* Grid View Modes */
 
-/* Medium Grid (default) - 120x80 thumbnails */
+/* Medium Grid (default) - ~120px wide thumbnails */
+.viewResources .resourcesList.view-grid-medium {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+}
 .viewResources .resourcesList.view-grid-medium .resourceThumb {
-    width: 120px;
     height: 80px;
-    margin: 6px;
 }
 
-/* Small Grid - 90x60 thumbnails */
+/* Small Grid - ~90px wide thumbnails */
+.viewResources .resourcesList.view-grid-small {
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 4px;
+}
 .viewResources .resourcesList.view-grid-small .resourceThumb {
-    width: 90px;
     height: 60px;
-    margin: 4px;
 }
 
 .viewResources .resourcesList.view-grid-small .resourceThumb .resourceTitle {
@@ -151,11 +168,13 @@
     padding: 2px 4px;
 }
 
-/* Large Grid - 180x120 thumbnails */
+/* Large Grid - ~180px wide thumbnails */
+.viewResources .resourcesList.view-grid-large {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+}
 .viewResources .resourcesList.view-grid-large .resourceThumb {
-    width: 180px;
     height: 120px;
-    margin: 8px;
 }
 
 .viewResources .resourcesList.view-grid-large .resourceThumb .resourceTitle {
@@ -164,14 +183,18 @@
 }
 
 /* List View - full width rows */
+.viewResources .resourcesList.view-list {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    padding: 4px;
+}
 .viewResources .resourcesList.view-list .resourceThumb {
     width: 100%;
     box-sizing: border-box;
     height: 80px;
-    margin: 4px 0;
+    margin: 0;
     display: flex;
     align-items: center;
-    float: none;
     background-position: left center;
     background-size: 120px 80px;
     background-repeat: no-repeat;

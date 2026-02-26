@@ -633,6 +633,26 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     flex-direction: column;
 }
 
+.editingOptions .ui-tabs-panel:has(> .resourceThumb) {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    align-content: start;
+    gap: 12px;
+    box-sizing: border-box;
+}
+
+.editingOptions .resourceThumb {
+    float: none;
+    position: relative;
+    width: auto;
+    height: 80px;
+    margin: 0;
+}
+
+.editingOptions .resourceThumb .resourceTitle {
+    display: block;
+}
+
 .editingOptions .executeEventCode {
     position: absolute;
     right: 12px;

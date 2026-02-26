@@ -49,24 +49,12 @@
     color: var(--primary-bg-color);
 }
 
-.editingOptions .resourceThumb[data-type="quiz"] {
-    float: left;
-    height: 80px;
-    margin: 6px;
-    position: relative;
-    width: 120px;
-}
-
 .resourceThumb[data-type="quiz"] .resourceOverlay {
     background: transparent;
 }
 
 .resourceThumb[data-type="quiz"] .resourceTitle {
     display: none;
-}
-
-.editingOptions .resourceThumb[data-type="quiz"] .resourceTitle, body > .resourceThumb[data-type="quiz"]:not(.resourceAnimationDiv) .resourceTitle {
-    display: block;
 }
 
 .contentViewContainer[data-size="small"] .resourceThumb[data-type="quiz"] .resourceTextPreview {

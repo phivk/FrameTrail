@@ -106,9 +106,6 @@ a.hotspot-element {
     display: none;
 }
 
-.editingOptions .resourceThumb[data-type="hotspot"] .resourceTitle, body > .resourceThumb[data-type="hotspot"]:not(.resourceAnimationDiv) .resourceTitle {
-    display: block;
-}
 
 .editPropertiesContainer .propertiesTypeIcon[data-type="hotspot"] [class^="icon-"]::before, .editPropertiesContainer .propertiesTypeIcon[data-type="hotspot"] [class*=" icon-"]::before {
     content: "\e819"; /* icon-link */

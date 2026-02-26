@@ -124,6 +124,10 @@
 }
 
 
+body > .resourceThumb:not(.resourceAnimationDiv) .resourceTitle {
+    display: block;
+}
+
 .resourceThumb .resourceTitle {
     position: absolute;
     top: 0;

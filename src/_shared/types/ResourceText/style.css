@@ -49,24 +49,12 @@
     width: 100%;
 }
 
-.editingOptions .resourceThumb[data-type="text"] {
-    float: left;
-    height: 80px;
-    margin: 6px;
-    position: relative;
-    width: 120px;
-}
-
 .resourceThumb[data-type="text"] .resourceOverlay {
     background: transparent;
 }
 
 .resourceThumb[data-type="text"] .resourceTitle {
     display: none;
-}
-
-.editingOptions .resourceThumb[data-type="text"] .resourceTitle, body > .resourceThumb[data-type="text"]:not(.resourceAnimationDiv) .resourceTitle {
-    display: block;
 }
 
 .contentViewContainer[data-size="small"] .resourceThumb[data-type="text"] .resourceTextPreview {
