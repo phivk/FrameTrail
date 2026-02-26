@@ -142,7 +142,7 @@ window.FrameTrail_L10n['en-US'] = {
     "MessageDeleteHypervideoQuestion": "Do you really want to delete this Hypervideo?",
     "MessageDeleteHypervideoRedirect": "You deleted the current Hypervideo and will be redirected to the Overview",
     "MessageDeleteHypervideoReEnter": "Please paste / re-enter the Hypervideo name",
-    "MessageDragAnnotationsIntoTimeline": "Drag Annotations from the User Timelines to your Annotation Timeline",
+    "MessageDragAnnotationsIntoTimeline": "Below you see annotations by other users. You can drag their annotations to your own annotation timeline.",
     "MessageEmbedNotAllowed": "The site owner does not allow this URL to be embedded in other pages (Same Origin Policy). This means it can not be shown inside FrameTrail.",
     "MessageEmptyVideoSetDuration": "An empty video requires a duration. Please set a duration (min. 4 seconds):",
     "MessageEventHandlerContainsErrors": "Event handler contains errors",
