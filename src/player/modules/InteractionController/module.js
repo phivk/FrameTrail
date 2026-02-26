@@ -16,29 +16,29 @@
 
 FrameTrail.defineModule('InteractionController', function(FrameTrail){
 
-	// Prevent text selection during any drag operation (one-time global setup)
-	document.addEventListener('mousedown', function() {
-		function onMove() {
-			document.body.classList.add('ft-dragging');
-			document.removeEventListener('mousemove', onMove);
-		}
-		function onUp() {
-			document.body.classList.remove('ft-dragging');
-			document.removeEventListener('mousemove', onMove);
-			document.removeEventListener('mouseup', onUp);
-		}
-		document.addEventListener('mousemove', onMove);
-		document.addEventListener('mouseup', onUp);
-	});
+    // Prevent text selection during any drag operation (one-time global setup)
+    document.addEventListener('mousedown', function() {
+        function onMove() {
+            document.body.classList.add('ft-dragging');
+            document.removeEventListener('mousemove', onMove);
+        }
+        function onUp() {
+            document.body.classList.remove('ft-dragging');
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+        }
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+    });
 
 
     var keyBindings = {
 
-        	"38": interfaceUp,
-        	"40": interfaceDown,
+            "38": interfaceUp,
+            "40": interfaceDown,
 
-        	"37": interfaceLeft,
-        	"39": interfaceRight,
+            "37": interfaceLeft,
+            "39": interfaceRight,
 
             "32": spaceKey,
             "88": xKey
@@ -70,9 +70,9 @@ FrameTrail.defineModule('InteractionController', function(FrameTrail){
         var targetEl = document.querySelector(FrameTrail.getState('target'));
 
         if (_keydownHandler) { document.removeEventListener('keydown', _keydownHandler); }
-    	_keydownHandler = function(evt){
+        _keydownHandler = function(evt){
 
-    		// Save when ctrl+s or command+s
+            // Save when ctrl+s or command+s
             if ((evt.metaKey || evt.ctrlKey) && evt.keyCode == 83) {
                 if (FrameTrail.module('StorageManager').canSave()) {
                     FrameTrail.module('HypervideoModel').save();
@@ -117,16 +117,16 @@ FrameTrail.defineModule('InteractionController', function(FrameTrail){
                 }
             }
 
-            if (	evt.target.tagName === 'INPUT'
-    			 || evt.target.tagName === 'TEXTAREA') {
+            if (    evt.target.tagName === 'INPUT'
+                 || evt.target.tagName === 'TEXTAREA') {
 
-    			return;
-    		}
+                return;
+            }
 
-    		return keyBindings[evt.keyCode] && keyBindings[evt.keyCode].call(this, evt);
+            return keyBindings[evt.keyCode] && keyBindings[evt.keyCode].call(this, evt);
 
-    	};
-    	document.addEventListener('keydown', _keydownHandler);
+        };
+        document.addEventListener('keydown', _keydownHandler);
 
         if (_mousemoveHandler) { document.removeEventListener('mousemove', _mousemoveHandler); }
         _mousemoveHandler = function(evt){
@@ -210,18 +210,18 @@ FrameTrail.defineModule('InteractionController', function(FrameTrail){
         /*
         var currentAnnotation = FrameTrail.module('AnnotationsController').findTopMostActiveAnnotation();
 
-    	if ( 	 FrameTrail.getState('hv_config_annotationsPosition') == 'top'
-	    	 &&  FrameTrail.getState('hv_config_annotationsVisible')
+        if (     FrameTrail.getState('hv_config_annotationsPosition') == 'top'
+             &&  FrameTrail.getState('hv_config_annotationsVisible')
              &&  FrameTrail.getState('slidePosition') == 'middle'
-	    	 &&  currentAnnotation !== null) {
+             &&  currentAnnotation !== null) {
 
-	    	currentAnnotation.openAnnotation();
+            currentAnnotation.openAnnotation();
 
-	    } else {
+        } else {
 
-	    	FrameTrail.module('ViewVideo').slidePositionUp();
+            FrameTrail.module('ViewVideo').slidePositionUp();
 
-	    }
+        }
         */
 
     };
@@ -254,18 +254,18 @@ FrameTrail.defineModule('InteractionController', function(FrameTrail){
         /*
         var currentAnnotation = FrameTrail.module('AnnotationsController').findTopMostActiveAnnotation();
 
-	    if ( 	 FrameTrail.getState('hv_config_annotationsPosition') == 'bottom'
-	    	 &&  FrameTrail.getState('hv_config_annotationsVisible')
+        if (     FrameTrail.getState('hv_config_annotationsPosition') == 'bottom'
+             &&  FrameTrail.getState('hv_config_annotationsVisible')
              &&  FrameTrail.getState('slidePosition') == 'middle'
-	    	 &&  currentAnnotation !== null) {
+             &&  currentAnnotation !== null) {
 
-	    	currentAnnotation.openAnnotation();
+            currentAnnotation.openAnnotation();
 
-	    } else {
+        } else {
 
-	    	FrameTrail.module('ViewVideo').slidePositionDown();
+            FrameTrail.module('ViewVideo').slidePositionDown();
 
-	    }
+        }
         */
 
     };
@@ -326,7 +326,7 @@ FrameTrail.defineModule('InteractionController', function(FrameTrail){
      */
     function interfaceRight(evt) {
 
-    	var ViewVideo = FrameTrail.module('ViewVideo');
+        var ViewVideo = FrameTrail.module('ViewVideo');
 
         if ( FrameTrail.getState('slidePosition') == 'top' ) {
 

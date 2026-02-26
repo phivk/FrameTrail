@@ -1,20 +1,20 @@
 .resourcePicker {
-	position: relative;
-	width: 100%;
-	height: 100%;
+    position: relative;
+    width: 100%;
+    height: 100%;
 }
 
 .resourcePicker .resourcePickerControls {
-	position: absolute;
-	right: 0px;
-	bottom: 0px;
-	background: var(--primary-fg-color);
-	padding: 10px 3px 3px 10px;
-	z-index: 11;
+    position: absolute;
+    right: 0px;
+    bottom: 0px;
+    background: var(--primary-fg-color);
+    padding: 10px 3px 3px 10px;
+    z-index: 11;
 }
 
 .resourcePicker .resourcePickerControls button {
-	background-color: transparent;
+    background-color: transparent;
     background-position: center center;
     background-repeat: no-repeat;
     background-size: 24px auto;
@@ -25,226 +25,226 @@
 }
 
 .resourcePicker .resourcePickerControls button:hover {
-	background-color: var(--primary-bg-color);
+    background-color: var(--primary-bg-color);
 }
 
 .resourcePicker .resourcePickerControls button [class^="icon-"]::before, .resourcePicker .resourcePickerControls button [class*=" icon-"]::before {
-	font-size: 18px;
-	margin-left: 1px;
-	margin-top: 2px;
-	width: 22px;
+    font-size: 18px;
+    margin-left: 1px;
+    margin-top: 2px;
+    width: 22px;
 }
 
 .resourcePicker .resourcePickerList {
-	width: 100%;
-	height: 100%;
-	overflow: auto;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
 }
 
 .resourcePicker .resourcePickerList .resourceThumb {
-	float: left;
-	position: relative;
-	width: 120px;
-	height: 80px;
-	margin: 6px;
+    float: left;
+    position: relative;
+    width: 120px;
+    height: 80px;
+    margin: 6px;
 }
 
 /* Upload Dialog Layout */
 
 .uploadDialog .resourceInputTabContainer {
-	margin-bottom: 10px;
+    margin-bottom: 10px;
 }
 
 /* URL Tab */
 
 #resourceInputTabURL {
-	padding: 12px 0;
+    padding: 12px 0;
 }
 
 #resourceInputTabURL .resourceInput[name="url"] {
-	width: 100%;
-	box-sizing: border-box;
-	margin-bottom: 8px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 8px;
 }
 
 #resourceInputTabURL .corsWarning {
-	margin-top: 8px;
+    margin-top: 8px;
 }
 
 #resourceInputTabURL .resourceURLPreview {
-	margin-top: 10px;
-	width: 150px;
-	height: 110px;
-	position: relative;
-	background: var(--secondary-fg-color);
+    margin-top: 10px;
+    width: 150px;
+    height: 110px;
+    position: relative;
+    background: var(--secondary-fg-color);
 }
 
 #resourceInputTabURL .resourceURLPreview .resourceThumb {
-	width: 100%;
-	height: 100%;
-	cursor: default;
+    width: 100%;
+    height: 100%;
+    cursor: default;
 }
 
 /* Drag and Drop Zone */
 
 .dropZone {
-	border: 3px dashed var(--primary-bg-color);
-	border-radius: 8px;
-	padding: 40px 20px;
-	text-align: center;
-	background-color: rgba(255, 255, 255, 0.05);
-	cursor: pointer;
-	transition: all 0.3s ease;
-	margin-bottom: 10px;
+    border: 3px dashed var(--primary-bg-color);
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 10px;
 }
 
 .dropZone:hover {
-	background-color: rgba(255, 255, 255, 0.1);
-	border-color: var(--primary-color);
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--primary-color);
 }
 
 .dropZone.dragover {
-	background-color: rgba(56, 142, 60, 0.2);
-	border-color: #4caf50;
-	border-style: solid;
+    background-color: rgba(56, 142, 60, 0.2);
+    border-color: #4caf50;
+    border-style: solid;
 }
 
 .dropZoneContent p {
-	margin: 0px 0 10px 0;
-	font-size: 16px;
+    margin: 0px 0 10px 0;
+    font-size: 16px;
 }
 
 .formatBadge {
-	font-size: 12px;
-	opacity: 0.6;
-	text-align: center;
-	padding: 4px 0 2px;
-	text-transform: uppercase;
-	width: 50%;
-	margin: 10px auto 0 auto;
+    font-size: 12px;
+    opacity: 0.6;
+    text-align: center;
+    padding: 4px 0 2px;
+    text-transform: uppercase;
+    width: 50%;
+    margin: 10px auto 0 auto;
 }
 
 /* Upload Queue */
 
 .uploadQueue {
-	max-height: 200px;
-	overflow-y: auto;
-	margin-bottom: 8px;
-	border: 1px solid var(--primary-bg-color);
-	border-radius: 4px;
-	background-color: rgba(0, 0, 0, 0.1);
-	display: none;
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 8px;
+    border: 1px solid var(--primary-bg-color);
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.1);
+    display: none;
 }
 
 .uploadQueue .queueRow {
-	display: flex;
-	padding: 8px 12px;
-	border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-	align-items: center;
-	font-size: 13px;
+    display: flex;
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    align-items: center;
+    font-size: 13px;
 }
 
 .uploadQueue .queueRow:last-child {
-	border-bottom: none;
+    border-bottom: none;
 }
 
 .uploadQueue .queueRow.pending {
-	opacity: 0.7;
+    opacity: 0.7;
 }
 
 .uploadQueue .queueRow.uploading,
 .uploadQueue .queueRow.generating-thumb {
-	background-color: rgba(33, 150, 243, 0.1);
-	border-left: 3px solid #2196f3;
+    background-color: rgba(33, 150, 243, 0.1);
+    border-left: 3px solid #2196f3;
 }
 
 .uploadQueue .queueRow.completed {
-	background-color: rgba(76, 175, 80, 0.1);
+    background-color: rgba(76, 175, 80, 0.1);
 }
 
 .uploadQueue .queueRow.error {
-	background-color: rgba(244, 67, 54, 0.1);
-	color: #f44336;
+    background-color: rgba(244, 67, 54, 0.1);
+    color: #f44336;
 }
 
 .uploadQueue .fileName {
-	flex: 1;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	margin-right: 10px;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-right: 10px;
 }
 
 .uploadQueue .fileSize {
-	width: 80px;
-	text-align: right;
-	margin-right: 10px;
-	opacity: 0.7;
+    width: 80px;
+    text-align: right;
+    margin-right: 10px;
+    opacity: 0.7;
 }
 
 .uploadQueue .fileType {
-	width: 70px;
-	text-align: center;
-	padding: 2px 8px;
-	background-color: var(--primary-bg-color);
-	color: var(--primary-fg-color);
-	border-radius: 3px;
-	font-size: 11px;
-	text-transform: uppercase;
-	margin-right: 10px;
+    width: 70px;
+    text-align: center;
+    padding: 2px 8px;
+    background-color: var(--primary-bg-color);
+    color: var(--primary-fg-color);
+    border-radius: 3px;
+    font-size: 11px;
+    text-transform: uppercase;
+    margin-right: 10px;
 }
 
 .uploadQueue .status {
-	width: 120px;
-	text-align: right;
-	font-weight: bold;
+    width: 120px;
+    text-align: right;
+    font-weight: bold;
 }
 
 .queueSummary {
-	padding: 6px 12px;
-	font-size: 13px;
-	font-weight: bold;
-	text-align: center;
-	background-color: rgba(255, 255, 255, 0.05);
-	border-radius: 4px;
-	display: none;
-	margin-bottom: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: bold;
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    display: none;
+    margin-bottom: 8px;
 }
 
 /* Upload progress bar */
 
 .uploadProgressBarWrap {
-	height: 4px;
-	background-color: rgba(255, 255, 255, 0.1);
-	border-radius: 2px;
-	overflow: hidden;
-	margin-bottom: 8px;
+    height: 4px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 8px;
 }
 
 .uploadProgressBar {
-	height: 100%;
-	width: 0%;
-	background-color: #2196f3;
-	transition: width 0.2s ease;
+    height: 100%;
+    width: 0%;
+    background-color: #2196f3;
+    transition: width 0.2s ease;
 }
 
 /* Name input at bottom of dialog */
 
 .nameInputContainer {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	padding-top: 8px;
-	border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .nameInputContainer .nameInputMessage {
-	flex-shrink: 0;
-	font-size: 13px;
-	font-weight: bold;
-	opacity: 0.8;
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: bold;
+    opacity: 0.8;
 }
 
 .nameInputContainer .resourceNameInput {
-	flex: 1;
+    flex: 1;
 }

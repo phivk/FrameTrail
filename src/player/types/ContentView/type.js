@@ -173,7 +173,7 @@ FrameTrail.defineType(
                                 }
                             }
 
-        	                transcriptContainer.addEventListener('click', function(evt) {
+                            transcriptContainer.addEventListener('click', function(evt) {
                                 FrameTrail.module('HypervideoController').currentTime = parseFloat(evt.target.getAttribute('data-start')) + 0.05;
                             });
 

@@ -1,19 +1,19 @@
 .resourceDetail[data-type="audio"] {
-	background: #000;
+    background: #000;
 }
 
 .resourceDetail[data-type="audio"] audio {
-	width: 100%;
-	height: 100%;
+    width: 100%;
+    height: 100%;
 }
 
 .resourceDetail[data-type="audio"] .resourceOptions {
-	top: 0px;
-	bottom: auto;
+    top: 0px;
+    bottom: auto;
 }
 
 .resourceThumb[data-type="audio"] {
-	background-image: linear-gradient( 35deg, transparent 49.5%, rgba(0,0,0,0.25) 50%, transparent 50.5% ), linear-gradient( -35deg, transparent 49.5%, rgba(0,0,0,0.25) 50%, transparent 50.5% ), linear-gradient(#bdbdbd, #bdbdbd);
+    background-image: linear-gradient( 35deg, transparent 49.5%, rgba(0,0,0,0.25) 50%, transparent 50.5% ), linear-gradient( -35deg, transparent 49.5%, rgba(0,0,0,0.25) 50%, transparent 50.5% ), linear-gradient(#bdbdbd, #bdbdbd);
 }
 
 /* Annotation Tile */
@@ -25,5 +25,5 @@
 /* Edit Audio Overlay Properties */
 
 .editPropertiesContainer .propertiesTypeIcon[data-type="audio"] [class^="icon-"]::before, .editPropertiesContainer .propertiesTypeIcon[data-type="audio"] [class*=" icon-"]::before {
-	content: '\e832';
+    content: '\e832';
 }

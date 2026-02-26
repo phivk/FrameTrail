@@ -13,38 +13,38 @@
 
 FrameTrail.defineModule('Localization', function(FrameTrail){
 
-	var locale = (FrameTrail.getState('language')) ? FrameTrail.getState('language') : 'en-US',
-		labels = null;
+    var locale = (FrameTrail.getState('language')) ? FrameTrail.getState('language') : 'en-US',
+        labels = null;
 
-	/**
-	 * I init the Localization module.
-	 *
-	 * @method updateLabels
-	 * @return 
-	 */
-	function updateLabels() {
-		
-		if (window.FrameTrail_L10n[locale]) {
-			labels = window.FrameTrail_L10n[locale];
-		} else {
-			labels = window.FrameTrail_L10n['en-US'];
-		}
+    /**
+     * I init the Localization module.
+     *
+     * @method updateLabels
+     * @return 
+     */
+    function updateLabels() {
+        
+        if (window.FrameTrail_L10n[locale]) {
+            labels = window.FrameTrail_L10n[locale];
+        } else {
+            labels = window.FrameTrail_L10n['en-US'];
+        }
 
-	}
+    }
 
-	updateLabels();
-	
-	return {
+    updateLabels();
+    
+    return {
 
-		updateLabels: 	updateLabels,
+        updateLabels:   updateLabels,
 
-		/**
-		 * The current label data.
-		 * @attribute labels
-		 */
-		get labels()    { return labels }
+        /**
+         * The current label data.
+         * @attribute labels
+         */
+        get labels()    { return labels }
 
-	};
+    };
 
 
 });

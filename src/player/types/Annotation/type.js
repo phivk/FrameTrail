@@ -821,7 +821,7 @@ FrameTrail.defineType(
                         }
                     }
 
-                   	//console.log('ORIGIN BODY:', this.data);
+                    //console.log('ORIGIN BODY:', this.data);
                     //console.log('numericValue:', numericValue);
                     //console.log('annotationValueIndex:', annotationValueIndex);
 
@@ -912,11 +912,11 @@ FrameTrail.defineType(
                     var self = this;
 
                     if (self.data.graphData) {
-                    	if (self.data.graphDataType == 'soundwave') {
-                    		compareTimelineElement.appendChild(self.renderSoundwave(self.data.graphData));
-                    	} else if (self.data.graphDataType == 'barchart') {
-                    		compareTimelineElement.appendChild(self.renderBarchart(self.data.graphData));
-                    	}
+                        if (self.data.graphDataType == 'soundwave') {
+                            compareTimelineElement.appendChild(self.renderSoundwave(self.data.graphData));
+                        } else if (self.data.graphDataType == 'barchart') {
+                            compareTimelineElement.appendChild(self.renderBarchart(self.data.graphData));
+                        }
                     }
 
                     // Store origin data directly on element so drop handlers can read it
@@ -967,42 +967,42 @@ FrameTrail.defineType(
 
                 renderSoundwave: function(soundwaveDataString) {
 
-    				var graphDataElem = document.createElement('div');
-    				graphDataElem.className = 'graphDataContainer';
+                    var graphDataElem = document.createElement('div');
+                    graphDataElem.className = 'graphDataContainer';
 
-					var width = 8000,
-						height = 60,
-						max_val = 100,
-						data = soundwaveDataString.split(" "),
-						canvas = document.createElement('canvas');
-						canvas.width = width;
-						canvas.height = height;
+                    var width = 8000,
+                        height = 60,
+                        max_val = 100,
+                        data = soundwaveDataString.split(" "),
+                        canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
 
-						graphDataElem.appendChild(canvas);
+                        graphDataElem.appendChild(canvas);
 
-						var bar_width = width / data.length;
-						var context = canvas.getContext("2d");
+                        var bar_width = width / data.length;
+                        var context = canvas.getContext("2d");
 
-						data.forEach(function(d, i) {
-							var scaled = d * height / max_val;
-							var thisY = height - Math.abs(scaled / 2) - height / 2 + 2;
-							var thisX = i * bar_width;
-							var thisHeight = Math.abs(scaled) + 2;
+                        data.forEach(function(d, i) {
+                            var scaled = d * height / max_val;
+                            var thisY = height - Math.abs(scaled / 2) - height / 2 + 2;
+                            var thisX = i * bar_width;
+                            var thisHeight = Math.abs(scaled) + 2;
 
-							context.beginPath();
-							context.rect(thisX, thisY, bar_width, thisHeight);
-							context.fillStyle="#333333";
-							context.fill();
-							context.closePath();
-						});
+                            context.beginPath();
+                            context.rect(thisX, thisY, bar_width, thisHeight);
+                            context.fillStyle="#333333";
+                            context.fill();
+                            context.closePath();
+                        });
 
-                	return graphDataElem;
+                    return graphDataElem;
                 },
 
                 renderBarchart: function(barchartDataString) {
 
-    				var graphDataElem = document.createElement('div');
-    				graphDataElem.className = 'graphDataContainer';
+                    var graphDataElem = document.createElement('div');
+                    graphDataElem.className = 'graphDataContainer';
 
                     var width = 30000,
                         height = 60,

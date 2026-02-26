@@ -22,133 +22,133 @@
 
 FrameTrail.defineModule('Interface', function(FrameTrail){
 
-	var labels = FrameTrail.module('Localization').labels;
+    var labels = FrameTrail.module('Localization').labels;
 
-	FrameTrail.initModule('HypervideoSettingsDialog');
-	FrameTrail.initModule('AdminSettingsDialog');
-	
-	FrameTrail.initModule('Titlebar');
-  	FrameTrail.initModule('Sidebar');
+    FrameTrail.initModule('HypervideoSettingsDialog');
+    FrameTrail.initModule('AdminSettingsDialog');
+    
+    FrameTrail.initModule('Titlebar');
+    FrameTrail.initModule('Sidebar');
 
-  	FrameTrail.initModule('ViewOverview');
+    FrameTrail.initModule('ViewOverview');
 
-  	if (FrameTrail.module('RouteNavigation').hypervideoID) {
-  		FrameTrail.initModule('ViewVideo');
+    if (FrameTrail.module('RouteNavigation').hypervideoID) {
+        FrameTrail.initModule('ViewVideo');
         FrameTrail.initModule('ViewLayout');
-  	}
+    }
 
-  	FrameTrail.initModule('ViewResources');
+    FrameTrail.initModule('ViewResources');
 
-  	var mainContainer = document.createElement('div');
-  	mainContainer.className = 'mainContainer';
-
-
+    var mainContainer = document.createElement('div');
+    mainContainer.className = 'mainContainer';
 
 
 
-	/**
-	 * I call the create method of all my sub-modules, and set the window resize event listener.
-	 *
-	 * @method create
-	 * @param {Function} callback
-	 */
-	function create(callback) {
-
-		FrameTrail.module('InterfaceModal').showStatusMessage(labels['MessageStateLoadingInterface']);
-
-		// Check if window is in iFrame
-		var iFrame;
-		try {
-	        iFrame = (window.self !== window.top);
-	    } catch (e) {
-	        iFrame = true;
-	    }
-	    FrameTrail.changeState('embed', iFrame);
-
-		FrameTrail.module('Titlebar').create();
-		FrameTrail.module('Sidebar').create();
 
 
-		document.querySelector(FrameTrail.getState('target')).append(mainContainer);
+    /**
+     * I call the create method of all my sub-modules, and set the window resize event listener.
+     *
+     * @method create
+     * @param {Function} callback
+     */
+    function create(callback) {
+
+        FrameTrail.module('InterfaceModal').showStatusMessage(labels['MessageStateLoadingInterface']);
+
+        // Check if window is in iFrame
+        var iFrame;
+        try {
+            iFrame = (window.self !== window.top);
+        } catch (e) {
+            iFrame = true;
+        }
+        FrameTrail.changeState('embed', iFrame);
+
+        FrameTrail.module('Titlebar').create();
+        FrameTrail.module('Sidebar').create();
 
 
-		FrameTrail.module('ViewOverview').create();
+        document.querySelector(FrameTrail.getState('target')).append(mainContainer);
 
-		if (FrameTrail.module('RouteNavigation').hypervideoID) {
-			FrameTrail.module('ViewVideo').create();
+
+        FrameTrail.module('ViewOverview').create();
+
+        if (FrameTrail.module('RouteNavigation').hypervideoID) {
+            FrameTrail.module('ViewVideo').create();
             FrameTrail.module('ViewLayout').create();
-		}
+        }
 
-		FrameTrail.module('ViewResources').create();
+        FrameTrail.module('ViewResources').create();
 
-		initWindowResizeHandler();
+        initWindowResizeHandler();
 
-		callback.call();
-
-
-	};
+        callback.call();
 
 
-	/**
-	 * I set the event listener for the resize event of the window.
-	 *
-	 * This event triggers a change of the global state "viewSize", so all modules can react to this event.
-	 *
-	 * Also, after the .create() method of all interface modules has been called, I trigger once the resize event, to propagate a valid state "viewSize" throughout the app.
-	 *
-	 * @method initWindowResizeHandler
-	 */
-	function initWindowResizeHandler() {
-
-		var targetEl = document.querySelector(FrameTrail.getState('target')),
-			resizeTimeout = false;
-
-		window.addEventListener('resize', function(){
-
-		 	var width   = targetEl.offsetWidth,
-		 		height  = targetEl.offsetHeight;
-
-		 	FrameTrail.changeState('viewSize', [width, height]);
-
-		 	if ( resizeTimeout !== false ) {
-		 		clearTimeout(resizeTimeout);
-		 	}
-
-		 	resizeTimeout = setTimeout(function() {
-	 			FrameTrail.changeState('viewSizeChanged');
-	 		}, 300);
-
-		});
+    };
 
 
-		window.dispatchEvent(new Event('resize'));
+    /**
+     * I set the event listener for the resize event of the window.
+     *
+     * This event triggers a change of the global state "viewSize", so all modules can react to this event.
+     *
+     * Also, after the .create() method of all interface modules has been called, I trigger once the resize event, to propagate a valid state "viewSize" throughout the app.
+     *
+     * @method initWindowResizeHandler
+     */
+    function initWindowResizeHandler() {
+
+        var targetEl = document.querySelector(FrameTrail.getState('target')),
+            resizeTimeout = false;
+
+        window.addEventListener('resize', function(){
+
+            var width   = targetEl.offsetWidth,
+                height  = targetEl.offsetHeight;
+
+            FrameTrail.changeState('viewSize', [width, height]);
+
+            if ( resizeTimeout !== false ) {
+                clearTimeout(resizeTimeout);
+            }
+
+            resizeTimeout = setTimeout(function() {
+                FrameTrail.changeState('viewSizeChanged');
+            }, 300);
+
+        });
+
+
+        window.dispatchEvent(new Event('resize'));
 
 
 
-	};
+    };
 
 
-	/**
-	 * When the global state "sidebarOpen" changes, I react to it.
-	 *
-	 * Most importantly, I assure that the &lt;div id="MainContainer"&gt; is resized __before__ the {{#crossLink "ViewVideo/toggleSidebarOpen:method"}}ViewVideo.toggleSidebarOpen{{/crossLink}} is called.
-	 *
-	 * @method toggleSidebarOpen
-	 * @param {Boolean} opened
-	 */
-	function toggleSidebarOpen(opened) {
+    /**
+     * When the global state "sidebarOpen" changes, I react to it.
+     *
+     * Most importantly, I assure that the &lt;div id="MainContainer"&gt; is resized __before__ the {{#crossLink "ViewVideo/toggleSidebarOpen:method"}}ViewVideo.toggleSidebarOpen{{/crossLink}} is called.
+     *
+     * @method toggleSidebarOpen
+     * @param {Boolean} opened
+     */
+    function toggleSidebarOpen(opened) {
 
-		if (opened) {
-			mainContainer.classList.add('sidebarOpen');
-		} else {
-			mainContainer.classList.remove('sidebarOpen');
-		}
+        if (opened) {
+            mainContainer.classList.add('sidebarOpen');
+        } else {
+            mainContainer.classList.remove('sidebarOpen');
+        }
 
-		var ViewVideo = FrameTrail.module('ViewVideo');
+        var ViewVideo = FrameTrail.module('ViewVideo');
 
-		if (ViewVideo) {
-			ViewVideo.toggleSidebarOpen(opened);
-		}
+        if (ViewVideo) {
+            ViewVideo.toggleSidebarOpen(opened);
+        }
 
 
     };
@@ -182,15 +182,15 @@ FrameTrail.defineModule('Interface', function(FrameTrail){
 
 
 
-   	return {
+    return {
 
-   		create: create,
+        create: create,
 
-   		onChange: {
+        onChange: {
             sidebarOpen:    toggleSidebarOpen,
             editMode:       toggleEditMode
         }
 
-   	};
+    };
 
 });

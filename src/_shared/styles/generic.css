@@ -71,12 +71,12 @@ input, select {
 }
 
 .frametrail-body {
-	position: relative;
+    position: relative;
     background: var(--primary-bg-color);
-	font-family: TitilliumWeb,"Helvetica Neue",Helvetica,Arial,sans-serif;
-	font-size: 14px;
+    font-family: TitilliumWeb,"Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 14px;
     font-weight: 400;
-	overflow: hidden;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
@@ -104,14 +104,14 @@ body > .contentViewPreview {
 }
 
 button, input[type="submit"], input[type="button"], .button {
-	font-family: TitilliumWeb,"Helvetica Neue",Helvetica,Arial,sans-serif;
-	border: none;
-	font-size: 14px;
-	text-align: left;
-	padding: 4px 6px;
-	background-color: transparent;
-	border: 2px solid var(--primary-bg-color);
-	color: var(--primary-bg-color);
+    font-family: TitilliumWeb,"Helvetica Neue",Helvetica,Arial,sans-serif;
+    border: none;
+    font-size: 14px;
+    text-align: left;
+    padding: 4px 6px;
+    background-color: transparent;
+    border: 2px solid var(--primary-bg-color);
+    color: var(--primary-bg-color);
 }
 
 button.small, .button.small {
@@ -124,15 +124,15 @@ button:focus, input[type="submit"]:focus, input[type="button"]:focus {
 }
 
 button[disabled], input[disabled] {
-	background-color: #a3a3a3;
+    background-color: #a3a3a3;
     opacity: 0.4;
     pointer-events: none;
 }
 
 button:hover, input[type="submit"]:hover, input[type="button"]:hover, .button:hover {
-	background-color: var(--primary-bg-color);
+    background-color: var(--primary-bg-color);
     color: var(--primary-fg-color);
-	cursor: pointer;
+    cursor: pointer;
 }
 
 button.active, input[type="submit"].active, input[type="button"].active, .button.active {
@@ -141,9 +141,9 @@ button.active, input[type="submit"].active, input[type="button"].active, .button
 }
 
 input[type="text"], input[type="password"], textarea, input[type="number"], input[type="time"], input[type="email"] {
-	font-family: TitilliumWeb,"Helvetica Neue",Helvetica,Arial,sans-serif;
-	font-size: 14px;
-	margin: 4px 8px 4px 0;
+    font-family: TitilliumWeb,"Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 14px;
+    margin: 4px 8px 4px 0;
     padding: 3px 5px;
     border: 2px solid var(--semi-transparent-bg-color);
     background: var(--primary-fg-color);
@@ -151,11 +151,11 @@ input[type="text"], input[type="password"], textarea, input[type="number"], inpu
 }
 
 input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
-	border-color: var(--primary-bg-color);
+    border-color: var(--primary-bg-color);
 }
 
 input[type="color"] {
-	cursor: pointer;
+    cursor: pointer;
     width: 100%;
     border: 2px solid var(--primary-bg-color);
     background: var(--primary-fg-color);
@@ -171,17 +171,17 @@ input[type="range"] {
 }
 
 input[readonly], textarea[readonly] {
-	background-color: #cfcfcf;
+    background-color: #cfcfcf;
 }
 
 details > summary {
-	cursor: pointer;
-	padding: 4px 0;
-	user-select: none;
+    cursor: pointer;
+    padding: 4px 0;
+    user-select: none;
 }
 
 details[open] > summary {
-	margin-bottom: 6px;
+    margin-bottom: 6px;
 }
 
 /* CSS Grid system with 12 columns and Bootstrap-like breakpoints */
@@ -288,19 +288,19 @@ details[open] > summary {
 
 /* HypervideoPicker Grid Layout */
 .hypervideoPickerDialog .hypervideoPickerList {
-	display: grid;
-	grid-template-columns: repeat(12, 1fr);
-	gap: 15px;
-	box-sizing: border-box;
-	overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 15px;
+    box-sizing: border-box;
+    overflow-y: auto;
 }
 
 .hypervideoPickerDialog .hypervideoPickerList .hypervideoThumb {
-	width: 100%;
-	height: auto;
-	margin: 0;
-	aspect-ratio: 16 / 9;
-	grid-column: span 3;
+    width: 100%;
+    height: auto;
+    margin: 0;
+    aspect-ratio: 16 / 9;
+    grid-column: span 3;
 }
 
 .checkboxRow {
@@ -546,30 +546,30 @@ input:checked + .slider:before {
 /* Messages */
 
 .message {
-	height: auto;
-	line-height: 20px;
-	background-color: #FCFAF1;
-	border: 1px solid #FFC414;
-	color: #333;
-	padding: 1px 4px;
-	margin-bottom: 10px;
-	clear: both;
+    height: auto;
+    line-height: 20px;
+    background-color: #FCFAF1;
+    border: 1px solid #FFC414;
+    color: #333;
+    padding: 1px 4px;
+    margin-bottom: 10px;
+    clear: both;
     border-radius: 3px;
-	display: none;
+    display: none;
 }
 
 .message.active {
-	display: block;
+    display: block;
 }
 
 .message.error {
-	background-color: var(--primary-fg-color);
-	border: 1px solid #cd0a0a;
-	color: #cd0a0a;
+    background-color: var(--primary-fg-color);
+    border: 1px solid #cd0a0a;
+    color: #cd0a0a;
 }
 
 .message.success {
-	background-color: #f1ffe3;
+    background-color: #f1ffe3;
     border: 1px solid #739600;
     color: #739600;
 }
@@ -638,7 +638,7 @@ input:checked + .slider:before {
 /* Tooltips */
 
 [data-tooltip-left] {
-	position: relative;
+    position: relative;
 }
 
 [data-tooltip-left]::before {
@@ -677,7 +677,7 @@ input:checked + .slider:before {
 }
 
 [data-tooltip-right] {
-	position: relative;
+    position: relative;
 }
 
 [data-tooltip-right]::before {
@@ -716,7 +716,7 @@ input:checked + .slider:before {
 }
 
 [data-tooltip-bottom-right] {
-	position: relative;
+    position: relative;
 }
 
 [data-tooltip-bottom-right]::before {
@@ -755,7 +755,7 @@ input:checked + .slider:before {
 }
 
 [data-tooltip-bottom-left] {
-	position: relative;
+    position: relative;
 }
 
 [data-tooltip-bottom-left]::before {
@@ -963,13 +963,13 @@ input:checked + .slider:before {
 }
 
 .ui-tabs .ui-tabs-nav li.ui-state-disabled a {
-	color: #cfcfcf;
-	pointer-events: none;
+    color: #cfcfcf;
+    pointer-events: none;
 }
 
 .ui-tabs .ui-tabs-nav li a, 
 .ui-tabs .ui-tabs-nav .ui-tabs-anchor {
-	color: var(--primary-bg-color);
+    color: var(--primary-bg-color);
     opacity: .8;
     background: var(--primary-fg-color);
     border-radius: 50rem;
@@ -983,7 +983,7 @@ input:checked + .slider:before {
 }
 
 .ui-tabs .ui-tabs-nav li.ui-state-active a {
-	color: var(--primary-fg-color);
+    color: var(--primary-fg-color);
     opacity: 1;
     outline: none;
     background: var(--primary-bg-color);
@@ -991,7 +991,7 @@ input:checked + .slider:before {
 }
 
 .ui-tabs .ui-tabs-panel {
-	padding: 12px 0px;
+    padding: 12px 0px;
     position: relative;
 }
 
@@ -1023,12 +1023,12 @@ input:checked + .slider:before {
 /* Droppable UI */
 
 .droppableActive {
-	background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAADCAYAAABWKLW/AAAAEElEQVQImWN4v0/zPwNBAABnuALWAA7X1wAAAABJRU5ErkJggg==") !important;
-	box-shadow: 0 0 0px 1px #FF9919 inset !important;
+    background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAADCAYAAABWKLW/AAAAEElEQVQImWN4v0/zPwNBAABnuALWAA7X1wAAAABJRU5ErkJggg==") !important;
+    box-shadow: 0 0 0px 1px #FF9919 inset !important;
 }
 
 .droppableHover {
-	box-shadow: 0 0 1px 3px #FF9919 inset !important;
+    box-shadow: 0 0 1px 3px #FF9919 inset !important;
 }
 
 /* Generic Hypervideo Settings */

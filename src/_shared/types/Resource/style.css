@@ -1,154 +1,154 @@
 .resourceDetail {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	overflow: hidden;
-	background-size: 100% 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-size: 100% 100%;
 }
 
 .resourceDetail .resourceOptions {
-	position: absolute;
-	bottom: 0px;
-	left: 0px;
-	width: 100%;
-	padding: 4px 1px 4px 14px;
-	color: var(--secondary-fg-color);
-	background: var(--primary-bg-color);
-	box-sizing: border-box;
-	opacity: 0.7;
-	display: none;
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    width: 100%;
+    padding: 4px 1px 4px 14px;
+    color: var(--secondary-fg-color);
+    background: var(--primary-bg-color);
+    box-sizing: border-box;
+    opacity: 0.7;
+    display: none;
 }
 
 .resourcePreviewDialog .resourceDetail .resourceOptions {
-	display: block;
+    display: block;
 }
 
 .resourceDetail:hover .resourceOptions {
-	opacity: 1;
+    opacity: 1;
 }
 
 .resourceDetail .resourceOptions .licenseInformation {
-	float: left;
-	line-height: 30px;
-	width: calc(100% - 70px);
+    float: left;
+    line-height: 30px;
+    width: calc(100% - 70px);
 }
 
 .resourceDetail .resourceOptions .licenseInformation a {
-	border: 0;
-	outline: 0;
+    border: 0;
+    outline: 0;
 }
 
 .resourceDetail .resourceOptions .licenseInformation a .cc-by-sa-bg-image {
-	display: inline-block;
-	width: 50px;
-	height: 30px;
-	vertical-align: bottom;
+    display: inline-block;
+    width: 50px;
+    height: 30px;
+    vertical-align: bottom;
 }
 
 .resourceDetail .resourceOptions .resourceButtons {
-	float: right;
-	line-height: 30px;
+    float: right;
+    line-height: 30px;
 }
 
 .resourceDetail .resourceOptions .resourceButtons .button {
-	padding: 2px 4px;
-	border-color: transparent;
-	color: var(--secondary-fg-color);
+    padding: 2px 4px;
+    border-color: transparent;
+    color: var(--secondary-fg-color);
 }
 
 .resourceDetail .resourceOptions .resourceButtons .button:hover {
-	background: var(--primary-fg-color);
-	color: var(--primary-bg-color);
+    background: var(--primary-fg-color);
+    color: var(--primary-bg-color);
 }
 
 /* Resource Thumb */
 
 .resourceThumb {
-	background-repeat: no-repeat;
-	background-size: cover;
-	background-color: var(--primary-bg-color);
-	outline: 1px solid var(--primary-bg-color);
-	cursor: pointer;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-color: var(--primary-bg-color);
+    outline: 1px solid var(--primary-bg-color);
+    cursor: pointer;
 }
 
 .resourceThumb.dragPlaceholder {
-	outline: 1px dashed var(--primary-bg-color);
-	background: none !important;
+    outline: 1px dashed var(--primary-bg-color);
+    background: none !important;
 }
 
 .resourceThumb.dragPlaceholder .resourceOverlay, .resourceThumb.dragPlaceholder .resourceTitle {
-	opacity: .2;
+    opacity: .2;
 }
 
 .resourceThumb.ft-drag-clone {
-	outline: 1px solid #FF9919;
+    outline: 1px solid #FF9919;
 }
 
 .resourceThumb.ui-draggable {
-	cursor: move;
+    cursor: move;
 }
 
 .resourceThumb .resourceOverlay {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	background: rgba(111, 123, 129, 0.4);
-	background: -moz-radial-gradient(center, ellipse cover, rgba(86,94,110,0) 0%, rgba(86,94,110,0.7) 100%);
-	background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%,rgba(86,94,110,0)), color-stop(100%,rgba(86,94,110,0.7)));
-	background: -webkit-radial-gradient(center, ellipse cover, rgba(86,94,110,0) 0%,rgba(86,94,110,0.7) 100%);
-	background: -o-radial-gradient(center, ellipse cover, rgba(86,94,110,0) 0%,rgba(86,94,110,0.7) 100%);
-	background: -ms-radial-gradient(center, ellipse cover, rgba(86,94,110,0) 0%,rgba(86,94,110,0.7) 100%);
-	background: radial-gradient(ellipse at center, rgba(86,94,110,0) 0%,rgba(86,94,110,0.7) 100%);
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00565e6e', endColorstr='#b3565e6e',GradientType=1 );
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(111, 123, 129, 0.4);
+    background: -moz-radial-gradient(center, ellipse cover, rgba(86,94,110,0) 0%, rgba(86,94,110,0.7) 100%);
+    background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%,rgba(86,94,110,0)), color-stop(100%,rgba(86,94,110,0.7)));
+    background: -webkit-radial-gradient(center, ellipse cover, rgba(86,94,110,0) 0%,rgba(86,94,110,0.7) 100%);
+    background: -o-radial-gradient(center, ellipse cover, rgba(86,94,110,0) 0%,rgba(86,94,110,0.7) 100%);
+    background: -ms-radial-gradient(center, ellipse cover, rgba(86,94,110,0) 0%,rgba(86,94,110,0.7) 100%);
+    background: radial-gradient(ellipse at center, rgba(86,94,110,0) 0%,rgba(86,94,110,0.7) 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00565e6e', endColorstr='#b3565e6e',GradientType=1 );
 }
 
 .resourceThumb .resourceOverlay .resourceIcon {
-	position: absolute;
-	right: 10px;
-	bottom: 10px;
-	width: 26px;
-	height: 16px;
-	background-repeat: no-repeat;
-	background-size: 100% 100%;
-	z-index: 2;
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    width: 26px;
+    height: 16px;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    z-index: 2;
 }
 
 .resourceThumb .resourceOverlay .resourceIcon [class^="icon-"]::before, .resourceThumb .resourceOverlay .resourceIcon [class*=" icon-"]::before {
-	font-size: 20px;
-	color: var(--primary-fg-color);
-	text-shadow: 0px 0px 2px var(--secondary-bg-color);
+    font-size: 20px;
+    color: var(--primary-fg-color);
+    text-shadow: 0px 0px 2px var(--secondary-bg-color);
 }
 
 
 .resourceThumb .resourceTitle {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	max-height: 50px;
-	background-color: var(--semi-transparent-bg-color);
-	font-size: 13px;
-	padding: 6px 5px 3px 5px;
-	overflow: hidden;
-	color: var(--primary-fg-color);
-	text-shadow: 1px 1px 2px var(--primary-bg-color);
-	word-wrap: break-word;
-	hyphens: auto;
-	-moz-box-sizing: border-box;
-	-webkit-box-sizing: border-box;
-	box-sizing: border-box;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    max-height: 50px;
+    background-color: var(--semi-transparent-bg-color);
+    font-size: 13px;
+    padding: 6px 5px 3px 5px;
+    overflow: hidden;
+    color: var(--primary-fg-color);
+    text-shadow: 1px 1px 2px var(--primary-bg-color);
+    word-wrap: break-word;
+    hyphens: auto;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 .resourceThumb .resourcePreviewButton {
-	position: absolute;
-	bottom: 4px;
-	left: 4px;
-	z-index: 4;
-	background-color: var(--semi-transparent-bg-color);
+    position: absolute;
+    bottom: 4px;
+    left: 4px;
+    z-index: 4;
+    background-color: var(--semi-transparent-bg-color);
     border: 2px solid var(--primary-fg-color) ;
     border-radius: 50%;
     font-size: 0;
@@ -158,56 +158,56 @@
 }
 
 .resourceThumb .resourcePreviewButton [class^="icon-"]::before, .resourceThumb .resourcePreviewButton [class*=" icon-"]::before {
-	font-size: 18px;
-	width: 100%;
-	margin: 0;
-	line-height: 26px;
-	color: var(--primary-fg-color);
+    font-size: 18px;
+    width: 100%;
+    margin: 0;
+    line-height: 26px;
+    color: var(--primary-fg-color);
 }
 
 .resourceThumb .resourcePreviewButton:hover {
-	background-color: var(--primary-bg-color);
+    background-color: var(--primary-bg-color);
 }
 
 .resourceThumb:hover .resourcePreviewButton {
-	display: block;
+    display: block;
 }
 
 .resourceThumb.ft-drag-clone .resourcePreviewButton, .resourceThumb.dragPlaceholder .resourcePreviewButton, .resourceThumb.resourceAnimationDiv .resourcePreviewButton {
-	display: none;
+    display: none;
 }
 
 /* Edit Overlay Properties */
 
 .editPropertiesContainer .layoutRow > * {
-	margin-bottom: 10px;
+    margin-bottom: 10px;
 }
 
 .editPropertiesContainer .controlsWrapper {
-	width: 100%;
-	height: 100%;
+    width: 100%;
+    height: 100%;
 }
 
 .editPropertiesContainer .previewThumbContainer {
-	float: right;
-	height: 100px;
-	width: 140px;
+    float: right;
+    height: 100px;
+    width: 140px;
 }
 
 .editPropertiesContainer .previewThumbContainer .resourceThumb {
-	position: relative;
-	width: 100%;
-	height: 100%;
+    position: relative;
+    width: 100%;
+    height: 100%;
 }
 
 .editPropertiesContainer .tagManagementUI {
-	padding-top: 10px;
-	clear: both;
+    padding-top: 10px;
+    clear: both;
 }
 
 .editPropertiesContainer .propertiesTypeIcon {
-	float: left;
-	background-position: left 3px;
+    float: left;
+    background-position: left 3px;
     background-repeat: no-repeat;
     background-size: 100% auto;
     height: 28px;
@@ -216,128 +216,128 @@
 }
 
 .editPropertiesContainer .propertiesTypeIcon [class^="icon-"]::before, .editPropertiesContainer .propertiesTypeIcon [class*=" icon-"]::before {
-	font-size: 25px;
-	margin-left: 0px;
-	color: var(--primary-bg-color);
+    font-size: 25px;
+    margin-left: 0px;
+    color: var(--primary-bg-color);
 }
 
 .editPropertiesContainer input[type="number"] {
-	border: 2px solid var(--primary-bg-color);
-	background: var(--primary-fg-color);
-	margin: 0px 2px 0px 2px;
-	padding: 0;
-	width: 46px;
-	overflow: hidden;
-	box-sizing: border-box;
+    border: 2px solid var(--primary-bg-color);
+    background: var(--primary-fg-color);
+    margin: 0px 2px 0px 2px;
+    padding: 0;
+    width: 46px;
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
 .editPropertiesContainer .timeControls {
-	float: left;
-	position: relative;
-	width: 230px;
-	margin-bottom: 14px;
+    float: left;
+    position: relative;
+    width: 230px;
+    margin-bottom: 14px;
 }
 
 .editPropertiesContainer .timeControls .ft-spinner {
-	width: 55px;
-	margin: 3px 2px 3px 6px;
-	float: left;
+    width: 55px;
+    margin: 3px 2px 3px 6px;
+    float: left;
 }
 
 .editPropertiesContainer .timeControls label, 
 .editPropertiesContainer .positionControls label {
-	position: absolute;
-	top: 26px;
-	left: 0px;
-	font-size: 12px;
+    position: absolute;
+    top: 26px;
+    left: 0px;
+    font-size: 12px;
 }
 
 .editPropertiesContainer label[for="TimeStart"] {
-	left: 71px;
+    left: 71px;
 }
 
 .editPropertiesContainer label[for="TimeEnd"] {
-	left: 130px;
+    left: 130px;
 }
 
 .editPropertiesContainer .timeControls .deleteOverlay, .editPropertiesContainer .timeControls .deleteAnnotation {
-	padding: 1px 3px 0px 3px;
-	margin-right: 6px;
+    padding: 1px 3px 0px 3px;
+    margin-right: 6px;
     float: left;
 }
 
 .editPropertiesContainer .positionControls {
-	float: right;
-	position: relative;
-	width: 220px;
+    float: right;
+    position: relative;
+    width: 220px;
 }
 
 .editPropertiesContainer .positionControls label {
-	left: auto;
+    left: auto;
 }
 
 .editPropertiesContainer label[for="PositionTop"] {
-	right: 186px;
+    right: 186px;
 }
 
 .editPropertiesContainer label[for="PositionLeft"] {
-	right: 132px;
+    right: 132px;
 }
 
 .editPropertiesContainer label[for="PositionWidth"] {
-	right: 74px;
+    right: 74px;
 }
 
 .editPropertiesContainer label[for="PositionHeight"] {
-	right: 24px;
+    right: 24px;
 }
 
 .editPropertiesContainer .positionControls .ft-spinner {
-	float: right;
-	margin-right: 6px;
+    float: right;
+    margin-right: 6px;
 }
 
 .editPropertiesContainer .textContentEditorContainer {
-	height: 100%;
+    height: 100%;
 }
 
 .editPropertiesContainer .overlayOptionsWrapper {
-	clear: both;
-	height: calc(100% - 41px);
+    clear: both;
+    height: calc(100% - 41px);
 }
 
 .editPropertiesContainer .annotationOptionsWrapper {
-	clear: both;
-	height: calc(100% - 104px);
+    clear: both;
+    height: calc(100% - 104px);
 }
 
 .editPropertiesContainer .overlayOptionsTabs, .editPropertiesContainer .annotationOptionsTabs {
-	clear: both;
-	height: 100%;
+    clear: both;
+    height: 100%;
 }
 
 .editPropertiesContainer .opacitySlider {
-	margin: 10px 5px;
-	height: 6px;
-	background: #cfcfcf;
+    margin: 10px 5px;
+    height: 6px;
+    background: #cfcfcf;
 }
 
 .editPropertiesContainer .ui-slider-range {
-	background: rgba(47, 50, 58, .5);
+    background: rgba(47, 50, 58, .5);
 }
 
 .editPropertiesContainer .ui-slider-handle {
-	background: var(--primary-bg-color);
-	height: 14px;
-	width: 14px;
-	margin-left: -7px;
-	border-radius: 50%;
+    background: var(--primary-bg-color);
+    height: 14px;
+    width: 14px;
+    margin-left: -7px;
+    border-radius: 50%;
 }
 
 .editPropertiesContainer .ui-tabs textarea, 
 .editPropertiesContainer .ui-tabs input[type="text"],
 .editPropertiesContainer .ui-tabs label:not(.switch) {
-	box-sizing: border-box;
+    box-sizing: border-box;
     width: 100%;
     margin-top: 0px;
     margin-right: 0px;
@@ -350,11 +350,11 @@
 }
 
 .editPropertiesContainer .ui-tabs button {
-	padding: 3px 5px;
+    padding: 3px 5px;
 }
 
 .editPropertiesContainer .ui-tabs .switch {
-	margin-right: 8px;
-	vertical-align: top;
-	margin-top: 7px;
+    margin-right: 8px;
+    vertical-align: top;
+    margin-top: 7px;
 }

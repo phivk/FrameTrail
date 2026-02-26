@@ -1,31 +1,31 @@
 .mainContainer {
-	order: 1;
+    order: 1;
     flex: 1 1 auto;
     align-self: auto;
-	background-color: var(--primary-bg-color);
+    background-color: var(--primary-bg-color);
     margin-left: 0;
     position: relative;
     width: 100%;
     height: 100%;
     overflow: hidden;
-	transition: all 200ms linear;
-	color: var(--primary-fg-color);
+    transition: all 200ms linear;
+    color: var(--primary-fg-color);
 }
 
 
 .mainContainer.sidebarOpen {
-	width: calc(100% - 54px);
-	margin-left: 54px;
+    width: calc(100% - 54px);
+    margin-left: 54px;
 }
 
 .frametrail-body.inFullscreen .mainContainer:not(.editActive) {
-	width: 100%;
-	top: 0px;
+    width: 100%;
+    top: 0px;
 }
 
 .mainContainer.editActive {
-	border-top: 1px solid rgba(73, 76, 81, .6);
-	color: var(--primary-bg-color);
+    border-top: 1px solid rgba(73, 76, 81, .6);
+    color: var(--primary-bg-color);
 }
 
 

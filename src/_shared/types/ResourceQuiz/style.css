@@ -1,56 +1,56 @@
 .resourceDetail[data-type="quiz"] {
-	background-color: transparent;
-	padding: 10px;
-	box-sizing: border-box;
-	color: var(--primary-fg-color);
-	display: flex;
-	flex-direction: column;
+    background-color: transparent;
+    padding: 10px;
+    box-sizing: border-box;
+    color: var(--primary-fg-color);
+    display: flex;
+    flex-direction: column;
 }
 
 .resourcePreviewDialog .resourceDetail[data-type="quiz"] {
-	color: var(--primary-bg-color);
+    color: var(--primary-bg-color);
 }
 
 .overlayElement .resourceDetail[data-type="quiz"] {
-	padding: 3px 8px 8px 8px;
-	color: #000;
-	background: rgba(255,255,255,.9);
-	font-size: 24px;
+    padding: 3px 8px 8px 8px;
+    color: #000;
+    background: rgba(255,255,255,.9);
+    font-size: 24px;
 }
 
 .resourceDetail[data-type="quiz"] .resourceDetailQuizQuestion {
-	text-align: center;
+    text-align: center;
 }
 
 .resourceDetail[data-type="quiz"] .resourceQuizAnswersContainer {
-	display: flex;
-	flex-wrap: wrap;
-	flex-direction: row;
-	align-content: normal;
-	height: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    align-content: normal;
+    height: 100%;
 }
 
 .resourceDetail[data-type="quiz"] .resourceQuizAnswersContainer button {
-	font-size: 24px;
-	width: 100%;
-	margin-top: 10px;
+    font-size: 24px;
+    width: 100%;
+    margin-top: 10px;
 }
 
 .resourceDetail[data-type="quiz"] .resourceQuizAnswersContainer button.wrong,
 .resourceDetail[data-type="quiz"] .resourceQuizAnswersContainer button.wrong {
-	background-color: #ddb0b0;
-	color: var(--primary-bg-color);
+    background-color: #ddb0b0;
+    color: var(--primary-bg-color);
 }
 
 .resourceDetail[data-type="quiz"] .resourceQuizAnswersContainer button.correct,
 .resourceDetail[data-type="quiz"] .resourceQuizAnswersContainer button.correct:hover {
-	background-color: #A7DB66;
-	font-weight: bold;
-	color: var(--primary-bg-color);
+    background-color: #A7DB66;
+    font-weight: bold;
+    color: var(--primary-bg-color);
 }
 
 .editingOptions .resourceThumb[data-type="quiz"] {
-	float: left;
+    float: left;
     height: 80px;
     margin: 6px;
     position: relative;
@@ -58,72 +58,72 @@
 }
 
 .resourceThumb[data-type="quiz"] .resourceOverlay {
-	background: transparent;
+    background: transparent;
 }
 
 .resourceThumb[data-type="quiz"] .resourceTitle {
-	display: none;
+    display: none;
 }
 
 .editingOptions .resourceThumb[data-type="quiz"] .resourceTitle, body > .resourceThumb[data-type="quiz"]:not(.resourceAnimationDiv) .resourceTitle {
-	display: block;
+    display: block;
 }
 
 .contentViewContainer[data-size="small"] .resourceThumb[data-type="quiz"] .resourceTextPreview {
-	display: none;
+    display: none;
 }
 
 .quizDialog .ui-dialog-titlebar {
-	display: none;
+    display: none;
 }
 
 .quizDialog .ui-dialog-buttonpane {
-	margin-top: 0px;
+    margin-top: 0px;
 }
 
 /* Edit Text Overlay Properties */
 
 .editPropertiesContainer .propertiesTypeIcon[data-type="quiz"] [class^="icon-"]::before, .editPropertiesContainer .propertiesTypeIcon[data-type="quiz"] [class*=" icon-"]::before {
-	content: "\f29c";
+    content: "\f29c";
 }
 
 .editPropertiesContainer .quizEditorAnswersContainer .answerWrapper {
-	margin-bottom: 4px;
+    margin-bottom: 4px;
 }
 
 .editPropertiesContainer .quizEditorAnswersContainer input[type="text"] {
-	width: calc(100% - 100px);
-	margin-right: 7px;
+    width: calc(100% - 100px);
+    margin-right: 7px;
 }
 
 .editPropertiesContainer .quizEditorAnswersContainer .slider {
-	background-color: #ddb0b0;
+    background-color: #ddb0b0;
 }
 
 .editPropertiesContainer .quizEditorAnswersContainer input:checked + .slider {
-	background-color: #739600;
+    background-color: #739600;
 }
 
 .editPropertiesContainer .quizEditorContainer input.settingsJumpForwardInput,
 .editPropertiesContainer .quizEditorContainer input.settingsJumpBackwardInput {
-	width: 34px !important;
-	padding: 0px 2px;
-	border-width: 1px;
-	margin-left: 3px;
-	height: 18px;
-	margin-bottom: 0px;
-	vertical-align: baseline;
+    width: 34px !important;
+    padding: 0px 2px;
+    border-width: 1px;
+    margin-left: 3px;
+    height: 18px;
+    margin-bottom: 0px;
+    vertical-align: baseline;
 }
 
 .editPropertiesContainer .quizEditorContainer input.settingsCorrectShowTextInput, 
 .editPropertiesContainer .quizEditorContainer input.settingsWrongShowTextInput {
-	margin-left: 40px;
-	width: calc(100% - 40px);
-	margin-bottom: 8px;
-	display: none;
+    margin-left: 40px;
+    width: calc(100% - 40px);
+    margin-bottom: 8px;
+    display: none;
 }
 
 .editPropertiesContainer .quizEditorContainer input.settingsCorrectShowTextInput.active, 
 .editPropertiesContainer .quizEditorContainer input.settingsWrongShowTextInput.active {
-	display: block;
+    display: block;
 }

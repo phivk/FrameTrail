@@ -44,7 +44,7 @@
     FrameTrail.initModule('ViewResources');
 
 
-	FrameTrail.module('StorageManager').init().then(function() {
+    FrameTrail.module('StorageManager').init().then(function() {
 
         var storageMode = FrameTrail.getState('storageMode');
 

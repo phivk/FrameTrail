@@ -1,193 +1,193 @@
 .sidebar {
-	position: absolute;
-	left: -54px;
-	top: 0px;
-	width: 54px;
-	height: 100%;
-	background-color: var(--primary-bg-color);
-	color: #cececb;
-	font-weight: 100;
-	z-index: 4;
-	/*box-shadow: 0 0 2px 1px #000;*/
-	-webkit-transition: all 200ms linear; /* Firefox */
-	-moz-transition: all 200ms linear; /* WebKit */
-	-o-transition: all 200ms linear; /* Opera */
-	transition: all 200ms linear; /* Standard */
+    position: absolute;
+    left: -54px;
+    top: 0px;
+    width: 54px;
+    height: 100%;
+    background-color: var(--primary-bg-color);
+    color: #cececb;
+    font-weight: 100;
+    z-index: 4;
+    /*box-shadow: 0 0 2px 1px #000;*/
+    -webkit-transition: all 200ms linear; /* Firefox */
+    -moz-transition: all 200ms linear; /* WebKit */
+    -o-transition: all 200ms linear; /* Opera */
+    transition: all 200ms linear; /* Standard */
 }
 
 .sidebar.open {
-	box-shadow: 0 0 2px 1px var(--primary-fg-color);
-	left: 0px;
+    box-shadow: 0 0 2px 1px var(--primary-fg-color);
+    left: 0px;
 }
 
 .sidebar.editActive {
-	background-color: var(--secondary-fg-color);
-	color: var(--primary-bg-color);
-	box-shadow: none;
-	border-right: 1px solid var(--secondary-bg-color);
+    background-color: var(--secondary-fg-color);
+    color: var(--primary-bg-color);
+    box-shadow: none;
+    border-right: 1px solid var(--secondary-bg-color);
 }
 
 .viewmodeControls button.editMode {
-	display: block;
-	position: relative;
-	width: auto;
-	max-width: 55px;
-	padding: 0px 6px 0px 4px;
-	background-color: transparent;
-	border-top: 1px solid transparent;
-	border-left: none;
-	border-right: none;
-	border-bottom: 1px solid transparent;
-	color: var(--primary-bg-color);
-	opacity: .7;
-	white-space: nowrap;
-	overflow: hidden;
+    display: block;
+    position: relative;
+    width: auto;
+    max-width: 55px;
+    padding: 0px 6px 0px 4px;
+    background-color: transparent;
+    border-top: 1px solid transparent;
+    border-left: none;
+    border-right: none;
+    border-bottom: 1px solid transparent;
+    color: var(--primary-bg-color);
+    opacity: .7;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .viewmodeControls button.editMode .editModeLabel {
-	display: none;
-	padding: 4px 10px 4px 0;
-	border-radius: 0 20px 20px 0;
-	background: var(--secondary-fg-color);
-	border-top: 1px solid var(--secondary-bg-color);
-	border-bottom: 1px solid var(--secondary-bg-color);
-	border-right: 1px solid var(--secondary-bg-color);
+    display: none;
+    padding: 4px 10px 4px 0;
+    border-radius: 0 20px 20px 0;
+    background: var(--secondary-fg-color);
+    border-top: 1px solid var(--secondary-bg-color);
+    border-bottom: 1px solid var(--secondary-bg-color);
+    border-right: 1px solid var(--secondary-bg-color);
 }
 
 .viewmodeControls button.editMode .editModeLabel [class^="icon-"]::before, .viewmodeControls button.editMode .editModeLabel [class*=" icon-"]::before {
-	padding: 0px;
-	margin: 0px;
+    padding: 0px;
+    margin: 0px;
 }
 
 
 .viewmodeControls button.editMode:hover {
-	max-width: 250px;
-	opacity: 1;
+    max-width: 250px;
+    opacity: 1;
 }
 
 .viewmodeControls button.editMode:hover .editModeLabel {
-	display: inline-block;
+    display: inline-block;
 }
 
 .sidebarContainer .viewmodeControls button.editMode  {
-	display: none;
+    display: none;
 }
 
 .sidebarContainer .viewmodeControls button.editMode.inEditMode  {
-	display: block;
+    display: block;
 }
 
 .sidebarContainer .viewmodeControls button.editMode.disabled  {
-	pointer-events: none;
-	opacity: .4;
+    pointer-events: none;
+    opacity: .4;
 }
 
 .sidebarContainer .viewmodeControls button.editMode.unsavedChanges:before {
-	content: "*";
-	position: absolute;
-	top: 0px;
-	left: 42px;
-	color: #FF9900;
-	font-weight: bold;
-	font-size: 20px;
+    content: "*";
+    position: absolute;
+    top: 0px;
+    left: 42px;
+    color: #FF9900;
+    font-weight: bold;
+    font-size: 20px;
 }
 
 .viewmodeControls button.editMode.active {
-	background-color: var(--primary-fg-color);
-	color: var(--primary-bg-color);
-	border-color: var(--secondary-bg-color);
-	opacity: 1;
-	pointer-events: none;
+    background-color: var(--primary-fg-color);
+    color: var(--primary-bg-color);
+    border-color: var(--secondary-bg-color);
+    opacity: 1;
+    pointer-events: none;
 }
 
 .viewmodeControls button.editMode.active:after {
-	content: "";
-	position: absolute;
-	top: 0px;
-	right: -2px;
-	width: 2px;
-	height: 100%;
-	background: var(--primary-fg-color);
+    content: "";
+    position: absolute;
+    top: 0px;
+    right: -2px;
+    width: 2px;
+    height: 100%;
+    background: var(--primary-fg-color);
 }
 
 .viewmodeControls button.editMode [class^="icon-"]::before, .viewmodeControls button.editMode [class*=" icon-"]::before {
-	font-size: 19px;
-	margin: 0 14px 0 10px;
-	width: 26px;
-	padding: 10px 0;
+    font-size: 19px;
+    margin: 0 14px 0 10px;
+    width: 26px;
+    padding: 10px 0;
 }
 
 .viewmodeControls button.editMode[data-editmode="annotations"] .icon-annotations::before {
-	transform: scale(1.34);
+    transform: scale(1.34);
 }
 
 .sidebarContainer {
-	display: block;
-	margin-top: 40px;
+    display: block;
+    margin-top: 40px;
 }
 
 .sidebarContainer > div {
-	display: none;
+    display: none;
 }
 
 .sidebarContainer > div.active {
-	display: block;
+    display: block;
 }
 
 .sidebarContainer .viewmodeControls {
-	position: relative;
-	width: 100%;
+    position: relative;
+    width: 100%;
 }
 
 .sidebarContainer .viewmodeControls .viewModeActionButtonContainer {
-	padding: 0 0px 8px 0px;
-	border-bottom: 1px solid #bbbbbb;
-	border-top: 1px solid #bbbbbb;
-	margin: 0 7px 8px 7px;
+    padding: 0 0px 8px 0px;
+    border-bottom: 1px solid #bbbbbb;
+    border-top: 1px solid #bbbbbb;
+    margin: 0 7px 8px 7px;
 }
 
 .sidebarContainer .viewmodeControls .viewModeActionButtonContainer button, .hypervideoDeleteButton {
-	float: left;
-	height: 40px;
+    float: left;
+    height: 40px;
     margin-top: 7px;
     width: 40px;
-	border: 2px solid #F8F8F8;
-	border-radius: 50%;
-	background-color: transparent;
+    border: 2px solid #F8F8F8;
+    border-radius: 50%;
+    background-color: transparent;
 }
 
 .sidebarContainer .viewmodeControls .viewModeActionButtonContainer button:hover, .hypervideoDeleteButton:hover {
-	background-color: var(--primary-bg-color);
+    background-color: var(--primary-bg-color);
 }
 
 .sidebar.editActive .sidebarContainer .viewmodeControls .viewModeActionButtonContainer button, .hypervideoDeleteButton {
-	border-color: var(--primary-bg-color);
+    border-color: var(--primary-bg-color);
 }
 
 .sidebarContainer .viewmodeControls .viewModeActionButtonContainer button.unsavedChanges {
-	border-color: #FF9900 !important;
-	background-color: rgba(255, 153, 0, .15);
-	color: var(--primary-bg-color);
+    border-color: #FF9900 !important;
+    background-color: rgba(255, 153, 0, .15);
+    color: var(--primary-bg-color);
 }
 
 .sidebarContainer .viewmodeControls .viewModeActionButtonContainer button [class^="icon-"]::before, .sidebarContainer .viewmodeControls .viewModeActionButtonContainer button [class*=" icon-"]::before {
-	font-size: 20px;
-	margin-left: 2px;
-	margin-top: 2px;
+    font-size: 20px;
+    margin-left: 2px;
+    margin-top: 2px;
 }
 
 .sidebarContainer .viewmodeControls .exportButton {
-	display: none;
+    display: none;
 }
 
 .sidebarContainer .hypervideoDeleteButton {
-	position: absolute;
-	bottom: 8px;
-	left: 7px;
+    position: absolute;
+    bottom: 8px;
+    left: 7px;
 }
 
 .sidebarContainer .hypervideoDeleteButton .icon-trash::before {
-	font-size: 20px;
-	margin-left: 2px;
-	margin-top: 2px;
+    font-size: 20px;
+    margin-left: 2px;
+    margin-top: 2px;
 }

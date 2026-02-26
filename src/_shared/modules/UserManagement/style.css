@@ -1,50 +1,50 @@
 .userLoginOverlay {
-	display: none;
+    display: none;
 }
 
 .userLoginOverlay .loginBoxCancelButton {
-	margin-left: 10px;
+    margin-left: 10px;
 }
 
 .userLoginOverlay .loginBoxTabButton {
-	transition-property: font-size;
-	transition-duration: 0.2s;
+    transition-property: font-size;
+    transition-duration: 0.2s;
 }
 
 .userLoginOverlay .loginBoxTabButton.inactive {
-	font-size: 17px;
-	text-decoration: underline;
-	cursor: pointer;
+    font-size: 17px;
+    text-decoration: underline;
+    cursor: pointer;
 }
 
 .userLoginOverlay .userTabRegister,
 .userLoginOverlay .userTabGuest {
-	display: none;
+    display: none;
 }
 
 .userLoginOverlay .guestEditHint {
-	height: auto;
-	line-height: 20px;
-	background-color: #FCFAF1;
-	border: 1px solid #FFC414;
-	color: #333;
-	padding: 1px 4px;
-	margin-bottom: 10px;
-	clear: both;
-	border-radius: 3px;
+    height: auto;
+    line-height: 20px;
+    background-color: #FCFAF1;
+    border: 1px solid #FFC414;
+    color: #333;
+    padding: 1px 4px;
+    margin-bottom: 10px;
+    clear: both;
+    border-radius: 3px;
 }
 
 .userLoginOverlay input[type="text"], .userLoginOverlay input[type="password"], .userLoginOverlay textarea {
-	background: transparent;
-	color: var(--primary-fg-color);
-	border-color: var(--primary-fg-color);
+    background: transparent;
+    color: var(--primary-fg-color);
+    border-color: var(--primary-fg-color);
 }
 
 .userLoginOverlay.ui-blocking-overlay .ui-overlay-box input[type="submit"]:hover, .userLoginOverlay.ui-blocking-overlay .ui-overlay-box button:hover {
-	background-color: var(--primary-fg-color);
-	color: var(--primary-bg-color);
+    background-color: var(--primary-fg-color);
+    color: var(--primary-bg-color);
 }
 
 .ui-dialog[aria-describedby="loggedOutDialog"] {
-	z-index: 100002;
+    z-index: 100002;
 }

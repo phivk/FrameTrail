@@ -151,7 +151,7 @@ FrameTrail.defineType(
                         resourceDetail.querySelector('.resourceButtons').appendChild(jumpToTimeButton);
                     }
 
-                	return resourceDetail;
+                    return resourceDetail;
 
                 },
 

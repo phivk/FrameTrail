@@ -64,10 +64,10 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
 
             },
             function(){
-            	/* Start edit mode canceled */
-            	if (FrameTrail.module('RouteNavigation').environment.iframe) {
-		            FrameTrail.module('ViewVideo').toggleNativeFullscreenState(false, 'close');
-		        }
+                /* Start edit mode canceled */
+                if (FrameTrail.module('RouteNavigation').environment.iframe) {
+                    FrameTrail.module('ViewVideo').toggleNativeFullscreenState(false, 'close');
+                }
             }
         );
     });

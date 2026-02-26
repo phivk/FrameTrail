@@ -1,118 +1,118 @@
 /* Timeline Element */
 
 .overlayTimeline .timelineElement {
-	position: absolute;
-	height: 100%;
-	background: var(--semi-transparent-fg-color);
-	pointer-events: none;
-	-moz-transition-duration: 0.2s;
+    position: absolute;
+    height: 100%;
+    background: var(--semi-transparent-fg-color);
+    pointer-events: none;
+    -moz-transition-duration: 0.2s;
     -moz-transition-property: bottom;
-	-webkit-transition-duration: 0.2s;
+    -webkit-transition-duration: 0.2s;
     -webkit-transition-property: bottom;
     -o-transition-duration: 0.2s;
     -o-transition-property: bottom;
-	transition-duration: 0.2s;
+    transition-duration: 0.2s;
     transition-property: bottom;
 }
 
 .overlayTimeline .timelineElement.active {
-	background: var(--primary-fg-color);
+    background: var(--primary-fg-color);
 }
 
 .overlayTimeline .timelineElement.highlighted {
-	background: var(--primary-fg-color) !important;
-	z-index: 100000;
+    background: var(--primary-fg-color) !important;
+    z-index: 100000;
 }
 
 .overlayTimeline.editable .timelineElement {
-	pointer-events: all;
-	background-color: var(--secondary-fg-color);
+    pointer-events: all;
+    background-color: var(--secondary-fg-color);
 }
 
 .overlayTimeline .timelineElement.brushed {
-	background: var(--semi-transparent-fg-highlight-color);
+    background: var(--semi-transparent-fg-highlight-color);
 }
 
 .overlayTimeline .timelineElement.brushed.active, .overlayTimeline.editable .timelineElement.brushed {
-	background-color: var(--primary-fg-color);
+    background-color: var(--primary-fg-color);
 }
 
 .overlayTimeline .timelineElement.ui-draggable:hover {
-	cursor: move;
+    cursor: move;
 }
 
 .overlayTimeline .timelineElement.ui-resizable .ui-resizable-handle {
-	position: absolute;
-	top: -2px;
-	width: 3px;
-	height: 100%;
-	background-color: var(--primary-fg-color);
-	border: 2px solid #000;
-	border-radius: 3px;
+    position: absolute;
+    top: -2px;
+    width: 3px;
+    height: 100%;
+    background-color: var(--primary-fg-color);
+    border: 2px solid #000;
+    border-radius: 3px;
 }
 
 .overlayTimeline .timelineElement.ui-resizable .ui-resizable-handle:hover {
-	background-color: var(--primary-fg-color);
+    background-color: var(--primary-fg-color);
 }
 
 .overlayTimeline .timelineElement.ui-resizable .ui-resizable-handle.ui-resizable-e {
-	right: -2px;
-	cursor: ew-resize;
+    right: -2px;
+    cursor: ew-resize;
 }
 
 .overlayTimeline .timelineElement.ui-resizable .ui-resizable-handle.ui-resizable-w {
-	left: -2px;
-	cursor: ew-resize;
+    left: -2px;
+    cursor: ew-resize;
 }
 
 .overlayTimeline .timelineElement.ui-resizable .ui-resizable-handle.ui-resizable-ne {
-	top: -2px;
-	right: -2px;
-	cursor: ne-resize;
+    top: -2px;
+    right: -2px;
+    cursor: ne-resize;
 }
 
 .overlayTimeline .timelineElement.ui-resizable .ui-resizable-handle.ui-resizable-nw {
-	top: -2px;
-	left: -2px;
-	cursor: nw-resize;
+    top: -2px;
+    left: -2px;
+    cursor: nw-resize;
 }
 
 .overlayTimeline .timelineElement.ui-resizable .ui-resizable-handle.ui-resizable-se {
-	bottom: -2px;
-	right: -2px;
-	cursor: se-resize;
+    bottom: -2px;
+    right: -2px;
+    cursor: se-resize;
 }
 
 .overlayTimeline .timelineElement.ui-resizable .ui-resizable-handle.ui-resizable-sw {
-	bottom: -2px;
-	left: -2px;
-	cursor: sw-resize;
+    bottom: -2px;
+    left: -2px;
+    cursor: sw-resize;
 }
 
 /* Overlay Element */
 
 .overlayContainer .overlayElement {
-	-webkit-transform: translate3d(0,0,0);
+    -webkit-transform: translate3d(0,0,0);
     -moz-transform: translate3d(0,0,0);
     -ms-transform: translate3d(0,0,0);
     transform: translate3d(0,0,0);
     backface-visibility: hidden;
-	position: absolute;
-	background: transparent;
-	visibility: hidden;
-	opacity: 0;
-	pointer-events: none;
+    position: absolute;
+    background: transparent;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
 }
 
 .overlayContainer .overlayElement.active {
-	visibility: visible;
-	pointer-events: auto;
+    visibility: visible;
+    pointer-events: auto;
 }
 
 /* Keep visible during exit animation */
 .overlayContainer .overlayElement.animating-out {
-	visibility: visible;
-	pointer-events: none;
+    visibility: visible;
+    pointer-events: none;
 }
 
 /* ============================================
@@ -120,51 +120,51 @@
    ============================================ */
 
 @keyframes overlayFadeIn {
-	from { opacity: 0; }
-	to { opacity: 1; }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 .overlayContainer .overlayElement.active.anim-in-fade {
-	animation: overlayFadeIn var(--overlay-anim-duration, 300ms) ease-out forwards;
+    animation: overlayFadeIn var(--overlay-anim-duration, 300ms) ease-out forwards;
 }
 
 @keyframes overlaySlideInLeft {
-	from { opacity: 0; transform: translate3d(-30px, 0, 0); }
-	to { opacity: 1; transform: translate3d(0, 0, 0); }
+    from { opacity: 0; transform: translate3d(-30px, 0, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
 }
 .overlayContainer .overlayElement.active.anim-in-slideLeft {
-	animation: overlaySlideInLeft var(--overlay-anim-duration, 300ms) ease-out forwards;
+    animation: overlaySlideInLeft var(--overlay-anim-duration, 300ms) ease-out forwards;
 }
 
 @keyframes overlaySlideInRight {
-	from { opacity: 0; transform: translate3d(30px, 0, 0); }
-	to { opacity: 1; transform: translate3d(0, 0, 0); }
+    from { opacity: 0; transform: translate3d(30px, 0, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
 }
 .overlayContainer .overlayElement.active.anim-in-slideRight {
-	animation: overlaySlideInRight var(--overlay-anim-duration, 300ms) ease-out forwards;
+    animation: overlaySlideInRight var(--overlay-anim-duration, 300ms) ease-out forwards;
 }
 
 @keyframes overlaySlideInUp {
-	from { opacity: 0; transform: translate3d(0, 30px, 0); }
-	to { opacity: 1; transform: translate3d(0, 0, 0); }
+    from { opacity: 0; transform: translate3d(0, 30px, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
 }
 .overlayContainer .overlayElement.active.anim-in-slideUp {
-	animation: overlaySlideInUp var(--overlay-anim-duration, 300ms) ease-out forwards;
+    animation: overlaySlideInUp var(--overlay-anim-duration, 300ms) ease-out forwards;
 }
 
 @keyframes overlaySlideInDown {
-	from { opacity: 0; transform: translate3d(0, -30px, 0); }
-	to { opacity: 1; transform: translate3d(0, 0, 0); }
+    from { opacity: 0; transform: translate3d(0, -30px, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
 }
 .overlayContainer .overlayElement.active.anim-in-slideDown {
-	animation: overlaySlideInDown var(--overlay-anim-duration, 300ms) ease-out forwards;
+    animation: overlaySlideInDown var(--overlay-anim-duration, 300ms) ease-out forwards;
 }
 
 @keyframes overlayZoomIn {
-	from { opacity: 0; transform: translate3d(0, 0, 0) scale(0.8); }
-	to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+    from { opacity: 0; transform: translate3d(0, 0, 0) scale(0.8); }
+    to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
 }
 .overlayContainer .overlayElement.active.anim-in-zoom {
-	animation: overlayZoomIn var(--overlay-anim-duration, 300ms) ease-out forwards;
+    animation: overlayZoomIn var(--overlay-anim-duration, 300ms) ease-out forwards;
 }
 
 /* ============================================
@@ -172,59 +172,59 @@
    ============================================ */
 
 @keyframes overlayFadeOut {
-	from { opacity: 1; }
-	to { opacity: 0; }
+    from { opacity: 1; }
+    to { opacity: 0; }
 }
 .overlayContainer .overlayElement.anim-out-fade {
-	animation: overlayFadeOut var(--overlay-anim-duration, 300ms) ease-in forwards;
+    animation: overlayFadeOut var(--overlay-anim-duration, 300ms) ease-in forwards;
 }
 
 @keyframes overlaySlideOutLeft {
-	from { opacity: 1; transform: translate3d(0, 0, 0); }
-	to { opacity: 0; transform: translate3d(-30px, 0, 0); }
+    from { opacity: 1; transform: translate3d(0, 0, 0); }
+    to { opacity: 0; transform: translate3d(-30px, 0, 0); }
 }
 .overlayContainer .overlayElement.anim-out-slideLeft {
-	animation: overlaySlideOutLeft var(--overlay-anim-duration, 300ms) ease-in forwards;
+    animation: overlaySlideOutLeft var(--overlay-anim-duration, 300ms) ease-in forwards;
 }
 
 @keyframes overlaySlideOutRight {
-	from { opacity: 1; transform: translate3d(0, 0, 0); }
-	to { opacity: 0; transform: translate3d(30px, 0, 0); }
+    from { opacity: 1; transform: translate3d(0, 0, 0); }
+    to { opacity: 0; transform: translate3d(30px, 0, 0); }
 }
 .overlayContainer .overlayElement.anim-out-slideRight {
-	animation: overlaySlideOutRight var(--overlay-anim-duration, 300ms) ease-in forwards;
+    animation: overlaySlideOutRight var(--overlay-anim-duration, 300ms) ease-in forwards;
 }
 
 @keyframes overlaySlideOutDown {
-	from { opacity: 1; transform: translate3d(0, 0, 0); }
-	to { opacity: 0; transform: translate3d(0, 30px, 0); }
+    from { opacity: 1; transform: translate3d(0, 0, 0); }
+    to { opacity: 0; transform: translate3d(0, 30px, 0); }
 }
 .overlayContainer .overlayElement.anim-out-slideDown {
-	animation: overlaySlideOutDown var(--overlay-anim-duration, 300ms) ease-in forwards;
+    animation: overlaySlideOutDown var(--overlay-anim-duration, 300ms) ease-in forwards;
 }
 
 @keyframes overlaySlideOutUp {
-	from { opacity: 1; transform: translate3d(0, 0, 0); }
-	to { opacity: 0; transform: translate3d(0, -30px, 0); }
+    from { opacity: 1; transform: translate3d(0, 0, 0); }
+    to { opacity: 0; transform: translate3d(0, -30px, 0); }
 }
 .overlayContainer .overlayElement.anim-out-slideUp {
-	animation: overlaySlideOutUp var(--overlay-anim-duration, 300ms) ease-in forwards;
+    animation: overlaySlideOutUp var(--overlay-anim-duration, 300ms) ease-in forwards;
 }
 
 @keyframes overlayZoomOut {
-	from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
-	to { opacity: 0; transform: translate3d(0, 0, 0) scale(0.8); }
+    from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+    to { opacity: 0; transform: translate3d(0, 0, 0) scale(0.8); }
 }
 .overlayContainer .overlayElement.anim-out-zoom {
-	animation: overlayZoomOut var(--overlay-anim-duration, 300ms) ease-in forwards;
+    animation: overlayZoomOut var(--overlay-anim-duration, 300ms) ease-in forwards;
 }
 
 .overlayContainer .overlayElement.highlighted {
-	box-shadow: 0 0 1px 2px #f8f8f8 !important;
+    box-shadow: 0 0 1px 2px #f8f8f8 !important;
 }
 
 .overlayContainer .overlayElement img {
-	-webkit-transform: translate3d(0,0,0);
+    -webkit-transform: translate3d(0,0,0);
     -moz-transform: translate3d(0,0,0);
     -ms-transform: translate3d(0,0,0);
     transform: translate3d(0,0,0);
@@ -233,69 +233,69 @@
 }
 
 .mainContainer.editActive .overlayContainer .overlayElement.ui-draggable.brushed {
-	box-shadow: 0 0 2px 1px #cfcfcf;
+    box-shadow: 0 0 2px 1px #cfcfcf;
 }
 
 .overlayContainer .overlayElement.ui-draggable .resourceDetail {
-	pointer-events: none;
+    pointer-events: none;
 }
 
 .overlayContainer .overlayElement.ui-draggable:hover {
-	cursor: move;
+    cursor: move;
 }
 
 .overlayContainer .overlayElement.ui-resizable .ui-resizable-handle {
-	position: absolute;
-	width: 4px;
-	height: 4px;
-	background-color: var(--primary-fg-color);
-	border: 3px solid var(--primary-bg-color);
-	border-radius: 4px;
-	display: none !important;
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background-color: var(--primary-fg-color);
+    border: 3px solid var(--primary-bg-color);
+    border-radius: 4px;
+    display: none !important;
 }
 
 .overlayContainer .overlayElement.ui-resizable .ui-resizable-handle:hover {
-	background-color: var(--primary-fg-color);
+    background-color: var(--primary-fg-color);
 }
 
 .overlayContainer .overlayElement.ui-resizable .ui-resizable-handle.ui-resizable-ne {
-	top: -2px;
-	right: -2px;
-	cursor: ne-resize;
+    top: -2px;
+    right: -2px;
+    cursor: ne-resize;
 }
 
 .overlayContainer .overlayElement.ui-resizable .ui-resizable-handle.ui-resizable-nw {
-	top: -2px;
-	left: -2px;
-	cursor: nw-resize;
+    top: -2px;
+    left: -2px;
+    cursor: nw-resize;
 }
 
 .overlayContainer .overlayElement.ui-resizable .ui-resizable-handle.ui-resizable-se {
-	bottom: -2px;
-	right: -2px;
-	cursor: se-resize;
+    bottom: -2px;
+    right: -2px;
+    cursor: se-resize;
 }
 
 .overlayContainer .overlayElement.ui-resizable .ui-resizable-handle.ui-resizable-sw {
-	bottom: -2px;
-	left: -2px;
-	cursor: sw-resize;
+    bottom: -2px;
+    left: -2px;
+    cursor: sw-resize;
 }
 
 .overlayContainer .overlayElement.ui-resizable:hover .ui-resizable-handle {
-	display: block !important;
+    display: block !important;
 }
 
 /* Edit Overlay Properties */
 
 #OverlayOptions > hr.overlayAppearanceSeparator:first-child {
-	display: none;
+    display: none;
 }
 
 .editPropertiesContainer .overlayOptionsTabs .ui-tabs-panel[id^="ActionOn"] .message {
-	float: right;
-	width: 330px;
-	font-size: 12px;
-	line-height: 14px;
-	margin-bottom: 0px;;
+    float: right;
+    width: 330px;
+    font-size: 12px;
+    line-height: 14px;
+    margin-bottom: 0px;;
 }

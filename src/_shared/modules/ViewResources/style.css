@@ -1,39 +1,39 @@
 .viewResources {
-	color: var(--primary-bg-color);
-	display: flex;
-	flex-flow: column;
+    color: var(--primary-bg-color);
+    display: flex;
+    flex-flow: column;
 }
 
 .viewResources .resourcesControls {
-	width: 100%;
-	border-bottom: 1px solid #afafaf;
+    width: 100%;
+    border-bottom: 1px solid #afafaf;
     height: 48px;
 }
 
 .viewResources .resourcesControls button {
-	float: left;
-	margin-right: 6px;
+    float: left;
+    margin-right: 6px;
 }
 
 
 .viewResources .resourcesControls .resourceDelete.active {
-	border-color: #cd0a0a;
-	box-shadow: inset 0 0 2px 2px #333;
-	margin-right: 0px;
+    border-color: #cd0a0a;
+    box-shadow: inset 0 0 2px 2px #333;
+    margin-right: 0px;
 }
 
 .viewResources .resourcesControls .resourceDeleteConfirm {
-	background-color: rgba(205, 10, 10, .6) !important;
-	border-color: #cd0a0a;
-	color: var(--primary-fg-color);
+    background-color: rgba(205, 10, 10, .6) !important;
+    border-color: #cd0a0a;
+    color: var(--primary-fg-color);
 }
 
 .viewResources .resourcesControls .resourceDeleteConfirm:hover {
-	background-color: rgba(205, 10, 10, 1) !important;
+    background-color: rgba(205, 10, 10, 1) !important;
 }
 
 .viewResources .resourcesControls .message {
-	display: none;
+    display: none;
     margin-left: 20px;
     margin-top: 6px;
     margin-bottom: 0px;
@@ -41,197 +41,197 @@
 }
 
 .viewResources .resourcesControls .message.active {
-	display: inline-block;
+    display: inline-block;
 }
 
 .viewResources .resourcesControls .viewControls {
-	float: right;
+    float: right;
 }
 
 .viewResources .resourcesControls .viewToggle {
-	margin-right: 0px;
-	cursor: pointer;
-	transition: all 0.2s ease;
+    margin-right: 0px;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 .viewResources .resourcesControls .viewToggle.active {
-	background-color: var(--primary-bg-color);
-	color: var(--primary-fg-color);
+    background-color: var(--primary-bg-color);
+    color: var(--primary-fg-color);
 }
 
 .viewResources .resourcesControls .viewToggle [class^="icon-"]::before,
 .viewResources .resourcesControls .viewToggle [class*=" icon-"]::before {
-	font-size: 16px;
+    font-size: 16px;
 }
 
 .viewResources .resourcesFilter {
-	width: 100%;
-	padding: 10px;
-	box-sizing: border-box;
-	clear: both;
-	background-color: rgba(0, 0, 0, 0.03);
-	border-bottom: 1px solid #afafaf;
-	display: flex;
-	align-items: center;
-	gap: 10px;
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    clear: both;
+    background-color: rgba(0, 0, 0, 0.03);
+    border-bottom: 1px solid #afafaf;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 
 .viewResources .resourcesFilter .resourcesCheckboxes {
-	margin-left: auto;
-	display: flex;
-	align-items: center;
-	gap: 6px;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .viewResources .resourcesFilter .resourcesCheckboxes input[type="checkbox"] {
-	position: relative;
-	opacity: 1;
-	pointer-events: auto;
-	vertical-align: middle;
-	cursor: pointer;
+    position: relative;
+    opacity: 1;
+    pointer-events: auto;
+    vertical-align: middle;
+    cursor: pointer;
 }
 
 .viewResources .resourcesFilter .resourcesCheckboxes label {
-	background: transparent;
-	border: none;
-	padding: 0;
-	font-weight: normal;
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-weight: normal;
 }
 
 .viewResources .resourcesList {
-	position: relative;
-	width: 100%;
-	overflow: auto;
-	flex: 1;
+    position: relative;
+    width: 100%;
+    overflow: auto;
+    flex: 1;
 }
 
 .viewResources .resourcesList.onlyCC .resourceThumb:not([data-license-type^="CC-"]) {
-	display: none;
+    display: none;
 }
 
 .viewResources .resourcesList .resourceThumb, .videoResourceList .resourceThumb {
-	float: left;
-	position: relative;
-	width: 120px;
-	height: 80px;
-	margin: 6px;
+    float: left;
+    position: relative;
+    width: 120px;
+    height: 80px;
+    margin: 6px;
 }
 
 .viewResources .resourcesList .resourceThumb.selected, .videoResourceList .resourceThumb.selected {
-	outline: 4px solid #FF9900;
+    outline: 4px solid #FF9900;
 }
 
 .viewResources .resourcesList .resourceThumb.markedForDeletion { 
-	box-shadow: 0 0 2px 2px #cd0a0a;
+    box-shadow: 0 0 2px 2px #cd0a0a;
 }
 
 .viewResources .resourcesList .resourceThumb.markedForDeletion .resourceOverlay {
-	background: rgba(205, 10, 10, .6);
+    background: rgba(205, 10, 10, .6);
 }
 
 /* Grid View Modes */
 
 /* Medium Grid (default) - 120x80 thumbnails */
 .viewResources .resourcesList.view-grid-medium .resourceThumb {
-	width: 120px;
-	height: 80px;
-	margin: 6px;
+    width: 120px;
+    height: 80px;
+    margin: 6px;
 }
 
 /* Small Grid - 90x60 thumbnails */
 .viewResources .resourcesList.view-grid-small .resourceThumb {
-	width: 90px;
-	height: 60px;
-	margin: 4px;
+    width: 90px;
+    height: 60px;
+    margin: 4px;
 }
 
 .viewResources .resourcesList.view-grid-small .resourceThumb .resourceTitle {
-	font-size: 10px;
-	padding: 2px 4px;
+    font-size: 10px;
+    padding: 2px 4px;
 }
 
 /* Large Grid - 180x120 thumbnails */
 .viewResources .resourcesList.view-grid-large .resourceThumb {
-	width: 180px;
-	height: 120px;
-	margin: 8px;
+    width: 180px;
+    height: 120px;
+    margin: 8px;
 }
 
 .viewResources .resourcesList.view-grid-large .resourceThumb .resourceTitle {
-	font-size: 13px;
-	padding: 4px 6px;
+    font-size: 13px;
+    padding: 4px 6px;
 }
 
 /* List View - full width rows */
 .viewResources .resourcesList.view-list .resourceThumb {
-	width: 100%;
-	box-sizing: border-box;
-	height: 80px;
-	margin: 4px 0;
-	display: flex;
-	align-items: center;
-	float: none;
-	background-position: left center;
-	background-size: 120px 80px;
-	background-repeat: no-repeat;
-	padding-left: 130px;
+    width: 100%;
+    box-sizing: border-box;
+    height: 80px;
+    margin: 4px 0;
+    display: flex;
+    align-items: center;
+    float: none;
+    background-position: left center;
+    background-size: 120px 80px;
+    background-repeat: no-repeat;
+    padding-left: 130px;
 }
 
 .viewResources .resourcesList.view-list .resourceThumb .resourceTitle {
-	flex: 1;
-	text-align: left;
-	font-size: 14px;
-	padding: 8px;
-	position: static;
-	background: transparent;
+    flex: 1;
+    text-align: left;
+    font-size: 14px;
+    padding: 8px;
+    position: static;
+    background: transparent;
 }
 
 .viewResources .resourcesList.view-list .resourceThumb .resourceOverlay {
-	position: absolute;
-	left: 0;
-	width: 120px;
-	height: 80px;
+    position: absolute;
+    left: 0;
+    width: 120px;
+    height: 80px;
 }
 
 .viewResources .resourcesList.view-list .resourceThumb .resourcePreviewButton {
-	position: static;
-	margin-left: auto;
-	margin-right: 10px;
+    position: static;
+    margin-left: auto;
+    margin-right: 10px;
 }
 
 .viewResources .resourcesList .loadingScreen {
-	position: absolute;
-	top: 0px;
-	left: 0px;
-	width: 100%;
-	height: 100%;
-	z-index: 9000;
-	background-color: rgba(248, 248, 248, 0.4);
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 9000;
+    background-color: rgba(248, 248, 248, 0.4);
 }
 
 .viewResources .resourcesList .loadingErrorMessage {
-	position: absolute;
-	top: 0px;
-	left: 0px;
-	width: 100%;
-	height: 100%;
-	z-index: 9000;
-	background-color: rgba(248, 248, 248, 0.9);
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 9000;
+    background-color: rgba(248, 248, 248, 0.9);
 }
 
 .viewResources .resourcesList .loadingErrorMessage .message {
-	position: absolute;
-	top: 40%;
-	left: 50%;
-	width: 200px;
-	margin-left: -100px;
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    width: 200px;
+    margin-left: -100px;
 }
 
 /* Upload Dialog */
 
 .uploadDialog .progress {
-	background: #666 none repeat scroll 0 0;
+    background: #666 none repeat scroll 0 0;
     display: none;
     height: 100%;
     left: 0;
@@ -244,64 +244,64 @@
 }
 
 .uploadDialog .progress .bar {
-	background-color: #7fc07f;
-	width: 0%;
-	height: 100%;
-	border-radius: 3px;
+    background-color: #7fc07f;
+    width: 0%;
+    height: 100%;
+    border-radius: 3px;
 }
 
 .uploadDialog .progress .percent {
-	position: absolute;
-	display: block;
-	top: 40%;
-	left: 50%;
-	width: 100px;
-	margin-left: -50px;
-	text-align: center;
-	font-size: 30px;
+    position: absolute;
+    display: block;
+    top: 40%;
+    left: 50%;
+    width: 100px;
+    margin-left: -50px;
+    text-align: center;
+    font-size: 30px;
 }
 
 .uploadDialog .progress .uploadStatus {
-	position: absolute;
-	display: block;
-	bottom: 18%;
-	left: 50%;
-	width: 300px;
-	margin-left: -150px;
-	text-align: center;
+    position: absolute;
+    display: block;
+    bottom: 18%;
+    left: 50%;
+    width: 300px;
+    margin-left: -150px;
+    text-align: center;
 }
 
 .uploadDialog .locationSearchWrapper {
-	position: relative;
-	margin-bottom: 10px;
+    position: relative;
+    margin-bottom: 10px;
 }
 
 .uploadDialog .locationSearchWrapper .locationSearchCopyright {
-	color: #afafaf;
+    color: #afafaf;
     font-size: 11px;
 }
 
 .uploadDialog .locationSearchWrapper .locationSearchSuggestions {
-	position: absolute;
-	top: 41px;
-	background: #d5d6da;
-	width: 500px;
-	height: auto;
-	max-height: 150px;
-	overflow: auto;
-	border: 2px solid #444;
-	display: none;
+    position: absolute;
+    top: 41px;
+    background: #d5d6da;
+    width: 500px;
+    height: auto;
+    max-height: 150px;
+    overflow: auto;
+    border: 2px solid #444;
+    display: none;
 }
 
 .uploadDialog .locationSearchWrapper .locationSearchSuggestions li {
-	list-style: none;
-	font-size: 13px;
+    list-style: none;
+    font-size: 13px;
     font-weight: 100;
-	border-bottom: 1px solid var(--primary-fg-color);
-	padding: 2px 6px;
+    border-bottom: 1px solid var(--primary-fg-color);
+    padding: 2px 6px;
 }
 
 .uploadDialog .locationSearchWrapper .locationSearchSuggestions li:hover {
-	background: #bfbfbf;
-	cursor: pointer;
+    background: #bfbfbf;
+    cursor: pointer;
 }

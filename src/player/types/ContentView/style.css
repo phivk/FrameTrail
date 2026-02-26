@@ -4,178 +4,178 @@
 
 /* Content View Items / Collection Items */
 .collectionElement {
-	float: left;
-	position: relative;
-	margin-right: 4px;
-	opacity: .7;
-	background: var(--primary-bg-color);
-	box-sizing: border-box;
-	border: 2px solid var(--primary-bg-color);
+    float: left;
+    position: relative;
+    margin-right: 4px;
+    opacity: .7;
+    background: var(--primary-bg-color);
+    box-sizing: border-box;
+    border: 2px solid var(--primary-bg-color);
 }
 
 .layoutAreaDetails .collectionElement {
-	opacity: .5;
-	pointer-events: none;
+    opacity: .5;
+    pointer-events: none;
 }
 
 .collectionElement:hover {
-	opacity: 1;
+    opacity: 1;
 }
 
 .collectionElement.active {
-	opacity: 1;
-	border-color: var(--primary-fg-color);
-	pointer-events: all;
+    opacity: 1;
+    border-color: var(--primary-fg-color);
+    pointer-events: all;
 }
 
 .collectionElement.open {
-	opacity: 1;
-	outline: 2px solid var(--primary-fg-color);
-	pointer-events: all;
+    opacity: 1;
+    outline: 2px solid var(--primary-fg-color);
+    pointer-events: all;
 }
 
 .layoutArea[data-area="areaLeft"][data-size="large"] .collectionElement, .layoutArea[data-area="areaRight"][data-size="large"] .collectionElement {
-	position: absolute;
-	top: 0px;
-	display: none;
+    position: absolute;
+    top: 0px;
+    display: none;
 }
 
 .layoutArea[data-area="areaLeft"][data-size="large"] .collectionElement.active, .layoutArea[data-area="areaRight"][data-size="large"] .collectionElement.active {
-	display: block;
-	border: none;
+    display: block;
+    border: none;
 }
 
 .collectionElement .resourceThumb {
-	width: 100%;
-	height: 100%;
-	outline: none;
+    width: 100%;
+    height: 100%;
+    outline: none;
 }
 
 .layoutArea[data-size="small"] .collectionElement .resourceOverlay {
-	/*background: var(--secondary-bg-color);*/
+    /*background: var(--secondary-bg-color);*/
 }
 
 .layoutArea[data-size="small"] .collectionElement .resourceIcon {
-	width: 30px;
+    width: 30px;
     right: 4px;
     bottom: 8px;
 }
 
 .layoutArea[data-area="areaTop"] .collectionElement .resourcePreviewButton, .layoutArea[data-area="areaBottom"] .collectionElement .resourcePreviewButton, .layoutArea[data-area="areaLeft"][data-size="small"] .collectionElement .resourcePreviewButton, .layoutArea[data-area="areaRight"][data-size="small"] .collectionElement .resourcePreviewButton {
-	display: none !important;
+    display: none !important;
 }
 
 .layoutArea[data-size="small"] .collectionElement .resourceTitle {
-	min-width: 120px;
-	left: 50%;
-	margin-left: -64px;
-	background: var(--secondary-bg-color);
-	color: var(--primary-fg-color);
-	text-shadow: none;
-	hyphens: auto;
-	white-space: nowrap;
-	height: 22px;
-	line-height: 20px;
-	text-align: center;
-	padding: 1px 4px 0 4px;
-	display: none;
-	z-index: 10;
-	width: auto;
+    min-width: 120px;
+    left: 50%;
+    margin-left: -64px;
+    background: var(--secondary-bg-color);
+    color: var(--primary-fg-color);
+    text-shadow: none;
+    hyphens: auto;
+    white-space: nowrap;
+    height: 22px;
+    line-height: 20px;
+    text-align: center;
+    padding: 1px 4px 0 4px;
+    display: none;
+    z-index: 10;
+    width: auto;
 }
 
 .layoutArea[data-area="areaTop"][data-size="small"] .collectionElement .resourceTitle {
-	top: auto;
-	bottom: -30px;
+    top: auto;
+    bottom: -30px;
 }
 
 .layoutArea[data-area="areaBottom"][data-size="small"] .collectionElement .resourceTitle {
-	top: -30px;
-	bottom: auto;
+    top: -30px;
+    bottom: auto;
 }
 
 .layoutArea[data-area="areaLeft"][data-size="small"] .collectionElement .resourceTitle, .layoutArea[data-area="areaRight"][data-size="small"] .collectionElement .resourceTitle {
-	display: none !important;
+    display: none !important;
 }
 
 .layoutArea[data-size="small"] .collectionElement:hover .resourceTitle {
-	display: block;
+    display: block;
 }
 
 .layoutArea[data-size="small"] .collectionElement.open .resourceTitle {
-	display: none !important;
+    display: none !important;
 }
 
 /* Content View Item Sizes */
 
 .layoutArea[data-area="areaTop"] .collectionElement, .layoutArea[data-area="areaBottom"] .collectionElement {
-	top: 4px;
-	height: calc(100% - 8px);
+    top: 4px;
+    height: calc(100% - 8px);
 }
 
 .layoutArea[data-area="areaTop"][data-size="large"] .collectionElement, .layoutArea[data-area="areaBottom"][data-size="large"] .collectionElement {
-	top: 10px;
-	height: calc(100% - 20px);
-	margin-right: 10px;
+    top: 10px;
+    height: calc(100% - 20px);
+    margin-right: 10px;
 }
 
 .layoutAreaDetails[data-area="areaTop"] .collectionElement, .layoutAreaDetails[data-area="areaBottom"] .collectionElement {
-	top: 30px;
-	height: calc(100% - 60px);
-	margin-right: 10px;
-	transition-property: top, height;
-	transition-duration: 200ms;
+    top: 30px;
+    height: calc(100% - 60px);
+    margin-right: 10px;
+    transition-property: top, height;
+    transition-duration: 200ms;
 }
 
 .layoutAreaDetails[data-area="areaTop"] .collectionElement.open, .layoutAreaDetails[data-area="areaBottom"] .collectionElement.open {
-	top: 10px;
-	height: calc(100% - 20px);
+    top: 10px;
+    height: calc(100% - 20px);
 }
 
 .layoutArea[data-area="areaTop"][data-size="small"] .collectionElement, .layoutArea[data-area="areaBottom"][data-size="small"] .collectionElement {
-	width: 44px;
+    width: 44px;
 }
 
 .layoutArea[data-area="areaTop"][data-size="medium"] .collectionElement, .layoutArea[data-area="areaBottom"][data-size="medium"] .collectionElement {
-	width: 160px;
+    width: 160px;
 }
 
 .layoutArea[data-area="areaTop"][data-size="large"] .collectionElement, .layoutArea[data-area="areaBottom"][data-size="large"] .collectionElement {
-	width: 460px;
+    width: 460px;
 }
 
 .layoutArea[data-area="areaLeft"] .collectionElement, .layoutArea[data-area="areaRight"] .collectionElement {
-	height: 100%;
-	left: 4px;
-	margin-right: 0px;
-	margin-bottom: 4px;
-	width: calc(100% - 8px);
+    height: 100%;
+    left: 4px;
+    margin-right: 0px;
+    margin-bottom: 4px;
+    width: calc(100% - 8px);
 }
 
 .layoutArea[data-area="areaLeft"][data-size="small"] .collectionElement, .layoutArea[data-area="areaRight"][data-size="small"] .collectionElement {
-	height: 34px;
+    height: 34px;
 }
 
 .layoutArea[data-area="areaLeft"][data-size="medium"] .collectionElement, .layoutArea[data-area="areaRight"][data-size="medium"] .collectionElement {
-	height: 110px;
+    height: 110px;
 }
 
 .layoutArea[data-area="areaLeft"][data-size="large"] .collectionElement, .layoutArea[data-area="areaRight"][data-size="large"] .collectionElement {
-	height: calc(100% - 8px);
+    height: calc(100% - 8px);
 }
 
 /* Content View Container */
 
 .layoutArea .contentViewContainer {
-	position: absolute;
-	top: 36px;
-	width: 100%;
-	height: calc(100% - 36px);
-	padding: 0px;
-	box-sizing: border-box;
-	background: var(--secondary-bg-color);
-	color: var(--primary-fg-color);
-	overflow: hidden;
-	display: none;
+    position: absolute;
+    top: 36px;
+    width: 100%;
+    height: calc(100% - 36px);
+    padding: 0px;
+    box-sizing: border-box;
+    background: var(--secondary-bg-color);
+    color: var(--primary-fg-color);
+    overflow: hidden;
+    display: none;
 }
 
 .layoutArea .contentViewContainer .slideButton {
@@ -192,45 +192,45 @@
 }
 
 .layoutArea[data-size="small"] .contentViewContainer .slideButton.slideLeft {
-	left: 0px;
+    left: 0px;
 }
 
 .layoutArea[data-size="small"] .contentViewContainer .slideButton.slideRight {
-	right: 0px;
+    right: 0px;
 }
 
 .layoutArea[data-size="small"] .contentViewContainer .slideButton.slideTop {
-	top: 0px;
+    top: 0px;
 }
 
 .layoutArea[data-size="small"] .contentViewContainer .slideButton.slideBottom {
-	bottom: 0px;
+    bottom: 0px;
 }
 
 .layoutArea[data-area="areaTop"] .contentViewContainer {
-	top: 0px;
+    top: 0px;
 }
 
 .layoutArea[data-area="areaLeft"] .contentViewContainer {
-	top: 0px;
-	right: 36px;
-	height: 100%;
-	width: calc(100% - 36px);
+    top: 0px;
+    right: 36px;
+    height: 100%;
+    width: calc(100% - 36px);
 }
 
 .layoutArea[data-area="areaRight"] .contentViewContainer {
-	top: 0px;
-	left: 36px;
-	height: 100%;
-	width: calc(100% - 36px);
+    top: 0px;
+    left: 36px;
+    height: 100%;
+    width: calc(100% - 36px);
 }
 
 .layoutArea .contentViewContainer.active {
-	display: block;
+    display: block;
 }
 
 .layoutArea .contentViewContainer .contentViewContents {
-	position: absolute;
+    position: absolute;
     top: 0;
     left: 0;
     height: 100%;
@@ -259,72 +259,72 @@
 }
 
 .layoutArea .contentViewContainer .contentViewContents .transcriptContainer {
-	margin: 0px 4px 4px 4px;
-	max-height: calc(100% - 8px);
-	box-sizing: border-box;
-	position: relative;
-	padding: 10px;
-	overflow-y: auto;
-	overflow-x: hidden;
+    margin: 0px 4px 4px 4px;
+    max-height: calc(100% - 8px);
+    box-sizing: border-box;
+    position: relative;
+    padding: 10px;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .layoutArea .contentViewContainer .contentViewContents .transcriptContainer span {
-	position: relative;
-	padding: 1px 2px 1px 4px;
-	opacity: .6;
+    position: relative;
+    padding: 1px 2px 1px 4px;
+    opacity: .6;
 }
 
 .layoutArea .contentViewContainer .contentViewContents .transcriptContainer span:first-child {
-	padding-left: 0px;
+    padding-left: 0px;
 }
 
 .layoutArea .contentViewContainer .contentViewContents .transcriptContainer span:hover, .layoutArea .contentViewContainer .contentViewContents .transcriptContainer span.active {
-	opacity: 1;
+    opacity: 1;
 }
 
 .layoutArea .contentViewContainer .contentViewContents .customhtmlContainer {
-	margin: 0px 4px 4px 4px;
-	max-height: calc(100% - 8px);
-	box-sizing: border-box;
-	position: relative;
-	padding: 7px;
-	overflow: auto;
+    margin: 0px 4px 4px 4px;
+    max-height: calc(100% - 8px);
+    box-sizing: border-box;
+    position: relative;
+    padding: 7px;
+    overflow: auto;
 }
 
 .layoutArea .contentViewContainer .contentViewContents .customhtmlContainer .timebased {
-	background-color: rgba(100,100,100,.1);
+    background-color: rgba(100,100,100,.1);
 }
 
 .layoutArea .contentViewContainer .contentViewContents .customhtmlContainer .timebased:hover, .layoutArea .contentViewContainer .contentViewContents .customhtmlContainer .timebased.active {
-	background-color: rgba(100,110,100,.3);
-	cursor: pointer;
+    background-color: rgba(100,110,100,.3);
+    cursor: pointer;
 }
 
 /* Content View Details */
 
 .layoutAreaDetails .contentViewDetailsContainer {
-	position: absolute;
-	width: 100%;
-	height: 100%;
-	background: var(--secondary-bg-color);
-	box-sizing: border-box;
-	display: none;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: var(--secondary-bg-color);
+    box-sizing: border-box;
+    display: none;
 }
 
 .layoutAreaDetails[data-area="areaTop"] .contentViewDetailsContainer {
-	border-bottom: 2px solid var(--primary-bg-color);
+    border-bottom: 2px solid var(--primary-bg-color);
 }
 
 .layoutAreaDetails[data-area="areaBottom"] .contentViewDetailsContainer {
-	border-top: 2px solid var(--primary-bg-color);
+    border-top: 2px solid var(--primary-bg-color);
 }
 
 .layoutAreaDetails .contentViewDetailsContainer.active {
-	display: block;
+    display: block;
 }
 
 .layoutAreaDetails .contentViewDetailsContainer .contentViewDetailsContents {
-	position: absolute;
+    position: absolute;
     top: 0;
     left: 0;
     height: 100%;
@@ -335,142 +335,142 @@
 }
 
 .layoutAreaDetails[data-area="areaTop"] .contentViewDetailsContainer .contentViewDetailsContents, .layoutAreaDetails[data-area="areaBottom"] .contentViewDetailsContainer .contentViewDetailsContents {
-	left: 10px;
-	width: 1000000px;
+    left: 10px;
+    width: 1000000px;
 }
 
 /* View Layout Manager */
 
 .layoutManager .layoutArea .contentViewPreview {
-	position: absolute;
-	top: 46px;
-	width: calc(100% - 20px);
-	height: calc(100% - 56px);
-	display: none;
+    position: absolute;
+    top: 46px;
+    width: calc(100% - 20px);
+    height: calc(100% - 56px);
+    display: none;
 }
 
 .layoutManager .layoutArea[data-area="areaTop"] .contentViewPreview {
-	top: 10px;
+    top: 10px;
 }
 
 .layoutManager .layoutArea[data-area="areaLeft"] .contentViewPreview {
-	top: 10px;
-	right: 46px;
-	height: calc(100% - 20px);
-	width: calc(100% - 56px);
+    top: 10px;
+    right: 46px;
+    height: calc(100% - 20px);
+    width: calc(100% - 56px);
 }
 
 .layoutManager .layoutArea[data-area="areaRight"] .contentViewPreview {
-	top: 10px;
-	left: 46px;
-	height: calc(100% - 20px);
-	width: calc(100% - 56px);
+    top: 10px;
+    left: 46px;
+    height: calc(100% - 20px);
+    width: calc(100% - 56px);
 }
 
 .layoutManager .layoutArea .contentViewPreview.active {
-	display: block;
+    display: block;
 }
 
 .layoutManager .layoutArea .contentViewPreview, .contentViewAnimationDiv {
-	background: var(--secondary-bg-color) !important;
-	padding: 0px;
-	box-sizing: border-box;
-	overflow: hidden;
+    background: var(--secondary-bg-color) !important;
+    padding: 0px;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .contentViewAnimationDiv {
-	border: 2px solid var(--primary-bg-color);
-	color: transparent;
-	pointer-events: none;
+    border: 2px solid var(--primary-bg-color);
+    color: transparent;
+    pointer-events: none;
 }
 
 .layoutManager .layoutArea .contentViewPreview .contentViewOptions {
-	position: absolute;
-	top: 0px;
-	right: 0px;
-	opacity: 0;
-	pointer-events: none;
-	transition-property: all;
-	transition-duration: 300ms;
-	z-index: 2;
-	padding: 8px;
-	background: var(--secondary-bg-color);
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    opacity: 0;
+    pointer-events: none;
+    transition-property: all;
+    transition-duration: 300ms;
+    z-index: 2;
+    padding: 8px;
+    background: var(--secondary-bg-color);
 }
 
 .layoutManager .layoutArea[data-area="areaRight"] .contentViewPreview .contentViewOptions, 
 .layoutManager .layoutArea[data-area="areaLeft"] .contentViewPreview .contentViewOptions {
-	top: auto;
-	bottom: 0px;
+    top: auto;
+    bottom: 0px;
 }
 
 .layoutManager .layoutArea .contentViewPreview:hover .contentViewOptions {
-	opacity: 1;
-	pointer-events: all;
+    opacity: 1;
+    pointer-events: all;
 }
 
 .layoutManager .layoutArea .contentViewPreview .contentViewOptions button {
-	color: var(--primary-fg-color);
-	border-color: var(--primary-fg-color);
+    color: var(--primary-fg-color);
+    border-color: var(--primary-fg-color);
 }
 
 /* Editing UI */
 
 .contentViewEditingUI .message {
-	margin-top: 8px;
+    margin-top: 8px;
 }
 
 .contentViewEditingUI label {
-	display: block;
+    display: block;
 }
 
 .contentViewEditingUI input[type="text"] {
-	box-sizing: border-box;
-	height: 32px;
+    box-sizing: border-box;
+    height: 32px;
 }
 .contentViewEditingUI textarea {
-	display: block;
-	box-sizing: border-box;
-	width: 96%;
-	height: 32px;
+    display: block;
+    box-sizing: border-box;
+    width: 96%;
+    height: 32px;
 }
 .contentViewEditingUI .typeSpecific {
-	position: relative;
-	display: none;
+    position: relative;
+    display: none;
 }
 
 .contentViewEditingUI .typeSpecific.active {
-	display: block;
+    display: block;
 }
 
 .contentViewEditingUI .typeSpecific.codeEditorSmall {
-	height: 80px;
+    height: 80px;
 }
 
 .contentViewEditingUI .typeSpecific.codeEditorLarge {
-	height: 278px;
+    height: 278px;
 }
 
 .contentViewEditingUI .contentViewData > div[data-value] {
-	display: inline-block;
-	cursor: pointer;
+    display: inline-block;
+    cursor: pointer;
 }
 
 .contentViewEditingUI .contentViewData > div[data-value].active, .collectionCounter {
-	font-weight: bold;
+    font-weight: bold;
 }
 
 .contentViewEditingUI .existingSubtitlesItem {
-	display: inline-block;
-	margin-right: 8px;
-	margin-bottom: 6px;
-	padding: 3px 8px;
-	background: var(--secondary-bg-color);
-	color: var(--primary-fg-color);
-	cursor: pointer;
+    display: inline-block;
+    margin-right: 8px;
+    margin-bottom: 6px;
+    padding: 3px 8px;
+    background: var(--secondary-bg-color);
+    color: var(--primary-fg-color);
+    cursor: pointer;
 }
 
 .contentViewEditingUI .existingSubtitlesItem.active {
-	background: var(--primary-bg-color);
+    background: var(--primary-bg-color);
 }
 
 
@@ -479,235 +479,235 @@
 *******************/
 
 .layoutManager .contentViewPreview .schematicPreview {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	overflow: hidden;
-	pointer-events: none;
-	padding: 8px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+    padding: 8px;
 }
 
 /* TimedContent - Horizontal Cards (top/bottom) */
 
 .layoutManager .contentViewPreview .schematicCard {
-	float: left;
-	box-sizing: border-box;
-	background: var(--primary-fg-color);
-	border: 1px solid rgba(127,127,127,0.25);
-	margin-right: 7px;
-	opacity: 0.5;
-	overflow: hidden;
+    float: left;
+    box-sizing: border-box;
+    background: var(--primary-fg-color);
+    border: 1px solid rgba(127,127,127,0.25);
+    margin-right: 7px;
+    opacity: 0.5;
+    overflow: hidden;
 }
 
 .layoutManager .contentViewPreview .schematicCard.active {
-	opacity: 1;
-	border-color: var(--primary-fg-color);
+    opacity: 1;
+    border-color: var(--primary-fg-color);
 }
 
 .layoutManager .contentViewPreview .schematicCard .schematicThumb {
-	background: rgba(127,127,127,0.2);
-	width: 100%;
+    background: rgba(127,127,127,0.2);
+    width: 100%;
 }
 
 .layoutManager .contentViewPreview .schematicCard .schematicTitle {
-	height: 6px;
-	margin: 4px 3px 2px 3px;
-	background: rgba(127,127,127,0.3);
-	border-radius: 1px;
+    height: 6px;
+    margin: 4px 3px 2px 3px;
+    background: rgba(127,127,127,0.3);
+    border-radius: 1px;
 }
 
 .layoutManager .contentViewPreview .schematicCard .schematicBody {
-	padding: 2px 3px;
+    padding: 2px 3px;
 }
 
 .layoutManager .contentViewPreview .schematicCard .schematicLine {
-	height: 4px;
-	margin-bottom: 3px;
-	background: rgba(127,127,127,0.15);
-	border-radius: 1px;
+    height: 4px;
+    margin-bottom: 3px;
+    background: rgba(127,127,127,0.15);
+    border-radius: 1px;
 }
 
 .layoutManager .contentViewPreview .schematicCard .schematicLine.short {
-	width: 60%;
+    width: 60%;
 }
 
 /* Horizontal card sizes */
 
 .layoutManager .contentViewPreview .schematicCard[data-size="small"] {
-	width: 28px;
-	height: calc(100% - 4px);
-	margin-top: 2px;
+    width: 28px;
+    height: calc(100% - 4px);
+    margin-top: 2px;
 }
 
 .layoutManager .contentViewPreview .schematicCard[data-size="small"] .schematicThumb {
-	height: 100%;
+    height: 100%;
 }
 
 .layoutManager .contentViewPreview .schematicCard[data-size="medium"] {
-	width: 100px;
-	height: calc(100% - 4px);
-	margin-top: 2px;
+    width: 100px;
+    height: calc(100% - 4px);
+    margin-top: 2px;
 }
 
 .layoutManager .contentViewPreview .schematicCard[data-size="medium"] .schematicThumb {
-	height: calc(100% - 16px);
+    height: calc(100% - 16px);
 }
 
 .layoutManager .contentViewPreview .schematicCard[data-size="large"] {
-	width: 230px;
-	height: calc(100% - 8px);
-	margin-top: 4px;
+    width: 230px;
+    height: calc(100% - 8px);
+    margin-top: 4px;
 }
 
 .layoutManager .contentViewPreview .schematicCard[data-size="large"] .schematicThumb {
-	height: calc(100% - 34px);
+    height: calc(100% - 34px);
 }
 
 /* TimedContent - Vertical Cards (left/right) */
 
 .layoutManager .contentViewPreview .schematicCard.vertical {
-	float: none;
-	width: calc(100% - 4px);
-	margin: 0 2px 7px 2px;
-	display: flex;
-	flex-direction: row;
+    float: none;
+    width: calc(100% - 4px);
+    margin: 0 2px 7px 2px;
+    display: flex;
+    flex-direction: row;
 }
 
 .layoutManager .contentViewPreview .schematicCard.vertical[data-size="small"] {
-	height: 30px;
+    height: 30px;
 }
 
 .layoutManager .contentViewPreview .schematicCard.vertical[data-size="small"] .schematicThumb {
-	width: 30px;
-	min-width: 30px;
-	height: 100%;
+    width: 30px;
+    min-width: 30px;
+    height: 100%;
 }
 
 .layoutManager .contentViewPreview .schematicCard.vertical[data-size="medium"] {
-	height: 70px;
+    height: 70px;
 }
 
 .layoutManager .contentViewPreview .schematicCard.vertical[data-size="medium"] .schematicThumb {
-	width: 40px;
-	min-width: 40px;
-	height: 100%;
+    width: 40px;
+    min-width: 40px;
+    height: 100%;
 }
 
 .layoutManager .contentViewPreview .schematicCard.vertical[data-size="medium"] .schematicMeta {
-	flex: 1;
-	padding: 4px;
-	overflow: hidden;
+    flex: 1;
+    padding: 4px;
+    overflow: hidden;
 }
 
 .layoutManager .contentViewPreview .schematicCard.vertical[data-size="large"] {
-	height: calc(100% - 4px);
-	flex-direction: column;
+    height: calc(100% - 4px);
+    flex-direction: column;
 }
 
 .layoutManager .contentViewPreview .schematicCard.vertical[data-size="large"] .schematicThumb.large {
-	width: 100%;
-	height: 60%;
+    width: 100%;
+    height: 60%;
 }
 
 .layoutManager .contentViewPreview .schematicCard.vertical[data-size="large"] .schematicMeta {
-	padding: 4px;
+    padding: 4px;
 }
 
 .layoutManager .contentViewPreview .schematicCard.vertical .schematicTitle {
-	margin: 0 0 3px 0;
+    margin: 0 0 3px 0;
 }
 
 .layoutManager .contentViewPreview .schematicCard.vertical .schematicLine {
-	height: 3px;
-	margin-bottom: 2px;
+    height: 3px;
+    margin-bottom: 2px;
 }
 
 /* CustomHTML */
 
 .layoutManager .contentViewPreview .schematicCustomHTML {
-	background: rgba(127,127,127,0.08);
-	padding: 6px 8px;
-	font-size: 9px;
-	line-height: 1.4;
-	color: var(--primary-fg-color);
-	opacity: 0.7;
-	height: 100%;
-	overflow: hidden;
+    background: rgba(127,127,127,0.08);
+    padding: 6px 8px;
+    font-size: 9px;
+    line-height: 1.4;
+    color: var(--primary-fg-color);
+    opacity: 0.7;
+    height: 100%;
+    overflow: hidden;
 }
 
 .layoutManager .contentViewPreview .schematicCustomHTML p {
-	margin: 0 0 4px 0;
+    margin: 0 0 4px 0;
 }
 
 .layoutManager .contentViewPreview .schematicCustomHTML .schematicHighlight {
-	background-color: rgba(100,110,100,.3);
-	padding: 1px 2px;
+    background-color: rgba(100,110,100,.3);
+    padding: 1px 2px;
 }
 
 /* Transcript */
 
 .layoutManager .contentViewPreview .schematicTranscript {
-	padding: 6px 8px;
-	font-size: 9px;
-	line-height: 1.6;
-	color: var(--primary-fg-color);
-	height: 100%;
-	overflow: hidden;
+    padding: 6px 8px;
+    font-size: 9px;
+    line-height: 1.6;
+    color: var(--primary-fg-color);
+    height: 100%;
+    overflow: hidden;
 }
 
 .layoutManager .contentViewPreview .schematicTranscript span {
-	padding: 1px 1px;
-	opacity: 0.5;
+    padding: 1px 1px;
+    opacity: 0.5;
 }
 
 .layoutManager .contentViewPreview .schematicTranscript span.active {
-	opacity: 1;
+    opacity: 1;
 }
 
 /* Timelines */
 
 .layoutManager .contentViewPreview .schematicTimelines {
-	padding: 4px 6px;
-	height: 100%;
-	overflow: hidden;
+    padding: 4px 6px;
+    height: 100%;
+    overflow: hidden;
 }
 
 .layoutManager .contentViewPreview .schematicTimelineRow {
-	display: flex;
-	align-items: center;
-	margin-bottom: 4px;
-	height: 14px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px;
+    height: 14px;
 }
 
 .layoutManager .contentViewPreview .schematicTimelineLabel {
-	font-size: 7px;
-	color: var(--primary-fg-color);
-	opacity: 0.6;
-	white-space: nowrap;
-	width: 32px;
-	min-width: 32px;
-	overflow: hidden;
+    font-size: 7px;
+    color: var(--primary-fg-color);
+    opacity: 0.6;
+    white-space: nowrap;
+    width: 32px;
+    min-width: 32px;
+    overflow: hidden;
 }
 
 .layoutManager .contentViewPreview .schematicTimelineTrack {
-	flex: 1;
-	height: 10px;
-	position: relative;
-	background: rgba(127,127,127,0.08);
-	border-radius: 1px;
+    flex: 1;
+    height: 10px;
+    position: relative;
+    background: rgba(127,127,127,0.08);
+    border-radius: 1px;
 }
 
 .layoutManager .contentViewPreview .schematicTimelineBar {
-	position: absolute;
-	top: 1px;
-	height: 8px;
-	background: var(--primary-fg-color);
-	opacity: 0.3;
-	border-radius: 1px;
+    position: absolute;
+    top: 1px;
+    height: 8px;
+    background: var(--primary-fg-color);
+    opacity: 0.3;
+    border-radius: 1px;
 }
 
 .layoutManager .contentViewPreview .schematicTimelineBar:first-child {
-	opacity: 0.5;
+    opacity: 0.5;
 }

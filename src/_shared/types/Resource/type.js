@@ -165,7 +165,7 @@ FrameTrail.defineType(
 
                     var _dcw = document.createElement('div');
                     _dcw.innerHTML = '<div class="timeControls">'
-                        					+ '    <div class="propertiesTypeIcon" data-type="' + overlay.data.type + '"><span class="icon-doc-inv"></span></div>'
+                                            + '    <div class="propertiesTypeIcon" data-type="' + overlay.data.type + '"><span class="icon-doc-inv"></span></div>'
                                             + '    <button class="deleteOverlay"><span class="icon-trash"></span></button>'
                                             + '    <label for="TimeStart">'+ this.labels['SettingsTimeStart'] +'</label>'
                                             + '    <input id="TimeStart" type="number" min="0" step="0.1" value="' + overlay.data.start + '" data-tooltip-bottom-right="'+ this.labels['SettingsTimeStart'] +'">'

@@ -14,481 +14,481 @@ $return["string"] = "No action was taken";
 switch($_REQUEST["a"]) {
 
 
-	/*#########################################
-	 ############ User Handling
-	 #########################################*/
+    /*#########################################
+     ############ User Handling
+     #########################################*/
 
-	case "userGet":
-		include_once("user.php");
-		$return = userGet($_REQUEST["userID"]);
-		break;
+    case "userGet":
+        include_once("user.php");
+        $return = userGet($_REQUEST["userID"]);
+        break;
 
 
-	case "userRegister":
-		include_once("user.php");
-		$return = userRegister($_REQUEST["name"], $_REQUEST["mail"], $_REQUEST["passwd"]);
-		break;
+    case "userRegister":
+        include_once("user.php");
+        $return = userRegister($_REQUEST["name"], $_REQUEST["mail"], $_REQUEST["passwd"]);
+        break;
 
 
-	case "userLogin":
-		include_once("user.php");
-		$return = userLogin($_REQUEST["mail"], $_REQUEST["passwd"]);
-		break;
+    case "userLogin":
+        include_once("user.php");
+        $return = userLogin($_REQUEST["mail"], $_REQUEST["passwd"]);
+        break;
 
 
-	case "userLogout":
-		include_once("user.php");
-		$return = userLogout();
-		break;
+    case "userLogout":
+        include_once("user.php");
+        $return = userLogout();
+        break;
 
 
-	case "userCheckLogin":
-		include_once("user.php");
-		$return = userCheckLogin($_REQUEST["role"]);
-		break;
+    case "userCheckLogin":
+        include_once("user.php");
+        $return = userCheckLogin($_REQUEST["role"]);
+        break;
 
-	case "userChange":
-		include_once("user.php");
-		$return = userChange($_REQUEST["userID"],$_REQUEST["mail"],$_REQUEST["name"],$_REQUEST["passwd"],$_REQUEST["color"],$_REQUEST["role"],$_REQUEST["active"]);
-		break;
+    case "userChange":
+        include_once("user.php");
+        $return = userChange($_REQUEST["userID"],$_REQUEST["mail"],$_REQUEST["name"],$_REQUEST["passwd"],$_REQUEST["color"],$_REQUEST["role"],$_REQUEST["active"]);
+        break;
 
 
-	/*#########################################
-	 ############ File Handling
-	 #########################################*/
+    /*#########################################
+     ############ File Handling
+     #########################################*/
 
-	case "fileUpload":
-		include_once("files.php");
-		$return = fileUpload($_REQUEST["type"],$_REQUEST["name"],$_REQUEST["description"],$_REQUEST["attributes"],$_FILES,$_REQUEST["lat"], $_REQUEST["lon"], $_REQUEST["boundingBox"]);
-		break;
+    case "fileUpload":
+        include_once("files.php");
+        $return = fileUpload($_REQUEST["type"],$_REQUEST["name"],$_REQUEST["description"],$_REQUEST["attributes"],$_FILES,$_REQUEST["lat"], $_REQUEST["lon"], $_REQUEST["boundingBox"]);
+        break;
 
-	case "fileUploadThumb":
-		include_once("files.php");
-		$return = fileUploadThumb($_REQUEST["resourcesID"],$_REQUEST["thumb"]);
-		break;
+    case "fileUploadThumb":
+        include_once("files.php");
+        $return = fileUploadThumb($_REQUEST["resourcesID"],$_REQUEST["thumb"]);
+        break;
 
-	case "fileDelete":
-		include_once("files.php");
-		$return = fileDelete($_REQUEST["resourcesID"]);
-		break;
+    case "fileDelete":
+        include_once("files.php");
+        $return = fileDelete($_REQUEST["resourcesID"]);
+        break;
 
-	case "fileGetByFilter":
-		include_once("files.php");
-		$return = fileGetByFilter($_REQUEST["key"],$_REQUEST["condition"],$_REQUEST["values"]);
-		break;
+    case "fileGetByFilter":
+        include_once("files.php");
+        $return = fileGetByFilter($_REQUEST["key"],$_REQUEST["condition"],$_REQUEST["values"]);
+        break;
 
-	case "fileGetCapabilities":
-		include_once("files.php");
-		$return = fileGetCapabilities();
-		break;
+    case "fileGetCapabilities":
+        include_once("files.php");
+        $return = fileGetCapabilities();
+        break;
 
-	case "fileGetUrlInfo":
-		include_once("files.php");
-		$return = fileGetUrlInfo($_REQUEST["url"]);
-		break;
+    case "fileGetUrlInfo":
+        include_once("files.php");
+        $return = fileGetUrlInfo($_REQUEST["url"]);
+        break;
 
 
-	/*#########################################
-	 ############ Hypervideo Handling
-	 #########################################*/
+    /*#########################################
+     ############ Hypervideo Handling
+     #########################################*/
 
-	case "hypervideoAdd":
-		include_once("hypervideos.php");
-		$return = hypervideoAdd($_REQUEST["src"], $_FILES["subtitles"]);
-		break;
+    case "hypervideoAdd":
+        include_once("hypervideos.php");
+        $return = hypervideoAdd($_REQUEST["src"], $_FILES["subtitles"]);
+        break;
 
-	case "hypervideoClone":
-		include_once("hypervideos.php");
-		$return = hypervideoClone($_REQUEST["hypervideoID"],$_REQUEST["src"]);
-		break;
+    case "hypervideoClone":
+        include_once("hypervideos.php");
+        $return = hypervideoClone($_REQUEST["hypervideoID"],$_REQUEST["src"]);
+        break;
 
-	case "hypervideoDelete":
-		include_once("hypervideos.php");
-		$return = hypervideoDelete($_REQUEST["hypervideoID"],$_REQUEST["hypervideoName"]);
-		break;
+    case "hypervideoDelete":
+        include_once("hypervideos.php");
+        $return = hypervideoDelete($_REQUEST["hypervideoID"],$_REQUEST["hypervideoName"]);
+        break;
 
-	case "hypervideoChange":
-	case "hypervideoChangeFile":
-
-		include_once("hypervideos.php");
-		$return = hypervideoChange($_REQUEST["hypervideoID"], $_REQUEST["src"], $_REQUEST["SubtitlesToDelete"], $_FILES["subtitles"]);
-		break;
-
-
+    case "hypervideoChange":
+    case "hypervideoChangeFile":
+
+        include_once("hypervideos.php");
+        $return = hypervideoChange($_REQUEST["hypervideoID"], $_REQUEST["src"], $_REQUEST["SubtitlesToDelete"], $_FILES["subtitles"]);
+        break;
+
+
 
 
 
-	/*#########################################
-	 ############ Annotation Handling
-	 #########################################*/
-	case "annotationfileSave":
-		include_once("annotationfiles.php");
-		$return = annotationfileSave($_REQUEST["hypervideoID"],$_REQUEST["annotationfileID"],$_REQUEST["action"],$_REQUEST["name"],$_REQUEST["description"],$_REQUEST["hidden"],$_REQUEST["src"]);
-		break;
-
-	case "updateAnnotationSources":
-		include_once("annotationfiles.php");
-		$return = updateAnnotationSources($_REQUEST["hypervideoID"],$_REQUEST["newSourcePath"]);
-		break;
-
-	/**
-	 * in case we need to provide an api interface for deleting annotations:
-	 *
-	case "annotationfileDelete":
-		include_once("annotationfiles.php");
-		$return = annotationfileDelete($_REQUEST["projectID"],$_REQUEST["hypervideoID"],$_REQUEST["annotationfileID"]);
-		break;
-	 *
-	 */
-
-
-
-
-
-
-	/*#########################################
-	 ############ Tag Handling
-	 #########################################*/
-
-	case "tagSet":
-		include_once("tags.php");
-		$return = tagSet($_REQUEST["tagName"],$_REQUEST["lang"],$_REQUEST["label"],$_REQUEST["description"]);
-		break;
-
-	case "tagDelete":
-		include_once("tags.php");
-		$return = tagDelete($_REQUEST["tagName"]);
-		break;
-
-	case "tagLangDelete":
-		include_once("tags.php");
-		$return = tagLangDelete($_REQUEST["lang"]);
-		break;
-
-	/*#########################################
-	 ############ Config File Handling
-	 #########################################*/
-
-	case "configChange":
-		
-		include_once("files.php");
-		$return = updateConfigFile($_REQUEST["src"]);
-		break;
-
-	/*#########################################
-	 ############ CSS File Handling
-	 #########################################*/
-
-	case "globalCSSChange":
-		
-		include_once("files.php");
-		$return = updateCSSFile($_REQUEST["src"]);
-		break;
-
-	/*#########################################
-	 ############ Setup Handling
-	 #########################################*/
-
-	case "setupCheck":
-
-		if ( version_compare(phpversion(), '7.4.0', '<') ) {
-			$return["status"] = "fail";
-			$return["code"] = 2;
-			$return["string"] = "Server does not meet the requirements. PHP version needs to be 7.4 or later (".phpversion()." is installed)";
-			echo json_encode($return);
-			exit;
-		}
-		
-		if ( !file_exists($conf["dir"]["data"]) && !is_writable("../") ) {
-			chmod("../", 0755);
-			if ( !is_writable("../") ) {
-				$return["status"] = "fail";
-				$return["code"] = 3;
-				$return["string"] = "Root directory not writable. Please change permissions (755) or create '_data' directory manually.";
-				echo json_encode($return);
-				exit;
-			}
-		}
-
-		if ( !is_writable($conf["dir"]["data"]) ) {
-			chmod($conf["dir"]["data"], 0755);
-			if ( !is_writable($conf["dir"]["data"]) ) {
-				$return["status"] = "fail";
-				$return["code"] = 4;
-				$return["string"] = "Data directory not writable or missing. Please change permissions (755).";
-				echo json_encode($return);
-				exit;
-			}
-		}
-
-		if (
-				!  (file_exists($conf["dir"]["data"]."/users.json"))
-				|| (!file_exists($conf["dir"]["data"]."/config.json"))
-				|| (!file_exists($conf["dir"]["data"]."/tagdefinitions.json"))
-			) {
-			$return["status"] = "fail";
-			$return["code"] = 5;
-			$return["string"] = "Setup not correct. Server was not able to write needed database files. Please retry.";
-			echo json_encode($return);
-			exit;
-		}
-
-		$usrTmp = json_decode(file_get_contents($conf["dir"]["data"]."/users.json"),true);
-		$tmpAdminAvailable = 0;
-		foreach ($usrTmp["user"] as $tmpUser) {
-			if ($tmpUser["role"] == "admin") {
-				$tmpAdminAvailable++;
-			}
-		}
-		if ($tmpAdminAvailable == 0) {
-			$return["status"] = "fail";
-			$return["code"] = 6;
-			$return["string"] = "Setup not correct. No Admin has been set";
-			echo json_encode($return);
-			exit;
-		}
-
-		$return["status"] = "success";
-		$return["code"] = 1;
-		$return["string"] = "Setup finished.";
-
-	break;
-
-	case "setupCheckDetailed":
-
-		// Only available before setup is complete
-		$alreadySetup = file_exists($conf["dir"]["data"]."/users.json")
-		             && file_exists($conf["dir"]["data"]."/config.json")
-		             && file_exists($conf["dir"]["data"]."/tagdefinitions.json");
-
-		if ($alreadySetup) {
-			$return["status"] = "success";
-			$return["alreadySetup"] = true;
-			$return["checks"] = array();
-			break;
-		}
-
-		$checks = array();
-
-		// PHP version
-		$phpOk = version_compare(phpversion(), '7.4.0', '>=');
-		$checks["php"] = array(
-			"pass"   => $phpOk,
-			"label"  => "PHP Version",
-			"detail" => $phpOk
-				? "PHP " . phpversion()
-				: "PHP " . phpversion() . " found — 7.4+ required"
-		);
-
-		// Root directory writable (needed to create _data/)
-		$rootWritable = file_exists($conf["dir"]["data"]) || is_writable("../");
-		$checks["root_writable"] = array(
-			"pass"   => $rootWritable,
-			"label"  => "Root Directory",
-			"detail" => $rootWritable
-				? "Writable"
-				: "Not writable. Run: chmod 755 " . realpath("../")
-		);
-
-		// Data directory writable (if it already exists)
-		if (file_exists($conf["dir"]["data"])) {
-			$dataWritable = is_writable($conf["dir"]["data"]);
-			$checks["data_writable"] = array(
-				"pass"   => $dataWritable,
-				"label"  => "Data Directory",
-				"detail" => $dataWritable
-					? "Writable"
-					: "Not writable. Run: chmod -R 775 " . realpath($conf["dir"]["data"])
-			);
-		} else {
-			$checks["data_writable"] = array(
-				"pass"   => true,
-				"label"  => "Data Directory",
-				"detail" => "Will be created during setup"
-			);
-		}
-
-		$allPass = true;
-		foreach ($checks as $c) {
-			if (!$c["pass"]) { $allPass = false; break; }
-		}
-
-		$_SESSION["setup_csrf"] = bin2hex(random_bytes(16));
-		$return["status"]       = $allPass ? "success" : "fail";
-		$return["checks"]       = $checks;
-		$return["alreadySetup"] = false;
-		$return["csrf"]         = $_SESSION["setup_csrf"];
-		break;
-
-	case "setupInit":
-		// Guard: reject if setup has already been completed
-		$alreadySetup = file_exists($conf["dir"]["data"]."/users.json")
-		             && file_exists($conf["dir"]["data"]."/config.json")
-		             && file_exists($conf["dir"]["data"]."/tagdefinitions.json");
-		if ($alreadySetup) {
-			$return["status"] = "fail";
-			$return["code"]   = 0;
-			$return["string"] = "Already installed";
-			break;
-		}
-		// CSRF validation — token was issued by setupCheckDetailed and stored in session
-		if (empty($_SESSION["setup_csrf"]) || $_REQUEST["csrf"] !== $_SESSION["setup_csrf"]) {
-			$return["status"] = "fail";
-			$return["code"]   = 0;
-			$return["string"] = "Invalid request";
-			break;
-		}
-		unset($_SESSION["setup_csrf"]); // one-time token — consume immediately
-		// Input length limits
-		if (strlen(isset($_REQUEST["passwd"]) ? $_REQUEST["passwd"] : '') > 1024
-		    || strlen(isset($_REQUEST["name"]) ? $_REQUEST["name"] : '') > 200) {
-			$return["status"] = "fail";
-			$return["code"]   = 2;
-			$return["string"] = "Input too long";
-			break;
-		}
-		$errorCnt = 0;
-		if (!file_exists($conf["dir"]["data"]) && !is_dir($conf["dir"]["data"])) {
-			if (!mkdir($conf["dir"]["data"])) {
-				$errorCnt++;
-			} else {
-				chmod($conf["dir"]["data"], 0755);
-			}
-		}
-		if ((!$_REQUEST["passwd"]) || (!filter_var($_REQUEST["mail"], FILTER_VALIDATE_EMAIL)) || (!$_REQUEST["name"])) {
-			$return["status"] = "fail";
-			$return["code"] = 2;
-			$return["string"] = "Fill out all fields";
-			echo json_encode($return);
-			exit;
-		}
-		
-		if (!file_exists($conf["dir"]["data"]."/config.json")) {
-			$tmpColors = array("597081", "339966", "16a09c", "cd4436", "0073a6", "8b5180", "999933", "CC3399", "7f8c8d", "ae764d", "cf910d", "b85e02");
-
-			$tmpConf = array(
-				"updateServiceURL"=> "https://update.frametrail.org",
-				"autoUpdate"=> false,
-				"allowCaching"=> false,
-				"defaultUserRole"=> "user",
-				"captureUserTraces"=> false,
-				"userTracesStartAction"=> "",
-				"userTracesEndAction"=> "",
-				"userNeedsConfirmation"=> true,
-				"alwaysForceLogin"=> false,
-				"allowCollaboration"=> false,
-				"allowUploads"=> true,
-				"theme"=> "",
-				"defaultHypervideoHidden"=> false,
-				"userColorCollection"=> $tmpColors,
-				"videoFit"=> "contain"
-			);
-			// Apply optional config overrides sent by the setup wizard
-			$configOverrides = array("defaultUserRole", "userNeedsConfirmation",
-			                         "alwaysForceLogin", "allowUploads", "theme");
-			foreach ($configOverrides as $key) {
-				if (isset($_REQUEST[$key])) {
-					$val = $_REQUEST[$key];
-					if ($val === "true")  $val = true;
-					if ($val === "false") $val = false;
-					// Sanitize theme: allow only safe identifier characters
-					if ($key === "theme") { $val = preg_replace('/[^a-z0-9_-]/', '', strtolower((string)$val)); }
-					$tmpConf[$key] = $val;
-				}
-			}
-
-			if (!file_put_contents($conf["dir"]["data"]."/config.json", json_encode($tmpConf,$conf["settings"]["json_flags"]))) {
-				$errorCnt++;
-			}
-		}
-
-		mkdir($conf["dir"]["data"]."/hypervideos");
-		mkdir($conf["dir"]["data"]."/resources");
-		file_put_contents($conf["dir"]["data"]."/hypervideos/_index.json", json_encode(array("hypervideo-increment"=>0,"hypervideos"=>array())),$conf["settings"]["json_flags"]);
-		file_put_contents($conf["dir"]["data"]."/resources/_index.json", json_encode(array("resources-increment"=>0,"resources"=>array())),$conf["settings"]["json_flags"]);
-		file_put_contents($conf["dir"]["data"]."/tagdefinitions.json", "{}");
-		file_put_contents($conf["dir"]["data"]."/custom.css", "");
-		include_once("user.php");
-		$userSuccess = userRegister($_REQUEST["name"],$_REQUEST["mail"],$_REQUEST["passwd"]);
-		if ($userSuccess["code"] != 0) {
-			$errorCnt++;
-		}
-
-		/*if (!file_exists($conf["dir"]["data"]."/users.json") && !is_dir($conf["dir"]["data"])) {
-			if (!mkdir($conf["dir"]["data"])) {
-				$errorCnt++;
-			} else {
-				chmod($conf["dir"]["data"], 0755);
-			}
-		}*/
-
-
-		if ($errorCnt > 0) {
-			$return["status"] = "fail";
-			$return["code"] = 0;
-			$return["string"] = "An error occurred. Please try again";
-			rmdir($conf["dir"]["data"]);
-		} else {
-			$return["status"] = "success";
-			$return["code"] = 1;
-			$return["string"] = "Installation successful";
-		}
-		break;
-	/*#########################################
-	 ############ oEmbed Proxy
-	 #########################################*/
-
-	case "oembedProxy":
-		// Proxy oEmbed requests for endpoints that don't support CORS (e.g. Bluesky)
-		$allowedHosts = array("embed.bsky.app");
-		$oembedUrl = isset($_REQUEST["url"]) ? $_REQUEST["url"] : "";
-		$parsedHost = parse_url($oembedUrl, PHP_URL_HOST);
-		if (!$oembedUrl || !$parsedHost || !in_array($parsedHost, $allowedHosts)) {
-			$return["status"] = "error";
-			$return["code"] = 403;
-			$return["string"] = "URL not allowed";
-		} else {
-			$result = false;
-			if (function_exists('curl_init')) {
-				$ch = curl_init($oembedUrl);
-				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-				curl_setopt($ch, CURLOPT_TIMEOUT, 5);
-				curl_setopt($ch, CURLOPT_USERAGENT, 'FrameTrail/1.0');
-				curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-				$result = curl_exec($ch);
-				if (curl_errno($ch)) { $result = false; }
-				curl_close($ch);
-			}
-			if ($result === false) {
-				$context = stream_context_create(array("http" => array(
-					"timeout" => 5,
-					"header" => "User-Agent: FrameTrail/1.0\r\n"
-				)));
-				$result = @file_get_contents($oembedUrl, false, $context);
-			}
-			if ($result !== false) {
-				$decoded = json_decode($result, true);
-				if ($decoded) {
-					$return = $decoded;
-					$return["status"] = "success";
-				} else {
-					$return["status"] = "error";
-					$return["code"] = 500;
-					$return["string"] = "Invalid JSON from oEmbed endpoint";
-				}
-			} else {
-				$return["status"] = "error";
-				$return["code"] = 502;
-				$return["string"] = "Failed to fetch oEmbed URL";
-			}
-		}
-		break;
-
-	default:
-		$return["status"] = "success";
-		$return["code"] = 0;
-		$return["string"] = "No question? No answer!";
-		break;
+    /*#########################################
+     ############ Annotation Handling
+     #########################################*/
+    case "annotationfileSave":
+        include_once("annotationfiles.php");
+        $return = annotationfileSave($_REQUEST["hypervideoID"],$_REQUEST["annotationfileID"],$_REQUEST["action"],$_REQUEST["name"],$_REQUEST["description"],$_REQUEST["hidden"],$_REQUEST["src"]);
+        break;
+
+    case "updateAnnotationSources":
+        include_once("annotationfiles.php");
+        $return = updateAnnotationSources($_REQUEST["hypervideoID"],$_REQUEST["newSourcePath"]);
+        break;
+
+    /**
+     * in case we need to provide an api interface for deleting annotations:
+     *
+    case "annotationfileDelete":
+        include_once("annotationfiles.php");
+        $return = annotationfileDelete($_REQUEST["projectID"],$_REQUEST["hypervideoID"],$_REQUEST["annotationfileID"]);
+        break;
+     *
+     */
+
+
+
+
+
+
+    /*#########################################
+     ############ Tag Handling
+     #########################################*/
+
+    case "tagSet":
+        include_once("tags.php");
+        $return = tagSet($_REQUEST["tagName"],$_REQUEST["lang"],$_REQUEST["label"],$_REQUEST["description"]);
+        break;
+
+    case "tagDelete":
+        include_once("tags.php");
+        $return = tagDelete($_REQUEST["tagName"]);
+        break;
+
+    case "tagLangDelete":
+        include_once("tags.php");
+        $return = tagLangDelete($_REQUEST["lang"]);
+        break;
+
+    /*#########################################
+     ############ Config File Handling
+     #########################################*/
+
+    case "configChange":
+        
+        include_once("files.php");
+        $return = updateConfigFile($_REQUEST["src"]);
+        break;
+
+    /*#########################################
+     ############ CSS File Handling
+     #########################################*/
+
+    case "globalCSSChange":
+        
+        include_once("files.php");
+        $return = updateCSSFile($_REQUEST["src"]);
+        break;
+
+    /*#########################################
+     ############ Setup Handling
+     #########################################*/
+
+    case "setupCheck":
+
+        if ( version_compare(phpversion(), '7.4.0', '<') ) {
+            $return["status"] = "fail";
+            $return["code"] = 2;
+            $return["string"] = "Server does not meet the requirements. PHP version needs to be 7.4 or later (".phpversion()." is installed)";
+            echo json_encode($return);
+            exit;
+        }
+        
+        if ( !file_exists($conf["dir"]["data"]) && !is_writable("../") ) {
+            chmod("../", 0755);
+            if ( !is_writable("../") ) {
+                $return["status"] = "fail";
+                $return["code"] = 3;
+                $return["string"] = "Root directory not writable. Please change permissions (755) or create '_data' directory manually.";
+                echo json_encode($return);
+                exit;
+            }
+        }
+
+        if ( !is_writable($conf["dir"]["data"]) ) {
+            chmod($conf["dir"]["data"], 0755);
+            if ( !is_writable($conf["dir"]["data"]) ) {
+                $return["status"] = "fail";
+                $return["code"] = 4;
+                $return["string"] = "Data directory not writable or missing. Please change permissions (755).";
+                echo json_encode($return);
+                exit;
+            }
+        }
+
+        if (
+                !  (file_exists($conf["dir"]["data"]."/users.json"))
+                || (!file_exists($conf["dir"]["data"]."/config.json"))
+                || (!file_exists($conf["dir"]["data"]."/tagdefinitions.json"))
+            ) {
+            $return["status"] = "fail";
+            $return["code"] = 5;
+            $return["string"] = "Setup not correct. Server was not able to write needed database files. Please retry.";
+            echo json_encode($return);
+            exit;
+        }
+
+        $usrTmp = json_decode(file_get_contents($conf["dir"]["data"]."/users.json"),true);
+        $tmpAdminAvailable = 0;
+        foreach ($usrTmp["user"] as $tmpUser) {
+            if ($tmpUser["role"] == "admin") {
+                $tmpAdminAvailable++;
+            }
+        }
+        if ($tmpAdminAvailable == 0) {
+            $return["status"] = "fail";
+            $return["code"] = 6;
+            $return["string"] = "Setup not correct. No Admin has been set";
+            echo json_encode($return);
+            exit;
+        }
+
+        $return["status"] = "success";
+        $return["code"] = 1;
+        $return["string"] = "Setup finished.";
+
+    break;
+
+    case "setupCheckDetailed":
+
+        // Only available before setup is complete
+        $alreadySetup = file_exists($conf["dir"]["data"]."/users.json")
+                     && file_exists($conf["dir"]["data"]."/config.json")
+                     && file_exists($conf["dir"]["data"]."/tagdefinitions.json");
+
+        if ($alreadySetup) {
+            $return["status"] = "success";
+            $return["alreadySetup"] = true;
+            $return["checks"] = array();
+            break;
+        }
+
+        $checks = array();
+
+        // PHP version
+        $phpOk = version_compare(phpversion(), '7.4.0', '>=');
+        $checks["php"] = array(
+            "pass"   => $phpOk,
+            "label"  => "PHP Version",
+            "detail" => $phpOk
+                ? "PHP " . phpversion()
+                : "PHP " . phpversion() . " found — 7.4+ required"
+        );
+
+        // Root directory writable (needed to create _data/)
+        $rootWritable = file_exists($conf["dir"]["data"]) || is_writable("../");
+        $checks["root_writable"] = array(
+            "pass"   => $rootWritable,
+            "label"  => "Root Directory",
+            "detail" => $rootWritable
+                ? "Writable"
+                : "Not writable. Run: chmod 755 " . realpath("../")
+        );
+
+        // Data directory writable (if it already exists)
+        if (file_exists($conf["dir"]["data"])) {
+            $dataWritable = is_writable($conf["dir"]["data"]);
+            $checks["data_writable"] = array(
+                "pass"   => $dataWritable,
+                "label"  => "Data Directory",
+                "detail" => $dataWritable
+                    ? "Writable"
+                    : "Not writable. Run: chmod -R 775 " . realpath($conf["dir"]["data"])
+            );
+        } else {
+            $checks["data_writable"] = array(
+                "pass"   => true,
+                "label"  => "Data Directory",
+                "detail" => "Will be created during setup"
+            );
+        }
+
+        $allPass = true;
+        foreach ($checks as $c) {
+            if (!$c["pass"]) { $allPass = false; break; }
+        }
+
+        $_SESSION["setup_csrf"] = bin2hex(random_bytes(16));
+        $return["status"]       = $allPass ? "success" : "fail";
+        $return["checks"]       = $checks;
+        $return["alreadySetup"] = false;
+        $return["csrf"]         = $_SESSION["setup_csrf"];
+        break;
+
+    case "setupInit":
+        // Guard: reject if setup has already been completed
+        $alreadySetup = file_exists($conf["dir"]["data"]."/users.json")
+                     && file_exists($conf["dir"]["data"]."/config.json")
+                     && file_exists($conf["dir"]["data"]."/tagdefinitions.json");
+        if ($alreadySetup) {
+            $return["status"] = "fail";
+            $return["code"]   = 0;
+            $return["string"] = "Already installed";
+            break;
+        }
+        // CSRF validation — token was issued by setupCheckDetailed and stored in session
+        if (empty($_SESSION["setup_csrf"]) || $_REQUEST["csrf"] !== $_SESSION["setup_csrf"]) {
+            $return["status"] = "fail";
+            $return["code"]   = 0;
+            $return["string"] = "Invalid request";
+            break;
+        }
+        unset($_SESSION["setup_csrf"]); // one-time token — consume immediately
+        // Input length limits
+        if (strlen(isset($_REQUEST["passwd"]) ? $_REQUEST["passwd"] : '') > 1024
+            || strlen(isset($_REQUEST["name"]) ? $_REQUEST["name"] : '') > 200) {
+            $return["status"] = "fail";
+            $return["code"]   = 2;
+            $return["string"] = "Input too long";
+            break;
+        }
+        $errorCnt = 0;
+        if (!file_exists($conf["dir"]["data"]) && !is_dir($conf["dir"]["data"])) {
+            if (!mkdir($conf["dir"]["data"])) {
+                $errorCnt++;
+            } else {
+                chmod($conf["dir"]["data"], 0755);
+            }
+        }
+        if ((!$_REQUEST["passwd"]) || (!filter_var($_REQUEST["mail"], FILTER_VALIDATE_EMAIL)) || (!$_REQUEST["name"])) {
+            $return["status"] = "fail";
+            $return["code"] = 2;
+            $return["string"] = "Fill out all fields";
+            echo json_encode($return);
+            exit;
+        }
+        
+        if (!file_exists($conf["dir"]["data"]."/config.json")) {
+            $tmpColors = array("597081", "339966", "16a09c", "cd4436", "0073a6", "8b5180", "999933", "CC3399", "7f8c8d", "ae764d", "cf910d", "b85e02");
+
+            $tmpConf = array(
+                "updateServiceURL"=> "https://update.frametrail.org",
+                "autoUpdate"=> false,
+                "allowCaching"=> false,
+                "defaultUserRole"=> "user",
+                "captureUserTraces"=> false,
+                "userTracesStartAction"=> "",
+                "userTracesEndAction"=> "",
+                "userNeedsConfirmation"=> true,
+                "alwaysForceLogin"=> false,
+                "allowCollaboration"=> false,
+                "allowUploads"=> true,
+                "theme"=> "",
+                "defaultHypervideoHidden"=> false,
+                "userColorCollection"=> $tmpColors,
+                "videoFit"=> "contain"
+            );
+            // Apply optional config overrides sent by the setup wizard
+            $configOverrides = array("defaultUserRole", "userNeedsConfirmation",
+                                     "alwaysForceLogin", "allowUploads", "theme");
+            foreach ($configOverrides as $key) {
+                if (isset($_REQUEST[$key])) {
+                    $val = $_REQUEST[$key];
+                    if ($val === "true")  $val = true;
+                    if ($val === "false") $val = false;
+                    // Sanitize theme: allow only safe identifier characters
+                    if ($key === "theme") { $val = preg_replace('/[^a-z0-9_-]/', '', strtolower((string)$val)); }
+                    $tmpConf[$key] = $val;
+                }
+            }
+
+            if (!file_put_contents($conf["dir"]["data"]."/config.json", json_encode($tmpConf,$conf["settings"]["json_flags"]))) {
+                $errorCnt++;
+            }
+        }
+
+        mkdir($conf["dir"]["data"]."/hypervideos");
+        mkdir($conf["dir"]["data"]."/resources");
+        file_put_contents($conf["dir"]["data"]."/hypervideos/_index.json", json_encode(array("hypervideo-increment"=>0,"hypervideos"=>array())),$conf["settings"]["json_flags"]);
+        file_put_contents($conf["dir"]["data"]."/resources/_index.json", json_encode(array("resources-increment"=>0,"resources"=>array())),$conf["settings"]["json_flags"]);
+        file_put_contents($conf["dir"]["data"]."/tagdefinitions.json", "{}");
+        file_put_contents($conf["dir"]["data"]."/custom.css", "");
+        include_once("user.php");
+        $userSuccess = userRegister($_REQUEST["name"],$_REQUEST["mail"],$_REQUEST["passwd"]);
+        if ($userSuccess["code"] != 0) {
+            $errorCnt++;
+        }
+
+        /*if (!file_exists($conf["dir"]["data"]."/users.json") && !is_dir($conf["dir"]["data"])) {
+            if (!mkdir($conf["dir"]["data"])) {
+                $errorCnt++;
+            } else {
+                chmod($conf["dir"]["data"], 0755);
+            }
+        }*/
+
+
+        if ($errorCnt > 0) {
+            $return["status"] = "fail";
+            $return["code"] = 0;
+            $return["string"] = "An error occurred. Please try again";
+            rmdir($conf["dir"]["data"]);
+        } else {
+            $return["status"] = "success";
+            $return["code"] = 1;
+            $return["string"] = "Installation successful";
+        }
+        break;
+    /*#########################################
+     ############ oEmbed Proxy
+     #########################################*/
+
+    case "oembedProxy":
+        // Proxy oEmbed requests for endpoints that don't support CORS (e.g. Bluesky)
+        $allowedHosts = array("embed.bsky.app");
+        $oembedUrl = isset($_REQUEST["url"]) ? $_REQUEST["url"] : "";
+        $parsedHost = parse_url($oembedUrl, PHP_URL_HOST);
+        if (!$oembedUrl || !$parsedHost || !in_array($parsedHost, $allowedHosts)) {
+            $return["status"] = "error";
+            $return["code"] = 403;
+            $return["string"] = "URL not allowed";
+        } else {
+            $result = false;
+            if (function_exists('curl_init')) {
+                $ch = curl_init($oembedUrl);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+                curl_setopt($ch, CURLOPT_USERAGENT, 'FrameTrail/1.0');
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+                $result = curl_exec($ch);
+                if (curl_errno($ch)) { $result = false; }
+                curl_close($ch);
+            }
+            if ($result === false) {
+                $context = stream_context_create(array("http" => array(
+                    "timeout" => 5,
+                    "header" => "User-Agent: FrameTrail/1.0\r\n"
+                )));
+                $result = @file_get_contents($oembedUrl, false, $context);
+            }
+            if ($result !== false) {
+                $decoded = json_decode($result, true);
+                if ($decoded) {
+                    $return = $decoded;
+                    $return["status"] = "success";
+                } else {
+                    $return["status"] = "error";
+                    $return["code"] = 500;
+                    $return["string"] = "Invalid JSON from oEmbed endpoint";
+                }
+            } else {
+                $return["status"] = "error";
+                $return["code"] = 502;
+                $return["string"] = "Failed to fetch oEmbed URL";
+            }
+        }
+        break;
+
+    default:
+        $return["status"] = "success";
+        $return["code"] = 0;
+        $return["string"] = "No question? No answer!";
+        break;
 }
 
 echo json_encode($return,$conf["settings"]["json_flags"]);

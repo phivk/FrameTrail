@@ -14,7 +14,7 @@
 
 FrameTrail.defineModule('ViewResources', function(FrameTrail){
 
-	var labels = FrameTrail.module('Localization').labels;
+    var labels = FrameTrail.module('Localization').labels;
 
     var _vrWrapper = document.createElement('div');
     _vrWrapper.innerHTML = '<div class="viewResources" title="'+ labels['ResourcesManage'] +'">'
@@ -276,7 +276,7 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
 
                 if (callbackCollection[0] == true) {
                     updateList();
-				    toggleDeleteMode();
+                    toggleDeleteMode();
                 }
 
             }
@@ -341,16 +341,16 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
 
 
 
-   	return {
+    return {
 
-   		onChange: {
+        onChange: {
             viewSize: changeViewSize,
             loggedIn: updateButtonStates
         },
 
-   		create: create,
+        create: create,
         open: open
 
-   	};
+    };
 
 });

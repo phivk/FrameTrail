@@ -3,7 +3,7 @@
 }
 
 .resourceDetail[data-type="pdf"] iframe {
-	width: 133%;
+    width: 133%;
     height: 133%;
     zoom: 0.75;
     -moz-transform: scale(0.75);

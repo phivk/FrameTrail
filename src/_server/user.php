@@ -7,31 +7,31 @@ require_once("./config.php");
  * @return mixed
  */
 function userGet($userID) {
-	global $conf;
+    global $conf;
 
-	$userFile = $conf["dir"]["data"]."/users.json";
-	if (!file_exists($userFile)) {
-		$return["status"] = "fail";
-		$return["code"] = 4;
-		$return["string"] = "Could not find user database";
-		return $return;
-	}
+    $userFile = $conf["dir"]["data"]."/users.json";
+    if (!file_exists($userFile)) {
+        $return["status"] = "fail";
+        $return["code"] = 4;
+        $return["string"] = "Could not find user database";
+        return $return;
+    }
 
-	$json = file_get_contents($userFile);
+    $json = file_get_contents($userFile);
 
-	$uDB = json_decode($json,true);
-	//if ($_SESSION["ohv"]["projects"][$projectID]["user"]["role"] != "admin") {
-	foreach ($uDB["user"] as $k=>$u) {
-		unset($uDB["user"][$k]["passwd"]);
-	}
-	//}
-	$uDB = ($userID) ? $uDB["user"][$userID] : $uDB;
-	$return["status"] = "success";
-	$return["code"] = 200;
-	$return["string"] = "see response";
-	$return["response"] = $uDB;
+    $uDB = json_decode($json,true);
+    //if ($_SESSION["ohv"]["projects"][$projectID]["user"]["role"] != "admin") {
+    foreach ($uDB["user"] as $k=>$u) {
+        unset($uDB["user"][$k]["passwd"]);
+    }
+    //}
+    $uDB = ($userID) ? $uDB["user"][$userID] : $uDB;
+    $return["status"] = "success";
+    $return["code"] = 200;
+    $return["string"] = "see response";
+    $return["response"] = $uDB;
 
-	return $return;
+    return $return;
 }
 
 /**
@@ -48,59 +48,59 @@ function userGet($userID) {
 
  */
 function userRegister($name, $mail, $passwd) {
-	global $conf;
-	$tmpFirstUser = false;
-	$json = file_get_contents($conf["dir"]["data"]."/config.json");
-	$configDB = json_decode($json, true);
-	
-	$userFile = $conf["dir"]["data"]."/users.json";
+    global $conf;
+    $tmpFirstUser = false;
+    $json = file_get_contents($conf["dir"]["data"]."/config.json");
+    $configDB = json_decode($json, true);
+    
+    $userFile = $conf["dir"]["data"]."/users.json";
 
 
-	if (!$mail || !$passwd || (!filter_var($mail, FILTER_VALIDATE_EMAIL)) || !$name) {
-		$return["status"] = "fail";
-		$return["code"] = 1;
-		$return["string"] = "Fill out all fields";
-		return $return;
-	}
+    if (!$mail || !$passwd || (!filter_var($mail, FILTER_VALIDATE_EMAIL)) || !$name) {
+        $return["status"] = "fail";
+        $return["code"] = 1;
+        $return["string"] = "Fill out all fields";
+        return $return;
+    }
 
-	if (!file_exists($userFile)) {
-		$tmp["user-increment"] = 0;
-		$tmp["user"] = array();
-		$tmpFirstUser = true;
-		file_put_contents($userFile, json_encode($tmp, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-	}
+    if (!file_exists($userFile)) {
+        $tmp["user-increment"] = 0;
+        $tmp["user"] = array();
+        $tmpFirstUser = true;
+        file_put_contents($userFile, json_encode($tmp, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+    }
 
-	$file = new sharedFile($userFile);
-	$json = $file->read();
+    $file = new sharedFile($userFile);
+    $json = $file->read();
 
-	$user = json_decode($json,true);
+    $user = json_decode($json,true);
 
-	foreach ($user["user"] as $k=>$v) {
-		if ($v["mail"] == strtolower($_REQUEST["mail"])) {
-			$return["status"] = "fail";
-			$return["code"] = 2;
-			$return["string"] = "Already registered";
-			$file->close();
-			return $return;
-		}
-	}
+    foreach ($user["user"] as $k=>$v) {
+        if ($v["mail"] == strtolower($_REQUEST["mail"])) {
+            $return["status"] = "fail";
+            $return["code"] = 2;
+            $return["string"] = "Already registered";
+            $file->close();
+            return $return;
+        }
+    }
 
-	$user["user-increment"]++;
-	$user["user"][$user["user-increment"]]["name"] = $name;
-	$user["user"][$user["user-increment"]]["mail"] = strtolower($mail);
-	$user["user"][$user["user-increment"]]["registrationDate"] =  time();
-	$user["user"][$user["user-increment"]]["passwd"] = password_hash($passwd, PASSWORD_DEFAULT);
-	$user["user"][$user["user-increment"]]["role"] = (($tmpFirstUser) ? "admin" : $configDB["defaultUserRole"]);
+    $user["user-increment"]++;
+    $user["user"][$user["user-increment"]]["name"] = $name;
+    $user["user"][$user["user-increment"]]["mail"] = strtolower($mail);
+    $user["user"][$user["user-increment"]]["registrationDate"] =  time();
+    $user["user"][$user["user-increment"]]["passwd"] = password_hash($passwd, PASSWORD_DEFAULT);
+    $user["user"][$user["user-increment"]]["role"] = (($tmpFirstUser) ? "admin" : $configDB["defaultUserRole"]);
     $user["user"][$user["user-increment"]]["active"] = (($tmpFirstUser) ? 1 : (($configDB["userNeedsConfirmation"]) ? 0 : 1));
-	$user["user"][$user["user-increment"]]["lastLogin"] = "";
-	$user["user"][$user["user-increment"]]["color"] = getUserColors()["freeColors"][0];
+    $user["user"][$user["user-increment"]]["lastLogin"] = "";
+    $user["user"][$user["user-increment"]]["color"] = getUserColors()["freeColors"][0];
 
-	$file->writeClose(json_encode($user, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+    $file->writeClose(json_encode($user, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 
-	$return["status"] = "success";
-	$return["code"] = ($user["user"][$user["user-increment"]]["active"] == 1) ? 0 : 3;
-	$return["string"] = "Registration succeeded";
-	return $return;
+    $return["status"] = "success";
+    $return["code"] = ($user["user"][$user["user-increment"]]["active"] == 1) ? 0 : 3;
+    $return["string"] = "Registration succeeded";
+    return $return;
 }
 
 
@@ -118,79 +118,79 @@ function userRegister($name, $mail, $passwd) {
 
  */
 function userLogin($mail, $passwd) {
-	global $conf;
+    global $conf;
 
-	$userFile = $conf["dir"]["data"]."/users.json";
+    $userFile = $conf["dir"]["data"]."/users.json";
 
-	if ((!$passwd) || (!$mail)) {
-		$return["status"] = "fail";
-		$return["code"] = 1;
-		$return["string"] = "Fill out all fields";
-		return $return;
-	}
+    if ((!$passwd) || (!$mail)) {
+        $return["status"] = "fail";
+        $return["code"] = 1;
+        $return["string"] = "Fill out all fields";
+        return $return;
+    }
 
-	if (!file_exists($userFile)) {
-		$return["status"] = "fail";
-		$return["code"] = 4;
-		$return["string"] = "Could not find user database";
-		return $return;
-	}
+    if (!file_exists($userFile)) {
+        $return["status"] = "fail";
+        $return["code"] = 4;
+        $return["string"] = "Could not find user database";
+        return $return;
+    }
 
-	$mail = strtolower($mail);
+    $mail = strtolower($mail);
 
-	$file = new sharedFile($userFile);
-	$json = $file->read();
+    $file = new sharedFile($userFile);
+    $json = $file->read();
 
-	$userDB = json_decode($json,true);
-	foreach ($userDB["user"] as $k=>$v) {
-		if ($v["mail"] == $mail) {
-			$user = $userDB["user"][$k];
-			$user["id"] = $k;
-			break;
-		}
-	}
-	if (!$user) {
-		$return["status"] = "fail";
-		$return["code"] = 2;
-		$return["string"] = "User not found!";
-		$file->close();
-		return $return;
-	}
-	if ($user["active"] != 1) {
-		$return["status"] = "fail";
-		$return["code"] = 5;
-		$return["string"] = "User not active!";
-		$file->close();
-		return $return;
-	}
-	if (!password_verify($passwd, $user["passwd"])) {
-		$return["status"] = "fail";
-		$return["code"] = 3;
-		$return["string"] = "Wrong password!";
-		$file->close();
-		return $return;
-	}
+    $userDB = json_decode($json,true);
+    foreach ($userDB["user"] as $k=>$v) {
+        if ($v["mail"] == $mail) {
+            $user = $userDB["user"][$k];
+            $user["id"] = $k;
+            break;
+        }
+    }
+    if (!$user) {
+        $return["status"] = "fail";
+        $return["code"] = 2;
+        $return["string"] = "User not found!";
+        $file->close();
+        return $return;
+    }
+    if ($user["active"] != 1) {
+        $return["status"] = "fail";
+        $return["code"] = 5;
+        $return["string"] = "User not active!";
+        $file->close();
+        return $return;
+    }
+    if (!password_verify($passwd, $user["passwd"])) {
+        $return["status"] = "fail";
+        $return["code"] = 3;
+        $return["string"] = "Wrong password!";
+        $file->close();
+        return $return;
+    }
 
 
-	$_SESSION["ohv"]["login"] = 1;
-	$_SESSION["ohv"]["user"] = $user;
+    $_SESSION["ohv"]["login"] = 1;
+    $_SESSION["ohv"]["user"] = $user;
 
-	$return["status"] = "success";
-	$return["code"] = 0;
-	$return["string"] = "Login successful";
+    $return["status"] = "success";
+    $return["code"] = 0;
+    $return["string"] = "Login successful";
 
-	$return["userdata"]["id"] = $user["id"];
-	$return["userdata"]["mail"] = $user["mail"];
-	$return["userdata"]["name"] = $user["name"];
-	$return["userdata"]["registrationDate"] = $user["registrationDate"];
-	$return["userdata"]["role"] = $user["role"];
-	$return["userdata"]["color"] = $user["color"];
-	$userDB["user"][$user["id"]]["lastLogin"] = time();
-	$file->writeClose(json_encode($userDB, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+    $return["userdata"]["id"] = $user["id"];
+    $return["userdata"]["mail"] = $user["mail"];
+    $return["userdata"]["name"] = $user["name"];
+    $return["userdata"]["registrationDate"] = $user["registrationDate"];
+    $return["userdata"]["role"] = $user["role"];
+    $return["userdata"]["color"] = $user["color"];
+    $userDB["user"][$user["id"]]["lastLogin"] = time();
+    $file->writeClose(json_encode($userDB, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 
-	$return["session_lifetime"] = $conf["server"]["session_lifetime"];
+    $return["session_lifetime"] = $conf["server"]["session_lifetime"];
 
-	return $return;
+    return $return;
 }
 
 
@@ -203,12 +203,12 @@ function userLogin($mail, $passwd) {
 
  */
 function userLogout() {
-	$return["status"] = "success";
-	session_destroy();
-	$return["code"] = 1;
-	$return["string"] = "Logout success";
+    $return["status"] = "success";
+    session_destroy();
+    $return["code"] = 1;
+    $return["string"] = "Logout success";
 
-	return $return;
+    return $return;
 }
 
 
@@ -226,52 +226,52 @@ function userLogout() {
  *
  */
 function userCheckLogin($userRole = false) {
-	global $conf;
+    global $conf;
 
-	if (!file_exists($conf["dir"]["data"]."/users.json")) {
-		$return["status"] = "fail";
-		$return["code"] = 2;
-		$return["string"] = "Userfile is missing";
-	} elseif ($_SESSION["ohv"]["login"] == 1) {
+    if (!file_exists($conf["dir"]["data"]."/users.json")) {
+        $return["status"] = "fail";
+        $return["code"] = 2;
+        $return["string"] = "Userfile is missing";
+    } elseif ($_SESSION["ohv"]["login"] == 1) {
 
-		$userFile = $conf["dir"]["data"]."/users.json";
-		$file = new sharedFile($userFile);
+        $userFile = $conf["dir"]["data"]."/users.json";
+        $file = new sharedFile($userFile);
 
-		$json = $file->read();
-		$userdb = json_decode($json,true);
+        $json = $file->read();
+        $userdb = json_decode($json,true);
 
-		//Update own data to check if user is still admin or other things have changed
-		$tmpUserID = $_SESSION["ohv"]["user"]["id"];
-		$_SESSION["ohv"]["user"] = $userdb["user"][$tmpUserID];
-		$_SESSION["ohv"]["user"]["id"] = $tmpUserID;
-		$file->close();
+        //Update own data to check if user is still admin or other things have changed
+        $tmpUserID = $_SESSION["ohv"]["user"]["id"];
+        $_SESSION["ohv"]["user"] = $userdb["user"][$tmpUserID];
+        $_SESSION["ohv"]["user"]["id"] = $tmpUserID;
+        $file->close();
 
-		$return["status"] = "success";
-		$return["code"] = 1;
-		$return["string"] = "user logged in";
-		$return["session_lifetime"] = $conf["server"]["session_lifetime"];
+        $return["status"] = "success";
+        $return["code"] = 1;
+        $return["string"] = "user logged in";
+        $return["session_lifetime"] = $conf["server"]["session_lifetime"];
 
-		if ($_SESSION["ohv"]["user"]["active"] == 0) {
-			$return["status"] = "success";
-			$return["code"] = 3;
-			$return["string"] = "User is logged in but not active";
-		}
+        if ($_SESSION["ohv"]["user"]["active"] == 0) {
+            $return["status"] = "success";
+            $return["code"] = 3;
+            $return["string"] = "User is logged in but not active";
+        }
 
-		if ($userRole && ($_SESSION["ohv"]["user"]["role"] != $userRole)) {
-			$return["status"] = "success";
-			$return["code"] = 4;
-			$return["string"] = "User is logged in but does not have the required user role";
-		}
+        if ($userRole && ($_SESSION["ohv"]["user"]["role"] != $userRole)) {
+            $return["status"] = "success";
+            $return["code"] = 4;
+            $return["string"] = "User is logged in but does not have the required user role";
+        }
 
 
-		$return["response"] = $_SESSION["ohv"]["user"];
-		unset($return["response"]["passwd"]);
-	} else {
-		$return["status"] = "fail";
-		$return["code"] = 0;
-		$return["string"] = "User not logged in";
-	}
-	return $return;
+        $return["response"] = $_SESSION["ohv"]["user"];
+        unset($return["response"]["passwd"]);
+    } else {
+        $return["status"] = "fail";
+        $return["code"] = 0;
+        $return["string"] = "User not logged in";
+    }
+    return $return;
 }
 
 /**
@@ -291,97 +291,97 @@ function userCheckLogin($userRole = false) {
 
  */
 function userChange($userID,$mail,$name,$passwd,$color,$role,$active) {
-	global $conf;
-	$userFile = $conf["dir"]["data"]."/users.json";
+    global $conf;
+    $userFile = $conf["dir"]["data"]."/users.json";
 
 
 
-	if (!file_exists($userFile)) {
-		$return["status"] = "fail";
-		$return["code"] = 1;
-		$return["string"] = "User DB missing";
-		return $return;
-	}
+    if (!file_exists($userFile)) {
+        $return["status"] = "fail";
+        $return["code"] = 1;
+        $return["string"] = "User DB missing";
+        return $return;
+    }
 
-	if ($_SESSION["ohv"]["login"] == 1) {
-		$file = new sharedFile($userFile);
+    if ($_SESSION["ohv"]["login"] == 1) {
+        $file = new sharedFile($userFile);
 
-		$json = $file->read();
-		$userdb = json_decode($json,true);
+        $json = $file->read();
+        $userdb = json_decode($json,true);
 
-		//Update own data to check if user is still admin
-		$tmpUserID = $_SESSION["ohv"]["user"]["id"];
-		$_SESSION["ohv"]["user"] = $userdb["user"][$tmpUserID];
-		$_SESSION["ohv"]["user"]["id"] = $tmpUserID;
-		if ((($_SESSION["ohv"]["user"]["role"] != "admin") && ($userID != $tmpUserID))) {
-			$return["status"] = "fail";
-			$return["code"] = 2;
-			$return["string"] = "user is not admin nor himself";
-		} elseif (($_SESSION["ohv"]["user"]["active"] != 1)) {
-			$return["status"] = "fail";
-			$return["code"] = 5;
-			$return["string"] = "user is not active";
-			unset($_SESSION["ohv"]);
-		} else {
-			if ($userdb["user"][$userID]) {
-				$return["code"] = 0;
-				if (!filter_var($mail, FILTER_VALIDATE_EMAIL)) {
-					$mail = strtolower($userdb["user"][$userID]["mail"]);
-					$return["code"] = 3;
-				} else {
-					$mail = strtolower($mail);
-				}
-				$userdb["user"][$userID]["role"] = ((($role) && ($_SESSION["ohv"]["user"]["role"] == "admin")) ? $role : $userdb["user"][$userID]["role"]);
-				$userdb["user"][$userID]["name"] = $name;
-				$userdb["user"][$userID]["mail"] = $mail;
-				$userdb["user"][$userID]["color"] = $color;
-				$userdb["user"][$userID]["active"] = ((($active==="1" || $active==="0") && (($_SESSION["ohv"]["user"]["role"] == "admin"))) ? $active*1 : $userdb["user"][$userID]["active"]*1);
-				$userdb["user"][$userID]["passwd"] = ($passwd) ? password_hash($passwd, PASSWORD_DEFAULT) : $userdb["user"][$userID]["passwd"];
-				$file->write(json_encode($userdb, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));				
-				$return["status"] = "success";
-				$return["string"] = "userdata updated";
-				$return["response"] = $userdb["user"][$userID];
-				unset($return["response"]["passwd"]);
-			} else {
-				$return["status"] = "fail";
-				$return["code"] = 6;
-				$return["string"] = "Targeted User not found";
-			}
-		}
-		$file->close();
-	} else {
-		$return["status"] = "fail";
-		$return["code"] = 4;
-		$return["string"] = "User not logged in";
-	}
+        //Update own data to check if user is still admin
+        $tmpUserID = $_SESSION["ohv"]["user"]["id"];
+        $_SESSION["ohv"]["user"] = $userdb["user"][$tmpUserID];
+        $_SESSION["ohv"]["user"]["id"] = $tmpUserID;
+        if ((($_SESSION["ohv"]["user"]["role"] != "admin") && ($userID != $tmpUserID))) {
+            $return["status"] = "fail";
+            $return["code"] = 2;
+            $return["string"] = "user is not admin nor himself";
+        } elseif (($_SESSION["ohv"]["user"]["active"] != 1)) {
+            $return["status"] = "fail";
+            $return["code"] = 5;
+            $return["string"] = "user is not active";
+            unset($_SESSION["ohv"]);
+        } else {
+            if ($userdb["user"][$userID]) {
+                $return["code"] = 0;
+                if (!filter_var($mail, FILTER_VALIDATE_EMAIL)) {
+                    $mail = strtolower($userdb["user"][$userID]["mail"]);
+                    $return["code"] = 3;
+                } else {
+                    $mail = strtolower($mail);
+                }
+                $userdb["user"][$userID]["role"] = ((($role) && ($_SESSION["ohv"]["user"]["role"] == "admin")) ? $role : $userdb["user"][$userID]["role"]);
+                $userdb["user"][$userID]["name"] = $name;
+                $userdb["user"][$userID]["mail"] = $mail;
+                $userdb["user"][$userID]["color"] = $color;
+                $userdb["user"][$userID]["active"] = ((($active==="1" || $active==="0") && (($_SESSION["ohv"]["user"]["role"] == "admin"))) ? $active*1 : $userdb["user"][$userID]["active"]*1);
+                $userdb["user"][$userID]["passwd"] = ($passwd) ? password_hash($passwd, PASSWORD_DEFAULT) : $userdb["user"][$userID]["passwd"];
+                $file->write(json_encode($userdb, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));                
+                $return["status"] = "success";
+                $return["string"] = "userdata updated";
+                $return["response"] = $userdb["user"][$userID];
+                unset($return["response"]["passwd"]);
+            } else {
+                $return["status"] = "fail";
+                $return["code"] = 6;
+                $return["string"] = "Targeted User not found";
+            }
+        }
+        $file->close();
+    } else {
+        $return["status"] = "fail";
+        $return["code"] = 4;
+        $return["string"] = "User not logged in";
+    }
 
-	return $return;
+    return $return;
 }
 
 function getUserColors() {
-	global $conf;
-	$json = file_get_contents($conf["dir"]["data"]."/config.json");
-	$configDB = json_decode($json, true);
-	$return["colorCollection"] = $configDB["userColorCollection"];
+    global $conf;
+    $json = file_get_contents($conf["dir"]["data"]."/config.json");
+    $configDB = json_decode($json, true);
+    $return["colorCollection"] = $configDB["userColorCollection"];
 
-	$json = file_get_contents($conf["dir"]["data"]."/users.json");
-	$user = json_decode($json, true);
-	foreach ($user["user"] as $k => $u) {
-		$used[$k] = $u["color"];
-	}
-	$return["user"] = $used;
+    $json = file_get_contents($conf["dir"]["data"]."/users.json");
+    $user = json_decode($json, true);
+    foreach ($user["user"] as $k => $u) {
+        $used[$k] = $u["color"];
+    }
+    $return["user"] = $used;
 
-	//because array_diff returns keys too.
+    //because array_diff returns keys too.
     $used = (is_array($used) ? $used : array());
-	foreach ($return["colorCollection"] as $c) {
-		if (!in_array($c, $used)) {
-			$return["freeColors"][] = $c;
-		}
-	}
+    foreach ($return["colorCollection"] as $c) {
+        if (!in_array($c, $used)) {
+            $return["freeColors"][] = $c;
+        }
+    }
 
-	if (count($return["freeColors"]) < 1) {
-		$return["freeColors"] = $return["colorCollection"][0];
-	}
+    if (count($return["freeColors"]) < 1) {
+        $return["freeColors"] = $return["colorCollection"][0];
+    }
 
-	return $return;
+    return $return;
 }

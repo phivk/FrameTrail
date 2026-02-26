@@ -240,27 +240,27 @@ FrameTrail.defineType(
                     });
 
                     newOverlayMedia.setAttribute('preload', 'none');
-        			//newOverlayMedia.load();
+                    //newOverlayMedia.load();
 
                     function checkForStall() {
 
                         if (self.activeState) {
 
-                			if (newOverlayMedia.readyState > 0) {
-                				HypervideoController.playbackStalled(false, self);
-                			} else {
+                            if (newOverlayMedia.readyState > 0) {
+                                HypervideoController.playbackStalled(false, self);
+                            } else {
                                 HypervideoController.playbackStalled(true, self);
                                 if (timeout) {
                                     window.clearTimeout(timeout);
                                 }
                                 timeout = window.setTimeout(checkForStall, 1000);
-                			}
+                            }
 
-                		} else {
+                        } else {
                             HypervideoController.playbackStalled(false, self);
                         }
 
-        			}
+                    }
 
                 },
 

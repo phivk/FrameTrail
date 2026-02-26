@@ -51,7 +51,7 @@ FrameTrail.defineType(
                     var resourceDetail = _wrapper.firstElementChild;
                     resourceDetail.addEventListener('error', function() { return true; });
 
-                	return resourceDetail;
+                    return resourceDetail;
 
                 },
 

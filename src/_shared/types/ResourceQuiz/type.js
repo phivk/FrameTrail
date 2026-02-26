@@ -158,7 +158,7 @@ FrameTrail.defineType(
 
                     resourceDetail.insertAdjacentHTML('beforeend', '<div class="resourceOptions"><div class="licenseInformation">'+ licenseString +'</div><div class="resourceButtons"></div>');
 
-                	return resourceDetail;
+                    return resourceDetail;
 
                 },
 

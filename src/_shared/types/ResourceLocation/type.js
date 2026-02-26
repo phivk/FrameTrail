@@ -177,7 +177,7 @@ FrameTrail.defineType(
 
                     }, 100);
 
-                	return resourceDetail;
+                    return resourceDetail;
 
                 },
 

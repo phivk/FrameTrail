@@ -1134,65 +1134,65 @@
 
                         loadResourceData(function(){
 
-    						loadUserData(function(){
+                            loadUserData(function(){
 
-    							loadHypervideoData(function(){
+                                loadHypervideoData(function(){
 
-    								success.call();
+                                    success.call();
 
-    							}, fail);
+                                }, fail);
 
-    						}, fail);
+                            }, fail);
 
-    					}, fail);
+                        }, fail);
 
                     }, fail);
         }
 
 
 
-		loadConfigData(function(){
+        loadConfigData(function(){
 
             loadResourceData(function(){
 
-    			loadUserData(function(){
+                loadUserData(function(){
 
-    				loadHypervideoData(function(){
-
-
-    					hypervideo = hypervideos[hypervideoID];
-
-    					if(!hypervideo){
-
-    						return fail(labels['ErrorHypervideoDoesNotExist']);
-
-    					}
-
-    					loadSequenceData(function(){
-
-    						loadSubtitleData(function(){
-
-    							loadContentData(function(){
-
-    								loadAnnotationData(function(){
-
-    									success.call();
-
-    								}, fail);
-
-    							}, fail);
-
-    						}, fail);
-
-    					}, fail);
+                    loadHypervideoData(function(){
 
 
-    				}, fail);
+                        hypervideo = hypervideos[hypervideoID];
+
+                        if(!hypervideo){
+
+                            return fail(labels['ErrorHypervideoDoesNotExist']);
+
+                        }
+
+                        loadSequenceData(function(){
+
+                            loadSubtitleData(function(){
+
+                                loadContentData(function(){
+
+                                    loadAnnotationData(function(){
+
+                                        success.call();
+
+                                    }, fail);
+
+                                }, fail);
+
+                            }, fail);
+
+                        }, fail);
 
 
-    			}, fail);
+                    }, fail);
 
-    		}, fail);
+
+                }, fail);
+
+            }, fail);
 
         }, fail);
 
@@ -1257,66 +1257,66 @@
         thisHypervideoID = thisHypervideoID || hypervideoID;
 
         return ({
-        	"meta": {
-        		"name": hypervideos[thisHypervideoID].name,
-        		"description": hypervideos[thisHypervideoID].description,
-        		"thumb": hypervideos[thisHypervideoID].thumb,
-        		"creator": hypervideos[thisHypervideoID].creator,
-        		"creatorId": hypervideos[thisHypervideoID].creatorId,
-        		"created": hypervideos[thisHypervideoID].created,
-        		"lastchanged": Date.now()
-        	},
-        	"config": {
-        		"slidingMode": hypervideos[thisHypervideoID].config.slidingMode,
-        		"slidingTrigger": hypervideos[thisHypervideoID].config.slidingTrigger,
-        		"autohideControls": hypervideos[thisHypervideoID].config.autohideControls,
-        		"captionsVisible": hypervideos[thisHypervideoID].config.captionsVisible,
+            "meta": {
+                "name": hypervideos[thisHypervideoID].name,
+                "description": hypervideos[thisHypervideoID].description,
+                "thumb": hypervideos[thisHypervideoID].thumb,
+                "creator": hypervideos[thisHypervideoID].creator,
+                "creatorId": hypervideos[thisHypervideoID].creatorId,
+                "created": hypervideos[thisHypervideoID].created,
+                "lastchanged": Date.now()
+            },
+            "config": {
+                "slidingMode": hypervideos[thisHypervideoID].config.slidingMode,
+                "slidingTrigger": hypervideos[thisHypervideoID].config.slidingTrigger,
+                "autohideControls": hypervideos[thisHypervideoID].config.autohideControls,
+                "captionsVisible": hypervideos[thisHypervideoID].config.captionsVisible,
                 "clipTimeVisible": hypervideos[thisHypervideoID].config.clipTimeVisible,
-        		"hidden": hypervideos[thisHypervideoID].hidden,
+                "hidden": hypervideos[thisHypervideoID].hidden,
                 "theme": hypervideos[thisHypervideoID].config.theme || "",
                 "layoutArea": (FrameTrail.module('ViewLayout') && FrameTrail.module('ViewLayout').getLayoutAreaData)
                     ? FrameTrail.module('ViewLayout').getLayoutAreaData()
                     : hypervideos[thisHypervideoID].config.layoutArea
-        	},
-        	"clips": hypervideos[thisHypervideoID].clips,
-        	"globalEvents": (codeSnippets.globalEvents) ? codeSnippets.globalEvents : {},
-        	"customCSS": (codeSnippets.customCSS) ? codeSnippets.customCSS : "",
-        	"contents": (function () {
+            },
+            "clips": hypervideos[thisHypervideoID].clips,
+            "globalEvents": (codeSnippets.globalEvents) ? codeSnippets.globalEvents : {},
+            "customCSS": (codeSnippets.customCSS) ? codeSnippets.customCSS : "",
+            "contents": (function () {
                 var contents = [];
                 for (var i in overlays) {
                     contents.push({
-            			"@context": [
-            				"http://www.w3.org/ns/anno.jsonld",
-            				{
-            					"frametrail": "http://frametrail.org/ns/"
-            				}
-            			],
-            			"creator": {
-            				"nickname": overlays[i].creator,
-            				"type": "Person",
-            				"id": overlays[i].creatorId
-            			},
-            			"created": (new Date(overlays[i].created)).toString(),
-            			"type": "Annotation",
-            			"frametrail:type": "Overlay",
-            			"frametrail:tags": overlays[i].tags || [],
-            			"target": {
-            				"type": "Video",
-            				"source": FrameTrail.module('HypervideoModel').sourcePath,
-            				"selector": {
-            					"conformsTo": "http://www.w3.org/TR/media-frags/",
-            					"type": "FragmentSelector",
-            					"value":
+                        "@context": [
+                            "http://www.w3.org/ns/anno.jsonld",
+                            {
+                                "frametrail": "http://frametrail.org/ns/"
+                            }
+                        ],
+                        "creator": {
+                            "nickname": overlays[i].creator,
+                            "type": "Person",
+                            "id": overlays[i].creatorId
+                        },
+                        "created": (new Date(overlays[i].created)).toString(),
+                        "type": "Annotation",
+                        "frametrail:type": "Overlay",
+                        "frametrail:tags": overlays[i].tags || [],
+                        "target": {
+                            "type": "Video",
+                            "source": FrameTrail.module('HypervideoModel').sourcePath,
+                            "selector": {
+                                "conformsTo": "http://www.w3.org/TR/media-frags/",
+                                "type": "FragmentSelector",
+                                "value":
                                     "t=" + overlays[i].start + "," + overlays[i].end
                                     + "&xywh=percent:"
                                     + overlays[i].position.left + ","
                                     + overlays[i].position.top + ","
                                     + overlays[i].position.width + ","
                                     + overlays[i].position.height
-            				}
-            			},
-            			"body": {
-            				"type": ({
+                            }
+                        },
+                        "body": {
+                            "type": ({
                                         'image':     'Image',
                                         'video':     'Video',
                                         'location':  'Dataset',
@@ -1345,8 +1345,8 @@
                                         'reddit':    'Text',
                                         'flickr':    'Image'
                                     })[overlays[i].type],
-            				"frametrail:type": overlays[i].type,
-            				"format": ({
+                            "frametrail:type": overlays[i].type,
+                            "format": ({
                                 'image': 'image/' + (function () {
                                     try {
                                         return (overlays[i].src ? (/\.(\w{3,4})$/g.exec(overlays[i].src)[1]) : '*');
@@ -1381,38 +1381,38 @@
                                 'reddit': 'text/html',
                                 'flickr': 'text/html'
                             })[overlays[i].type],
-            				"source": (function () {
-            				    if (['codesnippet', 'text', 'quiz', 'hotspot', 'entity', 'webpage', 'wikipedia',].indexOf( overlays[i].type ) < 0) {
+                            "source": (function () {
+                                if (['codesnippet', 'text', 'quiz', 'hotspot', 'entity', 'webpage', 'wikipedia',].indexOf( overlays[i].type ) < 0) {
                                     return overlays[i].src
                                 }
                                 return undefined;
-            				})(),
+                            })(),
                             "value": (function () {
-            				    if (['codesnippet', 'text', 'quiz', 'entity', 'webpage', 'wikipedia',].indexOf( overlays[i].type ) >= 0) {
+                                if (['codesnippet', 'text', 'quiz', 'entity', 'webpage', 'wikipedia',].indexOf( overlays[i].type ) >= 0) {
                                     return overlays[i].src
                                 }
                                 return undefined;
-            				})(),
-            				"frametrail:name": overlays[i].name,
-            				"frametrail:thumb": overlays[i].thumb,
-            				"selector": (function () {
-            				    if (   ['video', 'vimeo', 'youtube'].indexOf(overlays[i].type) >= 0
+                            })(),
+                            "frametrail:name": overlays[i].name,
+                            "frametrail:thumb": overlays[i].thumb,
+                            "selector": (function () {
+                                if (   ['video', 'vimeo', 'youtube'].indexOf(overlays[i].type) >= 0
                                     && overlays[i].startOffset
                                     && overlays[i].endOffset
                                 ) {
                                     return {
-                    					"type": "FragmentSelector",
-                    					"conformsTo": "http://www.w3.org/TR/media-frags/",
-                    					"value": "t=" + overlays[i].startOffset + "," + overlays[i].endOffset
-                    				}
+                                        "type": "FragmentSelector",
+                                        "conformsTo": "http://www.w3.org/TR/media-frags/",
+                                        "value": "t=" + overlays[i].startOffset + "," + overlays[i].endOffset
+                                    }
                                 } else {
                                     return undefined;
                                 }
-            				})(),
-            				"frametrail:resourceId": overlays[i].resourceId,
+                            })(),
+                            "frametrail:resourceId": overlays[i].resourceId,
                             "frametrail:attributes": overlays[i].attributes
-            			},
-            			"frametrail:events": overlays[i].events
+                        },
+                        "frametrail:events": overlays[i].events
                     });
                     //console.log(contents);
                     if (contents[contents.length-1].body['frametrail:type'] === 'location') {
@@ -1426,44 +1426,44 @@
                     var codeSnippetItem = codeSnippets.timebasedEvents[i];
                     contents.push({
                         "@context": [
-            				  "http://www.w3.org/ns/anno.jsonld",
-            				  {
-            					  "frametrail": "http://frametrail.org/ns/"
-            				  }
-            			],
-            			"creator": {
-            				"nickname": codeSnippetItem.creator,
-            				"type": "Person",
-            				"id": codeSnippetItem.creatorId
-            			 },
-            			"created": (new Date(codeSnippetItem.created)).toString(),
-            			"type": "Annotation",
-            			"frametrail:type": "CodeSnippet",
-            			"frametrail:tags": codeSnippetItem.tags,
-            			"target": {
-            				"type": "Video",
-            				"source": FrameTrail.module('HypervideoModel').sourcePath,
-            				"selector": {
-            					"conformsTo": "http://www.w3.org/TR/media-frags/",
-            					"type": "FragmentSelector",
-            					"value": "t=" + codeSnippetItem.start
-            				}
-            			  },
-            			"body": {
-                        	"type": "TextualBody",
-                        	"frametrail:type": "codesnippet",
-                        	"format" : "text/javascript",
-                        	"value" : codeSnippetItem.snippet,
-                        	"frametrail:name": codeSnippetItem.name,
-                        	"frametrail:thumb": null,
-                        	"frametrail:resourceId": null,
+                              "http://www.w3.org/ns/anno.jsonld",
+                              {
+                                  "frametrail": "http://frametrail.org/ns/"
+                              }
+                        ],
+                        "creator": {
+                            "nickname": codeSnippetItem.creator,
+                            "type": "Person",
+                            "id": codeSnippetItem.creatorId
+                         },
+                        "created": (new Date(codeSnippetItem.created)).toString(),
+                        "type": "Annotation",
+                        "frametrail:type": "CodeSnippet",
+                        "frametrail:tags": codeSnippetItem.tags,
+                        "target": {
+                            "type": "Video",
+                            "source": FrameTrail.module('HypervideoModel').sourcePath,
+                            "selector": {
+                                "conformsTo": "http://www.w3.org/TR/media-frags/",
+                                "type": "FragmentSelector",
+                                "value": "t=" + codeSnippetItem.start
+                            }
+                          },
+                        "body": {
+                            "type": "TextualBody",
+                            "frametrail:type": "codesnippet",
+                            "format" : "text/javascript",
+                            "value" : codeSnippetItem.snippet,
+                            "frametrail:name": codeSnippetItem.name,
+                            "frametrail:thumb": null,
+                            "frametrail:resourceId": null,
                             "frametrail:attributes": codeSnippetItem.attributes
                         }
                     });
                 }
-        	    return contents;
-        	})(),
-        	"subtitles": hypervideos[thisHypervideoID].subtitles
+                return contents;
+            })(),
+            "subtitles": hypervideos[thisHypervideoID].subtitles
         });
 
     }
@@ -1648,32 +1648,32 @@
             }
 
             annotationsToSave.push({
-        		"@context": [
-        			"http://www.w3.org/ns/anno.jsonld",
-        			{
-        				"frametrail": "http://frametrail.org/ns/"
-        			}
-        		],
-        		"creator": {
-        			"nickname": annotationItem.creator,
-        			"type": "Person",
-        			"id": annotationItem.creatorId
-        		},
-        		"created": (new Date(annotationItem.created)).toString(),
-        		"type": "Annotation",
-        		"frametrail:type": "Annotation",
-        		"frametrail:tags": annotationItem.tags || [],
+                "@context": [
+                    "http://www.w3.org/ns/anno.jsonld",
+                    {
+                        "frametrail": "http://frametrail.org/ns/"
+                    }
+                ],
+                "creator": {
+                    "nickname": annotationItem.creator,
+                    "type": "Person",
+                    "id": annotationItem.creatorId
+                },
+                "created": (new Date(annotationItem.created)).toString(),
+                "type": "Annotation",
+                "frametrail:type": "Annotation",
+                "frametrail:tags": annotationItem.tags || [],
                 "frametrail:uri": annotationItem.uri || null,
-        		"target": {
-        			"type": "Video",
-        			"source": FrameTrail.module('HypervideoModel').sourcePath,
-        			"selector": {
-        				"conformsTo": "http://www.w3.org/TR/media-frags/",
-        				"type": "FragmentSelector",
-        				"value": "t=" + annotationItem.start + "," + annotationItem.end
-        			}
-        		},
-        		"body": {
+                "target": {
+                    "type": "Video",
+                    "source": FrameTrail.module('HypervideoModel').sourcePath,
+                    "selector": {
+                        "conformsTo": "http://www.w3.org/TR/media-frags/",
+                        "type": "FragmentSelector",
+                        "value": "t=" + annotationItem.start + "," + annotationItem.end
+                    }
+                },
+                "body": {
                     "type": ({
                         'image': 'Image',
                         'video': 'Video',
@@ -1735,7 +1735,7 @@
                     })(),
                     "frametrail:resourceId": annotationItem.resourceId,
                     "frametrail:attributes": annotationItem.attributes
-        		}
+                }
             });
             if (annotationsToSave[annotationsToSave.length-1].body['frametrail:type'] === 'location') {
                 var annotationBody = annotationsToSave[annotationsToSave.length-1].body;

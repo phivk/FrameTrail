@@ -17,7 +17,7 @@
 
 FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 
-	var labels = FrameTrail.module('Localization').labels;
+    var labels = FrameTrail.module('Localization').labels;
 
     var previewController,
         uploadQueue = [],
@@ -32,125 +32,125 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
         };
 
 
-	/**
-	 * Add a resource entry to the local _index.json and optionally store a file.
-	 * @method addResourceLocally
-	 * @param {Object} resourceObj - The resource data object (src, type, name, thumb, attributes, etc.)
-	 * @param {File|Blob} [fileBlob] - Optional file to store in resources/
-	 * @param {String} [thumbDataUrl] - Optional base64 data URL for thumbnail
-	 * @return {Promise<Object>} The response with resId and resource
-	 * @private
-	 */
-	function addResourceLocally(resourceObj, fileBlob, thumbDataUrl) {
-		var adapter = FrameTrail.module('StorageManager').getAdapter();
-		var userInfo = adapter.userInfo;
+    /**
+     * Add a resource entry to the local _index.json and optionally store a file.
+     * @method addResourceLocally
+     * @param {Object} resourceObj - The resource data object (src, type, name, thumb, attributes, etc.)
+     * @param {File|Blob} [fileBlob] - Optional file to store in resources/
+     * @param {String} [thumbDataUrl] - Optional base64 data URL for thumbnail
+     * @return {Promise<Object>} The response with resId and resource
+     * @private
+     */
+    function addResourceLocally(resourceObj, fileBlob, thumbDataUrl) {
+        var adapter = FrameTrail.module('StorageManager').getAdapter();
+        var userInfo = adapter.userInfo;
 
-		// Fill in creator info
-		resourceObj.creator = userInfo.name || 'Local User';
-		resourceObj.creatorId = userInfo.id || 'local';
-		resourceObj.created = Math.floor(Date.now() / 1000);
+        // Fill in creator info
+        resourceObj.creator = userInfo.name || 'Local User';
+        resourceObj.creatorId = userInfo.id || 'local';
+        resourceObj.created = Math.floor(Date.now() / 1000);
 
-		return adapter.readJSON('resources/_index.json').catch(function() {
-			return { 'resources-increment': 0, 'resources': {} };
-		}).then(function(indexData) {
-			if (!indexData['resources-increment']) {
-				indexData['resources-increment'] = 0;
-			}
-			indexData['resources-increment']++;
-			var newId = indexData['resources-increment'];
-			indexData['resources'][newId] = resourceObj;
+        return adapter.readJSON('resources/_index.json').catch(function() {
+            return { 'resources-increment': 0, 'resources': {} };
+        }).then(function(indexData) {
+            if (!indexData['resources-increment']) {
+                indexData['resources-increment'] = 0;
+            }
+            indexData['resources-increment']++;
+            var newId = indexData['resources-increment'];
+            indexData['resources'][newId] = resourceObj;
 
-			var tasks = [adapter.writeJSON('resources/_index.json', indexData)];
+            var tasks = [adapter.writeJSON('resources/_index.json', indexData)];
 
-			// Store file if provided
-			if (fileBlob && resourceObj.src && resourceObj.type !== 'url') {
-				tasks.push(adapter.writeFile('resources/' + resourceObj.src, fileBlob));
-			}
+            // Store file if provided
+            if (fileBlob && resourceObj.src && resourceObj.type !== 'url') {
+                tasks.push(adapter.writeFile('resources/' + resourceObj.src, fileBlob));
+            }
 
-			// Store thumbnail if provided as data URL
-			if (thumbDataUrl && resourceObj.thumb) {
-				tasks.push(adapter.writeDataUrl('resources/' + resourceObj.thumb, thumbDataUrl));
-			}
+            // Store thumbnail if provided as data URL
+            if (thumbDataUrl && resourceObj.thumb) {
+                tasks.push(adapter.writeDataUrl('resources/' + resourceObj.thumb, thumbDataUrl));
+            }
 
-			return Promise.all(tasks).then(function() {
-				return { resId: newId, resource: resourceObj };
-			});
-		});
-	}
+            return Promise.all(tasks).then(function() {
+                return { resId: newId, resource: resourceObj };
+            });
+        });
+    }
 
-	/**
-	 * Upload a single file locally via File System Access API.
-	 * @method uploadSingleFileLocally
-	 * @param {File} file
-	 * @param {String} type
-	 * @param {String|null} thumbDataUrl - base64 thumbnail data URL, or null
-	 * @param {Function} callback - callback(success, errorMessage)
-	 * @private
-	 */
-	function uploadSingleFileLocally(file, type, thumbDataUrl, callback) {
-		var fileName = file.name.replace(/\.[^/.]+$/, ''); // Remove extension
-		var fileExt = file.name.split('.').pop().toLowerCase();
-		var timestamp = Date.now();
-		var adapter = FrameTrail.module('StorageManager').getAdapter();
-		var userInfo = adapter.userInfo;
-		var userId = userInfo.id || 'local';
-		var storedName = (userId + '_' + timestamp + '_' + sanitizeFilename(fileName)).substring(0, 90) + '.' + fileExt;
+    /**
+     * Upload a single file locally via File System Access API.
+     * @method uploadSingleFileLocally
+     * @param {File} file
+     * @param {String} type
+     * @param {String|null} thumbDataUrl - base64 thumbnail data URL, or null
+     * @param {Function} callback - callback(success, errorMessage)
+     * @private
+     */
+    function uploadSingleFileLocally(file, type, thumbDataUrl, callback) {
+        var fileName = file.name.replace(/\.[^/.]+$/, ''); // Remove extension
+        var fileExt = file.name.split('.').pop().toLowerCase();
+        var timestamp = Date.now();
+        var adapter = FrameTrail.module('StorageManager').getAdapter();
+        var userInfo = adapter.userInfo;
+        var userId = userInfo.id || 'local';
+        var storedName = (userId + '_' + timestamp + '_' + sanitizeFilename(fileName)).substring(0, 90) + '.' + fileExt;
 
-		var resourceObj = {
-			name: fileName,
-			src: storedName,
-			type: type,
-			attributes: {}
-		};
+        var resourceObj = {
+            name: fileName,
+            src: storedName,
+            type: type,
+            attributes: {}
+        };
 
-		// For video, force .mp4 extension in stored name
-		if (type === 'video') {
-			storedName = (userId + '_' + timestamp + '_' + sanitizeFilename(fileName)).substring(0, 90) + '.mp4';
-			resourceObj.src = storedName;
-		}
+        // For video, force .mp4 extension in stored name
+        if (type === 'video') {
+            storedName = (userId + '_' + timestamp + '_' + sanitizeFilename(fileName)).substring(0, 90) + '.mp4';
+            resourceObj.src = storedName;
+        }
 
-		// For audio, force .mp3 extension
-		if (type === 'audio') {
-			storedName = (userId + '_' + timestamp + '_' + sanitizeFilename(fileName)).substring(0, 90) + '.mp3';
-			resourceObj.src = storedName;
-		}
+        // For audio, force .mp3 extension
+        if (type === 'audio') {
+            storedName = (userId + '_' + timestamp + '_' + sanitizeFilename(fileName)).substring(0, 90) + '.mp3';
+            resourceObj.src = storedName;
+        }
 
-		// Assign thumbnail filename if provided
-		if (thumbDataUrl) {
-			resourceObj.thumb = (userId + '_' + timestamp + '_thumb_' + sanitizeFilename(fileName)).substring(0, 90) + '.png';
-		}
+        // Assign thumbnail filename if provided
+        if (thumbDataUrl) {
+            resourceObj.thumb = (userId + '_' + timestamp + '_thumb_' + sanitizeFilename(fileName)).substring(0, 90) + '.png';
+        }
 
-		addResourceLocally(resourceObj, file, thumbDataUrl).then(function() {
-			callback(true);
-		}).catch(function(err) {
-			callback(false, 'Local save failed: ' + err.message);
-		});
-	}
+        addResourceLocally(resourceObj, file, thumbDataUrl).then(function() {
+            callback(true);
+        }).catch(function(err) {
+            callback(false, 'Local save failed: ' + err.message);
+        });
+    }
 
-	/**
-	 * Sanitize a filename for local storage.
-	 * @method sanitizeFilename
-	 * @param {String} name
-	 * @return {String}
-	 * @private
-	 */
-	function sanitizeFilename(name) {
-		return name.replace(/[^a-zA-Z0-9_\-]/g, '_');
-	}
+    /**
+     * Sanitize a filename for local storage.
+     * @method sanitizeFilename
+     * @param {String} name
+     * @return {String}
+     * @private
+     */
+    function sanitizeFilename(name) {
+        return name.replace(/[^a-zA-Z0-9_\-]/g, '_');
+    }
 
-	/**
-	 * I tell the {{#crossLink "Database/loadResourceData:method"}}Database{{/crossLink}} to reload the index data.
-	 * @method updateResourceDatabase
-	 */
-	function updateResourceDatabase() {
+    /**
+     * I tell the {{#crossLink "Database/loadResourceData:method"}}Database{{/crossLink}} to reload the index data.
+     * @method updateResourceDatabase
+     */
+    function updateResourceDatabase() {
 
-		FrameTrail.module('Database').loadResourceData();
+        FrameTrail.module('Database').loadResourceData();
 
-	};
+    };
 
 
 
-	//Check for valid URL
+    //Check for valid URL
     var previewTimeout = null;
     ['change', 'paste', 'keyup'].forEach(function(ev) {
         document.addEventListener(ev, function(evt) {
@@ -183,304 +183,304 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 
 
 
-	/**
-	 * Detect resource type from file object.
-	 * Only MP4 and MP3 are accepted output formats. Other video/audio formats
-	 * are allowed only when FFmpeg is available on the server for transcoding.
-	 * @method detectResourceType
-	 * @param {File} file
-	 * @return {Object} {type: string, needsTranscoding: boolean, canUpload: boolean, error: string}
-	 */
-	function detectResourceType(file) {
-		var mimeType = file.type;
-		var fileName = file.name.toLowerCase();
-		var result = {
-			type: null,
-			needsTranscoding: false,
-			canUpload: true,
-			error: null
-		};
+    /**
+     * Detect resource type from file object.
+     * Only MP4 and MP3 are accepted output formats. Other video/audio formats
+     * are allowed only when FFmpeg is available on the server for transcoding.
+     * @method detectResourceType
+     * @param {File} file
+     * @return {Object} {type: string, needsTranscoding: boolean, canUpload: boolean, error: string}
+     */
+    function detectResourceType(file) {
+        var mimeType = file.type;
+        var fileName = file.name.toLowerCase();
+        var result = {
+            type: null,
+            needsTranscoding: false,
+            canUpload: true,
+            error: null
+        };
 
-		// Image detection
-		if (mimeType.indexOf('image/') === 0 || /\.(jpg|jpeg|png|gif)$/i.test(fileName)) {
-			result.type = 'image';
-			return result;
-		}
+        // Image detection
+        if (mimeType.indexOf('image/') === 0 || /\.(jpg|jpeg|png|gif)$/i.test(fileName)) {
+            result.type = 'image';
+            return result;
+        }
 
-		// PDF detection
-		if (mimeType === 'application/pdf' || /\.pdf$/i.test(fileName)) {
-			result.type = 'pdf';
-			return result;
-		}
+        // PDF detection
+        if (mimeType === 'application/pdf' || /\.pdf$/i.test(fileName)) {
+            result.type = 'pdf';
+            return result;
+        }
 
-		// Video detection
-		if (mimeType.indexOf('video/') === 0 || /\.(mp4|mov|avi|webm|m4v|mkv|flv)$/i.test(fileName)) {
-			result.type = 'video';
-			if (mimeType === 'video/mp4' || /\.mp4$/i.test(fileName)) {
-				result.needsTranscoding = false;
-			} else {
-				result.needsTranscoding = true;
-				if (serverCapabilities.ffmpegAvailable) {
-					result.canUpload = true;
-				} else {
-					result.canUpload = false;
-					result.error = labels['ErrorVideoFileFormat'] + ' (' + file.name + ')';
-				}
-			}
-			return result;
-		}
+        // Video detection
+        if (mimeType.indexOf('video/') === 0 || /\.(mp4|mov|avi|webm|m4v|mkv|flv)$/i.test(fileName)) {
+            result.type = 'video';
+            if (mimeType === 'video/mp4' || /\.mp4$/i.test(fileName)) {
+                result.needsTranscoding = false;
+            } else {
+                result.needsTranscoding = true;
+                if (serverCapabilities.ffmpegAvailable) {
+                    result.canUpload = true;
+                } else {
+                    result.canUpload = false;
+                    result.error = labels['ErrorVideoFileFormat'] + ' (' + file.name + ')';
+                }
+            }
+            return result;
+        }
 
-		// Audio detection
-		if (mimeType.indexOf('audio/') === 0 || /\.(mp3|wav|ogg|m4a|aac)$/i.test(fileName)) {
-			result.type = 'audio';
-			if (mimeType === 'audio/mp3' || mimeType === 'audio/mpeg' || /\.mp3$/i.test(fileName)) {
-				result.needsTranscoding = false;
-			} else {
-				result.needsTranscoding = true;
-				if (serverCapabilities.ffmpegAvailable) {
-					result.canUpload = true;
-				} else {
-					result.canUpload = false;
-					result.error = labels['ErrorAudioFileFormat'] + ' (' + file.name + ')';
-				}
-			}
-			return result;
-		}
+        // Audio detection
+        if (mimeType.indexOf('audio/') === 0 || /\.(mp3|wav|ogg|m4a|aac)$/i.test(fileName)) {
+            result.type = 'audio';
+            if (mimeType === 'audio/mp3' || mimeType === 'audio/mpeg' || /\.mp3$/i.test(fileName)) {
+                result.needsTranscoding = false;
+            } else {
+                result.needsTranscoding = true;
+                if (serverCapabilities.ffmpegAvailable) {
+                    result.canUpload = true;
+                } else {
+                    result.canUpload = false;
+                    result.error = labels['ErrorAudioFileFormat'] + ' (' + file.name + ')';
+                }
+            }
+            return result;
+        }
 
-		// Unknown type
-		result.canUpload = false;
-		result.error = labels['ErrorUnsupportedFileType'] + ': ' + file.name;
-		return result;
-	}
+        // Unknown type
+        result.canUpload = false;
+        result.error = labels['ErrorUnsupportedFileType'] + ': ' + file.name;
+        return result;
+    }
 
-	/**
-	 * Generate a thumbnail from a File object before uploading.
-	 * Returns a Promise that resolves with a base64 PNG data URL, or null if not possible.
-	 * @method generateThumbnailFromFile
-	 * @param {File} file
-	 * @param {String} type - 'image', 'video', 'pdf', or 'audio'
-	 * @return {Promise<String|null>}
-	 * @private
-	 */
-	function generateThumbnailFromFile(file, type) {
-		return new Promise(function(resolve) {
+    /**
+     * Generate a thumbnail from a File object before uploading.
+     * Returns a Promise that resolves with a base64 PNG data URL, or null if not possible.
+     * @method generateThumbnailFromFile
+     * @param {File} file
+     * @param {String} type - 'image', 'video', 'pdf', or 'audio'
+     * @return {Promise<String|null>}
+     * @private
+     */
+    function generateThumbnailFromFile(file, type) {
+        return new Promise(function(resolve) {
 
-			if (type === 'image') {
-				var blobUrl = URL.createObjectURL(file);
-				var img = new Image();
-				img.onload = function() {
-					var canvas = document.createElement('canvas');
-					canvas.width = 350;
-					canvas.height = 250;
-					canvas.getContext('2d').drawImage(img, 0, 0, 350, 250);
-					URL.revokeObjectURL(blobUrl);
-					try { resolve(canvas.toDataURL('image/png')); } catch(e) { resolve(null); }
-				};
-				img.onerror = function() { URL.revokeObjectURL(blobUrl); resolve(null); };
-				img.src = blobUrl;
+            if (type === 'image') {
+                var blobUrl = URL.createObjectURL(file);
+                var img = new Image();
+                img.onload = function() {
+                    var canvas = document.createElement('canvas');
+                    canvas.width = 350;
+                    canvas.height = 250;
+                    canvas.getContext('2d').drawImage(img, 0, 0, 350, 250);
+                    URL.revokeObjectURL(blobUrl);
+                    try { resolve(canvas.toDataURL('image/png')); } catch(e) { resolve(null); }
+                };
+                img.onerror = function() { URL.revokeObjectURL(blobUrl); resolve(null); };
+                img.src = blobUrl;
 
-			} else if (type === 'video') {
-				var blobUrl = URL.createObjectURL(file);
-				var video = document.createElement('video');
-				video.style.cssText = 'position:absolute;visibility:hidden;width:400px;height:300px;';
-				document.body.appendChild(video);
+            } else if (type === 'video') {
+                var blobUrl = URL.createObjectURL(file);
+                var video = document.createElement('video');
+                video.style.cssText = 'position:absolute;visibility:hidden;width:400px;height:300px;';
+                document.body.appendChild(video);
 
-				video.addEventListener('loadedmetadata', function() {
-					video.currentTime = video.duration / 2;
-				});
-				video.addEventListener('seeked', function() {
-					var canvas = document.createElement('canvas');
-					canvas.width = 400;
-					canvas.height = 300;
-					canvas.getContext('2d').drawImage(video, 0, 0, 400, 300);
-					document.body.removeChild(video);
-					URL.revokeObjectURL(blobUrl);
-					try { resolve(canvas.toDataURL('image/png')); } catch(e) { resolve(null); }
-				});
-				video.addEventListener('error', function() {
-					document.body.removeChild(video);
-					URL.revokeObjectURL(blobUrl);
-					resolve(null);
-				});
-				video.src = blobUrl;
+                video.addEventListener('loadedmetadata', function() {
+                    video.currentTime = video.duration / 2;
+                });
+                video.addEventListener('seeked', function() {
+                    var canvas = document.createElement('canvas');
+                    canvas.width = 400;
+                    canvas.height = 300;
+                    canvas.getContext('2d').drawImage(video, 0, 0, 400, 300);
+                    document.body.removeChild(video);
+                    URL.revokeObjectURL(blobUrl);
+                    try { resolve(canvas.toDataURL('image/png')); } catch(e) { resolve(null); }
+                });
+                video.addEventListener('error', function() {
+                    document.body.removeChild(video);
+                    URL.revokeObjectURL(blobUrl);
+                    resolve(null);
+                });
+                video.src = blobUrl;
 
-			} else {
-				// Audio and other types: no thumbnail
-				resolve(null);
-			}
+            } else {
+                // Audio and other types: no thumbnail
+                resolve(null);
+            }
 
-		});
-	}
+        });
+    }
 
-	/**
-	 * Process upload queue - generates thumbnail then uploads, one file at a time
-	 * @method processUploadQueue
-	 * @private
-	 */
-	function processUploadQueue() {
-		if (isUploading || uploadQueue.length === 0) {
-			return;
-		}
+    /**
+     * Process upload queue - generates thumbnail then uploads, one file at a time
+     * @method processUploadQueue
+     * @private
+     */
+    function processUploadQueue() {
+        if (isUploading || uploadQueue.length === 0) {
+            return;
+        }
 
-		isUploading = true;
-		var queueItem = uploadQueue[0];
+        isUploading = true;
+        var queueItem = uploadQueue[0];
 
-		queueItem.status = 'generating-thumb';
-		updateQueueUI();
+        queueItem.status = 'generating-thumb';
+        updateQueueUI();
 
-		// Generate thumbnail from the file before uploading
-		generateThumbnailFromFile(queueItem.file, queueItem.type).then(function(thumbDataUrl) {
-			queueItem.thumb = thumbDataUrl;
-			queueItem.status = 'uploading';
-			updateQueueUI();
+        // Generate thumbnail from the file before uploading
+        generateThumbnailFromFile(queueItem.file, queueItem.type).then(function(thumbDataUrl) {
+            queueItem.thumb = thumbDataUrl;
+            queueItem.status = 'uploading';
+            updateQueueUI();
 
-			var isLocal = (FrameTrail.getState('storageMode') === 'local');
-			var uploadFn = isLocal ? uploadSingleFileLocally : uploadSingleFile;
+            var isLocal = (FrameTrail.getState('storageMode') === 'local');
+            var uploadFn = isLocal ? uploadSingleFileLocally : uploadSingleFile;
 
-			uploadFn(queueItem.file, queueItem.type, queueItem.thumb, function(success, error) {
-				if (success) {
-					queueItem.status = 'completed';
-				} else {
-					queueItem.status = 'error';
-					queueItem.error = error;
-				}
+            uploadFn(queueItem.file, queueItem.type, queueItem.thumb, function(success, error) {
+                if (success) {
+                    queueItem.status = 'completed';
+                } else {
+                    queueItem.status = 'error';
+                    queueItem.error = error;
+                }
 
-				completedUploads.push(uploadQueue.shift());
-				isUploading = false;
-				updateQueueUI();
+                completedUploads.push(uploadQueue.shift());
+                isUploading = false;
+                updateQueueUI();
 
-				if (uploadQueue.length > 0) {
-					setTimeout(processUploadQueue, 100);
-				} else {
-					finishBatchUpload();
-				}
-			});
-		});
-	}
+                if (uploadQueue.length > 0) {
+                    setTimeout(processUploadQueue, 100);
+                } else {
+                    finishBatchUpload();
+                }
+            });
+        });
+    }
 
-	/**
-	 * Update the queue UI display
-	 * @method updateQueueUI
-	 * @private
-	 */
-	function updateQueueUI() {
-		if (!currentUploadDialog) return;
+    /**
+     * Update the queue UI display
+     * @method updateQueueUI
+     * @private
+     */
+    function updateQueueUI() {
+        if (!currentUploadDialog) return;
 
-		var queueContainer = currentUploadDialog.querySelector('.uploadQueue');
-		if (!queueContainer) return;
+        var queueContainer = currentUploadDialog.querySelector('.uploadQueue');
+        if (!queueContainer) return;
 
-		queueContainer.innerHTML = '';
+        queueContainer.innerHTML = '';
 
-		var completed = 0;
-		var failed = 0;
+        var completed = 0;
+        var failed = 0;
 
-		// Combine completed and pending uploads for display
-		var allItems = completedUploads.concat(uploadQueue);
+        // Combine completed and pending uploads for display
+        var allItems = completedUploads.concat(uploadQueue);
 
-		allItems.forEach(function(item, index) {
-			var statusClass = item.status || 'pending';
-			var statusText = item.status === 'error' ? (item.error || 'Failed') :
-			                 item.status === 'completed' ? 'Completed' :
-			                 item.status === 'uploading' ? 'Uploading...' :
-			                 item.status === 'generating-thumb' ? 'Preparing...' : 'Pending';
+        allItems.forEach(function(item, index) {
+            var statusClass = item.status || 'pending';
+            var statusText = item.status === 'error' ? (item.error || 'Failed') :
+                             item.status === 'completed' ? 'Completed' :
+                             item.status === 'uploading' ? 'Uploading...' :
+                             item.status === 'generating-thumb' ? 'Preparing...' : 'Pending';
 
-			if (item.status === 'completed') completed++;
-			if (item.status === 'error') failed++;
+            if (item.status === 'completed') completed++;
+            if (item.status === 'error') failed++;
 
-			var _rw = document.createElement('div');
-			_rw.innerHTML = '<div class="queueRow ' + statusClass + '">' +
-			                 '<span class="fileName">' + item.file.name + '</span>' +
-			                 '<span class="fileSize">' + bytesToSize(item.file.size) + '</span>' +
-			                 '<span class="fileType">' + (item.type || '?') + '</span>' +
-			                 '<span class="status">' + statusText + '</span>' +
-			                 '</div>';
-			queueContainer.appendChild(_rw.firstElementChild);
-		});
+            var _rw = document.createElement('div');
+            _rw.innerHTML = '<div class="queueRow ' + statusClass + '">' +
+                             '<span class="fileName">' + item.file.name + '</span>' +
+                             '<span class="fileSize">' + bytesToSize(item.file.size) + '</span>' +
+                             '<span class="fileType">' + (item.type || '?') + '</span>' +
+                             '<span class="status">' + statusText + '</span>' +
+                             '</div>';
+            queueContainer.appendChild(_rw.firstElementChild);
+        });
 
-		// Update summary
-		var summary = currentUploadDialog.querySelector('.queueSummary');
-		if (summary) {
-			var total = allItems.length;
-			summary.textContent = 'Uploading: ' + completed + ' of ' + total + ' files' +
-			            (failed > 0 ? ' (' + failed + ' failed)' : '');
-		}
-	}
+        // Update summary
+        var summary = currentUploadDialog.querySelector('.queueSummary');
+        if (summary) {
+            var total = allItems.length;
+            summary.textContent = 'Uploading: ' + completed + ' of ' + total + ' files' +
+                        (failed > 0 ? ' (' + failed + ' failed)' : '');
+        }
+    }
 
-	/**
-	 * Finish batch upload and reload resources
-	 * @method finishBatchUpload
-	 * @private
-	 */
-	function finishBatchUpload() {
-		FrameTrail.module('Database').loadResourceData(function() {
-			if (currentUploadDialog && currentUploadDialogCtrl) {
-				currentUploadDialog.querySelector('.queueSummary').textContent = 'All uploads complete!';
+    /**
+     * Finish batch upload and reload resources
+     * @method finishBatchUpload
+     * @private
+     */
+    function finishBatchUpload() {
+        FrameTrail.module('Database').loadResourceData(function() {
+            if (currentUploadDialog && currentUploadDialogCtrl) {
+                currentUploadDialog.querySelector('.queueSummary').textContent = 'All uploads complete!';
 
-				var buttons = currentUploadDialogCtrl.getButtons();
-				buttons[0].text = 'Close';
-				currentUploadDialogCtrl.setButtons(buttons);
-				currentUploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = false;
+                var buttons = currentUploadDialogCtrl.getButtons();
+                buttons[0].text = 'Close';
+                currentUploadDialogCtrl.setButtons(buttons);
+                currentUploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = false;
 
-				// Call success callback if provided
-				if (currentSuccessCallback) {
-					currentSuccessCallback.call();
-				}
-			}
-		});
-	}
+                // Call success callback if provided
+                if (currentSuccessCallback) {
+                    currentSuccessCallback.call();
+                }
+            }
+        });
+    }
 
-	/**
-	 * Upload a single file to the server.
-	 * @method uploadSingleFile
-	 * @param {File} file
-	 * @param {String} type - detected file type ('image', 'video', 'audio', 'pdf')
-	 * @param {String|null} thumbDataUrl - base64 thumbnail PNG data URL, or null
-	 * @param {Function} callback - callback(success, errorMessage)
-	 * @private
-	 */
-	function uploadSingleFile(file, type, thumbDataUrl, callback) {
-		var fileName = file.name.replace(/\.[^/.]+$/, ''); // Remove extension
+    /**
+     * Upload a single file to the server.
+     * @method uploadSingleFile
+     * @param {File} file
+     * @param {String} type - detected file type ('image', 'video', 'audio', 'pdf')
+     * @param {String|null} thumbDataUrl - base64 thumbnail PNG data URL, or null
+     * @param {Function} callback - callback(success, errorMessage)
+     * @private
+     */
+    function uploadSingleFile(file, type, thumbDataUrl, callback) {
+        var fileName = file.name.replace(/\.[^/.]+$/, ''); // Remove extension
 
-		var formData = new FormData();
-		formData.append('a', 'fileUpload');
-		formData.append('name', fileName);
-		formData.append('type', type);
-		formData.append('file', file); // Unified field — PHP auto-detects type from MIME
+        var formData = new FormData();
+        formData.append('a', 'fileUpload');
+        formData.append('name', fileName);
+        formData.append('type', type);
+        formData.append('file', file); // Unified field — PHP auto-detects type from MIME
 
-		if (thumbDataUrl) {
-			formData.append('thumb', thumbDataUrl);
-		}
+        if (thumbDataUrl) {
+            formData.append('thumb', thumbDataUrl);
+        }
 
-		var xhr = new XMLHttpRequest();
-		xhr.upload.addEventListener('progress', function(e) {
-			if (e.lengthComputable && currentUploadDialog) {
-				var pct = Math.round((e.loaded / e.total) * 100);
-				currentUploadDialog.querySelector('.uploadProgressBar').style.width = pct + '%';
-			}
-		});
-		xhr.onload = function() {
-			var response;
-			try { response = JSON.parse(xhr.responseText); } catch(e) { callback(false, 'Network error'); return; }
-			if (response.code === 0) {
-				callback(true);
-			} else {
-				callback(false, response.string || 'Upload failed');
-			}
-		};
-		xhr.onerror = function() { callback(false, 'Network error'); };
-		xhr.open('POST', '_server/ajaxServer.php');
-		xhr.send(formData);
-	}
+        var xhr = new XMLHttpRequest();
+        xhr.upload.addEventListener('progress', function(e) {
+            if (e.lengthComputable && currentUploadDialog) {
+                var pct = Math.round((e.loaded / e.total) * 100);
+                currentUploadDialog.querySelector('.uploadProgressBar').style.width = pct + '%';
+            }
+        });
+        xhr.onload = function() {
+            var response;
+            try { response = JSON.parse(xhr.responseText); } catch(e) { callback(false, 'Network error'); return; }
+            if (response.code === 0) {
+                callback(true);
+            } else {
+                callback(false, response.string || 'Upload failed');
+            }
+        };
+        xhr.onerror = function() { callback(false, 'Network error'); };
+        xhr.open('POST', '_server/ajaxServer.php');
+        xhr.send(formData);
+    }
 
-	/**
-	 * I open a jquery UI dialog, which allows the user to upload a new resource.
-	 * Three tabs: Paste URL, Upload Files, Add Map.
-	 *
-	 * @method uploadResource
-	 * @param {Function} successCallback
-	 * @param {Boolean} onlyVideo - if true, only video uploads are allowed (for hypervideo creation)
-	 */
-	function uploadResource(successCallback, onlyVideo) {
+    /**
+     * I open a jquery UI dialog, which allows the user to upload a new resource.
+     * Three tabs: Paste URL, Upload Files, Add Map.
+     *
+     * @method uploadResource
+     * @param {Function} successCallback
+     * @param {Boolean} onlyVideo - if true, only video uploads are allowed (for hypervideo creation)
+     */
+    function uploadResource(successCallback, onlyVideo) {
         FrameTrail.module('UserManagement').ensureAuthenticated(function(){
 
             var isLocalMode = (FrameTrail.getState('storageMode') === 'local');
@@ -1504,270 +1504,270 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 
 
 
-	/**
-	 * I delete a resource from the server.
-	 *
-	 * @method deleteResource
-	 * @param {String} resourceID
-	 * @param {Function} successCallback
-	 * @param {Function} cancelCallback
-	 */
-	function deleteResource(resourceID, successCallback, cancelCallback) {
+    /**
+     * I delete a resource from the server.
+     *
+     * @method deleteResource
+     * @param {String} resourceID
+     * @param {Function} successCallback
+     * @param {Function} cancelCallback
+     */
+    function deleteResource(resourceID, successCallback, cancelCallback) {
 
-		if (FrameTrail.getState('storageMode') === 'local') {
-			var adapter = FrameTrail.module('StorageManager').getAdapter();
-			adapter.readJSON('resources/_index.json').then(function(indexData) {
-				if (!indexData.resources[resourceID]) {
-					cancelCallback({ code: 3, string: 'Resource not found' });
-					return;
-				}
-				var res = indexData.resources[resourceID];
-				var deleteTasks = [];
+        if (FrameTrail.getState('storageMode') === 'local') {
+            var adapter = FrameTrail.module('StorageManager').getAdapter();
+            adapter.readJSON('resources/_index.json').then(function(indexData) {
+                if (!indexData.resources[resourceID]) {
+                    cancelCallback({ code: 3, string: 'Resource not found' });
+                    return;
+                }
+                var res = indexData.resources[resourceID];
+                var deleteTasks = [];
 
-				// Delete the source file if it's a local file (not an external URL)
-				if (res.src && !/^(https?:|\/\/|file:|blob:)/.test(res.src)) {
-					deleteTasks.push(adapter.deleteFile('resources/' + res.src).catch(function() {}));
-				}
-				// Delete the thumbnail file if it's a local file
-				if (res.thumb && !/^(https?:|\/\/|file:|blob:)/.test(res.thumb)) {
-					deleteTasks.push(adapter.deleteFile('resources/' + res.thumb).catch(function() {}));
-				}
+                // Delete the source file if it's a local file (not an external URL)
+                if (res.src && !/^(https?:|\/\/|file:|blob:)/.test(res.src)) {
+                    deleteTasks.push(adapter.deleteFile('resources/' + res.src).catch(function() {}));
+                }
+                // Delete the thumbnail file if it's a local file
+                if (res.thumb && !/^(https?:|\/\/|file:|blob:)/.test(res.thumb)) {
+                    deleteTasks.push(adapter.deleteFile('resources/' + res.thumb).catch(function() {}));
+                }
 
-				delete indexData.resources[resourceID];
-				deleteTasks.push(adapter.writeJSON('resources/_index.json', indexData));
-				return Promise.all(deleteTasks);
-			}).then(function() {
-				successCallback();
-			}).catch(function(err) {
-				cancelCallback({ code: 1, string: err.message });
-			});
-			return;
-		}
+                delete indexData.resources[resourceID];
+                deleteTasks.push(adapter.writeJSON('resources/_index.json', indexData));
+                return Promise.all(deleteTasks);
+            }).then(function() {
+                successCallback();
+            }).catch(function(err) {
+                cancelCallback({ code: 1, string: err.message });
+            });
+            return;
+        }
 
-		fetch('_server/ajaxServer.php', {
-			method: 'POST',
-			cache: 'no-cache',
-			body: new URLSearchParams({ a: 'fileDelete', resourcesID: resourceID })
-		})
-		.then(function(r) { return r.json(); })
-		.then(function(data) {
+        fetch('_server/ajaxServer.php', {
+            method: 'POST',
+            cache: 'no-cache',
+            body: new URLSearchParams({ a: 'fileDelete', resourcesID: resourceID })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
 
-			if (data.code === 0) {
-				successCallback();
-			} else {
-				cancelCallback(data);
-			}
+            if (data.code === 0) {
+                successCallback();
+            } else {
+                cancelCallback(data);
+            }
 
-		});
+        });
 
-	};
+    };
 
-
-
-
-	/**
-	 * I render a list of thumbnails for either all resource items,
-	 * or a narrowed down set of them.
-	 *
-	 * The targetElement should be a &lt;div&gt; or likewise, and will afterwards contain
-	 * the elements which were rendered from e.g. {{#crossLink "ResourceImage/renderThumb:method"}}ResourceImage/renderThumb{{/crossLink}}
-	 *
-	 * If filter is true, then the method will ask the server only for a list of resources which meet the key-condition-value requirements (e.g. "type" "==" "video"). See also server docs!
-	 *
-	 * @method renderList
-	 * @param {HTMLElement} targetElement
-	 * @param {Boolean} filter
-	 * @param {String} key
-	 * @param {String} condition
-	 * @param {String} value
-	 */
-	function renderList(targetElement, filter, key, condition, value) {
-
-		targetElement.innerHTML = '';
-		targetElement.insertAdjacentHTML('beforeend', '<div class="loadingScreen"><div class="workingSpinner dark"></div></div>');
-
-
-		if (filter) {
-
-			getFilteredList(targetElement, key, condition, value)
-
-		} else {
-
-			getCompleteList(targetElement)
-
-		}
-
-
-	};
-
-
-
-
-	/**
-	 * I call the .renderThumb method for all Resource data objects in the array
-	 * (e.g. {{#crossLink "ResourceImage/renderThumb:method"}}ResourceImage/renderThumb{{/crossLink}})
-	 * and append the returned element to targetElement.
-	 *
-	 * @method renderResult
-	 * @param {HTMLElement} targetElement
-	 * @param {Array} array
-	 * @private
-	 */
-	function renderResult(targetElement, array) {
-
-		for (var id in array) {
-
-			var resourceThumb = FrameTrail.newObject(
-				(	'Resource'
-				  + array[id].type.charAt(0).toUpperCase()
-				  + array[id].type.slice(1)),
-				array[id]
-			).renderThumb(id);
-
-            //add thumb to target element
-			targetElement.append(resourceThumb);
-
-		}
-
-	};
 
 
 
     /**
-	 * I am the method choosen, when {{#crossLink "ResourceManager/renderList:method"}}ResourceManager/renderList{{/crossLink}} is called
-	 * with filter set to false.
-	 *
-	 * I update the {{#crossLink "Database/resources:attribute"}}resource database{{/crossLink}} and the render the result into the targetElement
-	 *
-	 * @method getCompleteList
-	 * @param {HTMLElement} targetElement
-	 * @private
-	 */
-	function getCompleteList(targetElement) {
+     * I render a list of thumbnails for either all resource items,
+     * or a narrowed down set of them.
+     *
+     * The targetElement should be a &lt;div&gt; or likewise, and will afterwards contain
+     * the elements which were rendered from e.g. {{#crossLink "ResourceImage/renderThumb:method"}}ResourceImage/renderThumb{{/crossLink}}
+     *
+     * If filter is true, then the method will ask the server only for a list of resources which meet the key-condition-value requirements (e.g. "type" "==" "video"). See also server docs!
+     *
+     * @method renderList
+     * @param {HTMLElement} targetElement
+     * @param {Boolean} filter
+     * @param {String} key
+     * @param {String} condition
+     * @param {String} value
+     */
+    function renderList(targetElement, filter, key, condition, value) {
 
-		var database = FrameTrail.module('Database');
-
-		database.loadResourceData(
-
-			function(){
-
-	    		renderResult(targetElement, database.resources);
-
-				var _ls = targetElement.querySelector('.loadingScreen');
-				if (_ls) { _ls.style.transition = 'opacity 0.6s'; _ls.style.opacity = '0'; setTimeout(function() { if (_ls.parentNode) { _ls.parentNode.removeChild(_ls); } }, 600); }
-
-			},
-
-			function(errorMessage){
-
-				var _lse = targetElement.querySelector('.loadingScreen');
-				if (_lse) { _lse.remove(); }
-				targetElement.insertAdjacentHTML('beforeend', '<div class="loadingErrorMessage"><div class="message error active">' + errorMessage + '</div></div>');
-
-			}
-
-		);
-
-	}
+        targetElement.innerHTML = '';
+        targetElement.insertAdjacentHTML('beforeend', '<div class="loadingScreen"><div class="workingSpinner dark"></div></div>');
 
 
+        if (filter) {
 
-	/**
-	 * I am the method choosen, when {{#crossLink "ResourceManager/renderList:method"}}ResourceManager/renderList{{/crossLink}} is called
-	 * with filter set to true.
-	 *
-	 * The server will be asked to return a list of resources, which meet the requierements specified with key, considition, value
-	 * (e.g. "type" "==" "video" ). See the server docs for more details!
-	 *
-	 * @method getFilteredList
-	 * @param {HTMLElement} targetElement
-	 * @param {String} key
-	 * @param {String} condition
-	 * @param {Array} values
-	 * @private
-	 */
-	function getFilteredList(targetElement, key, condition, values) {
+            getFilteredList(targetElement, key, condition, value)
 
-		var storageMode = FrameTrail.getState('storageMode');
-		if (storageMode === 'local' || storageMode === 'download') {
-			// Client-side filtering using the already-loaded Database resources
-			var allResources = FrameTrail.module('Database').resources;
-			var result = {};
-			if (typeof values === 'string') { values = [values]; }
-			for (var k in allResources) {
-				if (!allResources.hasOwnProperty(k)) continue;
-				var v = allResources[k];
-				var match = false;
-				if (condition === '==' || condition === 'contains') match = (values.indexOf(v[key]) !== -1);
-				else if (condition === '!=') match = (values.indexOf(v[key]) === -1);
-				else if (condition === '<=') match = (v[key] <= values[0]);
-				else if (condition === '>=') match = (v[key] >= values[0]);
-				if (match) result[k] = v;
-			}
-			renderResult(targetElement, result);
-			var _ls2 = targetElement.querySelector('.loadingScreen');
-			if (_ls2) { _ls2.style.transition = 'opacity 0.6s'; _ls2.style.opacity = '0'; setTimeout(function() { if (_ls2.parentNode) { _ls2.parentNode.removeChild(_ls2); } }, 600); }
-			return;
-		}
+        } else {
 
-		// Build POST body: send array values as separate values[] entries so PHP receives a proper array
-		// (URLSearchParams.toString() on an array joins with commas, breaking PHP's array detection)
-		var params = new URLSearchParams({ a: 'fileGetByFilter', key: key, condition: condition });
-		(Array.isArray(values) ? values : [values]).forEach(function(v) { params.append('values[]', v); });
+            getCompleteList(targetElement)
 
-		fetch('_server/ajaxServer.php', {
-			method: 'POST',
-			cache: 'no-cache',
-			body: params
-		})
-		.then(function(r) { return r.json(); })
-		.then(function(data) {
+        }
 
-			if (data.code === 0) {
-				renderResult(targetElement, data.result);
-			}
 
-			var _ls3 = targetElement.querySelector('.loadingScreen');
-			if (_ls3) { _ls3.style.transition = 'opacity 0.6s'; _ls3.style.opacity = '0'; setTimeout(function() { if (_ls3.parentNode) { _ls3.parentNode.removeChild(_ls3); } }, 600); }
-
-		})
-		.catch(function() {
-
-			var _ls4 = targetElement.querySelector('.loadingScreen');
-			if (_ls4) { _ls4.remove(); }
-			targetElement.insertAdjacentHTML('beforeend', '<div class="loadingErrorMessage"><div class="message error active">' + labels['ErrorGeneric'] + '</div></div>');
-
-		});
-
-	}
+    };
 
 
 
 
-	/**
-	 * I render into the targetElement, which should be a &lt;div&gt; or likewise, a set of thumbnails.
-	 * These thumbnails are draggable in the &lt;div class="mainContainer"&gt; to allow drop actions into timelines or into the overlay container.
-	 *
-	 * @method renderResourcePicker
-	 * @param {HTMLElement} targetElement
-	 */
-	function renderResourcePicker(targetElement) {
+    /**
+     * I call the .renderThumb method for all Resource data objects in the array
+     * (e.g. {{#crossLink "ResourceImage/renderThumb:method"}}ResourceImage/renderThumb{{/crossLink}})
+     * and append the returned element to targetElement.
+     *
+     * @method renderResult
+     * @param {HTMLElement} targetElement
+     * @param {Array} array
+     * @private
+     */
+    function renderResult(targetElement, array) {
 
-		if (targetElement && targetElement.jquery) { targetElement = targetElement[0]; }
-		var resourceDatabase 	= FrameTrail.module('Database').resources;
-		var _cpw = document.createElement('div');
-		_cpw.innerHTML = '<div class="resourcePicker">'
-						  + '    <div class="resourcePickerControls">'
-						  //+ '        <button class="manageResourcesButton">Manage Resources</button>'
+        for (var id in array) {
+
+            var resourceThumb = FrameTrail.newObject(
+                (   'Resource'
+                  + array[id].type.charAt(0).toUpperCase()
+                  + array[id].type.slice(1)),
+                array[id]
+            ).renderThumb(id);
+
+            //add thumb to target element
+            targetElement.append(resourceThumb);
+
+        }
+
+    };
+
+
+
+    /**
+     * I am the method choosen, when {{#crossLink "ResourceManager/renderList:method"}}ResourceManager/renderList{{/crossLink}} is called
+     * with filter set to false.
+     *
+     * I update the {{#crossLink "Database/resources:attribute"}}resource database{{/crossLink}} and the render the result into the targetElement
+     *
+     * @method getCompleteList
+     * @param {HTMLElement} targetElement
+     * @private
+     */
+    function getCompleteList(targetElement) {
+
+        var database = FrameTrail.module('Database');
+
+        database.loadResourceData(
+
+            function(){
+
+                renderResult(targetElement, database.resources);
+
+                var _ls = targetElement.querySelector('.loadingScreen');
+                if (_ls) { _ls.style.transition = 'opacity 0.6s'; _ls.style.opacity = '0'; setTimeout(function() { if (_ls.parentNode) { _ls.parentNode.removeChild(_ls); } }, 600); }
+
+            },
+
+            function(errorMessage){
+
+                var _lse = targetElement.querySelector('.loadingScreen');
+                if (_lse) { _lse.remove(); }
+                targetElement.insertAdjacentHTML('beforeend', '<div class="loadingErrorMessage"><div class="message error active">' + errorMessage + '</div></div>');
+
+            }
+
+        );
+
+    }
+
+
+
+    /**
+     * I am the method choosen, when {{#crossLink "ResourceManager/renderList:method"}}ResourceManager/renderList{{/crossLink}} is called
+     * with filter set to true.
+     *
+     * The server will be asked to return a list of resources, which meet the requierements specified with key, considition, value
+     * (e.g. "type" "==" "video" ). See the server docs for more details!
+     *
+     * @method getFilteredList
+     * @param {HTMLElement} targetElement
+     * @param {String} key
+     * @param {String} condition
+     * @param {Array} values
+     * @private
+     */
+    function getFilteredList(targetElement, key, condition, values) {
+
+        var storageMode = FrameTrail.getState('storageMode');
+        if (storageMode === 'local' || storageMode === 'download') {
+            // Client-side filtering using the already-loaded Database resources
+            var allResources = FrameTrail.module('Database').resources;
+            var result = {};
+            if (typeof values === 'string') { values = [values]; }
+            for (var k in allResources) {
+                if (!allResources.hasOwnProperty(k)) continue;
+                var v = allResources[k];
+                var match = false;
+                if (condition === '==' || condition === 'contains') match = (values.indexOf(v[key]) !== -1);
+                else if (condition === '!=') match = (values.indexOf(v[key]) === -1);
+                else if (condition === '<=') match = (v[key] <= values[0]);
+                else if (condition === '>=') match = (v[key] >= values[0]);
+                if (match) result[k] = v;
+            }
+            renderResult(targetElement, result);
+            var _ls2 = targetElement.querySelector('.loadingScreen');
+            if (_ls2) { _ls2.style.transition = 'opacity 0.6s'; _ls2.style.opacity = '0'; setTimeout(function() { if (_ls2.parentNode) { _ls2.parentNode.removeChild(_ls2); } }, 600); }
+            return;
+        }
+
+        // Build POST body: send array values as separate values[] entries so PHP receives a proper array
+        // (URLSearchParams.toString() on an array joins with commas, breaking PHP's array detection)
+        var params = new URLSearchParams({ a: 'fileGetByFilter', key: key, condition: condition });
+        (Array.isArray(values) ? values : [values]).forEach(function(v) { params.append('values[]', v); });
+
+        fetch('_server/ajaxServer.php', {
+            method: 'POST',
+            cache: 'no-cache',
+            body: params
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+
+            if (data.code === 0) {
+                renderResult(targetElement, data.result);
+            }
+
+            var _ls3 = targetElement.querySelector('.loadingScreen');
+            if (_ls3) { _ls3.style.transition = 'opacity 0.6s'; _ls3.style.opacity = '0'; setTimeout(function() { if (_ls3.parentNode) { _ls3.parentNode.removeChild(_ls3); } }, 600); }
+
+        })
+        .catch(function() {
+
+            var _ls4 = targetElement.querySelector('.loadingScreen');
+            if (_ls4) { _ls4.remove(); }
+            targetElement.insertAdjacentHTML('beforeend', '<div class="loadingErrorMessage"><div class="message error active">' + labels['ErrorGeneric'] + '</div></div>');
+
+        });
+
+    }
+
+
+
+
+    /**
+     * I render into the targetElement, which should be a &lt;div&gt; or likewise, a set of thumbnails.
+     * These thumbnails are draggable in the &lt;div class="mainContainer"&gt; to allow drop actions into timelines or into the overlay container.
+     *
+     * @method renderResourcePicker
+     * @param {HTMLElement} targetElement
+     */
+    function renderResourcePicker(targetElement) {
+
+        if (targetElement && targetElement.jquery) { targetElement = targetElement[0]; }
+        var resourceDatabase    = FrameTrail.module('Database').resources;
+        var _cpw = document.createElement('div');
+        _cpw.innerHTML = '<div class="resourcePicker">'
+                          + '    <div class="resourcePickerControls">'
+                          //+ '        <button class="manageResourcesButton">Manage Resources</button>'
                           + '        <button class="addResourcesButton" data-tooltip-right="'+ labels['ResourceAddNew'] +'"><span class="icon-doc-new"></span></button>'
-						  + '    </div>'
-						  + '    <div class="resourcePickerList"></div>'
-						  + '</div>';
-		var container = _cpw.firstElementChild;
-		var resourceList = container.querySelector('.resourcePickerList');
-		var resourceThumb;
+                          + '    </div>'
+                          + '    <div class="resourcePickerList"></div>'
+                          + '</div>';
+        var container = _cpw.firstElementChild;
+        var resourceList = container.querySelector('.resourcePickerList');
+        var resourceThumb;
 
-		container.querySelector('.addResourcesButton').addEventListener('click', function() {
+        container.querySelector('.addResourcesButton').addEventListener('click', function() {
 
             FrameTrail.module('ResourceManager').uploadResource(function(){
 
@@ -1778,77 +1778,77 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 
             });
 
-		});
+        });
 
         if (!FrameTrail.module('StorageManager').canSave()) {
             container.querySelector('.addResourcesButton').disabled = true;
         }
 
-		for (var i in resourceDatabase) {
+        for (var i in resourceDatabase) {
 
-			resourceThumb = FrameTrail.newObject(
-				(	'Resource'
-				  + resourceDatabase[i].type.charAt(0).toUpperCase()
-				  + resourceDatabase[i].type.slice(1)),
-				resourceDatabase[i]
-			).renderThumb();
-
-
-
-			(function(el) {
-				interact(el).draggable({
-					listeners: {
-						start: function(e) {
-							var rect = e.target.getBoundingClientRect();
-							window._ftCurrentDragClone = e.target.cloneNode(true);
-							window._ftCurrentDragClone.style.position = 'fixed';
-							window._ftCurrentDragClone.style.zIndex = '1000';
-							window._ftCurrentDragClone.style.pointerEvents = 'auto';
-							window._ftCurrentDragClone.style.boxSizing = 'border-box';
-							window._ftCurrentDragClone.style.width = rect.width + 'px';
-							window._ftCurrentDragClone.style.height = rect.height + 'px';
-							window._ftCurrentDragClone.style.left = rect.left + 'px';
-							window._ftCurrentDragClone.style.top = rect.top + 'px';
-							window._ftCurrentDragClone.classList.add('ft-drag-clone');
-							document.body.appendChild(window._ftCurrentDragClone);
-							e.target.classList.add('dragPlaceholder');
-							document.body.classList.add('ft-dragging');
-						},
-						move: function(e) {
-							if (window._ftCurrentDragClone) {
-								window._ftCurrentDragClone.style.left = (parseFloat(window._ftCurrentDragClone.style.left) + e.dx) + 'px';
-								window._ftCurrentDragClone.style.top  = (parseFloat(window._ftCurrentDragClone.style.top)  + e.dy) + 'px';
-							}
-						},
-						end: function(e) {
-							e.target.classList.remove('dragPlaceholder');
-							if (window._ftCurrentDragClone) { window._ftCurrentDragClone.remove(); window._ftCurrentDragClone = null; }
-							document.body.classList.remove('ft-dragging');
-						}
-					}
-				});
-			}(resourceThumb));
-
-			resourceList.appendChild(resourceThumb);
-
-		}
+            resourceThumb = FrameTrail.newObject(
+                (   'Resource'
+                  + resourceDatabase[i].type.charAt(0).toUpperCase()
+                  + resourceDatabase[i].type.slice(1)),
+                resourceDatabase[i]
+            ).renderThumb();
 
 
-		targetElement.appendChild(container);
 
-	}
+            (function(el) {
+                interact(el).draggable({
+                    listeners: {
+                        start: function(e) {
+                            var rect = e.target.getBoundingClientRect();
+                            window._ftCurrentDragClone = e.target.cloneNode(true);
+                            window._ftCurrentDragClone.style.position = 'fixed';
+                            window._ftCurrentDragClone.style.zIndex = '1000';
+                            window._ftCurrentDragClone.style.pointerEvents = 'auto';
+                            window._ftCurrentDragClone.style.boxSizing = 'border-box';
+                            window._ftCurrentDragClone.style.width = rect.width + 'px';
+                            window._ftCurrentDragClone.style.height = rect.height + 'px';
+                            window._ftCurrentDragClone.style.left = rect.left + 'px';
+                            window._ftCurrentDragClone.style.top = rect.top + 'px';
+                            window._ftCurrentDragClone.classList.add('ft-drag-clone');
+                            document.body.appendChild(window._ftCurrentDragClone);
+                            e.target.classList.add('dragPlaceholder');
+                            document.body.classList.add('ft-dragging');
+                        },
+                        move: function(e) {
+                            if (window._ftCurrentDragClone) {
+                                window._ftCurrentDragClone.style.left = (parseFloat(window._ftCurrentDragClone.style.left) + e.dx) + 'px';
+                                window._ftCurrentDragClone.style.top  = (parseFloat(window._ftCurrentDragClone.style.top)  + e.dy) + 'px';
+                            }
+                        },
+                        end: function(e) {
+                            e.target.classList.remove('dragPlaceholder');
+                            if (window._ftCurrentDragClone) { window._ftCurrentDragClone.remove(); window._ftCurrentDragClone = null; }
+                            document.body.classList.remove('ft-dragging');
+                        }
+                    }
+                });
+            }(resourceThumb));
+
+            resourceList.appendChild(resourceThumb);
+
+        }
 
 
-	return {
+        targetElement.appendChild(container);
 
-		renderList: 			renderList,
-		renderResourcePicker: 	renderResourcePicker,
+    }
 
-		updateResourceDatabase: updateResourceDatabase,
-		uploadResource: 		uploadResource,
-		deleteResource: 		deleteResource
 
-	};
+    return {
+
+        renderList:             renderList,
+        renderResourcePicker:   renderResourcePicker,
+
+        updateResourceDatabase: updateResourceDatabase,
+        uploadResource:         uploadResource,
+        deleteResource:         deleteResource
+
+    };
 
 
 });

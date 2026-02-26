@@ -18,297 +18,297 @@
 FrameTrail.defineModule('RouteNavigation', function(FrameTrail){
 
 
-	var hypervideoID = (getHashVariable('hypervideo') || FrameTrail.getState('startID')),
-		annotationID = '',
-		hashTime     = '',
+    var hypervideoID = (getHashVariable('hypervideo') || FrameTrail.getState('startID')),
+        annotationID = '',
+        hashTime     = '',
 
-		oldAnnotationID = '',
-		onAnnotationChange,
+        oldAnnotationID = '',
+        onAnnotationChange,
 
-		oldHashTime     = '',
-		onHashTimeChange;
-
-
-	/**
-	 * I return a complete path (or URL) for a resource file based on the src attribute of a resource object.
-	 * @method getResourceURL
-	 * @param {String} src
-	 * @return String
-	 */
-	function getResourceURL(src) {
-
-		//if (/^https?:/.exec(src)) {
-		if (/^https?:/.exec(src) || /^\/\//.exec(src) || /^file:/.exec(src) || /^blob:/.exec(src)) {
-
-	        // Normalize protocol-relative URLs to https (needed for file:// contexts)
-	        if (/^\/\//.exec(src)) {
-	            return 'https:' + src;
-	        }
-	        return src;
-
-	    } else {
-
-	    	// In local mode, check the blob URL cache for local files
-	    	if (FrameTrail.getState('storageMode') === 'local') {
-	    	    var adapter = FrameTrail.module('StorageManager').getAdapter();
-	    	    if (adapter) {
-	    	        var blobURL = adapter.getBlobURL('resources/' + src);
-	    	        if (blobURL) {
-	    	            return blobURL;
-	    	        }
-	    	    }
-	    	}
-
-	    	return '_data/resources/' + src;
-
-	    }
-
-	};
+        oldHashTime     = '',
+        onHashTimeChange;
 
 
-	/**
-	 * I return the value of a query parameter.
-	 * @method getQueryVariable
-	 * @param {String} variable
-	 * @return String
-	 * @private
-	 */
-	function getQueryVariable(variable) {
+    /**
+     * I return a complete path (or URL) for a resource file based on the src attribute of a resource object.
+     * @method getResourceURL
+     * @param {String} src
+     * @return String
+     */
+    function getResourceURL(src) {
 
-		var query = window.location.search.substring(1),
-			vars = query.split("&"),
-			pair;
+        //if (/^https?:/.exec(src)) {
+        if (/^https?:/.exec(src) || /^\/\//.exec(src) || /^file:/.exec(src) || /^blob:/.exec(src)) {
 
-		for (var i = 0; i < vars.length; i++) {
-			pair = vars[i].split("=");
-			if (pair[0] == variable) {
-				return pair[1];
-			}
-		}
+            // Normalize protocol-relative URLs to https (needed for file:// contexts)
+            if (/^\/\//.exec(src)) {
+                return 'https:' + src;
+            }
+            return src;
 
-	}
+        } else {
 
-	/**
-	 * I return the value of a hash parameter.
-	 * @method getHashVariable
-	 * @param {String} variable
-	 * @return String
-	 * @private
-	 */
-	function getHashVariable(variable) {
+            // In local mode, check the blob URL cache for local files
+            if (FrameTrail.getState('storageMode') === 'local') {
+                var adapter = FrameTrail.module('StorageManager').getAdapter();
+                if (adapter) {
+                    var blobURL = adapter.getBlobURL('resources/' + src);
+                    if (blobURL) {
+                        return blobURL;
+                    }
+                }
+            }
 
-		var hash = window.location.hash.substring(1),
-			vars = hash.split("&"),
-			pair;
+            return '_data/resources/' + src;
 
-		for (var i = 0; i < vars.length; i++) {
-			pair = vars[i].split("=");
-			if (pair[0] == variable) {
-				return pair[1];
-			}
-		}
+        }
 
-	}
-
-	/**
-	 * I return an object with various info about the execution environment.
-	 * @method checkEnvironment
-	 * @return Object
-	 * @private
-	 */
-	function checkEnvironment() {
-
-		var environmentObj = {
-			'server': (document.location.protocol == 'file:') ? false : true,
-			'hostname': document.location.hostname,
-			'iframe': (window.location != window.parent.location) ? true : false
-		}
-
-		return environmentObj;
-
-	}
-
-	/**
-	 * I set the hypervideo id
-	 * (in case it changes while the application is running).
-	 * @method setHypervideoID
-	 * @param {String} id
-	 * @private
-	 */
-	function setHypervideoID(id) {
-
-		hypervideoID = id;
-
-	}
-
-	/**
-	 * I change the value of a hash parameter.
-	 * @method setHashVariable
-	 * @param {String} key
-	 * @param {String} value
-	 * @private
-	 */
-	function setHashVariable(key, value) {
-
-		var hash = window.location.hash.substring(1),
-			vars = hash.split("&"),
-			pair;
-
-		//console.log(key, value);
-
-		for (var i = 0; i < vars.length; i++) {
-			pair = vars[i].split("=");
-			if (pair[0] == key) {
-				pair[1] =  value.toString();
-			}
-			vars[i] = pair.join('=')
-		}
-
-		 window.location.hash = vars.join('&')
-
-	}
-
-	/**
-	 * I clear the internal hashTime variable without modifying the URL.
-	 * This is used when switching hypervideos to ensure old time values don't persist.
-	 * @method clearHashTime
-	 * @private
-	 */
-	function clearHashTime() {
-		hashTime = '';
-		oldHashTime = '';
-	}
+    };
 
 
-	/**
-	 * I update the application state, when the hash fragment has changed.
-	 *
-	 * Currently, I am only listing to changes of the parameter "annotations" and "t" (hashTime).
-	 *
-	 * @method routeHasChanged
-	 * @private
-	 */
-	function routeHasChanged(){
+    /**
+     * I return the value of a query parameter.
+     * @method getQueryVariable
+     * @param {String} variable
+     * @return String
+     * @private
+     */
+    function getQueryVariable(variable) {
 
-		/*
+        var query = window.location.search.substring(1),
+            vars = query.split("&"),
+            pair;
+
+        for (var i = 0; i < vars.length; i++) {
+            pair = vars[i].split("=");
+            if (pair[0] == variable) {
+                return pair[1];
+            }
+        }
+
+    }
+
+    /**
+     * I return the value of a hash parameter.
+     * @method getHashVariable
+     * @param {String} variable
+     * @return String
+     * @private
+     */
+    function getHashVariable(variable) {
+
+        var hash = window.location.hash.substring(1),
+            vars = hash.split("&"),
+            pair;
+
+        for (var i = 0; i < vars.length; i++) {
+            pair = vars[i].split("=");
+            if (pair[0] == variable) {
+                return pair[1];
+            }
+        }
+
+    }
+
+    /**
+     * I return an object with various info about the execution environment.
+     * @method checkEnvironment
+     * @return Object
+     * @private
+     */
+    function checkEnvironment() {
+
+        var environmentObj = {
+            'server': (document.location.protocol == 'file:') ? false : true,
+            'hostname': document.location.hostname,
+            'iframe': (window.location != window.parent.location) ? true : false
+        }
+
+        return environmentObj;
+
+    }
+
+    /**
+     * I set the hypervideo id
+     * (in case it changes while the application is running).
+     * @method setHypervideoID
+     * @param {String} id
+     * @private
+     */
+    function setHypervideoID(id) {
+
+        hypervideoID = id;
+
+    }
+
+    /**
+     * I change the value of a hash parameter.
+     * @method setHashVariable
+     * @param {String} key
+     * @param {String} value
+     * @private
+     */
+    function setHashVariable(key, value) {
+
+        var hash = window.location.hash.substring(1),
+            vars = hash.split("&"),
+            pair;
+
+        //console.log(key, value);
+
+        for (var i = 0; i < vars.length; i++) {
+            pair = vars[i].split("=");
+            if (pair[0] == key) {
+                pair[1] =  value.toString();
+            }
+            vars[i] = pair.join('=')
+        }
+
+         window.location.hash = vars.join('&')
+
+    }
+
+    /**
+     * I clear the internal hashTime variable without modifying the URL.
+     * This is used when switching hypervideos to ensure old time values don't persist.
+     * @method clearHashTime
+     * @private
+     */
+    function clearHashTime() {
+        hashTime = '';
+        oldHashTime = '';
+    }
+
+
+    /**
+     * I update the application state, when the hash fragment has changed.
+     *
+     * Currently, I am only listing to changes of the parameter "annotations" and "t" (hashTime).
+     *
+     * @method routeHasChanged
+     * @private
+     */
+    function routeHasChanged(){
+
+        /*
         * when accessed from the overview panel,
         * event.originalEvent.state.editMode
         * contains the previous editMode state
         */
 
-    	//console.log(FrameTrail.module('RouteNavigation').hypervideoID, getQueryVariable('hypervideo'));
+        //console.log(FrameTrail.module('RouteNavigation').hypervideoID, getQueryVariable('hypervideo'));
 
-    	var hypervideoID = getHashVariable('hypervideo'),
-    		hypervideoChange = ( hypervideoID && FrameTrail.module('RouteNavigation') && FrameTrail.module('RouteNavigation').hypervideoID != hypervideoID );
+        var hypervideoID = getHashVariable('hypervideo'),
+            hypervideoChange = ( hypervideoID && FrameTrail.module('RouteNavigation') && FrameTrail.module('RouteNavigation').hypervideoID != hypervideoID );
 
-    	if ( hypervideoChange ) {
+        if ( hypervideoChange ) {
 
-    		if ( FrameTrail.getState('editMode') ) {
-    			FrameTrail.changeState('editMode', false);
-    			FrameTrail.module('HypervideoModel').updateHypervideo(hypervideoID, true);
-    		} else {
-    			//console.log('change');
-    			FrameTrail.module('HypervideoModel').updateHypervideo(hypervideoID);
-    		}
+            if ( FrameTrail.getState('editMode') ) {
+                FrameTrail.changeState('editMode', false);
+                FrameTrail.module('HypervideoModel').updateHypervideo(hypervideoID, true);
+            } else {
+                //console.log('change');
+                FrameTrail.module('HypervideoModel').updateHypervideo(hypervideoID);
+            }
 
-    	}
+        }
 
-		annotationID = getHashVariable('annotations');
+        annotationID = getHashVariable('annotations');
 
-		if ((annotationID !== oldAnnotationID) && !hypervideoChange) {
-			oldAnnotationID = annotationID;
-			onAnnotationChange && onAnnotationChange.call();
-		}
+        if ((annotationID !== oldAnnotationID) && !hypervideoChange) {
+            oldAnnotationID = annotationID;
+            onAnnotationChange && onAnnotationChange.call();
+        }
 
-		hashTime = getHashVariable('t') || '';
+        hashTime = getHashVariable('t') || '';
 
-		if (hypervideoChange) {
-			// When switching hypervideos, explicitly clear hashTime if not present in URL
-			// and reset oldHashTime to ensure we don't use the old time from the previous hypervideo
-			oldHashTime = hashTime;
-		} else if (hashTime !== oldHashTime) {
-			oldHashTime = hashTime;
-			onHashTimeChange && onHashTimeChange.call();
-		}
+        if (hypervideoChange) {
+            // When switching hypervideos, explicitly clear hashTime if not present in URL
+            // and reset oldHashTime to ensure we don't use the old time from the previous hypervideo
+            oldHashTime = hashTime;
+        } else if (hashTime !== oldHashTime) {
+            oldHashTime = hashTime;
+            onHashTimeChange && onHashTimeChange.call();
+        }
 
-	}
+    }
 
-	window.addEventListener('popstate', routeHasChanged);
+    window.addEventListener('popstate', routeHasChanged);
 
-	routeHasChanged();
-
-
+    routeHasChanged();
 
 
-   	return {
-
-		/**
-	     * The hypervideoID, as parsed from the query part of the URL.
-	     * @attribute hypervideoID
-	     * @type String
-	     * @readOnly
-	     */
-	    get hypervideoID() {  return hypervideoID },
-
-	    /**
-	     * Manually set the hypervideo id.
-	     *
-	     * @attribute id
-	     * @type String
-	     */
-	    set hypervideoID(id) { return setHypervideoID(id) },
-
-		/**
-	     * NOT USED YET
-	 	 *
-	     * @attribute annotationID
-	     * @type String
-	     */
-	    get annotationID()   { return annotationID                       },
-	    set annotationID(id) { return setHashVariable('annotations', id) },
-
-		/**
-	     * NOT USED YET
-	     *
-	     * Will be called, when the hash fragment's annotationID changes.
-	     *
-	     * @attribute onAnnotationChange
-	     * @type Function
-	     */
-	    set onAnnotationChange(handler) { return onAnnotationChange = handler },
-
-	    /**
-	 	 * I get or set the hashTime (#t=) fragment
-	     * @attribute hashTime
-	     * @type String
-	     */
-	    get hashTime()        { return hashTime                       },
-	    set hashTime(seconds) { return setHashVariable('t', seconds)  },
-
-	    /**
-	 	 * I get the object containing various info about the execution environment
-	     * @type Object
-	     */
-	    get environment()        { return checkEnvironment() },
-
-		/**
-	     * Will be called, when the hashTime (#t=) fragment changes.
-	     *
-	     * @attribute onHashTimeChange
-	     * @type Function
-	     */
-		set onHashTimeChange(handler) { return onHashTimeChange = handler },
-
-		/**
-		 * Clear the internal hashTime without modifying the URL.
-		 * Used when switching hypervideos to prevent old time values from persisting.
-		 * @method clearHashTime
-		 */
-		clearHashTime: clearHashTime,
-
-   		getResourceURL: getResourceURL
 
 
-   	};
+    return {
+
+        /**
+         * The hypervideoID, as parsed from the query part of the URL.
+         * @attribute hypervideoID
+         * @type String
+         * @readOnly
+         */
+        get hypervideoID() {  return hypervideoID },
+
+        /**
+         * Manually set the hypervideo id.
+         *
+         * @attribute id
+         * @type String
+         */
+        set hypervideoID(id) { return setHypervideoID(id) },
+
+        /**
+         * NOT USED YET
+         *
+         * @attribute annotationID
+         * @type String
+         */
+        get annotationID()   { return annotationID                       },
+        set annotationID(id) { return setHashVariable('annotations', id) },
+
+        /**
+         * NOT USED YET
+         *
+         * Will be called, when the hash fragment's annotationID changes.
+         *
+         * @attribute onAnnotationChange
+         * @type Function
+         */
+        set onAnnotationChange(handler) { return onAnnotationChange = handler },
+
+        /**
+         * I get or set the hashTime (#t=) fragment
+         * @attribute hashTime
+         * @type String
+         */
+        get hashTime()        { return hashTime                       },
+        set hashTime(seconds) { return setHashVariable('t', seconds)  },
+
+        /**
+         * I get the object containing various info about the execution environment
+         * @type Object
+         */
+        get environment()        { return checkEnvironment() },
+
+        /**
+         * Will be called, when the hashTime (#t=) fragment changes.
+         *
+         * @attribute onHashTimeChange
+         * @type Function
+         */
+        set onHashTimeChange(handler) { return onHashTimeChange = handler },
+
+        /**
+         * Clear the internal hashTime without modifying the URL.
+         * Used when switching hypervideos to prevent old time values from persisting.
+         * @method clearHashTime
+         */
+        clearHashTime: clearHashTime,
+
+        getResourceURL: getResourceURL
+
+
+    };
 
 });

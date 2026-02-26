@@ -3,13 +3,13 @@
 
 
     var defs_modules = {},
-        defs_types	 = {},
+        defs_types   = {},
 
         instances    = [];
 
     window.FrameTrail = {
-        defineModule: 	_defineModule,
-        defineType: 	_defineType,
+        defineModule:   _defineModule,
+        defineType:     _defineType,
         init:           _init,
         autoInit:       _autoInit,
 
@@ -78,27 +78,27 @@
 
     function _init(options, appName) {
 
-    	var FrameTrail = {
-    		start: 			_start,
-    		initModule: 	_initModule,
-            unloadModule: 	_unloadModule,
-    		modules: 		_modules,
-    		module: 		_module,
-    		getState: 		_getState,
-    		changeState: 	_changeState,
-    		get types()		{ return types },
-    		type: 			_type,
-    		newObject: 		_newObject,
+        var FrameTrail = {
+            start:          _start,
+            initModule:     _initModule,
+            unloadModule:   _unloadModule,
+            modules:        _modules,
+            module:         _module,
+            getState:       _getState,
+            changeState:    _changeState,
+            get types()     { return types },
+            type:           _type,
+            newObject:      _newObject,
             triggerEvent:   triggerEvent,
             addEventListener: addEventListener,
             removeEventListener: removeEventListener
-    	};
+        };
 
-    	var state			= {},
-    		modules 		= {},
+        var state           = {},
+            modules         = {},
             types           = {},
-    		updateQueue 	= [],
-    		inUpdateThread  = false,
+            updateQueue     = [],
+            inUpdateThread  = false,
             listeners       = {};
 
 
@@ -107,7 +107,7 @@
         _start(options, appName);
 
 
-    	function _start(runtimeConfig, appName) {
+        function _start(runtimeConfig, appName) {
 
             // Auto-wrap: if videoElement is provided without an explicit target,
             // create a wrapper div immediately before the video element and use it
@@ -132,7 +132,7 @@
                 }
             }
 
-    		// TODO: Check if this belongs here
+            // TODO: Check if this belongs here
             var _targetEl = (typeof resolvedTarget === 'string') ? document.querySelector(resolvedTarget) : resolvedTarget;
             if (_targetEl) _targetEl.classList.add('frametrail-body');
 
@@ -166,13 +166,13 @@
             // serverPath is stored in state; Database._ajax() applies it when prefixing
             // relative _server/ and _data/ fetch URLs (see Database module).
 
-    		if (appName) {
+            if (appName) {
                 _initModule(appName);
             } else {
                 _initModule('PlayerLauncher');
             }
 
-    	}
+        }
 
 
         var publicInstanceAPI = {
@@ -255,23 +255,23 @@
         instances.push(publicInstanceAPI);
 
 
-    	function _initModule(name) {
+        function _initModule(name) {
 
-    		if (!defs_modules[name]) {
-    			throw new Error('The module to initialize (named "'+name+'") is not defined.')
-    		}
+            if (!defs_modules[name]) {
+                throw new Error('The module to initialize (named "'+name+'") is not defined.')
+            }
 
-    		var publicInterface = defs_modules[name].call(this, FrameTrail);
+            var publicInterface = defs_modules[name].call(this, FrameTrail);
 
 
-    		if(typeof publicInterface === 'object' && publicInterface !== null){
+            if(typeof publicInterface === 'object' && publicInterface !== null){
 
-    			modules[name] = publicInterface;
-    			return publicInterface;
+                modules[name] = publicInterface;
+                return publicInterface;
 
-    		}
+            }
 
-    	}
+        }
 
 
         function _initTypes() {
@@ -342,110 +342,110 @@
         }
 
 
-    	function _unloadModule(name) {
+        function _unloadModule(name) {
 
-    		if (!modules[name]) {
-    			throw new Error('The module to unload (named "'+name+'") is not defined.')
-    		}
+            if (!modules[name]) {
+                throw new Error('The module to unload (named "'+name+'") is not defined.')
+            }
 
-    		if (modules[name].onUnload && typeof modules[name].onUnload === 'function') {
-    			modules[name].onUnload.call(this);
-    		}
+            if (modules[name].onUnload && typeof modules[name].onUnload === 'function') {
+                modules[name].onUnload.call(this);
+            }
 
-    		delete modules[name];
+            delete modules[name];
 
-    	}
-
-
-    	function _module(name) {
-
-    		return modules[name];
-
-    	}
+        }
 
 
-    	function _modules() {
+        function _module(name) {
 
-    		return modules;
+            return modules[name];
 
-    	}
-
-
-    	function _getState(key) {
-
-    		return key ? state[key] : state;
-
-    	}
+        }
 
 
-    	function _changeState(param1, param2) {
+        function _modules() {
+
+            return modules;
+
+        }
 
 
-    		if (typeof param1 === 'string') {
+        function _getState(key) {
 
-    			updateQueue.push([param1, param2, state[param1]]);
+            return key ? state[key] : state;
 
-    		} else if (typeof param1 === 'object' && param1 !== null) {
-
-    			for (var key in param1) {
-
-    				updateQueue.push([key, param1[key], state[key]]);
-
-    			}
-
-    		} else {
-
-    			throw new Error('Illegal arguments.')
-
-    		}
+        }
 
 
-    		if(!inUpdateThread){
-
-    			inUpdateThread = true;
-
-    			while (updateQueue[0]) {
-
-    				var updateFrame = updateQueue.splice(0, 1)[0];
-
-    				state[updateFrame[0]] = updateFrame[1];
-
-    				for(var name in modules){
-
-    					if (typeof modules[name].onChange === 'object' && modules[name].onChange !== null){
-
-    						if (typeof modules[name].onChange[updateFrame[0]] === 'function'){
-
-    							modules[name].onChange[updateFrame[0]].call(this, updateFrame[1], updateFrame[2]);
-
-    						}
-
-    					}
-
-    				}
+        function _changeState(param1, param2) {
 
 
-    			}
+            if (typeof param1 === 'string') {
 
-    			inUpdateThread = false;
+                updateQueue.push([param1, param2, state[param1]]);
 
-    		}
+            } else if (typeof param1 === 'object' && param1 !== null) {
 
-    	}
+                for (var key in param1) {
+
+                    updateQueue.push([key, param1[key], state[key]]);
+
+                }
+
+            } else {
+
+                throw new Error('Illegal arguments.')
+
+            }
 
 
-    	function _type(name) {
+            if(!inUpdateThread){
 
-    		return types[name];
+                inUpdateThread = true;
 
-    	}
+                while (updateQueue[0]) {
+
+                    var updateFrame = updateQueue.splice(0, 1)[0];
+
+                    state[updateFrame[0]] = updateFrame[1];
+
+                    for(var name in modules){
+
+                        if (typeof modules[name].onChange === 'object' && modules[name].onChange !== null){
+
+                            if (typeof modules[name].onChange[updateFrame[0]] === 'function'){
+
+                                modules[name].onChange[updateFrame[0]].call(this, updateFrame[1], updateFrame[2]);
+
+                            }
+
+                        }
+
+                    }
 
 
-    	function _newObject(name, param1, param2, param3, param4, param5, param6, param7) {
+                }
 
-    		return new types[name](param1, param2, param3, param4, param5, param6, param7);
+                inUpdateThread = false;
 
-    	}
+            }
+
+        }
+
+
+        function _type(name) {
+
+            return types[name];
+
+        }
+
+
+        function _newObject(name, param1, param2, param3, param4, param5, param6, param7) {
+
+            return new types[name](param1, param2, param3, param4, param5, param6, param7);
+
+        }
 
         function addEventListener(type, handler) {
             if (!(type in listeners)) {
