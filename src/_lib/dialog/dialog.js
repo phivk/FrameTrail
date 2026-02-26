@@ -85,7 +85,7 @@ window.Dialog = function(opts) {
     xBtn.type = 'button';
     xBtn.className = 'ft-dialog-titlebar-close';
     xBtn.setAttribute('aria-label', 'Close');
-    xBtn.innerHTML = '<span class="icon-cancel"></span>';
+    xBtn.innerHTML = '<span class="icon-cancel-1"></span>';
     xBtn.addEventListener('click', function() { ctrl.close(); });
     if (!closeOnEscape) { xBtn.style.display = 'none'; }
 
