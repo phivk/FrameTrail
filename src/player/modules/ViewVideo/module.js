@@ -29,14 +29,12 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
                         + '        <div class="areaTopContainer layoutArea" data-area="areaTop">'
                         + '            <div class="layoutAreaTabs"></div>'
                         + '            <div class="layoutAreaContent"></div>'
-                        + '            <div class="layoutAreaToggleCloseButton"></div>'
                         + '        </div>'
                         + '        <div class="playerContainer">'
                         + '            <div class="hypervideoContainer">'
                         + '                <div class="areaLeftContainer layoutArea" data-area="areaLeft">'
                         + '                    <div class="layoutAreaTabs"></div>'
                         + '                    <div class="layoutAreaContent"></div>'
-                        + '                    <div class="layoutAreaToggleCloseButton"></div>'
                         + '                </div>'
                         + '                <div class="videoContainer">'
                         + '                    <div class="hypervideo">'
@@ -57,7 +55,6 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
                         + '                <div class="areaRightContainer layoutArea" data-area="areaRight">'
                         + '                    <div class="layoutAreaTabs"></div>'
                         + '                    <div class="layoutAreaContent"></div>'
-                        + '                    <div class="layoutAreaToggleCloseButton"></div>'
                         + '                </div>'
                         + '                <div class="infoAreaRight">'
                         + '                    <div class="infoAreaRightTabBar">'
@@ -112,7 +109,6 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
                         + '        <div class="areaBottomContainer layoutArea" data-area="areaBottom">'
                         + '            <div class="layoutAreaTabs"></div>'
                         + '            <div class="layoutAreaContent"></div>'
-                        + '            <div class="layoutAreaToggleCloseButton"></div>'
                         + '        </div>'
                         + '        <div class="areaBottomDetails layoutAreaDetails" data-area="areaBottom"></div>'
                         + '    </div>'
@@ -367,16 +363,6 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
             FrameTrail.module('AnnotationsController').openedAnnotation = null;
         }
 
-    });
-
-    domElement.querySelectorAll('.layoutAreaToggleCloseButton').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            this.closest('.layoutArea').classList.toggle('closed');
-            showDetails(false);
-            window.setTimeout(function() {
-                adjustHypervideo();
-            }, 250);
-        });
     });
 
     document.addEventListener("fullscreenchange", toggleFullscreenState, false);

@@ -689,8 +689,17 @@ FrameTrail.defineType(
                         tabElement = document.createElement('div');
                     tabElement.className = 'contentViewTab';
                     tabElement.setAttribute('data-type', self.contentViewData.type);
-                    tabElement.innerHTML = '    <div class="contentViewTabName">'+ self.contentViewData.name +'</div>';
+                    tabElement.innerHTML = '    <div class="contentViewTabName">'+ self.contentViewData.name +'</div>'
+                                         + '    <div class="layoutAreaToggleCloseButton"></div>';
                     tabElement.addEventListener('click', function() { onActivate.call(self); });
+                    tabElement.querySelector('.layoutAreaToggleCloseButton').addEventListener('click', function(evt) {
+                        evt.stopPropagation();
+                        evt.currentTarget.closest('.layoutArea').classList.toggle('closed');
+                        FrameTrail.changeState('slidePosition', 'middle');
+                        window.setTimeout(function() {
+                            FrameTrail.module('ViewVideo').adjustHypervideo();
+                        }, 250);
+                    });
                     return tabElement;
                 },
 
