@@ -112,7 +112,6 @@
     // Set up Overlay interface
     FrameTrail.initModule('InterfaceModal');
     FrameTrail.module('InterfaceModal').showStatusMessage(labels['MessageStateLoadingData']);
-    FrameTrail.module('InterfaceModal').showLoadingScreen();
 
     // Set up the various data models
     FrameTrail.initModule('RouteNavigation');
