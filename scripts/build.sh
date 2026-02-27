@@ -160,7 +160,7 @@ JS_FILES=(
 
     # Dialog and tabs helpers (must come before modules that use them)
     "_lib/dialog/dialog.js"
-    "_lib/vanilla-tabs/vanilla-tabs.js"
+    "_lib/tabsjs/tabs.js"
 
     # Storage layer (must come before StorageManager and Database)
     "_shared/frametrail-core/storage/StorageAdapter.js"
