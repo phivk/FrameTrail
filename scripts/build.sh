@@ -9,6 +9,9 @@ SRC_DIR="$(cd "$(dirname "$0")/.." && pwd)/src"
 BUILD_DIR="$(cd "$(dirname "$0")/.." && pwd)/build"
 VERSION="${1:-dev}"
 
+BANNER_MULTI="/*!\n * FrameTrail ${VERSION} — Open Hypervideo Environment\n * https://github.com/OpenHypervideo/FrameTrail\n * MIT OR GPL-3.0-or-later\n */"
+BANNER_SINGLE="/*! FrameTrail ${VERSION} | https://github.com/OpenHypervideo/FrameTrail | MIT OR GPL-3.0-or-later */"
+
 # ──────────────────────────────────────────────
 #  Clean & prepare
 # ──────────────────────────────────────────────
@@ -210,7 +213,7 @@ JS_FILES=(
 # ──────────────────────────────────────────────
 
 echo "Concatenating CSS (${#CSS_FILES[@]} files)..."
-> "$BUILD_DIR/frametrail.css"
+printf '%b\n\n' "$BANNER_MULTI" > "$BUILD_DIR/frametrail.css"
 for f in "${CSS_FILES[@]}"; do
     if [ -f "$SRC_DIR/$f" ]; then
         echo "/* === $f === */" >> "$BUILD_DIR/frametrail.css"
@@ -222,7 +225,7 @@ for f in "${CSS_FILES[@]}"; do
 done
 
 echo "Concatenating JS (${#JS_FILES[@]} files)..."
-> "$BUILD_DIR/frametrail.js"
+printf '%b\n\n' "$BANNER_MULTI" > "$BUILD_DIR/frametrail.js"
 for f in "${JS_FILES[@]}"; do
     if [ -f "$SRC_DIR/$f" ]; then
         echo "/* === $f === */" >> "$BUILD_DIR/frametrail.js"
@@ -283,11 +286,17 @@ rm -f "$BUILD_DIR/frametrail.css.bak"
 echo "Minifying JS with terser..."
 terser "$BUILD_DIR/frametrail.js" \
     --compress --mangle \
+    --comments false \
     --output "$BUILD_DIR/frametrail.min.js"
+{ printf '%b\n' "$BANNER_SINGLE"; cat "$BUILD_DIR/frametrail.min.js"; } > "$BUILD_DIR/frametrail.min.js.tmp"
+mv "$BUILD_DIR/frametrail.min.js.tmp" "$BUILD_DIR/frametrail.min.js"
 
 echo "Minifying CSS with csso..."
 csso "$BUILD_DIR/frametrail.css" \
+    --comments none \
     --output "$BUILD_DIR/frametrail.min.css"
+{ printf '%b\n' "$BANNER_SINGLE"; cat "$BUILD_DIR/frametrail.min.css"; } > "$BUILD_DIR/frametrail.min.css.tmp"
+mv "$BUILD_DIR/frametrail.min.css.tmp" "$BUILD_DIR/frametrail.min.css"
 
 # ──────────────────────────────────────────────
 #  Generate bundled HTML entry points
