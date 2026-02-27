@@ -308,21 +308,19 @@ cat > "$BUILD_DIR/index.html" << 'PLAYER_HTML'
     <link rel="stylesheet" href="_data/custom.css">
     <script src="frametrail.min.js"></script>
     <script>
-        $(document).ready(function() {
+        document.addEventListener('DOMContentLoaded', function() {
             if (!!document.location.host) {
-                $.ajax({
-                    type: "POST",
-                    url: "_server/ajaxServer.php",
-                    data: {"a": "setupCheck"},
-                    dataType: "json",
-                    success: function(ret) {
-                        if (ret["code"] != "1") {
-                            window.location.replace(
-                                window.location.href.replace('index.html', '') + 'setup.html'
-                            );
-                        }
+                fetch('_server/ajaxServer.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'a=setupCheck'
+                }).then(function(r) { return r.json(); }).then(function(ret) {
+                    if (ret["code"] != "1") {
+                        window.location.replace(
+                            window.location.href.replace('index.html', '') + 'setup.html'
+                        );
                     }
-                });
+                }).catch(function() {});
             }
             window.myInstance = FrameTrail.init({
                 target:         'body',
@@ -355,21 +353,19 @@ cat > "$BUILD_DIR/resources.html" << 'RESOURCES_HTML'
     <link rel="stylesheet" href="_data/custom.css">
     <script src="frametrail.min.js"></script>
     <script>
-        $(document).ready(function() {
+        document.addEventListener('DOMContentLoaded', function() {
             if (!!document.location.host) {
-                $.ajax({
-                    type: "POST",
-                    url: "_server/ajaxServer.php",
-                    data: {"a": "setupCheck"},
-                    dataType: "json",
-                    success: function(ret) {
-                        if (ret["code"] != "1") {
-                            window.location.replace(
-                                window.location.href.replace('resources.html', '') + 'setup.html'
-                            );
-                        }
+                fetch('_server/ajaxServer.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'a=setupCheck'
+                }).then(function(r) { return r.json(); }).then(function(ret) {
+                    if (ret["code"] != "1") {
+                        window.location.replace(
+                            window.location.href.replace('resources.html', '') + 'setup.html'
+                        );
                     }
-                });
+                }).catch(function() {});
             }
             window.myInstance = FrameTrail.init({
                 target:    'body',
