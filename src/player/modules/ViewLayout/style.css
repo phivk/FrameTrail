@@ -405,6 +405,22 @@ body > .contentViewTemplate {
     min-width: 400px;
 }
 
+/* Sortable preview tabs */
+
+.layoutManager .layoutArea .layoutAreaTabs .contentViewTab {
+    cursor: move;
+}
+
+.layoutManager .layoutArea .layoutAreaTabs .sortable-ghost {
+    opacity: 0.3;
+}
+
+.layoutManager .layoutArea .layoutAreaTabs .sortable-drag {
+    cursor: grabbing;
+    opacity: 1;
+}
+
+
 /*******************
 * Theme Panel
 *******************/

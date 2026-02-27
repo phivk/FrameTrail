@@ -87,6 +87,7 @@ window.FrameTrail_L10n['en-US'] = {
     "GenericCustomHTML": "Custom HTML",
     "GenericDefault": "Default",
     "GenericDelete": "Delete",
+    "GenericReorder": "Reorder",
     "GenericDeleteHypervideo": "Delete Hypervideo",
     "GenericDescription": "Description",
     "GenericDownload": "Download",

@@ -209,6 +209,60 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
     }
 
 
+    function reorderContentView(whichArea, oldIndex, newIndex, updatePreviewDOM) {
+
+        if (oldIndex === newIndex) { return; }
+
+        var areaKeyMap = { top: 'areaTop', bottom: 'areaBottom', left: 'areaLeft', right: 'areaRight' };
+        var areaCapMap = { top: 'Top',     bottom: 'Bottom',     left: 'Left',    right: 'Right' };
+        var areaKey = areaKeyMap[whichArea];
+        var areaCap = areaCapMap[whichArea];
+
+        var contentViewsArray = {
+            top: contentViewsTop, bottom: contentViewsBottom,
+            left: contentViewsLeft, right: contentViewsRight
+        }[whichArea];
+
+        // Update JS arrays
+        var movedCV = contentViewsArray.splice(oldIndex, 1)[0];
+        contentViewsArray.splice(newIndex, 0, movedCV);
+        var movedData = configLayoutArea[areaKey].splice(oldIndex, 1)[0];
+        configLayoutArea[areaKey].splice(newIndex, 0, movedData);
+
+        // Reorder real ViewVideo DOM elements (appendChild moves existing nodes)
+        var ViewVideo       = FrameTrail.module('ViewVideo');
+        var areaContainer   = ViewVideo['Area' + areaCap + 'Container'];
+        var realTabsCont    = areaContainer.querySelector('.layoutAreaTabs');
+        var realContentCont = areaContainer.querySelector('.layoutAreaContent');
+        var realDetailsCont = ViewVideo['Area' + areaCap + 'Details'];
+
+        contentViewsArray.forEach(function(cv) {
+            realTabsCont.appendChild(cv.contentViewTab);
+            realContentCont.appendChild(cv.contentViewContainer);
+            if (cv.contentViewDetailsContainer && realDetailsCont) {
+                realDetailsCont.appendChild(cv.contentViewDetailsContainer);
+            }
+        });
+
+        // Reorder LayoutManager preview DOM (Sortable handles it on drag; needed for undo/redo)
+        if (updatePreviewDOM) {
+            var previewArea = ViewVideo.HypervideoLayoutContainer
+                .querySelector('.layoutArea[data-area="' + areaKey + '"]');
+            if (previewArea) {
+                var pTabsCont    = previewArea.querySelector('.layoutAreaTabs');
+                var pContentCont = previewArea.querySelector('.layoutAreaContent');
+                contentViewsArray.forEach(function(cv) {
+                    if (cv.contentViewPreviewTab)     { pTabsCont.appendChild(cv.contentViewPreviewTab); }
+                    if (cv.contentViewPreviewElement) { pContentCont.appendChild(cv.contentViewPreviewElement); }
+                });
+            }
+        }
+
+        FrameTrail.module('HypervideoModel').newUnsavedChange('layout');
+
+    }
+
+
     function updateManagedContent() {
 
         managedAnnotations = [];
@@ -552,6 +606,40 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
         initLayoutAreaPreview(contentViewsBottom);
         initLayoutAreaPreview(contentViewsLeft);
         initLayoutAreaPreview(contentViewsRight);
+
+        // Make preview tabs sortable within each layout area
+        var sortableAreaConfig = [
+            { area: 'top',    key: 'areaTop'    },
+            { area: 'bottom', key: 'areaBottom' },
+            { area: 'left',   key: 'areaLeft'   },
+            { area: 'right',  key: 'areaRight'  }
+        ];
+
+        sortableAreaConfig.forEach(function(cfg) {
+            var previewArea   = LayoutManager.querySelector('[data-area="' + cfg.key + '"]');
+            var tabsContainer = previewArea ? previewArea.querySelector('.layoutAreaTabs') : null;
+            if (!tabsContainer) { return; }
+
+            Sortable.create(tabsContainer, {
+                draggable:  '.contentViewTab',
+                animation:  150,
+                delay:      150,
+                ghostClass: 'sortable-ghost',
+                dragClass:  'sortable-drag',
+                onEnd: function(evt) {
+                    if (evt.oldIndex === evt.newIndex) { return; }
+                    reorderContentView(cfg.area, evt.oldIndex, evt.newIndex, false);
+                    (function(area, fromIdx, toIdx) {
+                        FrameTrail.module('UndoManager').register({
+                            category: 'layout',
+                            description: labels['SidebarLayout'] + ' ' + labels['GenericReorder'],
+                            undo: function() { reorderContentView(area, toIdx, fromIdx, true); },
+                            redo: function() { reorderContentView(area, fromIdx, toIdx, true); }
+                        });
+                    })(cfg.area, evt.oldIndex, evt.newIndex);
+                }
+            });
+        });
 
 
         // Theme selector
@@ -970,6 +1058,8 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
         updateTimedStateOfContentViews: updateTimedStateOfContentViews,
 
         initLayoutManager: initLayoutManager,
+
+        reorderContentView:  reorderContentView,
 
         getLayoutAreaData: getLayoutAreaData,
 
