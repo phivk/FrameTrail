@@ -740,9 +740,11 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
 
         } else {
 
-            // Use explicit aspect-ratio-aware calculations to avoid
-            // browser issues when video metadata is not yet loaded
-            ratio = Math.min(videoContainerWidth / videoWidth, _vcH / videoHeight);
+            // Use the actual rendered width (after flexbox constraints) so the
+            // video never overflows VideoContainer at narrow viewports where
+            // isMobileWidth skips subtracting the side-area widths from
+            // videoContainerWidth but those areas still occupy flex space.
+            ratio = Math.min(VideoContainer.offsetWidth / videoWidth, _vcH / videoHeight);
             scaledWidth = videoWidth * ratio;
             scaledHeight = videoHeight * ratio;
 
