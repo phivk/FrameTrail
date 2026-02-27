@@ -439,6 +439,34 @@ sed -i.bak "s/__VERSION__/${VERSION}/" "$BUILD_DIR/README.md"
 rm -f "$BUILD_DIR/README.md.bak"
 
 # ──────────────────────────────────────────────
+#  Generate npm package.json
+# ──────────────────────────────────────────────
+#  Only frametrail.min.js and frametrail.min.css
+#  are published. Publishing happens in CI via
+#  `npm publish build/` — not from this script.
+
+NPM_VERSION="${VERSION#v}"  # Strip leading 'v' (npm requires plain semver)
+
+cat > "$BUILD_DIR/package.json" << PKGJSON
+{
+  "name": "@frametrail/frametrail",
+  "version": "${NPM_VERSION}",
+  "description": "Open Hypervideo Environment",
+  "keywords": ["hypervideo", "annotation", "video", "interactive", "overlay"],
+  "license": "MIT OR GPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OpenHypervideo/FrameTrail.git"
+  },
+  "homepage": "https://github.com/OpenHypervideo/FrameTrail",
+  "files": [
+    "frametrail.min.js",
+    "frametrail.min.css"
+  ]
+}
+PKGJSON
+
+# ──────────────────────────────────────────────
 #  Summary
 # ──────────────────────────────────────────────
 
