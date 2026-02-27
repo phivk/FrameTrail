@@ -1,9 +1,6 @@
 body {
     background: var(--primary-bg-color);
-    -webkit-transition: all 200ms linear; /* Firefox */
-    -moz-transition: all 200ms linear; /* WebKit */
-    -o-transition: all 200ms linear; /* Opera */
-    transition: all 200ms linear; /* Standard */
+    transition: background 200ms linear;
 }
 
 /*

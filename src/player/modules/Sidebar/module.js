@@ -1064,8 +1064,8 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                 var _canSave = FrameTrail.module('StorageManager').canSave();
                 var _isGuest = FrameTrail.module('UserManagement').isGuestMode();
                 NewHypervideoButton.forEach(function(btn) { btn.style.display = ''; btn.disabled = _isGuest; });
-                ForkButton.disabled = _isGuest;
-                DeleteButton.disabled = _isGuest;
+                ForkButton.style.display = ''; ForkButton.disabled = _isGuest;
+                DeleteButton.style.display = ''; DeleteButton.disabled = _isGuest;
                 ExportButton.forEach(function(btn) { btn.style.display = 'none'; });
                 SaveButton.style.display = ''; SaveButton.disabled = !_canSave;
                 SaveAsButton.style.display = '';
@@ -1093,6 +1093,8 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
             SaveAsButton.style.display = 'none';
             UndoButton.style.display = 'none';
             RedoButton.style.display = 'none';
+            ForkButton.style.display = 'none';
+            DeleteButton.style.display = 'none';
 
             videoContainerControls.querySelectorAll('.editMode').forEach(function(el) { el.classList.remove('inEditMode'); });
 

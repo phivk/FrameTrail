@@ -75,7 +75,7 @@ FrameTrail.defineType(
                     self.contentCollection = [];
                 },
 
-                updateContent: function() {
+                updateContent: function(suppressViewSizeChange) {
 
                     var self = this;
 
@@ -222,7 +222,7 @@ FrameTrail.defineType(
                     FrameTrail.module('ViewLayout').updateManagedContent();
 
                     window.setTimeout(function() {
-                        self.resizeLayoutArea();
+                        self.resizeLayoutArea(false, suppressViewSizeChange);
                     }, 50);
 
                 },

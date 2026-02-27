@@ -209,6 +209,49 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
     })();
 
 
+    // Timer reference for the deferred layout correction in changeSlidePosition.
+    // Kept here so resize handlers can cancel it before it fires with transitions on.
+    var _pendingAdjust = null;
+
+    // Retry handle for adjustHypervideo when VideoContainer has no height yet
+    // (e.g. during edit-mode transition layout flux).
+    var _pendingHypervideo = null;
+
+    // When true, changeSlidePosition will NOT add the is-sliding class.
+    // Used by leaveEditMode to prevent slide animations during the restore sequence,
+    // which internally triggers FrameTrail.changeState('slidePosition', 'middle')
+    // via toggleConfig_areaTopVisible / toggleConfig_slidingMode — those calls arrive
+    // with a real oldState and would otherwise trigger a CSS transition.
+    var _suppressSlideAnimation = false;
+
+    /**
+     * Instantly freeze CSS transitions on the given elements by pinning transitionDuration to 0ms.
+     * @method disableTransitions
+     * @param {Array} elements
+     */
+    function disableTransitions(elements) {
+        elements.forEach(function(el) {
+            el.style.transitionDuration = '0ms';
+            el.style.MozTransitionDuration = '0ms';
+            el.style.webkitTransitionDuration = '0ms';
+            el.style.OTransitionDuration = '0ms';
+        });
+    }
+
+    /**
+     * Restore transitions to whatever CSS specifies by clearing the inline override.
+     * @method restoreTransitions
+     * @param {Array} elements
+     */
+    function restoreTransitions(elements) {
+        elements.forEach(function(el) {
+            el.style.transitionDuration = '';
+            el.style.MozTransitionDuration = '';
+            el.style.webkitTransitionDuration = '';
+            el.style.OTransitionDuration = '';
+        });
+    }
+
     ExpandButton.addEventListener('click', function() {
         showDetails(false);
     });
@@ -422,20 +465,17 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      */
     function changeViewSize(arrayWidthAndHeight) {
 
-        slideArea.style.transitionDuration = '0ms';
-        slideArea.style.MozTransitionDuration = '0ms';
-        slideArea.style.webkitTransitionDuration = '0ms';
-        slideArea.style.OTransitionDuration = '0ms';
+        // Cancel any pending deferred layout correction from changeSlidePosition —
+        // it would fire with transitions active and cause a wobble mid-resize.
+        clearTimeout(_pendingAdjust);
+        _pendingAdjust = null;
+
+        // Disable the slideArea margin-top transition for the duration of this resize
+        // by ensuring the is-sliding class is absent (CSS drives the transition).
+        slideArea.classList.remove('is-sliding');
 
         adjustLayout();
         adjustHypervideo();
-
-        if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent) == false) {
-            slideArea.style.transitionDuration = '';
-            slideArea.style.MozTransitionDuration = '';
-            slideArea.style.webkitTransitionDuration = '';
-            slideArea.style.OTransitionDuration = '';
-        }
 
     };
 
@@ -450,21 +490,15 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      */
     function onViewSizeChanged() {
 
-        slideArea.style.transitionDuration = '0ms';
-        slideArea.style.MozTransitionDuration = '0ms';
-        slideArea.style.webkitTransitionDuration = '0ms';
-        slideArea.style.OTransitionDuration = '0ms';
+        // Same as changeViewSize: cancel deferred slide adjustments and ensure
+        // no margin-top transition fires during the post-resize recalculation.
+        clearTimeout(_pendingAdjust);
+        _pendingAdjust = null;
+        slideArea.classList.remove('is-sliding');
 
         adjustLayout();
         adjustHypervideo();
         FrameTrail.module('ViewLayout').adjustContentViewLayout();
-
-        if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent) == false) {
-            slideArea.style.transitionDuration = '';
-            slideArea.style.MozTransitionDuration = '';
-            slideArea.style.webkitTransitionDuration = '';
-            slideArea.style.OTransitionDuration = '';
-        }
 
         domElement.querySelectorAll('.resourceDetail[data-type="location"]').forEach(function(el) {
             if (el._leafletMap) {
@@ -497,15 +531,16 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         if (!mainContainer) { return; }
 
         var editMode            = FrameTrail.getState('editMode'),
+            inEditMode          = (editMode != false && editMode != 'preview' && editMode != 'layout'),
             playerMargin        = parseInt(getComputedStyle(PlayerContainer).marginTop),
             editBorder          = (editMode != false) ? 20 : 0,
             slidePosition       = (editMode == 'layout') ? 'middle' : FrameTrail.getState('slidePosition'),
             slidingMode         = FrameTrail.getState('hv_config_slidingMode'),
 
-            areaTopVisible      = ( (editMode != false && editMode != 'preview' && editMode != 'layout') ? false : FrameTrail.getState('hv_config_areaTopVisible') ),
-            areaBottomVisible   = ( (editMode != false && editMode != 'preview' && editMode != 'layout') ? false : FrameTrail.getState('hv_config_areaBottomVisible') ),
-            areaLeftVisible     = ( (editMode != false && editMode != 'preview' && editMode != 'layout') ? false : FrameTrail.getState('hv_config_areaLeftVisible') ),
-            areaRightVisible    = ( (editMode != false && editMode != 'preview' && editMode != 'layout') ? false : FrameTrail.getState('hv_config_areaRightVisible') );
+            areaTopVisible      = ( inEditMode ? false : FrameTrail.getState('hv_config_areaTopVisible') ),
+            areaBottomVisible   = ( inEditMode ? false : FrameTrail.getState('hv_config_areaBottomVisible') ),
+            areaLeftVisible     = ( inEditMode ? false : FrameTrail.getState('hv_config_areaLeftVisible') ),
+            areaRightVisible    = ( inEditMode ? false : FrameTrail.getState('hv_config_areaRightVisible') );
 
         if (slidingMode == 'overlay') {
             PlayerContainer.style.flexGrow = '0';
@@ -525,7 +560,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
             if ( slidingMode == 'adjust' ) {
 
                 slideArea.style.marginTop = (
-                    - ((editMode != false && editMode != 'preview' && editMode != 'layout') ? playerMargin : 0)
+                    - (inEditMode ? playerMargin : 0)
                 ) + 'px';
                 slideArea.style.minHeight = (
                     mainContainer.offsetHeight
@@ -653,23 +688,9 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
             videoFit            = (FrameTrail.module('Database').config.videoFit) ? FrameTrail.module('Database').config.videoFit : 'contain';
 
         if (animate) {
-            VideoContainer.style.transitionDuration = '';
-            VideoContainer.style.MozTransitionDuration = '';
-            VideoContainer.style.webkitTransitionDuration = '';
-            VideoContainer.style.OTransitionDuration = '';
-            Hypervideo.style.transitionDuration = '';
-            Hypervideo.style.MozTransitionDuration = '';
-            Hypervideo.style.webkitTransitionDuration = '';
-            Hypervideo.style.OTransitionDuration = '';
+            restoreTransitions([VideoContainer, Hypervideo]);
         } else {
-            VideoContainer.style.transitionDuration = '0ms';
-            VideoContainer.style.MozTransitionDuration = '0ms';
-            VideoContainer.style.webkitTransitionDuration = '0ms';
-            VideoContainer.style.OTransitionDuration = '0ms';
-            Hypervideo.style.transitionDuration = '0ms';
-            Hypervideo.style.MozTransitionDuration = '0ms';
-            Hypervideo.style.webkitTransitionDuration = '0ms';
-            Hypervideo.style.OTransitionDuration = '0ms';
+            disableTransitions([VideoContainer, Hypervideo]);
         }
 
         var widthAuto = (_video.style.width == 'auto');
@@ -687,8 +708,39 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
 
         VideoContainer.style.width = videoContainerWidth + 'px';
 
+        var _vcH = VideoContainer.offsetHeight;
+        var _stack = new Error().stack.split('\n').slice(0, 5).map(function(s) { return s.trim(); }).join(' | ');
+
+        console.log(
+            '%c[adjustHypervideo]', 'color:' + (_vcH < 10 ? 'red; font-weight:bold' : '#888'),
+            'vcW=' + videoContainerWidth,
+            'vcH=' + _vcH,
+            'editBorder=' + editBorder,
+            'animate=' + animate,
+            'editMode=' + FrameTrail.getState('editMode'),
+            _stack
+        );
+
+        if (_vcH < 10) {
+            // VideoContainer has no height — layout is in a transient state.
+            // Bail out and retry to pick up the correct height once layout settles.
+            console.warn('%c[adjustHypervideo] vcH<10 – bailing out, retry in 50 ms', 'color:red; font-weight:bold',
+                'hvcH=' + HypervideoContainer.offsetHeight,
+                'pcH='  + PlayerContainer.offsetHeight,
+                'saH='  + slideArea.offsetHeight,
+                'saMarginTop=' + slideArea.style.marginTop,
+                'saMinH='      + slideArea.style.minHeight
+            );
+            clearTimeout(_pendingHypervideo);
+            _pendingHypervideo = window.setTimeout(function() {
+                _pendingHypervideo = null;
+                adjustHypervideo();
+            }, 50);
+            return;
+        }
+
         //if ( (_video.height() < VideoContainer.height() && widthAuto) || (_video.width() < videoContainerWidth && heightAuto) ) {
-        if ( (_video.offsetHeight < VideoContainer.offsetHeight) || (_video.offsetWidth < videoContainerWidth) ) {
+        if ( (_video.offsetHeight < _vcH) || (_video.offsetWidth < videoContainerWidth) ) {
             _video.style.height = FrameTrail.getState('viewSize')[1] + 'px';
             _video.style.width = FrameTrail.getState('viewSize')[0] + 'px';
         }
@@ -696,31 +748,26 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         var videoWidth = (_video.videoWidth) ? _video.videoWidth : 1920;
         var videoHeight = (_video.videoHeight) ? _video.videoHeight : 1080;
 
+        var scaledWidth, scaledHeight, ratio;
+
         if (videoFit == 'cover') {
 
-            var ratio = Math.max(VideoContainer.offsetWidth / videoWidth, VideoContainer.offsetHeight / videoHeight);
-            var scaledWidth = videoWidth * ratio;
-            var scaledHeight = videoHeight * ratio;
-
-            _video.style.height = scaledHeight + 'px';
-            _video.style.width = scaledWidth + 'px';
+            ratio = Math.max(VideoContainer.offsetWidth / videoWidth, _vcH / videoHeight);
+            scaledWidth = videoWidth * ratio;
+            scaledHeight = videoHeight * ratio;
 
         } else {
 
             // Use explicit aspect-ratio-aware calculations to avoid
             // browser issues when video metadata is not yet loaded
-            var ratio = Math.min(videoContainerWidth / videoWidth, VideoContainer.offsetHeight / videoHeight);
-            var scaledWidth = videoWidth * ratio;
-            var scaledHeight = videoHeight * ratio;
-
-            _video.style.height = scaledHeight + 'px';
-            _video.style.width = scaledWidth + 'px';
+            ratio = Math.min(videoContainerWidth / videoWidth, _vcH / videoHeight);
+            scaledWidth = videoWidth * ratio;
+            scaledHeight = videoHeight * ratio;
 
         }
 
-        Hypervideo.style.marginLeft = - _video.offsetWidth/2 + 'px';
-        Hypervideo.style.marginTop = - _video.offsetHeight/2 + 'px';
-        Hypervideo.style.height = _video.offsetHeight + 'px';
+        _video.style.height = scaledHeight + 'px';
+        _video.style.width = scaledWidth + 'px';
 
         if (animate) {
             window.setTimeout(function() {
@@ -823,6 +870,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
             VideoStartOverlay.style.display = 'none';
         }
 
+
         window.setTimeout(function() {
             FrameTrail.changeState('viewSizeChanged');
         }, 300);
@@ -877,6 +925,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      * @method leaveEditMode
      */
     function leaveEditMode() {
+
         // Clean up timeline controls
         FrameTrail.module('TimelineController').destroyEditTimelines();
 
@@ -885,6 +934,13 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
 
         HypervideoLayoutContainer.innerHTML = ''; HypervideoLayoutContainer.classList.remove('active');
         EditPropertiesContainer.removeAttribute('data-editmode'); EditPropertiesContainer.style.display = 'none';
+
+        // Suppress slide animations for the entire restore sequence.
+        // toggleConfig_areaTopVisible / toggleConfig_areaBottomVisible /
+        // toggleConfig_slidingMode may call FrameTrail.changeState('slidePosition', 'middle')
+        // which would otherwise fire onChange with a real oldState, causing is-sliding
+        // to be added and producing an unwanted CSS transition during exit.
+        _suppressSlideAnimation = true;
 
         toggleConfig_areaTopVisible(FrameTrail.getState('hv_config_areaTopVisible'));
         toggleConfig_areaBottomVisible(FrameTrail.getState('hv_config_areaBottomVisible'));
@@ -896,6 +952,8 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         toggleConfig_slidingMode(FrameTrail.getState('hv_config_slidingMode'));
 
         changeSlidePosition(FrameTrail.getState('slidePosition'));
+
+        _suppressSlideAnimation = false;
 
         Controls.querySelector('.rightControlPanel').style.display = '';
 
@@ -1143,9 +1201,34 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      * @param {String} oldState
      */
     function changeSlidePosition(newState, oldState) {
+        // Update slide-pos classes on the viewVideo element.
+        // CSS uses these to control visibility of areaTopDetails / areaBottomDetails,
+        // keeping them invisible (and flicker-free) whenever they're off-screen.
+        domElement.classList.toggle('slide-pos-top',    newState === 'top');
+        domElement.classList.toggle('slide-pos-bottom', newState === 'bottom');
+
+        // Only animate the slideArea when the state genuinely changes through the
+        // state system (onChange passes both oldState and newState), and animation
+        // has not been suppressed (e.g. during the leaveEditMode restore sequence).
+        if (!_suppressSlideAnimation && newState !== oldState && oldState !== undefined) {
+            slideArea.classList.add('is-sliding');
+        } else {
+            // Direct call or suppressed: ensure no stale is-sliding from a prior animation.
+            slideArea.classList.remove('is-sliding');
+        }
+
         adjustLayout();
         adjustHypervideo();
-        window.setTimeout(function() {
+
+        // A second pass 300 ms later corrects dimensions that depend on the
+        // post-transition layout (e.g. overlay mode offset calculations).
+        // Store the ref so resize handlers can cancel it.
+        // Also removes is-sliding so subsequent adjustLayout calls (e.g. from resize)
+        // don't accidentally animate.
+        clearTimeout(_pendingAdjust);
+        _pendingAdjust = window.setTimeout(function() {
+            _pendingAdjust = null;
+            slideArea.classList.remove('is-sliding');
             adjustLayout();
             adjustHypervideo();
         }, 300);

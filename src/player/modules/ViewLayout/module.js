@@ -246,7 +246,7 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
         for (var a in contentViewAreas) {
             for (var i in contentViewAreas[a]) {
                 var contentView = contentViewAreas[a][i];
-                contentView.updateContent();
+                contentView.updateContent(true);
             }
         }
 
