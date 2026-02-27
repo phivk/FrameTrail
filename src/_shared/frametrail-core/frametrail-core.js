@@ -120,6 +120,11 @@
                     : options.videoElement;
                 if (_el && _el.parentNode) {
                     var _wrapper = document.createElement('div');
+                    // Give the wrapper a unique ID so it can be referenced as a
+                    // CSS selector string (state.target must be a selector string
+                    // because modules use document.querySelector(getState('target'))).
+                    var _wrapperId = 'frametrail-wrap-' + Date.now() + '-' + Math.floor(Math.random() * 1e6);
+                    _wrapper.id = _wrapperId;
                     // Mirror the video element's computed dimensions so the wrapper
                     // is a seamless in-flow replacement (same footprint in the document
                     // flow). display is intentionally not copied — .frametrail-body CSS
@@ -128,7 +133,7 @@
                     _wrapper.style.width  = _cs.width;
                     _wrapper.style.height = _cs.height;
                     _el.parentNode.insertBefore(_wrapper, _el);
-                    resolvedTarget = _wrapper;
+                    resolvedTarget = '#' + _wrapperId;
                 }
             }
 
