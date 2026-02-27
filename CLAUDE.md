@@ -111,12 +111,11 @@ _data/
 
 | Directory | Library | Notes |
 |-----------|---------|-------|
-| `jquery/` | jQuery 3.7.1 | Core DOM/AJAX |
-| `jquery.tabs/` | jquery.tabs (custom) | Lightweight drop-in for jQuery UI `.tabs()` |
+| `tabsjs/` | FTTabs (custom) | Pure vanilla-JS tab widget, API-compatible drop-in for the former jquery.tabs |
 | `collisiondetection/` | Collision Detection | Overlay collision |
-| `interactjs/` | Interact.js | Drag/drop and resize (replaces jQuery UI draggable/resizable) |
-| `sortablejs/` | SortableJS | Sortable lists (replaces jQuery UI sortable) |
-| `dialog/` | dialog (custom) | Lightweight wrapper around native `<dialog>` (replaces jQuery UI dialog) |
+| `interactjs/` | Interact.js | Drag/drop and resize for overlay editing |
+| `sortablejs/` | SortableJS | Sortable lists |
+| `dialog/` | dialog (custom) | Lightweight wrapper around native `<dialog>` |
 | `leaflet/` | Leaflet | Map rendering (OpenStreetMap) |
 | `codemirror6/` | CodeMirror 6 | Code editor (JS/CSS/HTML modes + linting) |
 | `hlsjs/` | HLS.js | Adaptive video streaming |
@@ -301,7 +300,7 @@ git push origin v2.0.0
 - Module structure: Private vars/functions in closure, return public interface
 - Lifecycle: `init()` called once, `onChange(changedState, stateValue)` for state updates
 - No ES6 modules — uses global `FrameTrail` namespace
-- jQuery used extensively (`$`)
+- Plain DOM APIs throughout — jQuery has been fully removed
 
 **CSS:**
 - One stylesheet per module/type in same directory as JS

@@ -405,7 +405,7 @@ FrameTrail.addEventListener('myCustomEvent', function(event) {
 
 ### DOM Events
 
-UI components use standard jQuery event handling.
+UI components use standard DOM event handling (`addEventListener`, `dispatchEvent`).
 
 ## Environment Detection
 
@@ -579,7 +579,7 @@ Decorate `<video>` tags with `data-frametrail` and call `FrameTrail.autoInit()` 
 </video>
 
 <script>
-$(document).ready(function() {
+document.addEventListener('DOMContentLoaded', function() {
     // Initialises all [data-frametrail] video elements on the page.
     // Pass a DOM element or selector to limit the scan to a subtree:
     //   FrameTrail.autoInit(document.getElementById('article'));

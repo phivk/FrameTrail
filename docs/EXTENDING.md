@@ -44,11 +44,10 @@ FrameTrail.defineType(
                 renderContent: function() {
                     var self = this;
 
-                    var element = $('<div class="resourceDetail" data-type="mytype">'
-                        + '    <div class="myTypeContent">'
-                        + '        <!-- Your content here -->'
-                        + '    </div>'
-                        + '</div>');
+                    var element = document.createElement('div');
+                    element.className = 'resourceDetail';
+                    element.dataset.type = 'mytype';
+                    element.innerHTML = '<div class="myTypeContent"><!-- Your content here --></div>';
 
                     this.initializeContent(element);
 
@@ -71,24 +70,26 @@ FrameTrail.defineType(
 
                     var tagList = (this.resourceData.tags ? this.resourceData.tags.join(' ') : '');
 
-                    var thumbElement = $('<div class="resourceThumb ' + tagList + '" '
-                        + 'data-license-type="' + this.resourceData.licenseType + '" '
-                        + 'data-resourceID="' + trueID + '" '
-                        + 'data-type="' + this.resourceData.type + '" '
-                        + 'style="' + thumbBackground + '">'
-                        + '    <div class="resourceOverlay">'
-                        + '        <div class="resourceIcon"><span class="icon-mytype"></span></div>'
-                        + '    </div>'
-                        + '    <div class="resourceTitle">' + this.resourceData.name + '</div>'
-                        + '</div>');
+                    var thumbElement = document.createElement('div');
+                    thumbElement.className = 'resourceThumb ' + tagList;
+                    thumbElement.dataset.licenseType = this.resourceData.licenseType;
+                    thumbElement.dataset.resourceid = trueID;
+                    thumbElement.dataset.type = this.resourceData.type;
+                    if (thumbBackground) { thumbElement.style.cssText = thumbBackground; }
+                    thumbElement.innerHTML = '<div class="resourceOverlay">'
+                        + '    <div class="resourceIcon"><span class="icon-mytype"></span></div>'
+                        + '</div>'
+                        + '<div class="resourceTitle">' + this.resourceData.name + '</div>';
 
-                    var previewButton = $('<div class="resourcePreviewButton"><span class="icon-eye"></span></div>');
-                    previewButton.click(function(evt) {
-                        self.openPreview($(this).parent());
+                    var previewButton = document.createElement('div');
+                    previewButton.className = 'resourcePreviewButton';
+                    previewButton.innerHTML = '<span class="icon-eye"></span>';
+                    previewButton.addEventListener('click', function(evt) {
+                        self.openPreview(thumbElement);
                         evt.stopPropagation();
                         evt.preventDefault();
                     });
-                    thumbElement.append(previewButton);
+                    thumbElement.appendChild(previewButton);
 
                     return thumbElement;
                 },
@@ -103,17 +104,17 @@ FrameTrail.defineType(
                     var basicControls = this.renderBasicPropertiesControls(overlay);
 
                     // Add custom controls if needed
-                    var customControl = $('<div class="customControl">'
-                        + '    <label>Custom Setting</label>'
-                        + '    <input type="text" value="' + (overlay.data.attributes.customSetting || '') + '">'
-                        + '</div>');
+                    var customControl = document.createElement('div');
+                    customControl.className = 'customControl';
+                    customControl.innerHTML = '<label>Custom Setting</label>'
+                        + '<input type="text" value="' + (overlay.data.attributes.customSetting || '') + '">';
 
-                    customControl.find('input').on('change', function() {
-                        overlay.data.attributes.customSetting = $(this).val();
+                    customControl.querySelector('input').addEventListener('change', function() {
+                        overlay.data.attributes.customSetting = this.value;
                         FrameTrail.module('HypervideoModel').newUnsavedChange('overlays');
                     });
 
-                    basicControls.controlsContainer.find('#OverlayOptions').append(customControl);
+                    basicControls.controlsContainer.querySelector('#OverlayOptions').appendChild(customControl);
 
                     return basicControls;
                 },
@@ -226,7 +227,8 @@ FrameTrail.defineModule('MyCustomModule', function(FrameTrail) {
 
     // Private methods
     function create() {
-        domElement = $('<div class="myCustomModule"></div>');
+        domElement = document.createElement('div');
+        domElement.className = 'myCustomModule';
         // Build UI...
     }
 
@@ -240,9 +242,9 @@ FrameTrail.defineModule('MyCustomModule', function(FrameTrail) {
     // State change handlers
     function onEditModeChange(newValue, oldValue) {
         if (newValue) {
-            domElement.addClass('active');
+            domElement.classList.add('active');
         } else {
-            domElement.removeClass('active');
+            domElement.classList.remove('active');
         }
     }
 
@@ -389,15 +391,22 @@ function myCustomFunction($param1, $param2) {
 ### Call from JavaScript
 
 ```javascript
-$.ajax({
-    type: 'POST',
-    url: '_server/ajaxServer.php',
-    data: {
-        a: 'myCustomAction',
-        param1: 'value1',
-        param2: 'value2'
+// Via the FrameTrail Database module (preferred — handles serverPath automatically)
+FrameTrail.module('Database').ajax('myCustomAction', {
+    param1: 'value1',
+    param2: 'value2'
+}, function(response) {
+    if (response.status === 'success') {
+        console.log(response.response);
     }
-}).done(function(response) {
+});
+
+// Or directly via fetch
+fetch('_server/ajaxServer.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ a: 'myCustomAction', param1: 'value1', param2: 'value2' })
+}).then(function(r) { return r.json(); }).then(function(response) {
     if (response.status === 'success') {
         console.log(response.response);
     }

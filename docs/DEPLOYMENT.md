@@ -116,7 +116,7 @@ Point FrameTrail at a `<video>` already in your page. FrameTrail auto-creates a 
 </video>
 
 <script>
-$(document).ready(function() {
+document.addEventListener('DOMContentLoaded', function() {
     FrameTrail.init({
         videoElement: '#my-video',          // selector or DOM ref — no target needed
         annotations:  'annotations.json',  // URL string, array of URLs, or inline W3C objects
@@ -137,7 +137,7 @@ Use when you have a container `<div>` but no pre-existing `<video>` element.
 <div id="player" style="width: 900px; height: 600px;"></div>
 
 <script>
-$(document).ready(function() {
+document.addEventListener('DOMContentLoaded', function() {
     FrameTrail.init({
         target:      '#player',
         videoSource: 'https://example.com/video.mp4',
@@ -164,7 +164,7 @@ The lowest-friction option: decorate `<video>` tags with `data-frametrail` and c
 <!-- Multiple players: add more <video data-frametrail> elements -->
 
 <script>
-$(document).ready(function() {
+document.addEventListener('DOMContentLoaded', function() {
     FrameTrail.autoInit();
     // To limit the scan to a subtree: FrameTrail.autoInit(document.getElementById('article'));
 });
