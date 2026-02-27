@@ -684,22 +684,24 @@ FrameTrail.defineType(
                 },
 
 
-                _renderTab: function(onActivate) {
+                _renderTab: function(onActivate, withCloseButton) {
                     var self = this,
                         tabElement = document.createElement('div');
                     tabElement.className = 'contentViewTab';
                     tabElement.setAttribute('data-type', self.contentViewData.type);
                     tabElement.innerHTML = '    <div class="contentViewTabName">'+ self.contentViewData.name +'</div>'
-                                         + '    <div class="layoutAreaToggleCloseButton"></div>';
+                                         + (withCloseButton ? '    <div class="layoutAreaToggleCloseButton"></div>' : '');
                     tabElement.addEventListener('click', function() { onActivate.call(self); });
-                    tabElement.querySelector('.layoutAreaToggleCloseButton').addEventListener('click', function(evt) {
-                        evt.stopPropagation();
-                        evt.currentTarget.closest('.layoutArea').classList.toggle('closed');
-                        FrameTrail.changeState('slidePosition', 'middle');
-                        window.setTimeout(function() {
-                            FrameTrail.module('ViewVideo').adjustHypervideo();
-                        }, 250);
-                    });
+                    if (withCloseButton) {
+                        tabElement.querySelector('.layoutAreaToggleCloseButton').addEventListener('click', function(evt) {
+                            evt.stopPropagation();
+                            evt.currentTarget.closest('.layoutArea').classList.toggle('closed');
+                            FrameTrail.changeState('slidePosition', 'middle');
+                            window.setTimeout(function() {
+                                FrameTrail.module('ViewVideo').adjustHypervideo();
+                            }, 250);
+                        });
+                    }
                     return tabElement;
                 },
 
@@ -711,7 +713,7 @@ FrameTrail.defineType(
                  * @return {HTMLElement} tabElement
                  */
                 renderContentViewTab: function() {
-                    return this._renderTab(this.activateContentView);
+                    return this._renderTab(this.activateContentView, true);
                 },
 
 
