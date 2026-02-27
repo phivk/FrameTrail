@@ -709,28 +709,10 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         VideoContainer.style.width = videoContainerWidth + 'px';
 
         var _vcH = VideoContainer.offsetHeight;
-        var _stack = new Error().stack.split('\n').slice(0, 5).map(function(s) { return s.trim(); }).join(' | ');
-
-        console.log(
-            '%c[adjustHypervideo]', 'color:' + (_vcH < 10 ? 'red; font-weight:bold' : '#888'),
-            'vcW=' + videoContainerWidth,
-            'vcH=' + _vcH,
-            'editBorder=' + editBorder,
-            'animate=' + animate,
-            'editMode=' + FrameTrail.getState('editMode'),
-            _stack
-        );
 
         if (_vcH < 10) {
             // VideoContainer has no height — layout is in a transient state.
             // Bail out and retry to pick up the correct height once layout settles.
-            console.warn('%c[adjustHypervideo] vcH<10 – bailing out, retry in 50 ms', 'color:red; font-weight:bold',
-                'hvcH=' + HypervideoContainer.offsetHeight,
-                'pcH='  + PlayerContainer.offsetHeight,
-                'saH='  + slideArea.offsetHeight,
-                'saMarginTop=' + slideArea.style.marginTop,
-                'saMinH='      + slideArea.style.minHeight
-            );
             clearTimeout(_pendingHypervideo);
             _pendingHypervideo = window.setTimeout(function() {
                 _pendingHypervideo = null;
