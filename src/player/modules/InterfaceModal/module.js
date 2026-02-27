@@ -34,7 +34,7 @@ FrameTrail.defineModule('InterfaceModal', function(FrameTrail){
 
     // Show immediately so no app content is visible before the loading screen covers it.
     // showLoadingScreen() still works correctly for subsequent calls (after hideLoadingScreen() hides it).
-    loadingScreen.style.display = '';
+    loadingScreen.style.display = 'block';
     loadingScreen.classList.add('active');
 
 
@@ -102,7 +102,7 @@ FrameTrail.defineModule('InterfaceModal', function(FrameTrail){
      */
     function showLoadingScreen() {
 
-        loadingScreen.style.display = '';
+        loadingScreen.style.display = 'block';
         var anim = loadingScreen.animate(
             [{ opacity: '0' }, { opacity: '1' }],
             { duration: 300, easing: 'ease-in-out', fill: 'forwards' }

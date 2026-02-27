@@ -832,13 +832,13 @@
             csrfToken   = data.csrf || '';
             preflightOk = allPass;
             btnNext.disabled = !allPass;
-            if (!allPass) document.getElementById('recheck-btn').style.display = '';
+            if (!allPass) document.getElementById('recheck-btn').style.display = 'block';
         })
         .catch(function () {
             ['php', 'root_writable', 'data_writable'].forEach(function (k) {
                 setCheckState(k, 'fail', 'Could not reach the server');
             });
-            document.getElementById('recheck-btn').style.display = '';
+            document.getElementById('recheck-btn').style.display = 'block';
         });
     }
 

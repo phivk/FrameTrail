@@ -639,7 +639,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                             .then(function(respText) {
                                 var sugg = uploadDialog.querySelector('.locationSearchSuggestions');
                                 sugg.innerHTML = '';
-                                sugg.style.display = '';
+                                sugg.style.display = 'block';
                                 for (var i = 0; i < respText.length; i++) {
                                     var loc = respText[i];
                                     var li = document.createElement('li');

@@ -399,7 +399,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         };
 
         if (FrameTrail.getState('hv_config_clipTimeVisible')) {
-            Controls.querySelector('.timeDisplayFull').style.display = '';
+            Controls.querySelector('.timeDisplayFull').style.display = 'block';
         }
 
         toggleViewMode(FrameTrail.getState('viewMode'));
@@ -1218,7 +1218,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         if ( FrameTrail.getState('editMode') && FrameTrail.getState('editMode') != 'preview' ) return;
 
         if ( newState != 'middle' ) {
-            ExpandButton.style.display = '';
+            ExpandButton.style.display = 'block';
         } else {
             ExpandButton.style.display = 'none';
         }
@@ -1396,7 +1396,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
 
         if ( working ) {
 
-            WorkingIndicator.style.display = '';
+            WorkingIndicator.style.display = 'block';
 
         } else {
 
