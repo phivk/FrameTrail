@@ -106,6 +106,7 @@ JS_FILES=(
     "_lib/hlsjs/hls.min.js"
     "_lib/parsers/vtt.min.js"
     "_lib/interactjs/interact.min.js"
+    "_lib/sortablejs/Sortable.min.js"
     "_lib/quill/quill.min.js"
     "_lib/leaflet/leaflet.js"
     "_lib/collisiondetection/collisiondetection.js"
