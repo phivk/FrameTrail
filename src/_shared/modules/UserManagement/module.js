@@ -422,7 +422,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
                 loginBox.querySelector('.editAsGuestTabButton').classList.add('inactive');
                 loginBox.querySelector('.userTabRegister').style.display = 'none';
                 loginBox.querySelector('.userTabGuest').style.display = 'none';
-                loginBox.querySelector('.userTabLogin').style.display = '';
+                loginBox.querySelector('.userTabLogin').style.display = 'block';
 
             } else if ( this.classList.contains('createAccountTabButton') ) {
 
@@ -430,7 +430,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
                 loginBox.querySelector('.editAsGuestTabButton').classList.add('inactive');
                 loginBox.querySelector('.userTabLogin').style.display = 'none';
                 loginBox.querySelector('.userTabGuest').style.display = 'none';
-                loginBox.querySelector('.userTabRegister').style.display = '';
+                loginBox.querySelector('.userTabRegister').style.display = 'block';
 
             } else {
 
@@ -439,7 +439,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
                 loginBox.querySelector('.createAccountTabButton').classList.add('inactive');
                 loginBox.querySelector('.userTabLogin').style.display = 'none';
                 loginBox.querySelector('.userTabRegister').style.display = 'none';
-                loginBox.querySelector('.userTabGuest').style.display = '';
+                loginBox.querySelector('.userTabGuest').style.display = 'block';
 
             }
 
@@ -925,7 +925,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
             loginBox.querySelector('.loginTabButton').click();
         }
 
-        loginBox.style.display = '';
+        loginBox.style.display = 'block';
 
     }
 
@@ -940,7 +940,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
         userBoxCallback = null;
         userBoxCallbackCancel = null;
 
-        loginBox.style.display = 'none';
+        loginBox.style.display = '';
 
     }
 
