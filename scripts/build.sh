@@ -408,30 +408,35 @@ REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cp "$REPO_ROOT/LICENSE.md" "$BUILD_DIR/"
 
 cat > "$BUILD_DIR/README.md" << 'README'
-# FrameTrail __VERSION__
+# FrameTrail __VERSION__ — Open Hypervideo Environment
 
-## Installation
+FrameTrail works in three modes:
 
-1. Extract this archive into your web server directory (or any local directory)
-2. Open a terminal in that directory and run: `php -S localhost:8080`
-3. Open `http://localhost:8080` and follow the setup wizard
+1. **Server mode** (Apache/PHP) — Multi-user, file uploads, collaborative editing
+2. **Local folder mode** (Chrome/Edge) — Single-user, edits saved to a local `_data` folder via the File System Access API
+3. **In-memory mode** (all browsers) — View and edit in-browser; export changes as JSON via Save As
 
-For public server deployment, use Apache (`.htaccess` included) or nginx with PHP 7.4+.
+## Quick Start
 
-### Requirements
+**Server mode:**
+1. Extract this archive into your web server directory
+2. Run `php -S localhost:8080` (requires PHP 7.4+) and open `http://localhost:8080`
+3. Follow the setup wizard (creates `_data/` — directory needs write permissions)
 
-- PHP 7.4+
-- The directory needs write permissions so FrameTrail can create `_data/`
+**Local folder mode (no server):**
+1. Open `index.html` in Chrome or Edge
+2. Select or create a `_data` folder when prompted — full editing, no server needed
 
-### Documentation
+**In-memory mode:**
+Open `index.html` in any browser. View and edit contents; use Save As to export your data.
 
-For full documentation, examples, and source code visit:
+## Documentation & Source
+
 https://github.com/OpenHypervideo/FrameTrail
 
-### License
+## License
 
-FrameTrail is dual licensed under MIT and GPL v3.
-See LICENSE.md for details.
+FrameTrail is dual licensed under MIT and GPL v3. See LICENSE.md for details.
 README
 sed -i.bak "s/__VERSION__/${VERSION}/" "$BUILD_DIR/README.md"
 rm -f "$BUILD_DIR/README.md.bak"
