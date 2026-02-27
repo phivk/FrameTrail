@@ -172,23 +172,27 @@
 
         <script type="text/javascript">
 
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', async function() {
 
-                // Check Setup
-                if (!!document.location.host) {
-                    fetch('_server/ajaxServer.php', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: 'a=setupCheck'
-                    }).then(function(r) { return r.json(); }).then(function(ret) {
-                        if (ret["code"] != "1") {
+                // Check Setup — await before init so no requests are aborted mid-flight
+                if (document.location.host) {
+                    try {
+                        const r   = await fetch('_server/ajaxServer.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: 'a=setupCheck'
+                        });
+                        const ret = await r.json();
+                        if (ret['code'] != '1') {
                             var setupUrl = window.location.href.replace('resources.html', '') + 'setup.html';
                             window.location.replace(setupUrl);
+                            return;
                         }
-                    }).catch(function() {});
+                    } catch (e) {
+                        // server unreachable — fall through and let the app handle it
+                    }
                 }
-                
-                
+
                 window.myInstance = FrameTrail.init({
                     target:             'body',
                     resources:          [{
@@ -199,7 +203,6 @@
                     config:              null,
                     language:            'en-US'
                 }, 'ResourceManagerLauncher');
-                
 
             });
 

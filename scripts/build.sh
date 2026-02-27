@@ -309,19 +309,22 @@ cat > "$BUILD_DIR/index.html" << 'PLAYER_HTML'
     <link rel="stylesheet" href="_data/custom.css">
     <script src="frametrail.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            if (!!document.location.host) {
-                fetch('_server/ajaxServer.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: 'a=setupCheck'
-                }).then(function(r) { return r.json(); }).then(function(ret) {
-                    if (ret["code"] != "1") {
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (document.location.host) {
+                try {
+                    const r   = await fetch('_server/ajaxServer.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: 'a=setupCheck'
+                    });
+                    const ret = await r.json();
+                    if (ret['code'] != '1') {
                         window.location.replace(
                             window.location.href.replace('index.html', '') + 'setup.html'
                         );
+                        return;
                     }
-                }).catch(function() {});
+                } catch (e) {}
             }
             window.myInstance = FrameTrail.init({
                 target:         'body',
@@ -354,19 +357,22 @@ cat > "$BUILD_DIR/resources.html" << 'RESOURCES_HTML'
     <link rel="stylesheet" href="_data/custom.css">
     <script src="frametrail.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            if (!!document.location.host) {
-                fetch('_server/ajaxServer.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: 'a=setupCheck'
-                }).then(function(r) { return r.json(); }).then(function(ret) {
-                    if (ret["code"] != "1") {
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (document.location.host) {
+                try {
+                    const r   = await fetch('_server/ajaxServer.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: 'a=setupCheck'
+                    });
+                    const ret = await r.json();
+                    if (ret['code'] != '1') {
                         window.location.replace(
                             window.location.href.replace('resources.html', '') + 'setup.html'
                         );
+                        return;
                     }
-                }).catch(function() {});
+                } catch (e) {}
             }
             window.myInstance = FrameTrail.init({
                 target:    'body',
