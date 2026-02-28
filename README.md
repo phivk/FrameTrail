@@ -17,7 +17,7 @@ FrameTrail works in three modes with different capabilities. A PHP backend provi
 | **Requirements** | PHP 7.4+ | Chrome or Edge | Any modern browser |
 | **Edit hypervideos** (overlays, annotations, code snippets, layout, theme) | ✓ | ✓ | ✓ |
 | **Persistent saves** | ✓ | ✓ | — (export via Save As) |
-| **Manage hypervideos** (add / edit / delete) | ✓ | ✓ | — |
+| **Manage hypervideos** (add / delete) | ✓ | ✓ | — |
 | **Manage resources** (add / delete) | ✓ | ✓ | — |
 | **Thumbnail generation** | ✓ (server-side)| ✓ (client-side)| — |
 | **Authentication & multi-user accounts** | ✓ | — | — |
