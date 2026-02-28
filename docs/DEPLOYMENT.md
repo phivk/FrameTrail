@@ -86,25 +86,11 @@ The `StorageAdapterDownload` holds all data in memory. Hypervideo data is passed
 
 In server and local modes, Save As is also available as a supplemental export tool — useful for archiving or migrating content between instances.
 
-## Embedding FrameTrail
+## Player Initialization
 
-### In an iframe
+To add FrameTrail to any web page, include `frametrail.min.js` and `frametrail.min.css` and call `FrameTrail.init()`. Three patterns are supported — choose the one that fits your page structure.
 
-```html
-<iframe
-    src="https://your-server.com/frametrail/#hypervideo=abc123"
-    width="800"
-    height="600"
-    frameborder="0"
-    allowfullscreen>
-</iframe>
-```
-
-### Lightweight embedding (single video, no server needed)
-
-Three drop-in patterns that need no `_data/` folder or PHP backend. All three work in any modern browser (including Firefox and Safari) using the in-memory storage adapter.
-
-#### Adopt an existing `<video>` element
+### Adopt an existing `<video>` element
 
 Point FrameTrail at a `<video>` already in your page. FrameTrail auto-creates a wrapper div before it and takes over the element — your page layout is unchanged.
 
@@ -129,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 The wrapper div inherits the video's computed `width` and `height`, so the player fills exactly the same space the `<video>` occupied.
 
-#### Explicit container + video URL
+### Explicit container + video URL
 
 Use when you have a container `<div>` but no pre-existing `<video>` element.
 
@@ -148,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 ```
 
-#### Data-attribute auto-init
+### Data-attribute auto-init
 
 The lowest-friction option: decorate `<video>` tags with `data-frametrail` and call `FrameTrail.autoInit()` once. One call initialises every matching element on the page.
 

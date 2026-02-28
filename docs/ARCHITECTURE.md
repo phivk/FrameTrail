@@ -528,9 +528,9 @@ FrameTrail.init({
 }, 'PlayerLauncher');
 ```
 
-### Shorthand Init (lightweight embedding)
+### Shorthand Init
 
-Three patterns for embedding a single video without any `_data/` folder or server:
+Three patterns for initializing a player with a single video, without any `_data/` folder or server:
 
 #### Scenario A — Adopt an existing `<video>` element
 

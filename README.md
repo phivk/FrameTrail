@@ -85,7 +85,7 @@ For public deployments, use Apache (`.htaccess` included) or nginx with PHP-FPM.
 3. **Add resources** — Click "Manage Resources" to upload or link media
 4. **Edit** — Drag resources onto the video timeline as overlays or annotations
 5. **Save** — In server/local mode, Ctrl+S saves directly. As a guest, use Save As to export your changes as JSON.
-6. **Share** — Copy the URL or use iframe embedding
+6. **Share** — Copy the URL or export and share your hypervideo
 
 ---
 
