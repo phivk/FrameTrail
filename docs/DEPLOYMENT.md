@@ -6,7 +6,7 @@ This guide covers the three ways to run FrameTrail (server, local folder, and in
 
 ### Option 1: Server Deployment (PHP)
 
-Full multi-user mode with file uploads, user management, and collaboration.
+Full multi-user mode with file uploads and user management.
 
 **Requirements:**
 - PHP 7.4+
@@ -43,7 +43,7 @@ Then open `http://localhost:8080`. No Apache, no XAMPP needed if PHP is installe
 
 ### Option 2: Local Folder Mode (No Server)
 
-Single-user editing without a server. Uses the [File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API) to read and write files directly on disk. File uploads (images, video, audio) are supported, but server-side capabilities like media transcoding, thumbnail generation, and user management are not available.
+Single-user editing without a server. Uses the [File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API) to read and write files directly on disk. File uploads (images, video, audio) are supported, but server-side capabilities like media transcoding and user management are not available.
 
 **Requirements:**
 - Chrome or Edge (the File System Access API is not supported in Firefox or Safari)
@@ -62,8 +62,7 @@ The `StorageAdapterLocal` class uses the File System Access API (`showDirectoryP
 
 **Limitations:**
 - Identity is name-only (a login dialog prompts for a display name before entering edit mode; no account or password required)
-- No media transcoding or thumbnail generation (no server-side processing)
-- No multi-user collaboration or shared resource library
+- No media transcoding (no server-side processing)
 - Browser must support File System Access API (Chrome/Edge only)
 
 ### Option 3: In-Memory Mode (All Browsers)
@@ -79,8 +78,7 @@ The `StorageAdapterDownload` holds all data in memory. Hypervideo data is passed
 
 **Limitations:**
 - No persistence — changes are lost on page reload unless exported via Save As
-- No file uploads (media must be referenced by URL)
-- No multi-user collaboration
+- No resource management — adding or deleting resources is not available
 
 ### Save As / Export
 
