@@ -195,7 +195,6 @@ window.FrameTrail_L10n['en'] = {
     "ResourceTypeVideo": "Video",
     "ResourceTypeWebpage": "Webpage",
     "ResourceTypeUrlPreview": "URL Preview",
-
     "ResourceUploadFiles": "Upload Files",
     "ResourceUploadStart": "Start Upload",
     "ResourceUploading": "Uploading...",
