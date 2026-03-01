@@ -108,6 +108,7 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                             +   '            <select name="defaultLanguage" id="defaultLanguage">'
                             +   '                <option value="en"'+ (configData.defaultLanguage === 'en' || !configData.defaultLanguage ? ' selected' : '') +'>English</option>'
                             +   '                <option value="de"'+ (configData.defaultLanguage === 'de' ? ' selected' : '') +'>Deutsch</option>'
+                            +   '                <option value="fr"'+ (configData.defaultLanguage === 'fr' ? ' selected' : '') +'>Français</option>'
                             +   '            </select>'
                             +   '        </div>'
                             +   '    </div>'

@@ -122,6 +122,7 @@ JS_FILES=(
     # Localization (bundled into JS — must come before modules that use labels)
     "_shared/modules/Localization/locale/en.js"
     "_shared/modules/Localization/locale/de.js"
+    "_shared/modules/Localization/locale/fr.js"
     "_shared/modules/Localization/module.js"
 
     # Types (parent types before children — Resource before ResourceImage etc.)
