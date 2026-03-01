@@ -123,14 +123,6 @@
     FrameTrail.initModule('HypervideoFormBuilder');
     FrameTrail.initModule('HypervideoModel');
 
-    // Set up the interface
-    FrameTrail.initModule('Interface');
-
-    // Set up the controller
-    if (FrameTrail.module('RouteNavigation').hypervideoID) {
-        FrameTrail.initModule('HypervideoController');
-    }
-
     // Set up Timeline Controller
     FrameTrail.initModule('TimelineController');
 
@@ -178,6 +170,14 @@
             FrameTrail.module('Database').loadData(
 
                 function () {
+
+                    // Apply config language before any UI is rendered
+                    var configLang = (FrameTrail.module('Database').config || {}).defaultLanguage;
+                    if (configLang) { FrameTrail.module('Localization').setLanguage(configLang); }
+
+                    // Initialize UI modules after language is set so labels are correct
+                    FrameTrail.initModule('Interface');
+                    FrameTrail.initModule('HypervideoController');
 
                     FrameTrail.module('UserTraces').initTraces();
 
@@ -263,6 +263,13 @@
 
                 function(){
 
+                    // Apply config language before any UI is rendered
+                    var configLang = (FrameTrail.module('Database').config || {}).defaultLanguage;
+                    if (configLang) { FrameTrail.module('Localization').setLanguage(configLang); }
+
+                    // Initialize UI modules after language is set so labels are correct
+                    FrameTrail.initModule('Interface');
+
                     FrameTrail.module('UserTraces').initTraces();
 
                     if (FrameTrail.module('Database').config.alwaysForceLogin) {
@@ -276,7 +283,7 @@
 
                     function initOverview() {
 
-                        FrameTrail.module('InterfaceModal').setLoadingTitle('Overview');
+                        FrameTrail.module('InterfaceModal').setLoadingTitle(labels['GenericOverview']);
 
                         FrameTrail.module('Interface').create(function(){
 

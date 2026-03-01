@@ -88,6 +88,11 @@
     function continueLoadingRM() {
 
         FrameTrail.module('Database').loadConfigData(function() {
+
+            // Apply config language before any UI is rendered
+            var configLang = (FrameTrail.module('Database').config || {}).defaultLanguage;
+            if (configLang) { FrameTrail.module('Localization').setLanguage(configLang); }
+
             if (FrameTrail.module('Database').config.alwaysForceLogin) {
                 FrameTrail.module('UserManagement').ensureAuthenticated(function() {
                     initResourceManager();

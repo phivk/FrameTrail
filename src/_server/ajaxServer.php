@@ -381,11 +381,13 @@ switch($_REQUEST["a"]) {
                 "theme"=> "",
                 "defaultHypervideoHidden"=> false,
                 "userColorCollection"=> $tmpColors,
-                "videoFit"=> "contain"
+                "videoFit"=> "contain",
+                "defaultLanguage"=> "en"
             );
             // Apply optional config overrides sent by the setup wizard
             $configOverrides = array("defaultUserRole", "userNeedsConfirmation",
-                                     "alwaysForceLogin", "allowUploads", "theme");
+                                     "alwaysForceLogin", "allowUploads", "theme",
+                                     "defaultLanguage");
             foreach ($configOverrides as $key) {
                 if (isset($_REQUEST[$key])) {
                     $val = $_REQUEST[$key];
@@ -393,6 +395,11 @@ switch($_REQUEST["a"]) {
                     if ($val === "false") $val = false;
                     // Sanitize theme: allow only safe identifier characters
                     if ($key === "theme") { $val = preg_replace('/[^a-z0-9_-]/', '', strtolower((string)$val)); }
+                    // Sanitize defaultLanguage: allow only 2-character lowercase codes
+                    if ($key === "defaultLanguage") {
+                        $val = preg_replace('/[^a-z]/', '', strtolower((string)$val));
+                        if (strlen($val) !== 2) { $val = "en"; }
+                    }
                     $tmpConf[$key] = $val;
                 }
             }

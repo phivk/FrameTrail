@@ -36,7 +36,7 @@
      *
      * Supported data attributes on the <video> element:
      *   data-frametrail-annotations  — URL of a W3C annotations JSON file
-     *   data-frametrail-language     — language code (default: 'en-US')
+     *   data-frametrail-language     — language code; maps to config.defaultLanguage
      *   data-frametrail-config       — inline JSON config object
      *
      * @method autoInit
@@ -49,15 +49,19 @@
         for (var i = 0; i < videos.length; i++) {
             (function (video) {
                 var annotations = video.getAttribute('data-frametrail-annotations') || null;
-                var language    = video.getAttribute('data-frametrail-language')    || 'en-US';
+                var langAttr    = video.getAttribute('data-frametrail-language');
                 var configAttr  = video.getAttribute('data-frametrail-config');
                 var config      = configAttr ? JSON.parse(configAttr) : {};
+
+                if (langAttr) {
+                    if (!config) { config = {}; }
+                    config.defaultLanguage = langAttr;
+                }
 
                 // No target provided — _start() will auto-create the wrapper div
                 _init({
                     videoElement: video,
                     annotations:  annotations,
-                    language:     language,
                     config:       config
                 });
             })(videos[i]);
@@ -151,7 +155,6 @@
                 tagdefinitions:     options.tagdefinitions,
                 config:             options.config,
                 users:              options.users,
-                language:           options.language || null,
                 videoSource:        options.videoSource  || null,
                 videoElement:       options.videoElement || null,
                 annotations:        options.annotations  || null,

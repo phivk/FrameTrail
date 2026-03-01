@@ -120,7 +120,7 @@ JS_FILES=(
     "_shared/frametrail-core/frametrail-core.js"
 
     # Localization (bundled into JS — must come before modules that use labels)
-    "_shared/modules/Localization/locale/en-US.js"
+    "_shared/modules/Localization/locale/en.js"
     "_shared/modules/Localization/locale/de.js"
     "_shared/modules/Localization/module.js"
 
@@ -389,7 +389,7 @@ cat > "$BUILD_DIR/resources.html" << 'RESOURCES_HTML'
                               data: "_data/resources/_index.json",
                               type: "frametrail" }],
                 config:    null,
-                language:  'en-US'
+                language:  'en'
             }, 'ResourceManagerLauncher');
         });
     </script>

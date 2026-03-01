@@ -6,6 +6,10 @@
  * I contain all business logic about the Localization module.
  *
  * I contain a reference to all labels in the currently specified locale.
+ * All modules that capture `var labels = FrameTrail.module('Localization').labels`
+ * receive a stable Proxy object — property lookups are always forwarded live to the
+ * current locale, so calling setLanguage() after init is reflected immediately in
+ * all existing module references without needing a page reload.
  *
  * @class Localization
  * @static
@@ -13,36 +17,59 @@
 
 FrameTrail.defineModule('Localization', function(FrameTrail){
 
-    var locale = (FrameTrail.getState('language')) ? FrameTrail.getState('language') : 'en-US',
-        labels = null;
+    var locale = 'en',
+        currentLabels = null;
 
     /**
-     * I init the Localization module.
+     * I update currentLabels to match the active locale, falling back to 'en'.
      *
      * @method updateLabels
-     * @return 
      */
     function updateLabels() {
-        
+
         if (window.FrameTrail_L10n[locale]) {
-            labels = window.FrameTrail_L10n[locale];
+            currentLabels = window.FrameTrail_L10n[locale];
         } else {
-            labels = window.FrameTrail_L10n['en-US'];
+            currentLabels = window.FrameTrail_L10n['en'];
         }
 
     }
 
+    /**
+     * I switch the active language and update all label lookups immediately.
+     * Because labels is a Proxy, all existing module references pick up the
+     * new locale without needing to re-initialize.
+     *
+     * @method setLanguage
+     * @param {String} lang  Two-character locale code, e.g. 'en' or 'de'
+     */
+    function setLanguage(lang) {
+        locale = lang;
+        updateLabels();
+    }
+
     updateLabels();
-    
+
+    var labelsProxy = new Proxy({}, {
+        get: function(target, prop) {
+            return currentLabels[prop];
+        },
+        has: function(target, prop) {
+            return prop in currentLabels;
+        }
+    });
+
     return {
 
-        updateLabels:   updateLabels,
+        updateLabels: updateLabels,
+        setLanguage:  setLanguage,
 
         /**
-         * The current label data.
+         * A stable Proxy object that always forwards property lookups to the
+         * current locale's label data. Modules may safely cache this reference.
          * @attribute labels
          */
-        get labels()    { return labels }
+        get labels() { return labelsProxy }
 
     };
 

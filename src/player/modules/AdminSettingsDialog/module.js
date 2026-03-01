@@ -102,6 +102,15 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                             +   '        <label for="userTracesEndAction" data-tooltip-right="'+ labels['MessageUserTracesStartAction'] +'">'+ labels['SettingsUserTracesEndAction'] +'</label>'
                             +   '        <input type="text" style="margin-top: 0px; margin-bottom: 2px;" name="userTracesEndAction" id="userTracesEndAction" placeholder="'+ labels['SettingsUserTracesEndAction'] +'" value="'+ (configData.userTracesEndAction || '') +'">'
                             +   '    </div>'
+                            +   '    <div class="column-3">'
+                            +   '        <label for="defaultLanguage">'+ labels['GenericLanguage'] +'</label>'
+                            +   '        <div class="custom-select">'
+                            +   '            <select name="defaultLanguage" id="defaultLanguage">'
+                            +   '                <option value="en"'+ (configData.defaultLanguage === 'en' || !configData.defaultLanguage ? ' selected' : '') +'>English</option>'
+                            +   '                <option value="de"'+ (configData.defaultLanguage === 'de' ? ' selected' : '') +'>Deutsch</option>'
+                            +   '            </select>'
+                            +   '        </div>'
+                            +   '    </div>'
                             +   '</div>';
         var configurationUI = _cuw.firstElementChild;
 
@@ -119,6 +128,10 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
         }); });
 
         configurationUI.querySelectorAll('input[type="radio"]').forEach(function(el) { el.addEventListener('change', function(evt) {
+            configChanged = true;
+        }); });
+
+        configurationUI.querySelectorAll('select').forEach(function(el) { el.addEventListener('change', function(evt) {
             configChanged = true;
         }); });
 
@@ -605,7 +618,16 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                                         database.config[key] = value;
                                     }
                                 });
-                                
+
+                                // Apply select changes
+                                configurationUI.querySelectorAll('select').forEach(function(el) {
+                                    var key = el.getAttribute('name'),
+                                        value = el.value;
+                                    if (key) {
+                                        database.config[key] = value;
+                                    }
+                                });
+
                                 // Apply global default theme
                                 database.config.theme = selectedThemeValue;
                                 // Only apply to current view if the hypervideo has no per-hypervideo theme
@@ -652,11 +674,24 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                                     adminDialogCtrl.close();
                                 }
                             }
-                            
+
+                            var languageChanged = configChanged &&
+                                (database.config.defaultLanguage || 'en') !== (initialConfig.defaultLanguage || 'en');
+
                             if (configChanged) {
                                 FrameTrail.module('Database').saveConfig(function(result) {
                                     if (!result.success) {
                                         saveError = result.error;
+                                        checkSaveComplete();
+                                        return;
+                                    }
+                                    // If language changed, reload after the save is confirmed complete on disk
+                                    if (languageChanged) {
+                                        FrameTrail.module('Localization').setLanguage(database.config.defaultLanguage);
+                                        FrameTrail.module('InterfaceModal').hideMessage();
+                                        adminDialogCtrl.close();
+                                        window.location.reload();
+                                        return;
                                     }
                                     checkSaveComplete();
                                 });

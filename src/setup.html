@@ -632,6 +632,17 @@
                     <span class="slider round"></span>
                 </label>
             </div>
+
+            <div class="toggle-setting">
+                <div class="toggle-text">
+                    <strong>Interface Language</strong>
+                    <span>The language used for all menus, buttons, and messages</span>
+                </div>
+                <select id="cfg-language">
+                    <option value="en">English</option>
+                    <option value="de">Deutsch</option>
+                </select>
+            </div>
         </div>
 
         <!-- Done -->
@@ -951,6 +962,8 @@
                 document.getElementById('cfg-forcelogin').checked ? 'true' : 'false');
             params.set('allowUploads',
                 document.getElementById('cfg-uploads').checked ? 'true' : 'false');
+            params.set('defaultLanguage',
+                document.getElementById('cfg-language').value);
         }
 
         fetch('_server/ajaxServer.php', {
