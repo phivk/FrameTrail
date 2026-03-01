@@ -42,6 +42,7 @@
     background: var(--primary-bg-color);
     color: var(--primary-fg-color);
     flex-shrink: 0;
+    min-height: 20px;
 }
 
 .ft-dialog-title {
