@@ -44,15 +44,13 @@ jobs:
           files: frametrail-${{ github.ref_name }}.zip
           generate_release_notes: true
           body: |
-            Download `frametrail-${{ github.ref_name }}.zip` and extract it. FrameTrail works in three modes:
+            Download [`frametrail-${{ github.ref_name }}.zip`](https://github.com/OpenHypervideo/FrameTrail/releases/download/${{ github.ref_name }}/frametrail-${{ github.ref_name }}.zip) and extract it. 
+            
+            **Server mode** — Run `php -S localhost:8080` (PHP 7.4+), open `http://localhost:8080` and follow the setup wizard. 
 
-            **Server mode** — Run `php -S localhost:8080` (PHP 7.4+) and open `http://localhost:8080`. Follow the setup wizard. For public deployments use Apache or nginx with PHP-FPM.
+            **Local folder mode** (no server) — Open `index.html` in Chrome or Edge and select a data folder when prompted.
 
-            **Local folder mode** (no server) — Open `index.html` in Chrome or Edge and select a `_data` folder when prompted.
-
-            **In-memory mode** — Open `index.html` in any browser. Edit and export via Save As.
-
-            For full documentation and source code, see the [repository](https://github.com/OpenHypervideo/FrameTrail).
+            For full documentation, see the [repository](https://github.com/OpenHypervideo/FrameTrail).
 
             **CDN (jsDelivr):**
             ```
