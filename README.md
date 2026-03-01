@@ -14,7 +14,7 @@ FrameTrail is an open source software that lets you experience, manage and edit 
 
 > Film shall be programmed with Open Web Technologies.
 
-**Open Source Film** — By "rendering" a film, we permanently seal it and "burn" all its fragments (media assets, cuts, text overlays, effects, animations) irreversibly into one flat video file. We will never render or export hypervideos to flat videos files. 
+**Open Source Film** — By "rendering" a film, we permanently seal it and "burn" all its fragments (media assets, cuts, text overlays, effects, animations) irreversibly into one flat video file. We will never render or export hypervideos to flat video files. 
 
 **Player and Editor are one** — No separation of editor and viewer / player. Yes, that means anyone can edit any FrameTrail hypervideo anywhere (and then download or save the changes to their own FrameTrail installation). 
 
