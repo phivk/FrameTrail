@@ -20,6 +20,8 @@ By "rendering" a film, we permanently seal it and "burn" all its fragments into 
 
 Player and Editor are one. Yes, that means anyone can edit any FrameTrail hypervideo anywhere (and then download or save the changes to their own FrameTrail installation). No, there will never be a "lightweight player" without editing capabilities. The entire software uncluding the player and all in-browser editing tools is ~3.5MB. 
 
+---
+
 ## Features
 
 ### Editing
