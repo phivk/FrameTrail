@@ -4,24 +4,9 @@
 
 FrameTrail is an open source software that lets you experience, manage and edit interactive video directly in your web browser. Add multimedia overlays, annotations, video links, and code snippets to any video — or create time-based presentations without video at all. All data is stored as portable JSON files with no database required.
 
-FrameTrail works in three modes with different capabilities. A PHP backend provides the full feature set: multi-user accounts, file uploads, and optional media processing. In Chrome/Edge, the [File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API) enables single-user local editing with file uploads, but without transcoding or user management. In any browser — including Firefox and Safari — an in-memory mode lets you view and edit contents and export changes as JSON.
-
 ---
 
 ## Features
-
-### 3 Ways to Run
-
-| | Server mode | Local folder mode | In-memory mode |
-|---|---|---|---|
-| **Requirements** | PHP 7.4+ | Chrome or Edge | Any modern browser |
-| **Edit hypervideos** (overlays, annotations, code snippets, layout, theme) | ✓ | ✓ | ✓ |
-| **Persistent saves** | ✓ | ✓ | — (export via Save As) |
-| **Manage hypervideos** (add / delete) | ✓ | ✓ | — |
-| **Manage resources** (add / delete) | ✓ | ✓ | — |
-| **Thumbnail generation** | ✓ (server-side)| ✓ (client-side)| — |
-| **Authentication & multi-user accounts** | ✓ | — | — |
-| **Media transcoding** | ✓ | — | — |
 
 ### Editing
 
@@ -54,18 +39,26 @@ FrameTrail supports a wide range of embeddable content:
 - Export/download data with the built-in **Save As** feature (works without server or File System Access API)
 - Annotations follow the **W3C Web Annotation** data model
 
-### Browser Support
+### 3 Ways to Run
 
-- **Desktop:** Chrome, Firefox, Edge, Safari (latest versions)
-- **Local folder mode:** Chrome/Edge only (requires File System Access API)
-- **In-memory/download mode:** All modern browsers
-- **Mobile:** Player works in server mode; editing is disabled
+FrameTrail works in three modes with different capabilities.
+
+| | Server mode | Local folder mode | In-memory mode |
+|---|---|---|---|
+| **Requirements** | PHP 7.4+ | Chrome or Edge | Any modern browser |
+| **Edit hypervideos** (overlays, annotations, code snippets, layout, theme) | ✓ | ✓ | ✓ |
+| **Persistent saves** | ✓ | ✓ | — (export via Save As) |
+| **Manage hypervideos** (add / delete) | ✓ | ✓ | — |
+| **Manage resources** (add / delete) | ✓ | ✓ | — |
+| **Thumbnail generation** | ✓ (server-side)| ✓ (client-side)| — |
+| **Authentication & multi-user accounts** | ✓ | — | — |
+| **Media transcoding** | ✓ | — | — |
 
 ---
 
 ## Installation
 
-### Option 1: Server Deployment (PHP)
+### Option 1: Server Deployment 
 
 1. Download the [latest release](https://github.com/OpenHypervideo/FrameTrail/releases) or build from source
 2. Extract to any directory
@@ -76,7 +69,7 @@ FrameTrail supports a wide range of embeddable content:
 
 For public deployments, use Apache (`.htaccess` included) or nginx with PHP-FPM. No PHP installed? Use [XAMPP](https://www.apachefriends.org/) (Windows) or [MAMP](https://www.mamp.info/) (Mac/Windows).
 
-### Option 2: Local Folder Mode (No Server)
+### Option 2: Local Folder Mode 
 
 1. Download and extract FrameTrail
 2. Open `index.html` in Chrome or Edge
@@ -88,7 +81,7 @@ For public deployments, use Apache (`.htaccess` included) or nginx with PHP-FPM.
 ## Getting Started
 
 1. **Enter edit mode** — Click the Edit button (top right). In server mode, log in with your account or continue as a guest (name only). In local folder and in-memory modes, only the guest option is shown.
-2. **Create a hypervideo** — In the titlebar, click "New Hypervideo" and choose a video source
+2. **Create a hypervideo** — In the sidebar, click "New Hypervideo" and choose a video source
 3. **Add resources** — Click "Manage Resources" to upload or link media
 4. **Edit** — Drag resources onto the video timeline as overlays or annotations
 5. **Save** — In server/local mode, Ctrl+S saves directly. As a guest, use Save As to export your changes as JSON.
@@ -127,31 +120,6 @@ This creates a `build/` directory with concatenated and minified JS/CSS bundles.
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — Module system, state management, storage modes, data model
 - [docs/EXTENDING.md](docs/EXTENDING.md) — Adding resource types, modules, localization
 - [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) — Server deployment, local usage, building, releasing
-
----
-
-## Project Structure
-
-```
-FrameTrail/
-├── src/                    # Source code (runnable as-is for development)
-│   ├── index.html          # Player/editor entry point
-│   ├── resources.html      # Resource manager
-│   ├── setup.html          # Setup wizard
-│   ├── _lib/               # Vendored third-party libraries
-│   ├── _shared/            # Core framework, shared modules, types, styles
-│   ├── player/             # Player-specific modules and types
-│   ├── resourcemanager/    # Resource manager launcher
-│   └── _server/            # PHP backend
-├── scripts/
-│   └── build.sh            # Production build script
-├── .github/workflows/      # CI/CD (build verification + release packaging)
-├── docs/                   # Developer documentation
-├── CLAUDE.md               # AI assistant project guide
-├── CONTRIBUTING.md         # Contributor guide
-├── LICENSE.md              # MIT + GPL v3 dual license
-└── README.md               # This file
-```
 
 ---
 
