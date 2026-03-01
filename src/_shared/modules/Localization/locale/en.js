@@ -1,12 +1,12 @@
 /**
- * Localization file for 'en-US'
- * 
+ * Localization file for 'en'
+ *
  * L10n files are structured as JSON object to simplify application bundling
- * The global FrameTrail_L10n_Labels object is never referenced directly 
+ * The global FrameTrail_L10n_Labels object is never referenced directly
  * but only used inside the Localization module.
  */
 
-window.FrameTrail_L10n['en-US'] = {
+window.FrameTrail_L10n['en'] = {
     "ErrorAccountDeactivated": "Your account was deactivated. Please contact an admin!",
     "ErrorChooseImageFile": "Please choose an image file.",
     "ErrorChooseVideoFile": "Please choose a video file.",
