@@ -1,4 +1,5 @@
-# FrameTrail — Create, Annotate & Remix Interactive Videos
+# FrameTrail 
+## Create, Annotate & Remix Interactive Videos
 
 [![Build](https://github.com/OpenHypervideo/FrameTrail/actions/workflows/build.yml/badge.svg)](https://github.com/OpenHypervideo/FrameTrail/actions/workflows/build.yml)
 [![Release](https://img.shields.io/github/v/release/OpenHypervideo/FrameTrail)](https://github.com/OpenHypervideo/FrameTrail/releases)
