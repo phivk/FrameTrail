@@ -1,7 +1,5 @@
 # FrameTrail — Open Hypervideo Environment
 
-> Film shall be programmed with Open Web Technologies.
-
 [![Build](https://github.com/OpenHypervideo/FrameTrail/actions/workflows/build.yml/badge.svg)](https://github.com/OpenHypervideo/FrameTrail/actions/workflows/build.yml)
 [![Release](https://img.shields.io/github/v/release/OpenHypervideo/FrameTrail)](https://github.com/OpenHypervideo/FrameTrail/releases)
 [![License](https://img.shields.io/badge/license-MIT%20%2F%20GPL%20v3-blue)](LICENSE.md)
@@ -9,6 +7,18 @@
 FrameTrail is an open source software that lets you experience, manage and edit interactive video directly in your web browser. Add multimedia overlays, annotations, video links, and code snippets to any video — or create time-based presentations without video at all. All data is stored as portable JSON files with no database required.
 
 ---
+
+## Principles
+
+> Film shall be programmed with Open Web Technologies.
+
+### Open Source Film
+
+By "rendering" a film, we permanently seal it and "burn" all its fragments into it. FrameTrail is about preserving the openness of film that it has in production environments, so raw videos, text overlays, effects and media assets can be used, changed and remixed forever (and live!) beyond the frontiers of proprietary editing software and platforms. We will never render or export hypervideos to flat videos files. 
+
+### No separation of editor and viewer / player
+
+Player and Editor are one. Yes, that means anyone can edit any FrameTrail hypervideo anywhere (and then download or save the changes to their own FrameTrail installation). No, there will never be a "lightweight player" without editing capabilities. The entire software uncluding the player and all in-browser editing tools is ~3.5MB. 
 
 ## Features
 
