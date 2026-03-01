@@ -6,7 +6,7 @@
 
 ## Create, Annotate & Remix Interactive Videos
 
-FrameTrail is an open source software that lets you experience, manage and edit interactive video directly in your web browser. Add multimedia overlays, annotations, video links, and code snippets to any video — or create time-based presentations without video at all. All data is stored as portable JSON files with no database required.
+FrameTrail is an open source software that lets you experience, manage and edit interactive video directly in your web browser. Add multimedia overlays, annotations or clickable links to any video — or create time-based presentations without video at all. All data is stored as portable JSON files.
 
 ---
 
