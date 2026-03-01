@@ -34,7 +34,7 @@ FrameTrail is an open source software that lets you experience, manage and edit 
 
 - All data stored as **JSON files** in a `_data` directory — no database
 - Copy the entire `_data` folder to move your instance between servers
-- Export/download data with the built-in **Save As** feature (works without server or File System Access API)
+- Export/download data with the built-in **Save As** feature (anyone can download hypervideos and then continue editing in their own FrameTrail installation or locally)
 - Annotations follow the **W3C Web Annotation** data model
 
 ### 3 Ways to Run
