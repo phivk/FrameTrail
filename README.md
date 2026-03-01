@@ -12,13 +12,9 @@ FrameTrail is an open source software that lets you experience, manage and edit 
 
 > Film shall be programmed with Open Web Technologies.
 
-### Open Source Film
+**Open Source Film** — By "rendering" a film, we permanently seal it and "burn" all its fragments (media assets, cuts, text overlays, effects, animations) irreversibly into one flat video file. We will never render or export hypervideos to flat videos files. 
 
-By "rendering" a film, we permanently seal it and "burn" all its fragments (media assets, cuts, text overlays, effects, animations) irreversibly into one flat video file. We will never render or export hypervideos to flat videos files. 
-
-### Player and Editor are one
-
-No separation of editor and viewer / player. Yes, that means anyone can edit any FrameTrail hypervideo anywhere (and then download or save the changes to their own FrameTrail installation). 
+**Player and Editor are one** — No separation of editor and viewer / player. Yes, that means anyone can edit any FrameTrail hypervideo anywhere (and then download or save the changes to their own FrameTrail installation). 
 
 ---
 
@@ -26,13 +22,21 @@ No separation of editor and viewer / player. Yes, that means anyone can edit any
 
 ### Editing
 
-- Use any **HTML5 video**, **YouTube**, **Vimeo**, or an empty **time container** as source
-- Add time-based **overlays** positioned on the video
-- Add **annotations** displayed alongside the video
-- Insert **code snippets** (JavaScript) triggered at specific timestamps
-- Create **video links** to other hypervideos (internal or external)
-- Add and sync **subtitles** (VTT format)
-- View, compare, and reuse annotations from other users
+#### Timebased Documents
+
+Use any video or even an empty canvas with just a duration as a basis for synchronizing contents (like interactive transcripts, overlays or annotation timelines). 
+
+#### Hyperlinked Videos
+
+Create non-linear networks of videos which are connected via clickable hotspots and can be freely navigated by the user (like branching narratives or interactive explainer videos). 
+
+#### Interactive Overlays
+
+Place documents on top of the video (e.g. text, images, web pages, interactive maps or custom text/html) and decide how and when they should be displayed.
+
+#### Multimedia Annotations
+
+Add supplementing materials at certain points of time and decide how they should be displayed in the player using the interactive layout editor. 
 
 ### Data & Portability
 
