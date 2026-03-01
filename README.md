@@ -1,9 +1,10 @@
 # FrameTrail 
-## Create, Annotate & Remix Interactive Videos
 
 [![Build](https://github.com/OpenHypervideo/FrameTrail/actions/workflows/build.yml/badge.svg)](https://github.com/OpenHypervideo/FrameTrail/actions/workflows/build.yml)
 [![Release](https://img.shields.io/github/v/release/OpenHypervideo/FrameTrail)](https://github.com/OpenHypervideo/FrameTrail/releases)
 [![License](https://img.shields.io/badge/license-MIT%20%2F%20GPL%20v3-blue)](LICENSE.md)
+
+## Create, Annotate & Remix Interactive Videos
 
 FrameTrail is an open source software that lets you experience, manage and edit interactive video directly in your web browser. Add multimedia overlays, annotations, video links, and code snippets to any video — or create time-based presentations without video at all. All data is stored as portable JSON files with no database required.
 
