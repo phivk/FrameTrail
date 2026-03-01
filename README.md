@@ -18,20 +18,6 @@ FrameTrail is an open source software that lets you experience, manage and edit 
 - Add and sync **subtitles** (VTT format)
 - View, compare, and reuse annotations from other users
 
-### Resource Types
-
-FrameTrail supports a wide range of embeddable content:
-
-| Category | Types |
-|----------|-------|
-| Media | Video (HTML5/HLS), Image, Audio, PDF |
-| Video platforms | YouTube, Vimeo, Wistia, Loom, Twitch |
-| Social/Web | X/Twitter, Bluesky, Mastodon, TikTok, Reddit, Flickr |
-| Audio/Music | Soundcloud, Spotify |
-| Presentations | Slideshare, Figma, Codepen |
-| Content | Text (rich HTML), Wikipedia, Webpage (iframe), URL Preview |
-| Interactive | Quiz, Hotspot, Location (OpenStreetMap), Entity (linked data) |
-
 ### Data & Portability
 
 - All data stored as **JSON files** in a `_data` directory — no database
