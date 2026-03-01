@@ -39,9 +39,6 @@
     FrameTrail.initModule('RouteNavigation');
     FrameTrail.initModule('StorageManager');
     FrameTrail.initModule('Database');
-    FrameTrail.initModule('UserManagement');
-    FrameTrail.initModule('ResourceManager');
-    FrameTrail.initModule('ViewResources');
 
 
     FrameTrail.module('StorageManager').init().then(function() {
@@ -92,6 +89,12 @@
             // Apply config language before any UI is rendered
             var configLang = (FrameTrail.module('Database').config || {}).defaultLanguage;
             if (configLang) { FrameTrail.module('Localization').setLanguage(configLang); }
+
+            // Initialize UI-building modules AFTER language is set so their
+            // HTML is generated with the correct locale from the start.
+            FrameTrail.initModule('UserManagement');
+            FrameTrail.initModule('ResourceManager');
+            FrameTrail.initModule('ViewResources');
 
             if (FrameTrail.module('Database').config.alwaysForceLogin) {
                 FrameTrail.module('UserManagement').ensureAuthenticated(function() {
