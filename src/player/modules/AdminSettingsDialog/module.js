@@ -99,7 +99,7 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                             +   '    <div class="column-3">'
                             +   '        <label for="userTracesStartAction" data-tooltip-bottom-right="'+ labels['MessageUserTracesStartAction'] +'">'+ labels['SettingsUserTracesStartAction'] +'</label>'
                             +   '        <input type="text" style="margin-top: 0px; margin-bottom: 2px;" name="userTracesStartAction" id="userTracesStartAction" placeholder="'+ labels['SettingsUserTracesStartAction'] +'" value="'+ (configData.userTracesStartAction || '') +'">'
-                            +   '        <label for="userTracesEndAction" data-tooltip-right="'+ labels['MessageUserTracesStartAction'] +'">'+ labels['SettingsUserTracesEndAction'] +'</label>'
+                            +   '        <label for="userTracesEndAction" data-tooltip-right="'+ labels['MessageUserTracesEndAction'] +'">'+ labels['SettingsUserTracesEndAction'] +'</label>'
                             +   '        <input type="text" style="margin-top: 0px; margin-bottom: 2px;" name="userTracesEndAction" id="userTracesEndAction" placeholder="'+ labels['SettingsUserTracesEndAction'] +'" value="'+ (configData.userTracesEndAction || '') +'">'
                             +   '    </div>'
                             +   '    <div class="column-3">'
