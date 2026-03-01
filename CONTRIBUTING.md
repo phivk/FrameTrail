@@ -69,7 +69,7 @@ FrameTrail/
 │   │   │   └── storage/           # StorageAdapter, StorageAdapterServer/Local/Download
 │   │   ├── modules/               # Shared modules
 │   │   │   ├── Database/          # Data loading and persistence
-│   │   │   ├── Localization/      # i18n (en-US, de)
+│   │   │   ├── Localization/      # i18n (en, de)
 │   │   │   ├── ResourceManager/   # Resource CRUD
 │   │   │   ├── RouteNavigation/   # URL parsing, environment detection
 │   │   │   ├── StorageManager/    # Storage mode selection

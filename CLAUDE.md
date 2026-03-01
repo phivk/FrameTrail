@@ -330,8 +330,10 @@ git push origin v2.0.0
 ## Localization
 
 **Language Files:** `src/_shared/modules/Localization/locale/`
-- Default: `en-US.js`
+- Default: `en.js`
 - German: `de.js`
 - Add new languages by creating `{locale}.js` files
 - **Important:** Locale files are `.js` files (not `.json`)
 - Switch language via `FrameTrail.module('Localization').setLanguage(locale)`
+
+**Configuring the language:** Language is set via `config.defaultLanguage` in the init options — `language` is NOT a direct init option. The `data-frametrail-language` HTML attribute maps to `config.defaultLanguage` internally (handled in `_autoInit`). Example: `FrameTrail.init({ config: { defaultLanguage: 'de' } }, 'PlayerLauncher')`.

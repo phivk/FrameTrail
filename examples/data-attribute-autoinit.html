@@ -10,7 +10,6 @@
   - Multiple <video data-frametrail> elements on one page each get their own instance
   - Supported data attributes:
       data-frametrail-annotations   URL to a W3C annotations JSON file
-      data-frametrail-language      language code (default: en-US)
       data-frametrail-config        inline JSON config object
 
   FrameTrail.autoInit() scans the document for [data-frametrail] video elements,
@@ -33,12 +32,10 @@
     <!--
       Add `data-frametrail` to any <video> to make it a FrameTrail player.
       data-frametrail-annotations  — URL of a W3C annotations JSON file
-      data-frametrail-language     — player UI language (default: en-US)
       data-frametrail-config       — inline JSON to override config fields
     -->
     <video data-frametrail
            data-frametrail-annotations="path/to/annotations.json"
-           data-frametrail-language="en-US"
            data-frametrail-config='{"autohideControls": true}'
            src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
            playsinline="">

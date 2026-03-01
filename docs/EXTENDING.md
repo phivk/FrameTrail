@@ -291,10 +291,10 @@ FrameTrail.defineModule('MyCustomModule', function(FrameTrail) {
 
 ### 1. Add to English Locale
 
-Edit `src/_shared/modules/Localization/locale/en-US.js`:
+Edit `src/_shared/modules/Localization/locale/en.js`:
 
 ```javascript
-window.FrameTrail_L10n['en-US'] = {
+window.FrameTrail_L10n['en'] = {
     // ... existing strings ...
 
     "MyModuleTitle": "My Module",
@@ -477,7 +477,7 @@ When adding a new resource type or module, make sure to:
 1. Create `type.js` (or `module.js`) and `style.css` in the appropriate directory under `src/`
 2. Add `<script>` and `<link>` tags to `src/index.html` (and `src/resources.html` if applicable)
 3. Add entries to `scripts/build.sh` in `JS_FILES` and `CSS_FILES` arrays (in correct order)
-4. Add localization strings to `src/_shared/modules/Localization/locale/en-US.js` and `de.js`
+4. Add localization strings to `src/_shared/modules/Localization/locale/en.js` and `de.js`
 5. Test in both development mode (`src/`) and build mode (`build/`)
 6. Test in Chrome and Firefox
 7. Test with edit mode enabled and disabled

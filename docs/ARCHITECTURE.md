@@ -101,7 +101,7 @@ FrameTrail.defineModule('ModuleName', function(FrameTrail) {
 | `StorageManager` | Selects and initializes the appropriate storage adapter; exposes `canSave()` / `canSaveToServer()` |
 | `RouteNavigation` | URL parsing, hash parameters, environment detection |
 | `UserManagement` | Login, registration, user settings, and guest editing (name-only, no account required) |
-| `Localization` | Multi-language string management (en-US, de) |
+| `Localization` | Multi-language string management (en, de) |
 | `ResourceManager` | Resource CRUD operations |
 | `ViewResources` | Resource gallery/grid view |
 | `TagModel` | Tag definitions and filtering |
@@ -513,7 +513,7 @@ FrameTrail.init({
     contents:       null,           // Pre-loaded hypervideo data (see inline-data pattern)
     resources:      [{ /* … */ }], // Resource pool definitions (see below)
     tagdefinitions: null,           // Tag definitions (loaded from server if null)
-    language:       'en-US',        // UI language code
+    // Language is configured via config.defaultLanguage (see config option above)
 
     // ── Server path ───────────────────────────────────────────────────────────
     serverPath:     '',             // Prefix for all internal _server/ and _data/
@@ -542,8 +542,7 @@ FrameTrail auto-creates a wrapper div immediately before the video element and u
 FrameTrail.init({
     videoElement: '#my-video',          // CSS selector or DOM element ref — no target needed
     annotations:  'annotations.json',  // URL string, array of URLs, or inline W3C objects
-    language:     'en-US',
-    config:       { autohideControls: true }
+    config:       { defaultLanguage: 'en', autohideControls: true }
 }, 'PlayerLauncher');
 ```
 
@@ -561,7 +560,7 @@ FrameTrail.init({
         'https://example.com/annotations.json',    // URL string
         { /* inline W3C Annotation object */ }      // or inline object
     ],
-    language: 'en-US'
+    config: { defaultLanguage: 'en' }
 }, 'PlayerLauncher');
 ```
 
@@ -572,7 +571,6 @@ Decorate `<video>` tags with `data-frametrail` and call `FrameTrail.autoInit()` 
 ```html
 <video data-frametrail
        data-frametrail-annotations="annotations.json"
-       data-frametrail-language="en-US"
        data-frametrail-config='{"autohideControls": true}'
        src="video.mp4"
        playsinline="">
@@ -594,7 +592,7 @@ Supported data attributes:
 |-----------|---------|---------|
 | `data-frametrail` | presence flag — triggers auto-init | |
 | `data-frametrail-annotations` | `annotations` | `"path/to/file.json"` |
-| `data-frametrail-language` | `language` | `"de"` |
+| `data-frametrail-language` | `config.defaultLanguage` | `"de"` |
 | `data-frametrail-config` | `config` (inline JSON) | `'{"autohideControls":true}'` |
 
 In all three shorthand scenarios:

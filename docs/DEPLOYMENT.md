@@ -104,8 +104,7 @@ document.addEventListener('DOMContentLoaded', function() {
     FrameTrail.init({
         videoElement: '#my-video',          // selector or DOM ref — no target needed
         annotations:  'annotations.json',  // URL string, array of URLs, or inline W3C objects
-        language:     'en-US',
-        config:       { autohideControls: true }
+        config:       { defaultLanguage: 'en', autohideControls: true }
     }, 'PlayerLauncher');
 });
 </script>
@@ -126,7 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
         target:      '#player',
         videoSource: 'https://example.com/video.mp4',
         annotations: 'annotations.json',
-        language:    'en-US'
+        config:      { defaultLanguage: 'en' }
     }, 'PlayerLauncher');
 });
 </script>
@@ -139,7 +138,6 @@ The lowest-friction option: decorate `<video>` tags with `data-frametrail` and c
 ```html
 <video data-frametrail
        data-frametrail-annotations="annotations.json"
-       data-frametrail-language="en-US"
        data-frametrail-config='{"autohideControls": true}'
        src="https://example.com/video.mp4"
        playsinline="">
@@ -161,7 +159,7 @@ Supported data attributes:
 |-----------|--------|
 | `data-frametrail` | presence flag — marks the element for auto-init |
 | `data-frametrail-annotations` | URL of a W3C annotations JSON file |
-| `data-frametrail-language` | language code (e.g. `en-US`, `de`) |
+| `data-frametrail-language` | language code (e.g. `en`, `de`) — maps to `config.defaultLanguage` |
 | `data-frametrail-config` | inline JSON config object |
 
 All instances created by `autoInit()` are accessible via `FrameTrail.instances[]`.
