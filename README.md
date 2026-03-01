@@ -22,21 +22,13 @@ FrameTrail is an open source software that lets you experience, manage and edit 
 
 ### Editing
 
-#### Timebased Documents
+- **Timebased Documents** — Use any video or even an empty canvas with just a duration as a basis for synchronizing contents (like interactive transcripts, overlays or annotation timelines). 
 
-Use any video or even an empty canvas with just a duration as a basis for synchronizing contents (like interactive transcripts, overlays or annotation timelines). 
+- **Hyperlinked Videos** — Create non-linear networks of videos which are connected via clickable hotspots and can be freely navigated by the user (like branching narratives or interactive explainer videos). 
 
-#### Hyperlinked Videos
+- **Interactive Overlays** — Place documents on top of the video (e.g. text, images, web pages, interactive maps or custom text/html) and decide how and when they should be displayed.
 
-Create non-linear networks of videos which are connected via clickable hotspots and can be freely navigated by the user (like branching narratives or interactive explainer videos). 
-
-#### Interactive Overlays
-
-Place documents on top of the video (e.g. text, images, web pages, interactive maps or custom text/html) and decide how and when they should be displayed.
-
-#### Multimedia Annotations
-
-Add supplementing materials at certain points of time and decide how they should be displayed in the player using the interactive layout editor. 
+- **Multimedia Annotations** — Add supplementing materials at certain points of time and decide how they should be displayed in the player using the interactive layout editor. 
 
 ### Data & Portability
 
