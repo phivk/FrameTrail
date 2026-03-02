@@ -92,6 +92,5 @@
 }
 
 .viewOverview .overviewList .hypervideoThumb.newHypervideoThumb .newHypervideoLabel {
-    font-size: 13px;
     color: var(--primary-fg-color);
 }
