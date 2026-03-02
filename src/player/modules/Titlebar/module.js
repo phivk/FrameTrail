@@ -23,7 +23,7 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
                             + '      <button data-viewmode="overview" data-tooltip-bottom-left="'+ labels['GenericOverview'] +'"><span class="icon-overview"></span></button>'
                             + '      <button data-viewmode="video"><span class="icon-hypervideo"></span></button>'
                             + '  </div>'
-                            + '  <div class="titlebarTitle"><button class="hypervideoEditButton" data-tooltip-bottom="'+ labels['SettingsHypervideoSettings'] +'"><span class="icon-pencil"></span></button><button class="hypervideoDeleteButton" data-tooltip-bottom="'+ labels['GenericDeleteHypervideo'] +'"><span class="icon-trash"></span></button></div>'
+                            + '  <div class="titlebarTitle"><button class="hypervideoEditButton" data-tooltip-bottom-right="'+ labels['SettingsHypervideoSettings'] +'"><span class="icon-pencil"></span></button><button class="hypervideoDeleteButton" data-tooltip-bottom-right="'+ labels['GenericDeleteHypervideo'] +'"><span class="icon-trash"></span></button></div>'
                             + '  <div class="titlebarActionButtonContainer">'
                             + '      <button class="adminSettingsButton" data-tooltip-bottom-right="'+ labels['GenericAdministration'] +'"><span class="icon-cog"></span></button>'
                             + '      <button class="manageResourcesButton resourceManagerIcon" data-tooltip-bottom-right="'+ labels['ResourcesManage'] +'"><span class="icon-folder-open"></span></button>'

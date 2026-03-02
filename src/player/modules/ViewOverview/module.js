@@ -80,7 +80,7 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
 
                     var editButton = document.createElement('button');
                     editButton.className = 'hypervideoEditButton';
-                    editButton.setAttribute('data-tooltip-bottom', labels['SettingsHypervideoSettings']);
+                    editButton.setAttribute('data-tooltip-bottom-right', labels['SettingsHypervideoSettings']);
                     editButton.innerHTML = '<span class="icon-pencil"></span>';
 
                     // Capture the hypervideoID in the closure to avoid referencing the last thumb
@@ -94,7 +94,7 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
 
                     var deleteButton = document.createElement('button');
                     deleteButton.className = 'hypervideoDeleteButton';
-                    deleteButton.setAttribute('data-tooltip-bottom-left', labels['GenericDeleteHypervideo']);
+                    deleteButton.setAttribute('data-tooltip-bottom-right', labels['GenericDeleteHypervideo']);
                     deleteButton.innerHTML = '<span class="icon-trash"></span>';
 
                     (function(hypervideoID) {
