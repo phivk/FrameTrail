@@ -65,7 +65,7 @@
 
 .viewOverview .overviewList .hypervideoThumb.newHypervideoThumb {
     background: transparent !important;
-    border: 2px dashed rgba(248, 248, 248, 0.3);
+    border: 2px dashed var(--secondary-fg-color);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -73,7 +73,7 @@
     gap: 10px;
     cursor: pointer;
     color: var(--primary-fg-color);
-    opacity: 0.5;
+    opacity: 0.7;
     transition-property: opacity, border-color;
 }
 
@@ -93,4 +93,35 @@
 
 .viewOverview .overviewList .hypervideoThumb.newHypervideoThumb .newHypervideoLabel {
     color: var(--primary-fg-color);
+}
+
+.viewOverview .emptyStateHint {
+    position: absolute;
+    top: 12px;
+    right: 6px;
+    background: var(--primary-fg-color);
+    color: var(--primary-bg-color);
+    padding: 9px 14px;
+    border-radius: 6px;
+    white-space: nowrap;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    display: none;
+    align-items: center;
+    gap: 8px;
+    pointer-events: none;
+}
+
+.viewOverview .emptyStateHint::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    right: 11px;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-bottom: 8px solid var(--primary-fg-color);
+}
+
+.viewOverview .emptyStateHint.visible {
+    display: flex;
 }

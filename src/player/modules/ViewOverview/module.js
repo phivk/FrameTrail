@@ -16,9 +16,10 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
     var labels = FrameTrail.module('Localization').labels;
 
     var _domWrapper = document.createElement('div');
-    _domWrapper.innerHTML = '<div class="viewOverview"><div class="overviewList"></div></div>';
+    _domWrapper.innerHTML = '<div class="viewOverview"><div class="overviewList"></div><div class="emptyStateHint"><span class="emptyStateHintText"></span></div></div>';
     var domElement = _domWrapper.firstElementChild,
         OverviewList = domElement.querySelector('.overviewList'),
+        EmptyStateHint = domElement.querySelector('.emptyStateHint'),
 
         animationElement      = null,
         lastSelectedThumb     = null;
@@ -272,6 +273,30 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
 
         changeViewSize();
         OverviewList.querySelectorAll('.hypervideoThumb').forEach(function(el) { el.style.transitionDuration = ''; });
+
+        updateEmptyStateHint();
+
+    }
+
+
+    /**
+     * Shows or hides the empty-state hint depending on whether there are
+     * hypervideos and whether the user is in edit mode.
+     * @method updateEmptyStateHint
+     * @return
+     */
+    function updateEmptyStateHint() {
+
+        var hypervideos = FrameTrail.module('Database').hypervideos;
+        var hasHypervideos = Object.keys(hypervideos).length > 0;
+        var editMode = FrameTrail.getState('editMode');
+
+        if (!hasHypervideos && !editMode) {
+            EmptyStateHint.querySelector('.emptyStateHintText').textContent = labels['OverviewEmptyHint'];
+            EmptyStateHint.classList.add('visible');
+        } else {
+            EmptyStateHint.classList.remove('visible');
+        }
 
     }
 
