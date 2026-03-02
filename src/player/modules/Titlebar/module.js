@@ -46,6 +46,9 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
         UserSettingsButton      = domElement.querySelector('.userSettingsButton'),
         SharingWidget           = domElement.querySelector('.sharingWidget');
 
+    if (window.FrameTrail.instances.length >= 1) {
+        SharingWidget.style.display = 'none';
+    }
 
     StartEditButton.addEventListener('click', function(){
 
@@ -98,6 +101,7 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
 
 
     SharingWidget.querySelector('.sharingWidgetButton').addEventListener('click', function(){
+        if (window.FrameTrail.instances.length > 1) { return; }
 
         var RouteNavigation = FrameTrail.module('RouteNavigation'),
             baseUrl = window.location.href.split('?')[0].split('#'),
@@ -348,7 +352,7 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
             ManageResourcesButton.style.display = 'none';
             HypervideoEditButton.classList.remove('active');
             AdminSettingsButton.style.display = 'none';
-            SharingWidget.style.display = '';
+            SharingWidget.style.display = (window.FrameTrail.instances.length > 1) ? 'none' : '';
 
             // Hide user settings and logout buttons when leaving edit mode
             UserSettingsButton.style.display = 'none';

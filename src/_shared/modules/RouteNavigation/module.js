@@ -190,6 +190,8 @@ FrameTrail.defineModule('RouteNavigation', function(FrameTrail){
      */
     function routeHasChanged(){
 
+        if (window.FrameTrail.instances.length > 1) { return; }
+
         /*
         * when accessed from the overview panel,
         * event.originalEvent.state.editMode

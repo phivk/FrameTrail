@@ -160,9 +160,11 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
 
                                     FrameTrail.module('HypervideoModel').save(function(){
 
-                                        history.pushState({
-                                            editMode: FrameTrail.getState('editMode')
-                                        }, "", "#hypervideo=" + newHypervideoID);
+                                        if (window.FrameTrail.instances.length <= 1) {
+                                            history.pushState({
+                                                editMode: FrameTrail.getState('editMode')
+                                            }, "", "#hypervideo=" + newHypervideoID);
+                                        }
 
                                         FrameTrail.changeState('editMode', false);
 
@@ -201,9 +203,11 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
                             var _newThumb = OverviewList.querySelector('.hypervideoThumb[data-hypervideoid="'+ newHypervideoID +'"]');
                             if (_newThumb) _newThumb.classList.add('activeHypervideo');
 
-                            history.pushState({
-                                editMode: FrameTrail.getState('editMode')
-                            }, "", "#hypervideo=" + newHypervideoID);
+                            if (window.FrameTrail.instances.length <= 1) {
+                                history.pushState({
+                                    editMode: FrameTrail.getState('editMode')
+                                }, "", "#hypervideo=" + newHypervideoID);
+                            }
 
                             if ( FrameTrail.getState('editMode') ) {
 
