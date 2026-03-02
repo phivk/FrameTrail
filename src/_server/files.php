@@ -32,20 +32,7 @@ include_once("./opengraph.php");
 function fileUpload($type, $name, $description="", $attributes, $files, $lat, $lon, $boundingBox) {
     global $conf;
 
-    $login = userCheckLogin();
-
-    if ($login["code"] != 1) {
-        $return["status"] = "fail";
-        $return["code"] = 1;
-        $return["string"] = $login["string"];
-        return $return;
-    } else {
-        $file = new sharedFile($conf["dir"]["data"]."/users.json");
-        $json = $file->read();
-        $file->close();
-        $u = json_decode($json, true);
-        $_SESSION["ohv"]["user"] = array_replace_recursive($_SESSION["ohv"]["user"], $u["user"][$_SESSION["ohv"]["user"]["id"]]);
-    }
+    if ($err = requireLogin()) return $err;
 
     if (!is_dir($conf["dir"]["data"]."/resources")) {
         $return["status"] = "fail";
@@ -380,20 +367,7 @@ function fileUpload($type, $name, $description="", $attributes, $files, $lat, $l
 function fileUploadThumb($resourcesID,$thumb) {
     global $conf;
 
-    $login = userCheckLogin();
-
-    if ($login["code"] != 1) {
-        $return["status"] = "fail";
-        $return["code"] = 1;
-        $return["string"] = $login["string"];
-        return $return;
-    } else {
-        $file = new sharedFile($conf["dir"]["data"]."/users.json");
-        $json = $file->read();
-        $file->close();
-        $u = json_decode($json,true);
-        $_SESSION["ohv"]["user"] = array_replace_recursive($_SESSION["ohv"]["user"], $u["user"][$_SESSION["ohv"]["user"]["id"]]);
-    }
+    if ($err = requireLogin()) return $err;
 
     if (!is_dir($conf["dir"]["data"]."/resources")) {
         $return["status"] = "fail";
@@ -457,20 +431,7 @@ function fileUploadThumb($resourcesID,$thumb) {
  */
 function fileDelete($resourcesID) {
     global $conf;
-    $login = userCheckLogin();
-
-    if ($login["code"] != 1) {
-        $return["status"] = "fail";
-        $return["code"] = 1;
-        $return["string"] = $login["string"];
-        return $return;
-    } else {
-        $file = new sharedFile($conf["dir"]["data"]."/users.json");
-        $json = $file->read();
-        $file->close();
-        $u = json_decode($json,true);
-        $_SESSION["ohv"]["user"] = array_replace_recursive($_SESSION["ohv"]["user"], $u["user"][$_SESSION["ohv"]["user"]["id"]]);
-    }
+    if ($err = requireLogin()) return $err;
 
     if (!file_exists($conf["dir"]["data"]."/resources/_index.json")) {
         $return["status"] = "fail";
@@ -796,39 +757,31 @@ function parse_size($size) {
 function updateConfigFile($configstring) {
     
     global $conf;
-    $login = userCheckLogin("admin");
-    if ($login["code"] != 1) {
+    if ($err = requireLogin("admin")) return $err;
+
+    if (!is_writable($conf["dir"]["data"]."/config.json")) {
         $return["status"] = "fail";
-        $return["code"] = 1;
-        $return["string"] = $login["string"];
+        $return["code"] = 2;
+        $return["string"] = "Config file (config.json) not writable.";
         return $return;
-    } else {
-
-        if (!is_writable($conf["dir"]["data"]."/config.json")) {
-            $return["status"] = "fail";
-            $return["code"] = 2;
-            $return["string"] = "Config file (config.json) not writable.";
-            return $return;
-        }
-
-        if ((strlen($_REQUEST["src"]) <3)) {
-            $return["status"] = "fail";
-            $return["code"] = 3;
-            $return["string"] = "Config string length must be > 3 characters.";
-            return $return;
-        }
-
-        $file = new sharedFile($conf["dir"]["data"]."/config.json");
-        $src = json_decode($configstring, true);
-        $jsonsrc = json_encode($src,$conf["settings"]["json_flags"]);
-        $file->writeClose($jsonsrc);
-
-        $return["status"] = "success";
-        $return["code"] = 0;
-        $return["string"] = "Config successfully saved.";
-        return $return;
-
     }
+
+    if ((strlen($_REQUEST["src"]) <3)) {
+        $return["status"] = "fail";
+        $return["code"] = 3;
+        $return["string"] = "Config string length must be > 3 characters.";
+        return $return;
+    }
+
+    $file = new sharedFile($conf["dir"]["data"]."/config.json");
+    $src = json_decode($configstring, true);
+    $jsonsrc = json_encode($src,$conf["settings"]["json_flags"]);
+    $file->writeClose($jsonsrc);
+
+    $return["status"] = "success";
+    $return["code"] = 0;
+    $return["string"] = "Config successfully saved.";
+    return $return;
 }
 
 /**
@@ -844,30 +797,22 @@ function updateConfigFile($configstring) {
 function updateCSSFile($cssstring) {
     
     global $conf;
-    $login = userCheckLogin("admin");
-    if ($login["code"] != 1) {
+    if ($err = requireLogin("admin")) return $err;
+
+    if (!is_writable($conf["dir"]["data"]."/custom.css")) {
         $return["status"] = "fail";
-        $return["code"] = 1;
-        $return["string"] = $login["string"];
+        $return["code"] = 2;
+        $return["string"] = "CSS file (custom.css) not writable.";
         return $return;
-    } else {
-
-        if (!is_writable($conf["dir"]["data"]."/custom.css")) {
-            $return["status"] = "fail";
-            $return["code"] = 2;
-            $return["string"] = "CSS file (custom.css) not writable.";
-            return $return;
-        }
-
-        $file = new sharedFile($conf["dir"]["data"]."/custom.css");
-        $file->writeClose($cssstring);
-
-        $return["status"] = "success";
-        $return["code"] = 0;
-        $return["string"] = "CSS file successfully saved.";
-        return $return;
-
     }
+
+    $file = new sharedFile($conf["dir"]["data"]."/custom.css");
+    $file->writeClose($cssstring);
+
+    $return["status"] = "success";
+    $return["code"] = 0;
+    $return["string"] = "CSS file successfully saved.";
+    return $return;
 }
 
 /**

@@ -17,21 +17,7 @@ function hypervideoAdd($src, $subtitles = false) {
 
     global $conf;
 
-    $login = userCheckLogin();
-
-    if ($login["code"] != 1) {
-        $return["status"] = "fail";
-        $return["code"] = 1;
-        $return["string"] = $login["string"];
-        return $return;
-    } else {
-        $file = new sharedFile($conf["dir"]["data"]."/users.json");
-        $json = $file->read();
-        $file->close();
-        $u = json_decode($json,true);
-        $_SESSION["ohv"]["user"] = array_replace_recursive($_SESSION["ohv"]["user"], $u["user"][$_SESSION["ohv"]["user"]["id"]]);
-    }
-
+    if ($err = requireLogin()) return $err;
 
     if (!is_dir($conf["dir"]["data"]."/resources")) {
         $return["status"] = "fail";
@@ -113,19 +99,8 @@ function hypervideoAdd($src, $subtitles = false) {
 function hypervideoClone($hypervideoID, $src) {
 
     global $conf;
-    $login = userCheckLogin();
-    if ($login["code"] != 1) {
-        $return["status"] = "fail";
-        $return["code"] = 1;
-        $return["string"] = $login["string"];
-        return $return;
-    } else {
-        $file = new sharedFile($conf["dir"]["data"]."/users.json");
-        $json = $file->read();
-        $file->close();
-        $u = json_decode($json,true);
-        $_SESSION["ohv"]["user"] = array_replace_recursive($_SESSION["ohv"]["user"], $u["user"][$_SESSION["ohv"]["user"]["id"]]);
-    }
+    if ($err = requireLogin()) return $err;
+
     if (!is_dir($conf["dir"]["data"]."/resources")) {
         $return["status"] = "fail";
         $return["code"] = 3;
@@ -247,25 +222,7 @@ function hypervideoClone($hypervideoID, $src) {
 function hypervideoDelete($hypervideoID,$hypervideoName) {
     global $conf;
 
-    $login = userCheckLogin();
-    if ($login["code"] != 1) {
-        $return["status"] = "fail";
-        $return["code"] = 1;
-        $return["string"] = $login["string"];
-        return $return;
-    } else {
-        $file = new sharedFile($conf["dir"]["data"]."/users.json");
-        $json = $file->read();
-        $file->close();
-        $u = json_decode($json,true);
-        $_SESSION["ohv"]["user"] = array_replace_recursive($_SESSION["ohv"]["user"], $u["user"][$_SESSION["ohv"]["user"]["id"]]);
-    }
-
-    $json = file_get_contents($conf["dir"]["data"]."/users.json");
-    $userdb = json_decode($json,true);
-    $userdb["user"][$_SESSION["ohv"]["user"]["id"]]["id"] = $_SESSION["ohv"]["user"]["id"];
-    $_SESSION["ohv"]["user"] = $userdb["user"][$_SESSION["ohv"]["user"]["id"]];
-
+    if ($err = requireLogin()) return $err;
 
     if (!is_dir($conf["dir"]["data"]."/hypervideos/".$hypervideoID)) {
         $return["status"] = "fail";
@@ -332,20 +289,7 @@ function hypervideoDelete($hypervideoID,$hypervideoName) {
 function hypervideoChange($hypervideoID, $src, $subtitlesToDelete = false, $subtitles = false) {
 
     global $conf;
-    $login = userCheckLogin();
-    if ($login["code"] != 1) {
-        $return["status"] = "fail";
-        $return["code"] = 1;
-        $return["string"] = $login["string"];
-        return $return;
-    } else {
-        $file = new sharedFile($conf["dir"]["data"]."/users.json");
-        $json = $file->read();
-        $file->close();
-        $u = json_decode($json,true);
-        $_SESSION["ohv"]["user"] = array_replace_recursive($_SESSION["ohv"]["user"], $u["user"][$_SESSION["ohv"]["user"]["id"]]);
-    }
-
+    if ($err = requireLogin()) return $err;
 
     if (strlen($src) < 10) {
         $return["status"] = "fail";

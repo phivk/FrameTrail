@@ -358,6 +358,29 @@ function userChange($userID,$mail,$name,$passwd,$color,$role,$active) {
     return $return;
 }
 
+/**
+ * Guards a function that requires a logged-in user (optionally with a specific role).
+ * Returns a fail response array that callers can return immediately, or null on success.
+ * The session is refreshed from disk as a side effect of userCheckLogin().
+ *
+ * Usage:  if ($err = requireLogin()) return $err;
+ *         if ($err = requireLogin("admin")) return $err;
+ *
+ * @param string|false $role  Optional role to require (e.g. "admin")
+ * @return array|null  Fail response array on failure, or null on success
+ */
+function requireLogin($role = false) {
+    $login = userCheckLogin($role);
+    if ($login["code"] != 1) {
+        return [
+            "status" => "fail",
+            "code"   => 1,
+            "string" => $login["string"],
+        ];
+    }
+    return null;
+}
+
 function getUserColors() {
     global $conf;
     $json = file_get_contents($conf["dir"]["data"]."/config.json");

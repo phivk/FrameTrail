@@ -21,14 +21,7 @@ require_once("./user.php");
 function tagSet($tagName,$lang,$label,$description) {
     global $conf;
 
-    $login = userCheckLogin("admin");
-
-    if ($login["code"] != 1) {
-        $return["status"] = "fail";
-        $return["code"] = 1;
-        $return["string"] = $login["string"];
-        return $return;
-    }
+    if ($err = requireLogin("admin")) return $err;
 
     if (strlen($tagName)<2) {
         $return["status"] = "fail";
@@ -91,14 +84,7 @@ function tagSet($tagName,$lang,$label,$description) {
 function tagDelete($tagName) {
     global $conf;
 
-    $login = userCheckLogin("admin");
-
-    if ($login["code"] != 1) {
-        $return["status"] = "fail";
-        $return["code"] = 1;
-        $return["string"] = $login["string"];
-        return $return;
-    }
+    if ($err = requireLogin("admin")) return $err;
 
     if (!file_exists($conf["dir"]["data"]."/tagdefinitions.json")) {
         $return["status"] = "fail";
@@ -197,14 +183,7 @@ function tagLangDelete($lang) {
     }
 
 
-    $login = userCheckLogin("admin");
-
-    if ($login["code"] != 1) {
-        $return["status"] = "fail";
-        $return["code"] = 1;
-        $return["string"] = $login["string"];
-        return $return;
-    }
+    if ($err = requireLogin("admin")) return $err;
 
     if (!file_exists($conf["dir"]["data"]."/tagdefinitions.json")) {
         $return["status"] = "fail";

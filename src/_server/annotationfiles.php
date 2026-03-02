@@ -24,20 +24,7 @@ require_once("./user.php");
 function annotationfileSave($hypervideoID, $annotationfileID, $action, $name, $description, $hidden, $src) {
     global $conf;
 
-    $login = userCheckLogin();
-
-    if ($login["code"] != 1) {
-        $return["status"] = "fail";
-        $return["code"] = 1;
-        $return["string"] = $login["string"];
-        return $return;
-    } else {
-        $file = new sharedFile($conf["dir"]["data"]."/users.json");
-        $json = $file->read();
-        $file->close();
-        $u = json_decode($json,true);
-        $_SESSION["ohv"]["user"] = array_replace_recursive($_SESSION["ohv"]["user"], $u["user"][$_SESSION["ohv"]["user"]["id"]]);
-    }
+    if ($err = requireLogin()) return $err;
 
     $annotationfileID = $_SESSION["ohv"]["user"]["id"];
 
@@ -146,20 +133,7 @@ function annotationfileSave($hypervideoID, $annotationfileID, $action, $name, $d
 function annotationfileDelete($hypervideoID,$annotationfileID) {
     global $conf;
 
-    $login = userCheckLogin();
-
-    if ($login["code"] != 1) {
-        $return["status"] = "fail";
-        $return["code"] = 1;
-        $return["string"] = $login["string"];
-        return $return;
-    } else {
-        $file = new sharedFile($conf["dir"]["data"]."/users.json");
-        $json = $file->read();
-        $file->close();
-        $u = json_decode($json,true);
-        $_SESSION["ohv"]["user"] = array_replace_recursive($_SESSION["ohv"]["user"], $u["user"][$_SESSION["ohv"]["user"]["id"]]);
-    }
+    if ($err = requireLogin()) return $err;
 
     $annotationfileID = $_SESSION["ohv"]["user"];
 
@@ -232,14 +206,7 @@ function annotationfileDelete($hypervideoID,$annotationfileID) {
 function updateAnnotationSources($hypervideoID, $newSourcePath) {
     global $conf;
 
-    $login = userCheckLogin();
-
-    if ($login["code"] != 1) {
-        $return["status"] = "fail";
-        $return["code"] = 1;
-        $return["string"] = $login["string"];
-        return $return;
-    }
+    if ($err = requireLogin()) return $err;
 
     // Check if user is admin or hypervideo owner
     $hvFile = $conf["dir"]["data"]."/hypervideos/".$hypervideoID."/hypervideo.json";
