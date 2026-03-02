@@ -330,7 +330,7 @@ cat > "$BUILD_DIR/index.html" << 'PLAYER_HTML'
                     const ret = await r.json();
                     if (ret['code'] != '1') {
                         window.location.replace(
-                            window.location.href.replace('index.html', '') + 'setup.html'
+                            window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'setup.html'
                         );
                         return;
                     }
@@ -378,7 +378,7 @@ cat > "$BUILD_DIR/resources.html" << 'RESOURCES_HTML'
                     const ret = await r.json();
                     if (ret['code'] != '1') {
                         window.location.replace(
-                            window.location.href.replace('resources.html', '') + 'setup.html'
+                            window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'setup.html'
                         );
                         return;
                     }

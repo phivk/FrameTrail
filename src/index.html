@@ -197,8 +197,9 @@
                         });
                         const ret = await r.json();
                         if (ret['code'] != '1') {
-                            var setupUrl = window.location.href.replace('index.html', '') + 'setup.html';
-                            window.location.replace(setupUrl);
+                            window.location.replace(
+                                window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'setup.html'
+                            );
                             return;
                         }
                     } catch (e) {
