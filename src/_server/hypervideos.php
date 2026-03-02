@@ -8,11 +8,10 @@ require_once("./user.php");
  * @param $subtitles
  * @return mixed
  *
-Returning Code:
-0       =   Success. Hypervideo has been added. Returning new Object in response
-1       =   failed. User not logged in or inactive. See resp["string"]
-4       =   failed. Name (min 3 chars) has not been submitted.
- *
+ * Returning Code:
+ * 0       =   Success. Hypervideo has been added. Returns new object in response.
+ * 1       =   failed. User not logged in or inactive. See resp["string"]
+ * 4       =   failed. Name (min 3 chars) has not been submitted.
  */
 function hypervideoAdd($src, $subtitles = false) {
 
@@ -37,7 +36,7 @@ function hypervideoAdd($src, $subtitles = false) {
     if (!is_dir($conf["dir"]["data"]."/resources")) {
         $return["status"] = "fail";
         $return["code"] = 3;
-        $return["string"] = "Could not find the projects resources folder";
+        $return["string"] = "Could not find the project's resources folder";
         return $return;
     }
 
@@ -93,7 +92,7 @@ function hypervideoAdd($src, $subtitles = false) {
 
     $return["status"] = "success";
     $return["code"] = 0;
-    $return["string"] = "Hypervideo has been added. look at response";
+    $return["string"] = "Hypervideo has been added. Look at response.";
     $return["response"] = $src;
     $return["newHypervideoID"] = $hvi["hypervideo-increment"];
     return $return;
@@ -104,12 +103,12 @@ function hypervideoAdd($src, $subtitles = false) {
  * @param $src:json
  * @return mixed
  *
-Returning Code:
-0       =   Success. Hypervideo has been cloned. Returning new Object in response
-1       =   failed. User not logged in or inactive
-3       =   failed. Could not find the resources folder
-4       =   failed. Name (min 3 chars) has not been submitted.
-5       =   failed. hypervideoID has not been found
+ * Returning Code:
+ * 0       =   Success. Hypervideo has been cloned. Returns new object in response.
+ * 1       =   failed. User not logged in or inactive
+ * 3       =   failed. Could not find the resources folder
+ * 4       =   failed. Name (min 3 chars) has not been submitted.
+ * 5       =   failed. hypervideoID has not been found
  */
 function hypervideoClone($hypervideoID, $src) {
 
@@ -190,7 +189,7 @@ function hypervideoClone($hypervideoID, $src) {
             }
         }
         if ($tmpFound == 0) {
-            file_put_contents($conf["dir"]["data"]."/hypervideos/".$hvi["hypervideo-increment"]."/annotatios/1.json", "[]");
+            file_put_contents($conf["dir"]["data"]."/hypervideos/".$hvi["hypervideo-increment"]."/annotations/1.json", "[]");
             $newAnnotationfile["1"]["name"] = $newHV["meta"]["name"];
             $newAnnotationfile["1"]["description"] = $newHV["meta"]["description"];
             $newAnnotationfile["1"]["hidden"] = false;
@@ -225,7 +224,7 @@ function hypervideoClone($hypervideoID, $src) {
 
     $return["status"] = "success";
     $return["code"] = 0;
-    $return["string"] = "Hypervideo has been cloned. look at response";
+    $return["string"] = "Hypervideo has been cloned. Look at response.";
     $return["response"] = $newHV;
     $return["newHypervideoID"] = $hvi["hypervideo-increment"];
     $return["clonedFrom"] = $hypervideoID;
@@ -237,13 +236,13 @@ function hypervideoClone($hypervideoID, $src) {
  * @param $hypervideoName
  * @return mixed
  *
-Returning Code:
-0       =   Success. Hypervideo deleted.
-1       =   failed. Not logged in or User not active. see resp["string"]
-3       =   failed. Could not find the hypervideosID folder
-4       =   failed. hypervideoID could not be found in database.
-5       =   failed. hypervideoName is not correct.
-6       =   failed. permission denied! The User is not an admin, nor is it his own hypervideo.
+ * Returning Code:
+ * 0       =   Success. Hypervideo deleted.
+ * 1       =   failed. Not logged in or user not active. See resp["string"]
+ * 3       =   failed. Could not find the hypervideoID folder
+ * 4       =   failed. hypervideoID could not be found in database.
+ * 5       =   failed. hypervideoName is not correct.
+ * 6       =   failed. Permission denied! The user is not an admin, nor is it their own hypervideo.
  */
 function hypervideoDelete($hypervideoID,$hypervideoName) {
     global $conf;
@@ -271,7 +270,7 @@ function hypervideoDelete($hypervideoID,$hypervideoName) {
     if (!is_dir($conf["dir"]["data"]."/hypervideos/".$hypervideoID)) {
         $return["status"] = "fail";
         $return["code"] = 3;
-        $return["string"] = "Could not find the hypervideosID folder";
+        $return["string"] = "Could not find the hypervideoID folder";
         return $return;
     }
     $file = new sharedFile($conf["dir"]["data"]."/hypervideos/_index.json");
@@ -322,14 +321,13 @@ function hypervideoDelete($hypervideoID,$hypervideoName) {
  * @param $subtitles:file
  * @return mixed
  *
-Returning Code:
-0       =   Success. File has been written
-1       =   failed. Not logged in or User not active. see resp["string"]
-3       =   failed. type not correct. ("overlays")
-4       =   failed. HypervideoID not found.
-5       =   failed. permission denied! The User is not an admin, nor is it his own hypervideo.
-6       =   failed. $src too short (10)
- *
+ * Returning Code:
+ * 0       =   Success. File has been written.
+ * 1       =   failed. Not logged in or user not active. See resp["string"]
+ * 3       =   failed. Type not correct.
+ * 4       =   failed. HypervideoID not found.
+ * 5       =   failed. Permission denied! The user is not an admin, nor is it their own hypervideo.
+ * 6       =   failed. $src too short (< 10 chars)
  */
 function hypervideoChange($hypervideoID, $src, $subtitlesToDelete = false, $subtitles = false) {
 
@@ -352,7 +350,7 @@ function hypervideoChange($hypervideoID, $src, $subtitlesToDelete = false, $subt
     if (strlen($src) < 10) {
         $return["status"] = "fail";
         $return["code"] = 6;
-        $return["string"] = "Hypervideo JSON has not been send.";
+        $return["string"] = "Hypervideo JSON has not been sent.";
         return $return;
     }
 

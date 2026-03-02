@@ -12,14 +12,14 @@ session_set_cookie_params([
 ]);
 session_start();
 
-//DIR
+// Directories
 $conf["dir"]["data"] = "../_data";
 $conf["dir"]["projects"] = $conf["dir"]["data"]."/projects";
 
-//JSON Return
+// JSON response flags
 $conf["settings"]["json_flags"] = JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
 
-//SERVER CONFIG
+// Server config
 $conf["server"]["session_lifetime"] = ini_get('session.gc_maxlifetime');
 //$conf["server"]["session_lifetime"] = 40;
 

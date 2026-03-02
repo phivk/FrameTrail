@@ -9,13 +9,14 @@ require_once("./user.php");
  * @param $label
  * @param $description
  * @return mixed
-Returning Code:
-0       =   Success. In $return["response"] you will find the tagdefinitions
-1       =   failed. User is not logged in
-3       =   failed. Name too short
-4       =   failed. Language not correct (2 chars)
-5       =   failed. Label too short (4 chars)
-6       =   failed. Description too short (4 chars)
+ *
+ * Returning Code:
+ * 0       =   Success. In $return["response"] you will find the tag definitions.
+ * 1       =   failed. User is not logged in.
+ * 3       =   failed. Name too short.
+ * 4       =   failed. Language not correct (must be 2 chars).
+ * 5       =   failed. Label too short (min 4 chars).
+ * 6       =   failed. Description too short (min 4 chars).
  */
 function tagSet($tagName,$lang,$label,$description) {
     global $conf;
@@ -32,28 +33,28 @@ function tagSet($tagName,$lang,$label,$description) {
     if (strlen($tagName)<2) {
         $return["status"] = "fail";
         $return["code"] = 3;
-        $return["string"] = "Tag Name has to have min. 2 character";
+        $return["string"] = "Tag name must have at least 2 characters";
         return $return;
     }
 
     if (strlen($lang) != 2) {
         $return["status"] = "fail";
         $return["code"] = 4;
-        $return["string"] = "Language is not valid. Two character expected";
+        $return["string"] = "Language is not valid. Two characters expected";
         return $return;
     }
 
     if (strlen($label) < 4) {
         $return["status"] = "fail";
         $return["code"] = 5;
-        $return["string"] = "Label expects at least 4 character";
+        $return["string"] = "Label must have at least 4 characters";
         return $return;
     }
 
     if (strlen($description) > 0 && strlen($description) < 4) {
         $return["status"] = "fail";
         $return["code"] = 6;
-        $return["string"] = "Description expects at least 4 character";
+        $return["string"] = "Description must have at least 4 characters";
         return $return;
     }
 
@@ -80,11 +81,12 @@ function tagSet($tagName,$lang,$label,$description) {
 
 /**
  * @param $tagName
-Returning Code:
-0       =   Success. In $return["response"] you will find the tagdefinitions
-1       =   failed. User is not logged in
-3       =   failed. tagdefinitions.json has not been found
-4       =   failed. tagName was not submitted
+ *
+ * Returning Code:
+ * 0       =   Success. In $return["response"] you will find the tag definitions.
+ * 1       =   failed. User is not logged in.
+ * 3       =   failed. tagdefinitions.json has not been found.
+ * 4       =   failed. tagName was not submitted.
  */
 function tagDelete($tagName) {
     global $conf;
@@ -177,11 +179,12 @@ function tagDelete($tagName) {
 
 /**
  * @param $lang
-Returning Code:
-0       =   Success. In $return["response"] you will find the tagdefinitions
-1       =   failed. User is not logged in as admin
-3       =   failed. tagdefinitions.json has not been found
-4       =   failed. lang has not 2 characters
+ *
+ * Returning Code:
+ * 0       =   Success. In $return["response"] you will find the tag definitions.
+ * 1       =   failed. User is not logged in as admin.
+ * 3       =   failed. tagdefinitions.json has not been found.
+ * 4       =   failed. lang must be exactly 2 characters.
  */
 function tagLangDelete($lang) {
     global $conf;
@@ -189,7 +192,7 @@ function tagLangDelete($lang) {
     if (strlen($lang) != 2) {
         $return["status"] = "fail";
         $return["code"] = 4;
-        $return["string"] = "lang seems not to be valid (2 character)";
+        $return["string"] = "Language code is not valid (must be exactly 2 characters)";
         return $return;
     }
 

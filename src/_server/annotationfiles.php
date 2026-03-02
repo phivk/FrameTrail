@@ -13,15 +13,13 @@ require_once("./user.php");
  * @param $src
  * @return mixed
  *
- *
-Returning Code:
-0       =   Success. File has been written
-1       =   failed. Not logged in. Or User not active
-4       =   failed. action not correct! "save" or "saveAs"
-5       =   failed. Name (min 3 chars) or Description have not been submitted.
-6       =   failed. Just on Save - Annotation with $id has not been found. (in DB or as file)
-7       =   Permission denied. Just on Save. You are not the annotations owner and no administrator!
- *
+ * Returning Code:
+ * 0       =   Success. File has been written.
+ * 1       =   failed. Not logged in or user not active.
+ * 4       =   failed. action not correct — expected "save" or "saveAs"
+ * 5       =   failed. Name (min 3 chars) or description have not been submitted.
+ * 6       =   failed. On save only — annotation with $id has not been found (in DB or as file).
+ * 7       =   Permission denied. On save only — you are not the annotation's owner and not an administrator.
  */
 function annotationfileSave($hypervideoID, $annotationfileID, $action, $name, $description, $hidden, $src) {
     global $conf;
@@ -137,13 +135,13 @@ function annotationfileSave($hypervideoID, $annotationfileID, $action, $name, $d
  * @param $annotationfileID
  * @return mixed
  *
-Returning Code:
-0       =   Success. File has been written
-1       =   failed. Not logged in. Or User not active
-3       =   failed. Could not find the annotations folder
-4       =   failed. Annotationfile is Main-file and cant be deleted.
-5       =   failed. Annotation with id=$annotationfileID has not been found.
-7       =   Permission denied. Permission denied. You are not the annotations owner and no administrator!
+ * Returning Code:
+ * 0       =   Success. Annotation file has been deleted.
+ * 1       =   failed. Not logged in or user not active.
+ * 3       =   failed. Could not find the annotations folder.
+ * 4       =   failed. Annotation file is the main file and can't be deleted.
+ * 5       =   failed. Annotation with id=$annotationfileID has not been found.
+ * 7       =   Permission denied. You are not the annotation's owner and not an administrator.
  */
 function annotationfileDelete($hypervideoID,$annotationfileID) {
     global $conf;
@@ -179,7 +177,7 @@ function annotationfileDelete($hypervideoID,$annotationfileID) {
     if ($hvannotationsIndex["mainAnnotation"] == $annotationfileID) {
         $return["status"] = "fail";
         $return["code"] = 4;
-        $return["string"] = "Annotationfile is Main-file and cant be deleted.";
+        $return["string"] = "Annotation file is the main file and can't be deleted.";
         $file->close();
         return $return;
     }

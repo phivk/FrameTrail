@@ -120,7 +120,7 @@ class OpenGraph implements Iterator
                 $page->_values[$key] = $tag->getAttribute('content');
             }
             
-            //Added this if loop to retrieve description values from sites like the New York Times who have malformed it. 
+            // Added this branch to retrieve description values from sites like the New York Times which have malformed it.
             if ($tag ->hasAttribute('value') && $tag->hasAttribute('property') &&
                 strpos($tag->getAttribute('property'), 'og:') === 0) {
                 $key = strtr(substr($tag->getAttribute('property'), 3), '-', '_');
@@ -134,54 +134,54 @@ class OpenGraph implements Iterator
         }
         //Based on modifications at https://github.com/bashofmann/opengraph/blob/master/src/OpenGraph/OpenGraph.php
         if (!isset($page->_values['title'])) {
-        $titles = $doc->getElementsByTagName('title');
-        if ($titles->length > 0) {
-            $page->_values['title'] = $titles->item(0)->textContent;
-        }
-    }
-    if (!isset($page->_values['description']) && $nonOgDescription) {
-        $page->_values['description'] = $nonOgDescription;
-    }
-    //Fallback to use image_src if ogp::image isn't set.
-    if (!isset($page->_values['image'])) {
-        $domxpath = new DOMXPath($doc);
-        $elements = $domxpath->query("//link[@rel='image_src']");
-        if ($elements->length > 0) {
-            $domattr = $elements->item(0)->attributes->getNamedItem('href');
-            if ($domattr) {
-                $page->_values['image'] = $domattr->value;
-                $page->_values['image_src'] = $domattr->value;
+            $titles = $doc->getElementsByTagName('title');
+            if ($titles->length > 0) {
+                $page->_values['title'] = $titles->item(0)->textContent;
             }
         }
-    }
-    if (!isset($page->_values['image'])) {
-        $domxpath = new DOMXPath($doc);
-        $elements = $domxpath->query("//link[@rel='apple-touch-icon'][last()]");
-        if ($elements->length > 0) {
-            $domattr = $elements->item(0)->attributes->getNamedItem('href');
-            if ($domattr) {
-                $page->_values['image'] = $domattr->value;
-                $page->_values['image_src'] = $domattr->value;
+        if (!isset($page->_values['description']) && $nonOgDescription) {
+            $page->_values['description'] = $nonOgDescription;
+        }
+        // Fallback to use image_src if ogp::image isn't set.
+        if (!isset($page->_values['image'])) {
+            $domxpath = new DOMXPath($doc);
+            $elements = $domxpath->query("//link[@rel='image_src']");
+            if ($elements->length > 0) {
+                $domattr = $elements->item(0)->attributes->getNamedItem('href');
+                if ($domattr) {
+                    $page->_values['image'] = $domattr->value;
+                    $page->_values['image_src'] = $domattr->value;
+                }
             }
         }
-    }
-    // final fallback to use first image in the page (not working really well)
-    /*
-    if (!isset($page->_values['image'])) {
-        $domxpath = new DOMXPath($doc);
-        $elements = $domxpath->query("//img");
-        if ($elements->length > 0) {
-            $domattr = $elements->item(0)->attributes->getNamedItem('src');
-            if ($domattr) {
-                $page->_values['image'] = $domattr->value;
-                $page->_values['image_src'] = $domattr->value;
+        if (!isset($page->_values['image'])) {
+            $domxpath = new DOMXPath($doc);
+            $elements = $domxpath->query("//link[@rel='apple-touch-icon'][last()]");
+            if ($elements->length > 0) {
+                $domattr = $elements->item(0)->attributes->getNamedItem('href');
+                if ($domattr) {
+                    $page->_values['image'] = $domattr->value;
+                    $page->_values['image_src'] = $domattr->value;
+                }
             }
         }
-    }
-    */
+        // Final fallback to use first image in the page (not working reliably)
+        /*
+        if (!isset($page->_values['image'])) {
+            $domxpath = new DOMXPath($doc);
+            $elements = $domxpath->query("//img");
+            if ($elements->length > 0) {
+                $domattr = $elements->item(0)->attributes->getNamedItem('src');
+                if ($domattr) {
+                    $page->_values['image'] = $domattr->value;
+                    $page->_values['image_src'] = $domattr->value;
+                }
+            }
+        }
+        */
         if (empty($page->_values)) { return false; }
-        
-    $page->_values['image'] = ltrim($page->_values['image'], '/');
+
+        $page->_values['image'] = ltrim($page->_values['image'], '/');
         return $page;
     }
   /**

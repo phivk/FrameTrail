@@ -170,7 +170,6 @@ switch($_REQUEST["a"]) {
      #########################################*/
 
     case "configChange":
-        
         include_once("files.php");
         $return = updateConfigFile($_REQUEST["src"]);
         break;
@@ -180,7 +179,6 @@ switch($_REQUEST["a"]) {
      #########################################*/
 
     case "globalCSSChange":
-        
         include_once("files.php");
         $return = updateCSSFile($_REQUEST["src"]);
         break;
@@ -243,7 +241,7 @@ switch($_REQUEST["a"]) {
         if ($tmpAdminAvailable == 0) {
             $return["status"] = "fail";
             $return["code"] = 6;
-            $return["string"] = "Setup not correct. No Admin has been set";
+            $return["string"] = "Setup not correct. No admin has been set.";
             echo json_encode($return);
             exit;
         }
@@ -252,7 +250,7 @@ switch($_REQUEST["a"]) {
         $return["code"] = 1;
         $return["string"] = "Setup finished.";
 
-    break;
+        break;
 
     case "setupCheckDetailed":
 

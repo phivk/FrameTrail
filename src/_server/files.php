@@ -15,20 +15,19 @@ include_once("./opengraph.php");
  * @param $boundingBox
  * @return mixed
  *
-Returning Code:
-    0       =   Success. In $return["response"]["resource"] will the new JSON be returned. in $return["response"]["resId"] you can find the new ID
-    1       =   failed. User is not logged in into the Project. Or User is not activated.
-    3       =   failed. Could not find the resources folder
-    4       =   failed. File type expected but file wasn't transferred.
-    5       =   failed. No video file transferred.
-    6       =   failed. File format not supported (FFmpeg unavailable for transcoding).
-    7       =   failed. Type "map" was expected but $lat or $lon aren't sent.
-    8       =   failed. $type or $name have not been transferred.
-    9       =   failed. $type was wrong or file type not recognized.
-    10      =   failed. File size too big.
-    11      =   failed. Type "url" was expected but url is empty.
-    20      =   failed. Uploads not allowed in config.
- *
+ * Returning Code:
+ *     0       =   Success. In $return["response"]["resource"] will the new JSON be returned. In $return["response"]["resId"] you can find the new ID
+ *     1       =   failed. User is not logged in or not activated.
+ *     3       =   failed. Could not find the resources folder
+ *     4       =   failed. File type expected but file wasn't transferred.
+ *     5       =   failed. No video file transferred.
+ *     6       =   failed. File format not supported (FFmpeg unavailable for transcoding).
+ *     7       =   failed. Type "map" was expected but $lat or $lon aren't sent.
+ *     8       =   failed. $type or $name have not been transferred.
+ *     9       =   failed. $type was wrong or file type not recognized.
+ *     10      =   failed. File size too big.
+ *     11      =   failed. Type "url" was expected but url is empty.
+ *     20      =   failed. Uploads not allowed in config.
  */
 function fileUpload($type, $name, $description="", $attributes, $files, $lat, $lon, $boundingBox) {
     global $conf;
@@ -370,14 +369,13 @@ function fileUpload($type, $name, $description="", $attributes, $files, $lat, $l
  * @param $thumb
  * @return mixed
  *
-Returning Code:
-0       =   Success. In $return["response"] will the full Object of manipulated Resource be returned.
-1       =   failed. User is not logged in into the Project. Or User is not activated.
-3       =   failed. Could not find the resources folder
-4       =   failed. resourcesID or thumb are not transferred
-5       =   failed. No valid resourcesID
-6       =   failed. Not permitted. Its not your resource and you're not an admin!
- *
+ * Returning Code:
+ * 0       =   Success. In $return["response"] will the full object of the manipulated resource be returned.
+ * 1       =   failed. User is not logged in or not activated.
+ * 3       =   failed. Could not find the resources folder
+ * 4       =   failed. resourcesID or thumb are not transferred
+ * 5       =   failed. No valid resourcesID
+ * 6       =   failed. Not permitted. It's not your resource and you're not an admin!
  */
 function fileUploadThumb($resourcesID,$thumb) {
     global $conf;
@@ -402,7 +400,6 @@ function fileUploadThumb($resourcesID,$thumb) {
         $return["code"] = 3;
         $return["string"] = "Could not find the resources folder";
         return $return;
-        exit;
     }
 
     if ((!$resourcesID) || (!$thumb) || ($thumb == "")) {
@@ -410,7 +407,6 @@ function fileUploadThumb($resourcesID,$thumb) {
         $return["code"] = 4;
         $return["string"] = "resourcesID or thumb are not transferred";
         return $return;
-        exit;
     }
     $file = new sharedFile($conf["dir"]["data"]."/resources/_index.json");
     $json = $file->read();
@@ -422,15 +418,13 @@ function fileUploadThumb($resourcesID,$thumb) {
         $return["response"] = $res;
         $file->close();
         return $return;
-        exit;
     }
     if (($res["resources"][$resourcesID]["creatorId"] != $_SESSION["ohv"]["user"]["id"]) && ($_SESSION["ohv"]["user"]["role"] != "admin")) {
         $return["status"] = "fail";
         $return["code"] = 6;
-        $return["string"] = "Not permitted. Its not your resource and you're not an admin!";
+        $return["string"] = "Not permitted. It's not your resource and you're not an admin!";
         $file->close();
         return $return;
-        exit;
     }
     $thumb = str_replace('data:image/png;base64,', '', $thumb);
     //$_REQUEST["thumb"] = str_replace(' ', '+', $_REQUEST["thumb"]);
@@ -453,14 +447,13 @@ function fileUploadThumb($resourcesID,$thumb) {
  * @param $resourcesID
  * @return mixed
  *
-Returning Code:
-0       =   Success. Resource and its thumbs have been deleted.
-1       =   failed. User is not logged in or is inactive
-2       =   failed. Could not find resources database (json)
-3       =   failed. resourcesID was not found. Missing or wrong ID
-4       =   failed. Not permitted. Its not your resource and you're no admin!
-5       =   failed. Resource is in use. Check out $return["used"] where
- *
+ * Returning Code:
+ * 0       =   Success. Resource and its thumbnails have been deleted.
+ * 1       =   failed. User is not logged in or is inactive
+ * 2       =   failed. Could not find resources database (json)
+ * 3       =   failed. resourcesID was not found. Missing or wrong ID
+ * 4       =   failed. Not permitted. It's not your resource and you're not an admin!
+ * 5       =   failed. Resource is in use. Check out $return["used"] for details
  */
 function fileDelete($resourcesID) {
     global $conf;
@@ -484,7 +477,6 @@ function fileDelete($resourcesID) {
         $return["code"] = 2;
         $return["string"] = "Could not find resources database";
         return $return;
-        exit;
     }
     $file = new sharedFile($conf["dir"]["data"]."/resources/_index.json");
     $json = $file->read();
@@ -492,18 +484,16 @@ function fileDelete($resourcesID) {
     if (!$res["resources"][$resourcesID]) {
         $return["status"] = "fail";
         $return["code"] = 3;
-        $return["string"] = "No valid resoucesID";
+        $return["string"] = "No valid resourcesID";
         $file->close();
         return $return;
-        exit;
     }
     if (($res["resources"][$resourcesID]["creatorId"] != $_SESSION["ohv"]["user"]["id"]) && ($_SESSION["ohv"]["user"]["role"] != "admin")) {
         $return["status"] = "fail";
         $return["code"] = 4;
-        $return["string"] = "Not permitted. Its not your resource and you're no admin!";
+        $return["string"] = "Not permitted. It's not your resource and you're not an admin!";
         $file->close();
         return $return;
-        exit;
     }
 
 
@@ -570,7 +560,6 @@ function fileDelete($resourcesID) {
         $return["used"] = $used;
         $file->close();
         return $return;
-        exit;
     }
 
     if ($res["resources"][$resourcesID]["type"] == "video") {
@@ -614,11 +603,9 @@ function fileDelete($resourcesID) {
  * @param $values
  * @return mixed
  *
- *
-Returning Code:
-0       =   Success. Resource and its thumbs have been found
-1       =   failed. Missing parameter
- *
+ * Returning Code:
+ * 0       =   Success. Resources matching the filter have been found
+ * 1       =   failed. Missing parameter
  */
 function fileGetByFilter($key,$condition,$values) {
     global $conf;
@@ -655,16 +642,13 @@ function fileGetByFilter($key,$condition,$values) {
     return $return;
 }
 
-//fileGetUrlInfo("https://read.oecd-ilibrary.org/education/equity-in-education_9789264073234-en#page1");
 /**
  * @param $url
  * @return mixed
  *
- *
-Returning Code:
-0       =   Success. URL Info successfully retrieved
-1       =   failed. 
- *
+ * Returning Code:
+ * 0       =   Success. URL info successfully retrieved
+ * 1       =   failed.
  */
 function fileGetUrlInfo($url) {
     

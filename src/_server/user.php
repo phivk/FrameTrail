@@ -3,7 +3,7 @@
 require_once("./config.php");
 
 /**
- * @param $userID // (optional) ID of User - if send the function will just return the User
+ * @param $userID // (optional) ID of user — if sent the function will return only that user
  * @return mixed
  */
 function userGet($userID) {
@@ -42,9 +42,9 @@ function userGet($userID) {
 
  * Returning codes:
  * 0 = success
- * 1 = Mail or Password arent given or Mail is not a valid address
+ * 1 = Mail or password aren't given or mail is not a valid address
  * 2 = User already registered
- * 3 = Registration success but user needs to be activated
+ * 3 = Registration successful but user needs to be activated
 
  */
 function userRegister($name, $mail, $passwd) {
@@ -110,7 +110,7 @@ function userRegister($name, $mail, $passwd) {
 
  * Returning codes:
  * 0 = success
- * 1 = mail, passwd or projectID arent given
+ * 1 = mail or passwd aren't given
  * 2 = User not found
  * 3 = Password incorrect
  * 4 = Could not find user-database // Project is missing
@@ -206,7 +206,7 @@ function userLogout() {
     $return["status"] = "success";
     session_destroy();
     $return["code"] = 1;
-    $return["string"] = "Logout success";
+    $return["string"] = "Logout successful";
 
     return $return;
 }
@@ -248,7 +248,7 @@ function userCheckLogin($userRole = false) {
 
         $return["status"] = "success";
         $return["code"] = 1;
-        $return["string"] = "user logged in";
+        $return["string"] = "User logged in";
         $return["session_lifetime"] = $conf["server"]["session_lifetime"];
 
         if ($_SESSION["ohv"]["user"]["active"] == 0) {
@@ -286,8 +286,8 @@ function userCheckLogin($userRole = false) {
  * Returning codes:
  * 0 = success
  * 1 = UserDB could not be find
- * 2 = User is not Admin and not himself
- * 3 = All data has been saved but mail because its not valid. so old mailadress will still be saved/used
+ * 2 = User is not an admin and not the account owner
+ * 3 = All data has been saved but mail was not updated because it's not valid — old mail address will still be used
 
  */
 function userChange($userID,$mail,$name,$passwd,$color,$role,$active) {
@@ -316,11 +316,11 @@ function userChange($userID,$mail,$name,$passwd,$color,$role,$active) {
         if ((($_SESSION["ohv"]["user"]["role"] != "admin") && ($userID != $tmpUserID))) {
             $return["status"] = "fail";
             $return["code"] = 2;
-            $return["string"] = "user is not admin nor himself";
+            $return["string"] = "User is not an admin and not the account owner";
         } elseif (($_SESSION["ohv"]["user"]["active"] != 1)) {
             $return["status"] = "fail";
             $return["code"] = 5;
-            $return["string"] = "user is not active";
+            $return["string"] = "User is not active";
             unset($_SESSION["ohv"]);
         } else {
             if ($userdb["user"][$userID]) {
@@ -339,7 +339,7 @@ function userChange($userID,$mail,$name,$passwd,$color,$role,$active) {
                 $userdb["user"][$userID]["passwd"] = ($passwd) ? password_hash($passwd, PASSWORD_DEFAULT) : $userdb["user"][$userID]["passwd"];
                 $file->write(json_encode($userdb, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));                
                 $return["status"] = "success";
-                $return["string"] = "userdata updated";
+                $return["string"] = "User data updated";
                 $return["response"] = $userdb["user"][$userID];
                 unset($return["response"]["passwd"]);
             } else {

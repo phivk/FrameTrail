@@ -77,13 +77,13 @@ function rrmdir($dir) {
  * @param $dest
  * Recursive copy of a dir
  */
-function copyr($source, $dest){
-    if(is_dir($source)) {
-        $dir_handle=opendir($source);
-        while($file=readdir($dir_handle)){
-            if($file!="." && $file!=".."){
-                if(is_dir($source."/".$file)){
-                    if(!is_dir($dest."/".$file)){
+function copyr($source, $dest) {
+    if (is_dir($source)) {
+        $dir_handle = opendir($source);
+        while ($file = readdir($dir_handle)) {
+            if ($file != "." && $file != "..") {
+                if (is_dir($source."/".$file)) {
+                    if (!is_dir($dest."/".$file)) {
                         mkdir($dest."/".$file);
                     }
                     copyr($source."/".$file, $dest."/".$file);
@@ -102,12 +102,12 @@ function copyr($source, $dest){
  * sharedFile class
  * @class           sharedFile
  * @file            shared/sharedFile.class.php
- * @brief           This class use read/write file with a lock state
+ * @brief           This class handles reading/writing a file with an exclusive lock
  * @version         0.1
  * @date            2012-06-28
  * @copyright       OpenSource : LGPLv3
  *
- * This class use read/write file with a lock state
+ * This class handles reading/writing a file with an exclusive lock
  */
 class sharedFile{
     private $file;
@@ -143,8 +143,8 @@ class sharedFile{
     }
 
     /**
-     * Get the exist state of the file
-     * @return boolean True if the file exist, false else
+     * Get the existence state of the file
+     * @return boolean True if the file exists, false otherwise
      */
     public function exists(){
         return $this->fileExist;
@@ -160,7 +160,7 @@ class sharedFile{
 
     /**
      * Get the file content (alias of read function)
-     * @return mixed False if there is an open or locked error, a string if the content was fully readed
+     * @return mixed False if there is an open or locked error, a string if the content was fully read
      */
     public function get(){
         return $this->read();
@@ -168,7 +168,7 @@ class sharedFile{
 
     /**
      * Get the file content
-     * @return mixed False if there is an open or locked error, a string if the content was fully readed
+     * @return mixed False if there is an open or locked error, a string if the content was fully read
      */
     public function read(){
         if($this->file === false && $this->locked !== true){
@@ -188,7 +188,7 @@ class sharedFile{
     /**
      * Set the file content (alias of write function)
      * @param string $data The data to store into file
-     * @return boolean True if the data where saved, false else.
+     * @return boolean True if the data were saved, false otherwise.
      */
     public function set($data){
         return $this->write($data);
@@ -197,7 +197,7 @@ class sharedFile{
     /**
      * Set the file content
      * @param string $data The data to store into file
-     * @return boolean True if the data where saved, false else.
+     * @return boolean True if the data were saved, false otherwise.
      */
     public function write($data){
         if($this->file === false  && $this->locked !== true){
@@ -221,7 +221,7 @@ class sharedFile{
     /**
      * Write data to file, and close, send back the write state result
      * @param string $data The data to store into file
-     * @return boolean True if the data where saved, false else.
+     * @return boolean True if the data were saved, false otherwise.
      */
     public function writeClose($data){
         $tmp = $this->write($data);
@@ -230,15 +230,15 @@ class sharedFile{
     }
 
     /**
-     * Get back the lock state of the file
-     * @return boolean True the file is locked, false if the lock failed
+     * Get the lock state of the file
+     * @return boolean True if the file is locked, false if the lock failed
      */
     public function isLocked(){
         return $this->locked;
     }
 
     /**
-     * Close the openned file and remove lock
+     * Close the opened file and release the lock
      */
     public function close(){
         if($this->locked === true){
