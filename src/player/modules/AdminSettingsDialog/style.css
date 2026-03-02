@@ -2,6 +2,11 @@
 
 }
 
+.ft-dialog-buttonpane .dialogError {
+    flex-basis: 100%;
+    margin-bottom: 0;
+}
+
 /* Tag Management Styles */
 .tagDefinitionsContainer {
     padding: 10px;

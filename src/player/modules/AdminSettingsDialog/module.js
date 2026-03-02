@@ -356,7 +356,11 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
             }
         }
 
-        renderTagList('');
+        FrameTrail.module('TagModel').updateTagModel(function() {
+            renderTagList('');
+        }, function() {
+            renderTagList('');
+        });
 
         tagDefinitionsUI.querySelector('.tagFilterInput').addEventListener('input', function() {
             renderTagList(this.value);
@@ -382,7 +386,8 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
             var isNew = (tagId === null);
             var allTags = FrameTrail.module('TagModel').getAllTags();
             var existingData = isNew ? {} : (allTags[tagId] || {});
-            var existingLangs = isNew ? [] : Object.keys(existingData);
+            var errorDiv = document.createElement('div');
+            errorDiv.className = 'message dialogError';
 
             var _dcw = document.createElement('div');
             _dcw.innerHTML = '<div class="tagEditDialog">'
@@ -444,34 +449,40 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                 width:   500,
                 buttons: [
                     {
-                        text: labels['GenericCancel'],
-                        click: function() { tagDialogCtrl.close(); }
-                    },
-                    {
                         text: labels['GenericSave'],
                         click: function() {
-                            saveTag(dialogContent, isNew, existingLangs, function() {
+                            saveTag(dialogContent, errorDiv, function() {
                                 tagDialogCtrl.close();
                                 renderTagList(tagDefinitionsUI.querySelector('.tagFilterInput').value);
                             });
                         }
+                    },
+                    {
+                        text: labels['GenericCancel'],
+                        click: function() { tagDialogCtrl.close(); }
                     }
                 ],
                 close: function() { tagDialogCtrl.destroy(); }
             });
+            tagDialogCtrl.widget().querySelector('.ft-dialog-buttonpane').prepend(errorDiv);
         }
 
-        function saveTag(dialogContent, isNew, existingLangs, onSuccess) {
+        function saveTag(dialogContent, errorDiv, onSuccess) {
             var tagId = dialogContent.querySelector('.tagIdInput').value.trim();
             var languageRows = dialogContent.querySelectorAll('.languageRow');
 
+            function showDialogError(msg) {
+                errorDiv.textContent = msg;
+                errorDiv.classList.add('active', 'error');
+            }
+
             if (tagId.length < 2) {
-                FrameTrail.module('InterfaceModal').showErrorMessage(labels['TagErrorIDTooShort']);
+                showDialogError(labels['TagErrorIDTooShort']);
                 return;
             }
 
             if (languageRows.length === 0) {
-                FrameTrail.module('InterfaceModal').showErrorMessage(labels['TagErrorNoLanguages']);
+                showDialogError(labels['TagErrorNoLanguages']);
                 return;
             }
 
@@ -481,13 +492,13 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                 var label = row.querySelector('.langLabelInput').value.trim();
                 var desc = row.querySelector('.langDescInput').value.trim();
 
-                if (lang.length === 2 && label.length >= 4 && desc.length >= 4) {
+                if (lang.length === 2 && label.length >= 4) {
                     saveQueue.push({ lang: lang, label: label, description: desc });
                 }
             });
 
             if (saveQueue.length === 0) {
-                FrameTrail.module('InterfaceModal').showErrorMessage(labels['TagErrorInvalidLanguages']);
+                showDialogError(labels['TagErrorInvalidLanguages']);
                 return;
             }
 
@@ -509,7 +520,7 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                         saveNext(idx + 1);
                     },
                     function() {
-                        FrameTrail.module('InterfaceModal').showErrorMessage(labels['TagErrorSaveFailed']);
+                        showDialogError(labels['TagErrorSaveFailed']);
                     }
                 );
             }

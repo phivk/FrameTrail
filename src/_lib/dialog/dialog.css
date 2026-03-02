@@ -83,6 +83,7 @@
 /* ── Button pane ─────────────────────────────────────────────────────── */
 .ft-dialog-buttonpane {
     display: flex;
+    flex-wrap: wrap;
     justify-content: flex-start;
     gap: 6px;
     padding: 8px 12px;

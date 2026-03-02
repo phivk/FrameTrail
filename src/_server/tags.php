@@ -50,7 +50,7 @@ function tagSet($tagName,$lang,$label,$description) {
         return $return;
     }
 
-    if (strlen($description) < 4) {
+    if (strlen($description) > 0 && strlen($description) < 4) {
         $return["status"] = "fail";
         $return["code"] = 6;
         $return["string"] = "Description expects at least 4 character";

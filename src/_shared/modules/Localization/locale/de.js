@@ -324,7 +324,7 @@ window.FrameTrail_L10n['de'] = {
     "TagEdit": "Tag bearbeiten",
     "TagErrorDeleteFailed": "Tag konnte nicht gelöscht werden. Bitte versuche es erneut.",
     "TagErrorIDTooShort": "Tag-ID muss mindestens 2 Zeichen lang sein",
-    "TagErrorInvalidLanguages": "Jede Sprache benötigt einen 2-Buchstaben-Code, Label (4+ Zeichen) und Beschreibung (4+ Zeichen)",
+    "TagErrorInvalidLanguages": "Jede Sprache benötigt einen 2-Buchstaben-Code und ein Label (4+ Zeichen)",
     "TagErrorNoLanguages": "Mindestens eine Sprache ist erforderlich",
     "TagErrorSaveFailed": "Tag konnte nicht gespeichert werden. Bitte versuche es erneut.",
     "TagID": "Tag-ID",

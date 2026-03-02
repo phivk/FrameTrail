@@ -19,6 +19,13 @@
             method: 'POST',
             cache: (config.allowCaching) ? 'default' : 'no-cache',
             body: body
+        }).then(function(r) {
+            return r.json();
+        }).then(function(json) {
+            if (json.status === 'fail') {
+                return Promise.reject(json);
+            }
+            return json;
         });
     }
 
@@ -151,17 +158,14 @@
         }
 
         _serverPost(new URLSearchParams({ a: 'tagDelete', tagName: tagname }))
-        .then(function(r) { return r.json(); })
         .then(function(data) {
-            if (data && data.code === 0) {
-                updateTagModel(function() {
-                    success(data);
-                }, fail);
-            } else {
-                if (fail) fail(data);
-            }
+            updateTagModel(function() {
+                success(data);
+            }, fail);
         })
-        .catch(fail);
+        .catch(function(data) {
+            if (fail) fail(data);
+        });
 
     }
 
