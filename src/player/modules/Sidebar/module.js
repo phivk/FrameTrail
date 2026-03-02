@@ -589,7 +589,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                 newDialogCtrl.destroy();
             },
             buttons: [
-                { text: labels['HypervideoAdd'],
+                { text: labels['HypervideoNew'],
                     click: function() {
                         if (FrameTrail.getState('storageMode') === 'local') {
                             addHypervideoLocally(newDialogCtrl, validateHypervideoForm, getDurationFromInputs);
