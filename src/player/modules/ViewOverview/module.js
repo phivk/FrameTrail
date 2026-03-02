@@ -92,7 +92,21 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
                         });
                     })(id);
 
+                    var deleteButton = document.createElement('button');
+                    deleteButton.className = 'hypervideoDeleteButton';
+                    deleteButton.setAttribute('data-tooltip-bottom-left', labels['GenericDeleteHypervideo']);
+                    deleteButton.innerHTML = '<span class="icon-trash"></span>';
+
+                    (function(hypervideoID) {
+                        deleteButton.addEventListener('click', function(evt) {
+                            evt.preventDefault();
+                            evt.stopPropagation();
+                            FrameTrail.module('HypervideoSettingsDialog').openDeleteDialog(hypervideoID);
+                        });
+                    })(id);
+
                     hypervideoOptions.append(editButton);
+                    hypervideoOptions.append(deleteButton);
                     thumb.append(hypervideoOptions);
 
                 }

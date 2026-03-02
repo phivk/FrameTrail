@@ -2,6 +2,7 @@
     order: 0;
     flex: 0 1 40px;
     align-self: auto;
+    position: relative;
     background: var(--primary-bg-color);
     width: 100%;
     padding: 0;
@@ -113,9 +114,11 @@
     top: 0px;
     left: 0px;
     width: 100%;
-    text-align: center;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: var(--primary-fg-color);
-    line-height: 38px;
     z-index: -1;
 }
 
@@ -124,19 +127,23 @@
 }
 
 .titlebar .titlebarTitle .hypervideoEditButton {
-    padding: 0 6px;
-    height: 0px;
-    opacity: 0.7;
-    display: none;
-    z-index: 1;
+    margin-left: 10px;
 }
 
-.titlebar .titlebarTitle .hypervideoEditButton:hover {
+.titlebar .titlebarTitle .hypervideoEditButton,
+.titlebar .titlebarTitle .hypervideoDeleteButton {
+    opacity: 0.7;
+    display: none;
+}
+
+.titlebar .titlebarTitle .hypervideoEditButton:hover,
+.titlebar .titlebarTitle .hypervideoDeleteButton:hover {
     opacity: 1;
 }
 
-.titlebar .titlebarTitle .hypervideoEditButton.active {
-    display: inline-block;
+.titlebar .titlebarTitle .hypervideoEditButton.active,
+.titlebar .titlebarTitle .hypervideoDeleteButton.active {
+    display: flex;
 }
 
 .titlebar .titlebarTitle .localFolderIndicator {

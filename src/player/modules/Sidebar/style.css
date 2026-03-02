@@ -146,7 +146,7 @@
     margin: 0 7px 8px 7px;
 }
 
-.sidebarContainer .viewmodeControls .viewModeActionButtonContainer button, .hypervideoDeleteButton {
+.sidebarContainer .viewmodeControls .viewModeActionButtonContainer button {
     float: left;
     height: 40px;
     margin-top: 7px;
@@ -156,11 +156,11 @@
     background-color: transparent;
 }
 
-.sidebarContainer .viewmodeControls .viewModeActionButtonContainer button:hover, .hypervideoDeleteButton:hover {
+.sidebarContainer .viewmodeControls .viewModeActionButtonContainer button:hover {
     background-color: var(--primary-bg-color);
 }
 
-.sidebar.editActive .sidebarContainer .viewmodeControls .viewModeActionButtonContainer button, .hypervideoDeleteButton {
+.sidebar.editActive .sidebarContainer .viewmodeControls .viewModeActionButtonContainer button {
     border-color: var(--primary-bg-color);
 }
 
@@ -178,16 +178,4 @@
 
 .sidebarContainer .viewmodeControls .exportButton {
     display: none;
-}
-
-.sidebarContainer .hypervideoDeleteButton {
-    position: absolute;
-    bottom: 8px;
-    left: 7px;
-}
-
-.sidebarContainer .hypervideoDeleteButton .icon-trash::before {
-    font-size: 20px;
-    margin-left: 2px;
-    margin-top: 2px;
 }

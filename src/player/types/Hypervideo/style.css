@@ -123,32 +123,36 @@
 .hypervideoThumb .hypervideoOptions {
     position: absolute;
     top: 0;
-    left: 0;
-    width: 100%;
+    right: 0;
     z-index: 3;
-    background-color: var(--semi-transparent-bg-color);
     display: none;
 }
 
 .hypervideoThumb:hover .hypervideoOptions {
-    display: block;
+    display: flex;
 }
 
 .hypervideoThumb .hypervideoOptions button {
-    float: right;
-    background-color: transparent;
-    border: 2px solid #F8F8F8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--secondary-bg-color);
     border-color: var(--primary-fg-color);
     border-radius: 50%;
     height: 40px;
     width: 40px;
     color: var(--primary-fg-color);
     margin: 8px 8px 8px 0;
+    opacity: 0.8;
 }
 
-.hypervideoThumb .hypervideoOptions button [class^="icon-"]::before, .hypervideoThumb .hypervideoOptions button [class*=" icon-"]::before {
-    font-size: 18px;
-    margin-left: 1px;
+.hypervideoThumb .hypervideoOptions button:hover {
+    opacity: 1;
+}
+
+.hypervideoThumb .hypervideoOptions button [class^="icon-"]::before, .ui-tabs-panel .hypervideoThumb .hypervideoOptions button [class*=" icon-"]::before {
+    font-size: 20px;
+    margin-left: 4px;
     margin-top: 2px;
     width: 22px;
 }

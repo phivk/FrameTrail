@@ -45,56 +45,20 @@
 }
 
 /* Responsive grid columns for hypervideo thumbs */
-/* Medium devices (≥768px) - 2 columns */
 @media (min-width: 768px) {
     .viewOverview .overviewList .hypervideoThumb {
         grid-column: span 4;
     }
 }
 
-/* Large devices (≥992px) - 1 column (12 per row) */
 @media (min-width: 992px) {
+    .viewOverview .overviewList .hypervideoThumb {
+        grid-column: span 4;
+    }
+}
+
+@media (min-width: 1200px) {
     .viewOverview .overviewList .hypervideoThumb {
         grid-column: span 3;
     }
-}
-
-/* Extra large devices (≥1200px) - 1 column (12 per row) */
-@media (min-width: 1200px) {
-    .viewOverview .overviewList .hypervideoThumb {
-        grid-column: span 2;
-    }
-}
-
-.viewOverview .hypervideoThumb {
-    position: relative;
-}
-
-.viewOverview .hypervideoOptions {
-    position: absolute;
-    top: 0px;
-    right: 0px;
-    z-index: 10;
-}
-
-.viewOverview .hypervideoOptions .hypervideoEditButton {
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    border: none;
-    background-color: rgba(0, 0, 0, 0.6);
-    color: white;
-    cursor: pointer;
-    border-radius: 4px;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0.8;
-    transition: opacity 0.2s;
-}
-
-.viewOverview .hypervideoOptions .hypervideoEditButton:hover {
-    opacity: 1;
-    background-color: rgba(0, 0, 0, 0.8);
 }

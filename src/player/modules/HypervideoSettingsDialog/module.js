@@ -13,6 +13,10 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
 
     var labels = FrameTrail.module('Localization').labels;
 
+    function _serverPost(body) {
+        return fetch('_server/ajaxServer.php', { method: 'POST', body: body }).then(function(r) { return r.json(); });
+    }
+
     /**
      * Convert seconds to hours, minutes, seconds object
      * @method secondsToHMS
@@ -913,8 +917,157 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
         });
     }
 
+    /**
+     * Delete a hypervideo locally using the File System Access API adapter.
+     * @method deleteHypervideoLocally
+     */
+    function deleteHypervideoLocally(deleteDialogCtrl, thisID) {
+        var hypervideos = FrameTrail.module('Database').hypervideos;
+        var enteredName = deleteDialogCtrl.element.querySelector('input[name="hypervideoName"]').value;
+
+        if (enteredName.toLowerCase() !== hypervideos[thisID].name.toLowerCase()) {
+            var _err = deleteDialogCtrl.element.querySelector('.message.error'); _err.classList.add('active'); _err.innerHTML = labels['ErrorHypervideoNameIncorrect'];
+            return;
+        }
+
+        var adapter = FrameTrail.module('StorageManager').getAdapter();
+
+        adapter.readJSON('hypervideos/_index.json').then(function(hvi) {
+            if (!hvi.hypervideos[thisID]) {
+                deleteDialogCtrl.element.querySelector('.message.error').classList.add('active'); deleteDialogCtrl.element.querySelector('.message.error').innerHTML = labels['ErrorHypervideoDoesNotExist'];
+                return Promise.reject();
+            }
+            var hvPath = 'hypervideos/' + hvi.hypervideos[thisID];
+            delete hvi.hypervideos[thisID];
+            return Promise.all([
+                adapter.writeJSON('hypervideos/_index.json', hvi),
+                adapter.deleteDirectory(hvPath).catch(function() {})
+            ]);
+        }).then(function() {
+            deleteDialogCtrl.close();
+            FrameTrail.module('Database').loadHypervideoData(
+                function() {
+                    FrameTrail.module('ViewOverview').refreshList();
+                    if (thisID == FrameTrail.module('RouteNavigation').hypervideoID) {
+                        alert(labels['MessageDeleteHypervideoRedirect']);
+                        if (FrameTrail.getState('editMode')) {
+                            FrameTrail.changeState('editMode', false);
+                        }
+                        FrameTrail.module('RouteNavigation').hypervideoID = null;
+                        document.querySelector('.titlebar button[data-viewmode="video"]').style.display = 'none';
+                        window.location.hash = '#';
+                        FrameTrail.changeState('viewMode', 'overview');
+                    }
+                },
+                function() {}
+            );
+        }).catch(function() {});
+    }
+
+    /**
+     * Open a dialog to confirm and execute hypervideo deletion.
+     * @method openDeleteDialog
+     * @param {String} hypervideoID
+     */
+    function openDeleteDialog(hypervideoID) {
+        var thisID = hypervideoID,
+            hypervideos = FrameTrail.module('Database').hypervideos;
+
+        var _ddw = document.createElement('div');
+        _ddw.innerHTML = '<div class="deleteHypervideoDialog">'
+                           + '<div>'+ labels['MessageDeleteHypervideoQuestion'] +'</div>'
+                           + '    <input class="thisHypervideoName" type="text" value="'+ hypervideos[thisID]['name'] +'" readonly>'
+                           + '    <div class="message active">'+ labels['MessageDeleteHypervideoReEnter'] +':</div>'
+                           + '    <form method="POST" class="deleteHypervideoForm">'
+                           + '        <input type="text" name="hypervideoName" placeholder="'+ labels['GenericName'] +'"><br>'
+                           + '        <div class="message error"></div>'
+                           + '    </form>'
+                           + '</div>';
+        var deleteDialog = _ddw.firstElementChild;
+
+        var deleteDialogCtrl;
+        deleteDialog.querySelector('.deleteHypervideoForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            var formData = new FormData(this);
+            formData.set('a', 'hypervideoDelete');
+            formData.set('hypervideoID', thisID);
+
+            _serverPost(formData)
+            .then(function(response) {
+                switch(response['code']) {
+                    case 0:
+                        deleteDialogCtrl.close();
+                        FrameTrail.module('Database').loadHypervideoData(
+                            function() {
+                                FrameTrail.module('ViewOverview').refreshList();
+                                if (thisID == FrameTrail.module('RouteNavigation').hypervideoID) {
+                                    alert(labels['MessageDeleteHypervideoRedirect']);
+                                    if (FrameTrail.getState('editMode')) {
+                                        FrameTrail.changeState('editMode', false);
+                                    }
+                                    FrameTrail.module('RouteNavigation').hypervideoID = null;
+                                    document.querySelector('.titlebar button[data-viewmode="video"]').style.display = 'none';
+                                    window.location.hash = '#';
+                                    FrameTrail.changeState('viewMode', 'overview');
+                                }
+                            },
+                            function() {}
+                        );
+                    break;
+                    case 1:
+                        var _delErr = deleteDialog.querySelector('.message.error'); _delErr.classList.add('active'); _delErr.innerHTML = labels['ErrorNotLoggedIn'];
+                    break;
+                    case 2:
+                        var _delErr = deleteDialog.querySelector('.message.error'); _delErr.classList.add('active'); _delErr.innerHTML = labels['ErrorNotActivated'];
+                    break;
+                    case 3:
+                        var _delErr = deleteDialog.querySelector('.message.error'); _delErr.classList.add('active'); _delErr.innerHTML = labels['ErrorCouldNotFindHypervideoDirectory'];
+                    break;
+                    case 4:
+                        var _delErr = deleteDialog.querySelector('.message.error'); _delErr.classList.add('active'); _delErr.innerHTML = labels['ErrorHypervideoDoesNotExist'];
+                    break;
+                    case 5:
+                        var _delErr = deleteDialog.querySelector('.message.error'); _delErr.classList.add('active'); _delErr.innerHTML = labels['ErrorHypervideoNameIncorrect'];
+                    break;
+                    case 6:
+                        var _delErr = deleteDialog.querySelector('.message.error'); _delErr.classList.add('active'); _delErr.innerHTML = labels['ErrorHypervideoPermissionDenied'];
+                    break;
+                }
+            });
+        });
+
+        deleteDialogCtrl = Dialog({
+            modal:   true,
+            content: deleteDialog,
+            open: function() {
+                var _tn = deleteDialog.querySelector('.thisHypervideoName'); _tn.focus(); _tn.select();
+            },
+            close: function() {
+                deleteDialogCtrl.destroy();
+            },
+            buttons: [
+                { text: labels['GenericDeleteHypervideo'],
+                    click: function() {
+                        if (FrameTrail.getState('storageMode') === 'local') {
+                            deleteHypervideoLocally(deleteDialogCtrl, thisID);
+                        } else {
+                            deleteDialog.querySelector('.deleteHypervideoForm').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
+                        }
+                    }
+                },
+                { text: labels['GenericCancel'],
+                    click: function() {
+                        deleteDialogCtrl.close();
+                    }
+                }
+            ]
+        });
+    }
+
     return {
-        open: open
+        open: open,
+        openDeleteDialog: openDeleteDialog
     };
 
 });

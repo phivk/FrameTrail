@@ -23,7 +23,7 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
                             + '      <button data-viewmode="overview" data-tooltip-bottom-left="'+ labels['GenericOverview'] +'"><span class="icon-overview"></span></button>'
                             + '      <button data-viewmode="video"><span class="icon-hypervideo"></span></button>'
                             + '  </div>'
-                            + '  <div class="titlebarTitle"><button class="hypervideoEditButton" data-tooltip-bottom="'+ labels['SettingsHypervideoSettings'] +'"><span class="icon-pencil"></span></button></div>'
+                            + '  <div class="titlebarTitle"><button class="hypervideoEditButton" data-tooltip-bottom="'+ labels['SettingsHypervideoSettings'] +'"><span class="icon-pencil"></span></button><button class="hypervideoDeleteButton" data-tooltip-bottom="'+ labels['GenericDeleteHypervideo'] +'"><span class="icon-trash"></span></button></div>'
                             + '  <div class="titlebarActionButtonContainer">'
                             + '      <button class="adminSettingsButton" data-tooltip-bottom-right="'+ labels['GenericAdministration'] +'"><span class="icon-cog"></span></button>'
                             + '      <button class="manageResourcesButton resourceManagerIcon" data-tooltip-bottom-right="'+ labels['ResourcesManage'] +'"><span class="icon-folder-open"></span></button>'
@@ -39,6 +39,7 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
     var TitlebarViewMode        = domElement.querySelector('.titlebarViewMode'),
         TitlebarTitle           = domElement.querySelector('.titlebarTitle'),
         HypervideoEditButton    = domElement.querySelector('.hypervideoEditButton'),
+        HypervideoDeleteButton  = domElement.querySelector('.hypervideoDeleteButton'),
         ManageResourcesButton   = domElement.querySelector('.manageResourcesButton'),
         AdminSettingsButton     = domElement.querySelector('.adminSettingsButton'),
         StartEditButton         = domElement.querySelector('.startEditButton'),
@@ -169,7 +170,7 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
         FrameTrail.module('AdminSettingsDialog').open();
     });
 
-    // Use event delegation to handle clicks even if button is recreated
+    // Use event delegation to handle clicks even if buttons are recreated
     domElement.addEventListener('click', function(evt) {
         if (evt.target.closest('.hypervideoEditButton')) {
             evt.preventDefault();
@@ -177,6 +178,13 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
             var hypervideoID = FrameTrail.module('RouteNavigation').hypervideoID;
             if (hypervideoID) {
                 FrameTrail.module('HypervideoSettingsDialog').open(hypervideoID);
+            }
+        } else if (evt.target.closest('.hypervideoDeleteButton')) {
+            evt.preventDefault();
+            evt.stopPropagation();
+            var hypervideoID = FrameTrail.module('RouteNavigation').hypervideoID;
+            if (hypervideoID) {
+                FrameTrail.module('HypervideoSettingsDialog').openDeleteDialog(hypervideoID);
             }
         }
     });
@@ -293,11 +301,14 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
 
         domElement.querySelector('[data-viewmode=' + viewMode + ']').classList.add('active');
 
-        // Show/hide hypervideo edit button based on view mode, edit mode, and permission
-        if (viewMode === 'video' && FrameTrail.getState('editMode') && FrameTrail.module('RouteNavigation').hypervideoID && canEditCurrentHypervideo()) {
+        // Show/hide hypervideo edit/delete buttons based on view mode, edit mode, and permission
+        var showHvButtons = viewMode === 'video' && FrameTrail.getState('editMode') && FrameTrail.module('RouteNavigation').hypervideoID && canEditCurrentHypervideo();
+        if (showHvButtons) {
             HypervideoEditButton.classList.add('active');
+            HypervideoDeleteButton.classList.add('active');
         } else {
             HypervideoEditButton.classList.remove('active');
+            HypervideoDeleteButton.classList.remove('active');
         }
 
     }
@@ -322,9 +333,10 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
                 ManageResourcesButton.style.display = '';
                 SharingWidget.style.display = 'none';
 
-                // Show hypervideo edit button if in video view and user has permission
+                // Show hypervideo edit/delete buttons if in video view and user has permission
                 if (FrameTrail.getState('viewMode') === 'video' && FrameTrail.module('RouteNavigation').hypervideoID && canEditCurrentHypervideo()) {
                     HypervideoEditButton.classList.add('active');
+                    HypervideoDeleteButton.classList.add('active');
                 }
 
                 // Show admin settings button if server-authenticated admin (not guest)
@@ -355,6 +367,7 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
             LeaveEditModeButton.style.display = 'none';
             ManageResourcesButton.style.display = 'none';
             HypervideoEditButton.classList.remove('active');
+            HypervideoDeleteButton.classList.remove('active');
             AdminSettingsButton.style.display = 'none';
             SharingWidget.style.display = (window.FrameTrail.instances.length > 1) ? 'none' : '';
 
@@ -449,6 +462,7 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
         set title(aString) {
             var titleText = aString;
             var editButton = TitlebarTitle.querySelector('.hypervideoEditButton');
+            var deleteButton = TitlebarTitle.querySelector('.hypervideoDeleteButton');
             TitlebarTitle.innerHTML = '';
 
             // Show folder name before title when in local storage mode
@@ -476,6 +490,9 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
 
             if (editButton) {
                 TitlebarTitle.append(editButton);
+            }
+            if (deleteButton) {
+                TitlebarTitle.append(deleteButton);
             }
         },
 
