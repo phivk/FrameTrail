@@ -62,3 +62,36 @@
         grid-column: span 3;
     }
 }
+
+.viewOverview .overviewList .hypervideoThumb.newHypervideoThumb {
+    background: transparent !important;
+    border: 2px dashed rgba(248, 248, 248, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    color: var(--primary-fg-color);
+    opacity: 0.5;
+    transition-property: opacity, border-color;
+}
+
+.viewOverview .overviewList .hypervideoThumb.newHypervideoThumb:hover {
+    border-color: var(--primary-fg-color);
+    background-size: unset;
+    opacity: 1;
+}
+
+.viewOverview .overviewList .hypervideoThumb.newHypervideoThumb [class^="icon-"]::before {
+    position: static;
+    font-size: 22px;
+    margin: 0;
+    color: inherit;
+    text-shadow: none;
+}
+
+.viewOverview .overviewList .hypervideoThumb.newHypervideoThumb .newHypervideoLabel {
+    font-size: 13px;
+    color: var(--primary-fg-color);
+}

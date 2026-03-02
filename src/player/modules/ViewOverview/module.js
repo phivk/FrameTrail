@@ -256,6 +256,20 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
 
         }
 
+        if (editMode && FrameTrail.module('StorageManager').canSave()) {
+            var newHypervideoThumb = document.createElement('div');
+            newHypervideoThumb.className = 'hypervideoThumb newHypervideoThumb';
+            newHypervideoThumb.innerHTML = '<span class="icon-hypervideo-add"></span>'
+                                         + '<span class="newHypervideoLabel">' + labels['HypervideoNew'] + '</span>';
+            newHypervideoThumb.addEventListener('click', function() {
+                var _t = FrameTrail.getState('target');
+                var _targetEl = (typeof _t === 'string') ? document.querySelector(_t) : _t;
+                var btn = _targetEl.querySelector('.newHypervideoButton');
+                if (btn) btn.click();
+            });
+            OverviewList.append(newHypervideoThumb);
+        }
+
         changeViewSize();
         OverviewList.querySelectorAll('.hypervideoThumb').forEach(function(el) { el.style.transitionDuration = ''; });
 
