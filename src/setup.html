@@ -186,7 +186,8 @@
             font-size: 15px;
         }
 
-        .preflight-icon.pass { color: var(--primary-bg-color); }
+        .preflight-icon.pass { color: #76C11F; }
+        .preflight-icon.warn { color: #f5bf00; }
         .preflight-icon.fail { color: #e05c5c; }
 
         .preflight-spinner {
@@ -219,6 +220,10 @@
             color: #e05c5c;
             font-family: monospace;
             word-break: break-all;
+        }
+
+        .preflight-detail.warn {
+            color: #c8980a;
         }
 
         #recheck-btn {
@@ -443,6 +448,34 @@
             color: var(--primary-bg-color);
         }
 
+        /* --- 2-column grid: remove per-item borders (gap handles row separation) --- */
+        .setup-wizard .layoutRow > .preflight-item {
+            border-bottom: none;
+            padding: 8px 0;
+        }
+
+        .setup-wizard .layoutRow > .toggle-setting {
+            border-bottom: none;
+            gap: 12px;
+        }
+
+        /* Prevent the toggle switch from shrinking; let text wrap instead */
+        .setup-wizard .toggle-setting label.switch { flex-shrink: 0; }
+        .setup-wizard .toggle-setting .toggle-text  { min-width: 0; }
+
+        /* Left-column items: large right padding + divider to visually separate columns */
+        .setup-wizard .layoutRow > .preflight-item:nth-child(odd),
+        .setup-wizard .layoutRow > .toggle-setting:nth-child(odd) {
+            padding-right: 28px;
+            border-right: 1px solid var(--secondary-bg-color);
+        }
+
+        /* Right-column items: matching left padding */
+        .setup-wizard .layoutRow > .preflight-item:nth-child(even),
+        .setup-wizard .layoutRow > .toggle-setting:nth-child(even) {
+            padding-left: 28px;
+        }
+
         /* --- Responsive --- */
         @media (max-width: 600px) {
             .frametrail-body { padding: 28px 14px 48px; }
@@ -451,6 +484,20 @@
             /* Stack two-column form rows on narrow screens */
             .setup-wizard .layoutRow { grid-template-columns: 1fr; }
             .setup-wizard .layoutRow > .column-6 { grid-column: span 1; }
+            /* Restore dividers when stacked; remove column separators */
+            .setup-wizard .layoutRow > .preflight-item {
+                border-bottom: 1px solid var(--secondary-bg-color);
+                border-right: none;
+                padding: 12px 0;
+            }
+            .setup-wizard .layoutRow > .preflight-item:last-child { border-bottom: none; }
+            .setup-wizard .layoutRow > .toggle-setting {
+                border-bottom: 1px solid var(--secondary-bg-color);
+                border-right: none;
+                padding-right: 0;
+                padding-left: 0;
+            }
+            .setup-wizard .layoutRow > .toggle-setting:last-of-type { border-bottom: none; }
         }
     </style>
 </head>
@@ -503,25 +550,32 @@
             <h2>Welcome to FrameTrail</h2>
             <p class="step-subtitle">Let&#8217;s check your server environment before getting started.</p>
 
-            <ul class="preflight-list" id="preflight-list">
-                <li class="preflight-item" id="check-php">
+            <ul class="preflight-list layoutRow" id="preflight-list">
+                <li class="preflight-item column-6" id="check-php">
                     <div class="preflight-icon"><span class="preflight-spinner"></span></div>
                     <div class="preflight-details">
                         <div class="preflight-label">PHP Version</div>
                         <div class="preflight-detail">Checking&#8230;</div>
                     </div>
                 </li>
-                <li class="preflight-item" id="check-root_writable">
+                <li class="preflight-item column-6" id="check-root_writable">
                     <div class="preflight-icon"><span class="preflight-spinner"></span></div>
                     <div class="preflight-details">
                         <div class="preflight-label">Root Directory</div>
                         <div class="preflight-detail">Checking&#8230;</div>
                     </div>
                 </li>
-                <li class="preflight-item" id="check-data_writable">
+                <li class="preflight-item column-6" id="check-data_writable">
                     <div class="preflight-icon"><span class="preflight-spinner"></span></div>
                     <div class="preflight-details">
                         <div class="preflight-label">Data Directory</div>
+                        <div class="preflight-detail">Checking&#8230;</div>
+                    </div>
+                </li>
+                <li class="preflight-item column-6" id="check-upload_limits">
+                    <div class="preflight-icon"><span class="preflight-spinner"></span></div>
+                    <div class="preflight-details">
+                        <div class="preflight-label">Upload Limits</div>
                         <div class="preflight-detail">Checking&#8230;</div>
                     </div>
                 </li>
@@ -600,49 +654,51 @@
             <h2>Configure Your Installation</h2>
             <p class="step-subtitle">Sensible defaults are already selected. Everything here can be changed later in the admin panel.</p>
 
-            <div class="toggle-setting">
-                <div class="toggle-text">
-                    <strong>Require approval for new accounts</strong>
-                    <span>New registrations must be approved by an admin before they can log in</span>
+            <div class="layoutRow">
+                <div class="toggle-setting column-6">
+                    <div class="toggle-text">
+                        <strong>Require approval for new accounts</strong>
+                        <span>New registrations must be approved by an admin before they can log in</span>
+                    </div>
+                    <label class="switch" title="Require admin approval">
+                        <input type="checkbox" id="cfg-confirmation" checked>
+                        <span class="slider round"></span>
+                    </label>
                 </div>
-                <label class="switch" title="Require admin approval">
-                    <input type="checkbox" id="cfg-confirmation" checked>
-                    <span class="slider round"></span>
-                </label>
-            </div>
 
-            <div class="toggle-setting">
-                <div class="toggle-text">
-                    <strong>Require login to view content</strong>
-                    <span>Visitors must be logged in to access any hypervideo</span>
+                <div class="toggle-setting column-6">
+                    <div class="toggle-text">
+                        <strong>Require login to view content</strong>
+                        <span>Visitors must be logged in to access any hypervideo</span>
+                    </div>
+                    <label class="switch" title="Require login">
+                        <input type="checkbox" id="cfg-forcelogin">
+                        <span class="slider round"></span>
+                    </label>
                 </div>
-                <label class="switch" title="Require login">
-                    <input type="checkbox" id="cfg-forcelogin">
-                    <span class="slider round"></span>
-                </label>
-            </div>
 
-            <div class="toggle-setting">
-                <div class="toggle-text">
-                    <strong>Allow file uploads</strong>
-                    <span>Users can upload images, audio, and video files</span>
+                <div class="toggle-setting column-6">
+                    <div class="toggle-text">
+                        <strong>Allow file uploads</strong>
+                        <span>Users can upload images, audio, and video files</span>
+                    </div>
+                    <label class="switch" title="Allow uploads">
+                        <input type="checkbox" id="cfg-uploads" checked>
+                        <span class="slider round"></span>
+                    </label>
                 </div>
-                <label class="switch" title="Allow uploads">
-                    <input type="checkbox" id="cfg-uploads" checked>
-                    <span class="slider round"></span>
-                </label>
-            </div>
 
-            <div class="toggle-setting">
-                <div class="toggle-text">
-                    <strong>Interface Language</strong>
-                    <span>The language used for all menus, buttons, and messages</span>
+                <div class="toggle-setting column-6">
+                    <div class="toggle-text">
+                        <strong>Interface Language</strong>
+                        <span>The language used for all menus, buttons, and messages</span>
+                    </div>
+                    <select id="cfg-language">
+                        <option value="en">English</option>
+                        <option value="de">Deutsch</option>
+                        <option value="fr">Français</option>
+                    </select>
                 </div>
-                <select id="cfg-language">
-                    <option value="en">English</option>
-                    <option value="de">Deutsch</option>
-                    <option value="fr">Français</option>
-                </select>
             </div>
         </div>
 
@@ -660,10 +716,10 @@
 
     <!-- Footer -->
     <footer class="setup-footer" id="setup-footer">
-        <button id="btn-back">Back</button>
+        <button id="btn-back"><span class="icon-left-open-big"></span> Back</button>
         <div class="footer-right">
             <button id="btn-skip" style="display:none">Skip &amp; Finish</button>
-            <button id="btn-next" disabled>Continue</button>
+            <button id="btn-next" disabled>Continue <span class="icon-right-open-big"></span></button>
         </div>
     </footer>
 
@@ -752,7 +808,7 @@
         footer.style.display = '';
         btnBack.style.display  = (currentStep === 1) ? 'none' : '';
         btnSkip.style.display  = (currentStep === 3) ? '' : 'none';
-        btnNext.textContent    = (currentStep === 3) ? 'Save \u0026 Finish' : 'Continue';
+        btnNext.innerHTML    = (currentStep === 3) ? 'Save \u0026 Finish' : 'Continue <span class="icon-right-open-big"></span>';
         refreshNextButton();
     }
 
@@ -808,6 +864,11 @@
             icon.className  = 'preflight-icon pass';
             detEl.textContent = detail;
             detEl.className = 'preflight-detail';
+        } else if (state === 'warn') {
+            icon.innerHTML  = '<span class="icon-attention-circled"></span>';
+            icon.className  = 'preflight-icon warn';
+            detEl.textContent = detail;
+            detEl.className = 'preflight-detail warn';
         } else {
             icon.innerHTML  = '<span class="icon-cancel"></span>';
             icon.className  = 'preflight-icon fail';
@@ -817,7 +878,7 @@
     }
 
     function runPreflight() {
-        ['php', 'root_writable', 'data_writable'].forEach(function (k) {
+        ['php', 'root_writable', 'data_writable', 'upload_limits'].forEach(function (k) {
             setCheckState(k, 'loading');
         });
         document.getElementById('recheck-btn').style.display = 'none';
@@ -838,7 +899,8 @@
             var allPass = true;
             Object.keys(data.checks).forEach(function (key) {
                 var c = data.checks[key];
-                setCheckState(key, c.pass ? 'pass' : 'fail', c.detail);
+                var state = !c.pass ? 'fail' : (c.warn ? 'warn' : 'pass');
+                setCheckState(key, state, c.detail);
                 if (!c.pass) allPass = false;
             });
             csrfToken   = data.csrf || '';
@@ -847,7 +909,7 @@
             if (!allPass) document.getElementById('recheck-btn').style.display = 'block';
         })
         .catch(function () {
-            ['php', 'root_writable', 'data_writable'].forEach(function (k) {
+            ['php', 'root_writable', 'data_writable', 'upload_limits'].forEach(function (k) {
                 setCheckState(k, 'fail', 'Could not reach the server');
             });
             document.getElementById('recheck-btn').style.display = 'block';

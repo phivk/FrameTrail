@@ -308,6 +308,30 @@ switch($_REQUEST["a"]) {
             );
         }
 
+        // Upload limits — check whether .user.ini / .htaccess values took effect
+        $iniToBytes = function($v) {
+            $v = trim($v);
+            $n = (int) $v;
+            switch (strtolower(substr($v, -1))) {
+                case 'g': return $n * 1073741824;
+                case 'm': return $n * 1048576;
+                case 'k': return $n * 1024;
+            }
+            return $n;
+        };
+        $actualUpload  = ini_get('upload_max_filesize');
+        $actualPost    = ini_get('post_max_size');
+        $uploadOk      = $iniToBytes($actualUpload) >= $iniToBytes('400M')
+                      && $iniToBytes($actualPost)   >= $iniToBytes('900M');
+        $checks["upload_limits"] = array(
+            "pass"   => true,   // non-blocking — low limits don't prevent installation
+            "warn"   => !$uploadOk,
+            "label"  => "Upload Limits",
+            "detail" => $uploadOk
+                ? "upload_max_filesize=" . $actualUpload . ", post_max_size=" . $actualPost
+                : "upload_max_filesize=" . $actualUpload . " (need 400M), post_max_size=" . $actualPost . " (need 900M) — the .user.ini / .htaccess settings haven't taken effect. Set these values in your server's php.ini or ask your hosting provider."
+        );
+
         $allPass = true;
         foreach ($checks as $c) {
             if (!$c["pass"]) { $allPass = false; break; }
