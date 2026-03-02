@@ -181,10 +181,10 @@
     position: absolute;
 }
 
-.newHypervideoDialog .uploadNewVideoResource {
+.videoSourceTabs .uploadNewVideoResource {
     position: absolute;
     right: 0px;
-    top: 6px;
+    top: -35px;
 }
 
 .shareDialog input[type="text"], .shareDialog textarea {

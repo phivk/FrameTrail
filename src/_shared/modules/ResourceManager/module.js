@@ -633,7 +633,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                     }
 
                     // ---- Map tab: Nominatim location search ----
-                    uploadDialog.querySelector('.locationQ').addEventListener('keyup', function() {
+                    if (!onlyVideo) uploadDialog.querySelector('.locationQ').addEventListener('keyup', function() {
                         fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(this.value) + '&format=json')
                             .then(function(r) { return r.json(); })
                             .then(function(respText) {
