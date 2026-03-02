@@ -949,14 +949,12 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
                 function() {
                     FrameTrail.module('ViewOverview').refreshList();
                     if (thisID == FrameTrail.module('RouteNavigation').hypervideoID) {
-                        alert(labels['MessageDeleteHypervideoRedirect']);
-                        if (FrameTrail.getState('editMode')) {
-                            FrameTrail.changeState('editMode', false);
-                        }
                         FrameTrail.module('RouteNavigation').hypervideoID = null;
                         document.querySelector('.titlebar button[data-viewmode="video"]').style.display = 'none';
-                        window.location.hash = '#';
-                        FrameTrail.changeState('viewMode', 'overview');
+                        if (FrameTrail.getState('viewMode') === 'video') {
+                            window.location.hash = '#';
+                            FrameTrail.changeState('viewMode', 'overview');
+                        }
                     }
                 },
                 function() {}
@@ -1002,14 +1000,12 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
                             function() {
                                 FrameTrail.module('ViewOverview').refreshList();
                                 if (thisID == FrameTrail.module('RouteNavigation').hypervideoID) {
-                                    alert(labels['MessageDeleteHypervideoRedirect']);
-                                    if (FrameTrail.getState('editMode')) {
-                                        FrameTrail.changeState('editMode', false);
-                                    }
                                     FrameTrail.module('RouteNavigation').hypervideoID = null;
                                     document.querySelector('.titlebar button[data-viewmode="video"]').style.display = 'none';
-                                    window.location.hash = '#';
-                                    FrameTrail.changeState('viewMode', 'overview');
+                                    if (FrameTrail.getState('viewMode') === 'video') {
+                                        window.location.hash = '#';
+                                        FrameTrail.changeState('viewMode', 'overview');
+                                    }
                                 }
                             },
                             function() {}

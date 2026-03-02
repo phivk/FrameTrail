@@ -497,6 +497,7 @@
 
             // TODO: fix server object / array php problem
             if ( Array.isArray(data.hypervideos) || countdown == 0 ) {
+                hypervideos = {};
                 success.call(this);
                 return;
             }
@@ -627,6 +628,7 @@
                 bufferedData = {};
 
             if (Array.isArray(data.hypervideos) || countdown === 0) {
+                hypervideos = {};
                 success.call(this);
                 return;
             }

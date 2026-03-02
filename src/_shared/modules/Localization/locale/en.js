@@ -130,7 +130,6 @@ window.FrameTrail_L10n['en'] = {
     "MessageCodeContainsErrors": "Code contains errors",
     "MessageCustomCSSHypervideo": "These CSS rules are only applied to this Hypervideo. To edit the global CSS for FrameTrail, go to Settings > Global CSS",
     "MessageDeleteHypervideoQuestion": "Do you really want to delete this Hypervideo?",
-    "MessageDeleteHypervideoRedirect": "You deleted the current Hypervideo and will be redirected to the Overview",
     "MessageDeleteHypervideoReEnter": "Please paste / re-enter the Hypervideo name",
     "MessageDragAnnotationsIntoTimeline": "Below you see annotations by other users. You can drag their annotations to your own annotation timeline.",
     "MessageEmbedNotAllowed": "The site owner does not allow this URL to be embedded in other pages (Same Origin Policy). This means it can not be shown inside FrameTrail.",
