@@ -52,17 +52,17 @@ FrameTrail/
 │   ├── index.html                  # Player/editor entry point (~60 script/link tags)
 │   ├── resources.html              # Standalone resource manager
 │   ├── setup.html                  # First-run setup wizard
-│   ├── _lib/                       # Vendored third-party libraries
-│   │   ├── jquery/                 # jQuery 3.1.1
-│   │   ├── jquery.ui/             # jQuery UI
+│   ├── _lib/                       # Vendored third-party libraries (10 packages)
+│   │   ├── tabsjs/                # FTTabs (custom vanilla-JS tab widget)
+│   │   ├── collisiondetection/    # Overlay collision detection
+│   │   ├── interactjs/            # Drag/drop and resize (overlay editing)
+│   │   ├── sortablejs/            # Sortable lists
+│   │   ├── dialog/                # Lightweight native <dialog> wrapper
 │   │   ├── leaflet/               # Leaflet (maps)
-│   │   ├── codemirror/            # CodeMirror (code editor)
-│   │   ├── raphaeljs/             # Raphael (SVG, incl. custom plugins)
+│   │   ├── codemirror6/           # CodeMirror 6 (JS/CSS/HTML + linting)
 │   │   ├── hlsjs/                 # HLS.js (adaptive streaming)
-│   │   ├── d3/                    # D3.js v5 (data visualization)
-│   │   ├── animejs/               # Anime.js (animation)
-│   │   ├── wysihtml5/             # WYSIHTML5 (rich text editor)
-│   │   └── ...                    # ~17 libraries total
+│   │   ├── quill/                 # Quill (rich text editing)
+│   │   └── parsers/               # VTT subtitle parser
 │   ├── _shared/
 │   │   ├── frametrail-core/       # Core framework (module system, state, types)
 │   │   │   ├── frametrail-core.js # defineModule, defineType, init, changeState
@@ -129,9 +129,9 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full architecture docum
 
 ### Code Style
 
-- **Indentation:** Tabs
+- **Indentation:** 4 spaces
 - **Naming:** camelCase for variables and functions
-- **jQuery:** Used extensively (`$`)
+- **DOM:** Plain DOM APIs (`document.createElement`, `addEventListener`, `classList`, etc.) — no jQuery
 - **Comments:** JSDoc-style for public methods. First-person "I do X" convention for class descriptions.
 - Follow existing patterns in the codebase
 
