@@ -114,12 +114,16 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
             iframeUrl += 'hypervideo='+ RouteNavigation.hypervideoID;
         }
 
+        var hypervideoTitle = (FrameTrail.getState('viewMode') == 'video' && RouteNavigation.hypervideoID)
+            ? FrameTrail.module('HypervideoModel').hypervideoName.replace(/"/g, '&quot;')
+            : '';
+
         var _sdWrapper = document.createElement('div');
         _sdWrapper.innerHTML = '<div class="shareDialog">'
                         + '    <div>Link</div>'
                         + '    <input type="text" value="'+ url +'"/>'
                         + '    <div>Embed Code</div>'
-                        + '    <textarea style="height: 100px;" readonly><iframe width="800" height="600" scrolling="no" src="'+ iframeUrl +'" frameborder="0" allowfullscreen></iframe></textarea>'
+                        + '    <textarea style="height: 100px;" readonly><iframe width="800" height="600" src="'+ iframeUrl +'" title="'+ hypervideoTitle +'" frameborder="0" allow="fullscreen" allowfullscreen></iframe></textarea>'
                         + '</div>';
         var shareDialog = _sdWrapper.firstElementChild;
 
