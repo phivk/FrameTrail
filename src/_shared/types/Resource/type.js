@@ -800,8 +800,8 @@ FrameTrail.defineType(
                                 code = ta ? ta.value : '';
                             }
                             try {
-                                var testRun = new Function('FrameTrail', code);
-                                    testRun.call(overlay, FrameTrail);
+                                var testRun = new Function('FrameTrail', 'hypervideo', code);
+                                    testRun.call(overlay, FrameTrail, FrameTrail.module('HypervideoController'));
                             } catch (exception) {
                                 alert('Code contains errors: '+ exception.message);
                             }

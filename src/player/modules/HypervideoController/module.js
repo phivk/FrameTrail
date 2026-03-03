@@ -155,8 +155,8 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 
                 if (HypervideoModel.events.onEnded) {
                     try {
-                        var endedEvent = new Function(HypervideoModel.events.onEnded);
-                        endedEvent();
+                        var endedEvent = new Function('FrameTrail', 'hypervideo', HypervideoModel.events.onEnded);
+                        endedEvent(FrameTrail, FrameTrail.module('HypervideoController'));
                     } catch (exception) {
                         // could not parse and compile JS code!
                         console.warn(labels['MessageEventHandlerContainsErrors'] +': '+ exception.message);
@@ -194,8 +194,8 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 
                     if (HypervideoModel.events.onReady) {
                         try {
-                            var readyEvent = new Function(HypervideoModel.events.onReady);
-                            readyEvent();
+                            var readyEvent = new Function('FrameTrail', 'hypervideo', HypervideoModel.events.onReady);
+                            readyEvent(FrameTrail, FrameTrail.module('HypervideoController'));
                         } catch (exception) {
                             // could not parse and compile JS code!
                             console.warn(labels['MessageEventHandlerContainsErrors'] +': '+ exception.message);
@@ -282,8 +282,8 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 
                     if (HypervideoModel.events.onReady) {
                         try {
-                            var readyEvent = new Function(HypervideoModel.events.onReady);
-                            readyEvent();
+                            var readyEvent = new Function('FrameTrail', 'hypervideo', HypervideoModel.events.onReady);
+                            readyEvent(FrameTrail, FrameTrail.module('HypervideoController'));
                         } catch (exception) {
                             // could not parse and compile JS code!
                             console.warn(labels['MessageEventHandlerContainsErrors'] +': '+ exception.message);
@@ -481,8 +481,8 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 
                     if (HypervideoModel.events.onEnded) {
                         try {
-                            var endedEvent = new Function(HypervideoModel.events.onEnded);
-                            endedEvent();
+                            var endedEvent = new Function('FrameTrail', 'hypervideo', HypervideoModel.events.onEnded);
+                            endedEvent(FrameTrail, FrameTrail.module('HypervideoController'));
                         } catch (exception) {
                             // could not parse and compile JS code!
                             console.warn(labels['MessageEventHandlerContainsErrors'] +': '+ exception.message);
@@ -557,8 +557,8 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 
                 if (HypervideoModel.events.onReady) {
                     try {
-                        var readyEvent = new Function(HypervideoModel.events.onReady);
-                        readyEvent();
+                        var readyEvent = new Function('FrameTrail', 'hypervideo', HypervideoModel.events.onReady);
+                        readyEvent(FrameTrail, FrameTrail.module('HypervideoController'));
                     } catch (exception) {
                         // could not parse and compile JS code!
                         console.warn(labels['MessageEventHandlerContainsErrors'] +': '+ exception.message);
@@ -616,8 +616,8 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
                 FrameTrail.triggerEvent('ready', {});
                 if (HypervideoModel.events.onReady) {
                     try {
-                        var readyEvent = new Function(HypervideoModel.events.onReady);
-                        readyEvent();
+                        var readyEvent = new Function('FrameTrail', 'hypervideo', HypervideoModel.events.onReady);
+                        readyEvent(FrameTrail, FrameTrail.module('HypervideoController'));
                     } catch (exception) {
                         // could not parse and compile JS code!
                         console.warn(labels['MessageEventHandlerContainsErrors'] +': '+ exception.message);
@@ -1119,8 +1119,8 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 
             if (HypervideoModel.events.onPlay) {
                 try {
-                    var playEvent = new Function(HypervideoModel.events.onPlay);
-                    playEvent();
+                    var playEvent = new Function('FrameTrail', 'hypervideo', HypervideoModel.events.onPlay);
+                    playEvent(FrameTrail, FrameTrail.module('HypervideoController'));
                 } catch (exception) {
                     // could not parse and compile JS code!
                     console.warn(labels['MessageEventHandlerContainsErrors'] +': '+ exception.message);
@@ -1178,8 +1178,8 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 
             if (HypervideoModel.events.onPause) {
                 try {
-                    var pauseEvent = new Function(HypervideoModel.events.onPause);
-                    pauseEvent();
+                    var pauseEvent = new Function('FrameTrail', 'hypervideo', HypervideoModel.events.onPause);
+                    pauseEvent(FrameTrail, FrameTrail.module('HypervideoController'));
                 } catch (exception) {
                     // could not parse and compile JS code!
                     console.warn(labels['MessageEventHandlerContainsErrors'] +': '+ exception.message);
@@ -1193,8 +1193,8 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
             // Hack to fire ended event in NullVideo
             if (HypervideoModel.events.onEnded) {
                 try {
-                    var endedEvent = new Function(HypervideoModel.events.onEnded);
-                    endedEvent();
+                    var endedEvent = new Function('FrameTrail', 'hypervideo', HypervideoModel.events.onEnded);
+                    endedEvent(FrameTrail, FrameTrail.module('HypervideoController'));
                 } catch (exception) {
                     // could not parse and compile JS code!
                     console.warn(labels['MessageEventHandlerContainsErrors'] +': '+ exception.message);

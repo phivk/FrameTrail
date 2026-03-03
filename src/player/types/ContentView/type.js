@@ -237,8 +237,8 @@ FrameTrail.defineType(
                     if ( self.contentViewData.onClickContentItem.length != 0 ) {
                         collectionElement.addEventListener('click', function() {
                             try {
-                                var thisFunction = new Function(self.contentViewData.onClickContentItem);
-                                thisFunction.call(contentItem);
+                                var thisFunction = new Function('FrameTrail', 'hypervideo', self.contentViewData.onClickContentItem);
+                                thisFunction.call(contentItem, FrameTrail, FrameTrail.module('HypervideoController'));
                             } catch (exception) {
                                 // could not parse and compile JS code!
                                 console.warn(self.labels['MessageEventHandlerContainsErrors']+ ': '+ exception.message);

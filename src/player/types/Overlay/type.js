@@ -177,8 +177,8 @@ FrameTrail.defineType(
 
                     if (this.data.events.onReady) {
                         try {
-                            var readyEvent = new Function('FrameTrail', this.data.events.onReady);
-                            readyEvent.call(this, FrameTrail);
+                            var readyEvent = new Function('FrameTrail', 'hypervideo', this.data.events.onReady);
+                            readyEvent.call(this, FrameTrail, FrameTrail.module('HypervideoController'));
                         } catch (exception) {
                             // could not parse and compile JS code!
                             console.warn(this.labels['MessageEventHandlerContainsErrors']+ ': '+ exception.message);
@@ -190,8 +190,8 @@ FrameTrail.defineType(
                         var self = _self;
                         if (self.data.events.onClick && FrameTrail.getState('editMode') != 'overlays') {
                             try {
-                                var clickEvent = new Function('FrameTrail', self.data.events.onClick);
-                                clickEvent.call(self, FrameTrail);
+                                var clickEvent = new Function('FrameTrail', 'hypervideo', self.data.events.onClick);
+                                clickEvent.call(self, FrameTrail, FrameTrail.module('HypervideoController'));
                             } catch (exception) {
                                 // could not parse and compile JS code!
                                 console.warn(self.labels['MessageEventHandlerContainsErrors']+ ': '+ exception.message);
@@ -496,8 +496,8 @@ FrameTrail.defineType(
 
                     if (this.data.events.onStart && !this.activeState && !this.permanentFocusState) {
                         try {
-                            var thisEvent = new Function('FrameTrail', this.data.events.onStart);
-                            thisEvent.call(this, FrameTrail);
+                            var thisEvent = new Function('FrameTrail', 'hypervideo', this.data.events.onStart);
+                            thisEvent.call(this, FrameTrail, FrameTrail.module('HypervideoController'));
                         } catch (exception) {
                             // could not parse and compile JS code!
                             console.warn(this.labels['MessageEventHandlerContainsErrors'] +': '+ exception.message);
@@ -533,8 +533,8 @@ FrameTrail.defineType(
 
                     if (this.data.events.onEnd && this.activeState && !this.permanentFocusState) {
                         try {
-                            var thisEvent = new Function('FrameTrail', this.data.events.onEnd);
-                            thisEvent.call(this, FrameTrail);
+                            var thisEvent = new Function('FrameTrail', 'hypervideo', this.data.events.onEnd);
+                            thisEvent.call(this, FrameTrail, FrameTrail.module('HypervideoController'));
                         } catch (exception) {
                             // could not parse and compile JS code!
                             console.warn(this.labels['MessageEventHandlerContainsErrors'] +': '+ exception.message);

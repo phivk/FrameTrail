@@ -135,7 +135,7 @@ FrameTrail.defineType(
                 initCodeSnippetFunction: function () {
 
                     try {
-                        this.codeSnippetFunction = new Function('FrameTrail', this.data.snippet);
+                        this.codeSnippetFunction = new Function('FrameTrail', 'hypervideo', this.data.snippet);
                     } catch (exception) {
                         // could not parse and compile JS code!
                         console.warn(this.labels['MessageCodeContainsErrors'] +': '+ exception.message);
@@ -193,7 +193,7 @@ FrameTrail.defineType(
                     this.timelineElement.classList.add('active');
 
                     try {
-                        this.codeSnippetFunction(FrameTrail);
+                        this.codeSnippetFunction(FrameTrail, FrameTrail.module('HypervideoController'));
                     } catch (exception) {
                         // do some user error feedback (ex.message)
                         console.warn(this.labels['MessageCodeContainsErrors'] +': '+ exception.message);
@@ -450,8 +450,8 @@ FrameTrail.defineType(
 
                     propertiesControls.querySelector('.executeCodeSnippet').addEventListener('click', function() {
                         try {
-                            var testRun = new Function('FrameTrail', self.data.snippet);
-                            testRun(FrameTrail);
+                            var testRun = new Function('FrameTrail', 'hypervideo', self.data.snippet);
+                            testRun(FrameTrail, FrameTrail.module('HypervideoController'));
                         } catch (exception) {
                             alert('Code contains errors: '+ exception.message);
                         }

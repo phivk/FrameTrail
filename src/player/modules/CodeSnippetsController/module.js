@@ -258,8 +258,8 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
             if (!btn) { return; }
             var textarea = btn.parentElement.querySelector('textarea');
             try {
-                var testRun = new Function('FrameTrail', textarea.value);
-                testRun(FrameTrail);
+                var testRun = new Function('FrameTrail', 'hypervideo', textarea.value);
+                testRun(FrameTrail, FrameTrail.module('HypervideoController'));
             } catch (exception) {
                 alert(labels['MessageCodeContainsErrors'] +': '+ exception.message);
             }
