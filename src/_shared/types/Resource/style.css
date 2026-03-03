@@ -181,6 +181,41 @@ body > .resourceThumb:not(.resourceAnimationDiv) .resourceTitle {
     display: none;
 }
 
+.resourceThumb .resourceEditButton {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    z-index: 4;
+    background-color: var(--semi-transparent-bg-color);
+    border: 2px solid var(--primary-fg-color);
+    border-radius: 50%;
+    font-size: 0;
+    height: 28px;
+    width: 28px;
+    display: none;
+    cursor: pointer;
+}
+
+.resourceThumb .resourceEditButton [class^="icon-"]::before, .resourceThumb .resourceEditButton [class*=" icon-"]::before {
+    font-size: 18px;
+    width: 100%;
+    margin: 0;
+    line-height: 26px;
+    color: var(--primary-fg-color);
+}
+
+.resourceThumb .resourceEditButton:hover {
+    background-color: var(--primary-bg-color);
+}
+
+.resourceThumb:hover .resourceEditButton {
+    display: block;
+}
+
+.resourceThumb.ft-drag-clone .resourceEditButton, .resourceThumb.dragPlaceholder .resourceEditButton, .resourceThumb.resourceAnimationDiv .resourceEditButton {
+    display: none;
+}
+
 /* Edit Overlay Properties */
 
 .editPropertiesContainer .layoutRow > * {

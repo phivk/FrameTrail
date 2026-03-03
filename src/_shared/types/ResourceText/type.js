@@ -48,7 +48,7 @@ FrameTrail.defineType(
 
                     var self = this;
 
-                    var licenseType = (this.resourceData.licenseType && this.resourceData.licenseType == 'CC-BY-SA-3.0') ? '<a href="https://creativecommons.org/licenses/by-sa/3.0/" title="License: '+ this.resourceData.licenseType +'" target="_blank"><span class="cc-by-sa-bg-image"></span></a>' : this.resourceData.licenseType;
+                    var licenseType = (this.resourceData.licenseType && (this.resourceData.licenseType == 'CC-BY-SA' || this.resourceData.licenseType == 'CC-BY-SA-3.0')) ? '<a href="https://creativecommons.org/licenses/by-sa/3.0/" title="License: '+ this.resourceData.licenseType +'" target="_blank"><span class="cc-by-sa-bg-image"></span></a>' : this.resourceData.licenseType;
                     var licenseString = (licenseType) ? licenseType +' - '+ this.resourceData.licenseAttribution : '';
 
                     var _rcw = document.createElement('div');

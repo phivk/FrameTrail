@@ -20,8 +20,6 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
     _vrWrapper.innerHTML = '<div class="viewResources" title="'+ labels['ResourcesManage'] +'">'
                         +  '    <div class="resourcesControls">'
                         +  '        <button class="resourceUpload"><span class="icon-doc-new"></span>'+ labels['GenericAddNew'] +'</button>'
-                        +  '        <button class="resourceDelete"><span class="icon-trash"></span>'+ labels['GenericDelete'] +'</button>'
-                        +  '        <button class="resourceDeleteConfirm">'+ labels['GenericConfirmDelete'] +'</button>'
                         +  '        <div class="viewControls">'
                         +  '            <button class="viewToggle" data-view="grid-medium" title="Grid View"><span class="icon-th"></span></button>'
                         +  '            <button class="viewToggle" data-view="list" title="List View"><span class="icon-list"></span></button>'
@@ -66,31 +64,25 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
                         +  '</div>';
     var domElement = _vrWrapper.firstElementChild,
 
-        ResourcesControls      = domElement.querySelector('.resourcesControls'),
         ResourcesFilter        = domElement.querySelector('.resourcesFilter'),
         ResourcesList          = domElement.querySelector('.resourcesList'),
         ResourceUpload         = domElement.querySelector('.resourceUpload'),
-        ResourceDelete         = domElement.querySelector('.resourceDelete'),
-        ResourceDeleteConfirm  = domElement.querySelector('.resourceDeleteConfirm'),
-
-        deleteActive     = false,
-        _thumbClickHandler = null,
+        StatusMessage          = domElement.querySelector('.resourcesControls .message'),
 
         callback,
         showAsDialog,
         viewResourcesDialog;
 
+    function showStatusMessage(text) {
+        StatusMessage.textContent = text;
+        StatusMessage.classList.add('active', 'success');
+        setTimeout(function() { StatusMessage.classList.remove('active', 'success'); }, 2500);
+    }
+
 
 
     ResourceUpload.addEventListener('click', function(){
         FrameTrail.module('ResourceManager').uploadResource(updateList);
-    });
-
-    ResourceDelete.addEventListener('click', toggleDeleteMode);
-
-    ResourceDeleteConfirm.style.display = 'none';
-    ResourceDeleteConfirm.addEventListener('click', function(){
-        executeDelete();
     });
 
     domElement.querySelector('select[name=ResourceFilterType]').addEventListener('change', updateList);
@@ -123,6 +115,15 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
     // Set initial active state for grid view button
     domElement.querySelector('.viewToggle[data-view="grid-medium"]').classList.add('active');
 
+    // Delegated click handler for per-resource edit buttons
+    ResourcesList.addEventListener('click', function(e) {
+        var editBtn = e.target.closest('.resourceEditButton');
+        if (!editBtn) { return; }
+        e.stopPropagation();
+        var resourceID = editBtn.getAttribute('data-resource-id');
+        var resourceData = FrameTrail.module('Database').resources[resourceID];
+        openEditDialog(resourceID, resourceData);
+    });
 
 
 
@@ -153,7 +154,7 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
             });
 
         } else {
-            
+
             var wrapperElem = document.createElement('div');
             wrapperElem.className = 'resourceManagerContent';
             wrapperElem.append(domElement);
@@ -191,111 +192,152 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
 
     }
 
+
     /**
-     * I activate or deactivate the delete functionality, according to the module variable deleteActive {Boolean}.
-     *
-     * When "delete" is active, the resources' thumbs are selectable for deletion, and a "Confirm deletion" button appears.
-     *
-     * @method toggleDeleteMode
+     * I build and open a dialog for editing the metadata of a resource (name, license type,
+     * license attribution) and for deleting it.
+     * @method openEditDialog
+     * @param {String} resourceID
+     * @param {Object} resourceData
      */
-    function toggleDeleteMode() {
+    function openEditDialog(resourceID, resourceData) {
 
-        if (deleteActive) {
+        var licenseOptions = [
+            { value: '',            label: '\u2014 ' + labels['ResourceEditLicenseUnspecified'] + ' \u2014' },
+            { value: 'Copyright',   label: 'Copyright' },
+            { value: 'CC-BY',       label: 'CC BY' },
+            { value: 'CC-BY-SA',    label: 'CC BY-SA' },
+            { value: 'CC-BY-ND',    label: 'CC BY-ND' },
+            { value: 'CC-BY-NC',    label: 'CC BY-NC' },
+            { value: 'CC-BY-NC-SA', label: 'CC BY-NC-SA' },
+            { value: 'CC-BY-NC-ND', label: 'CC BY-NC-ND' },
+            { value: 'CC0',         label: 'CC0 / Public Domain' }
+        ];
 
-            ResourceDelete.innerHTML = '<span class="icon-trash"></span>'+ labels['GenericDelete'];
-            ResourceDelete.classList.remove('active');
-            ResourceDeleteConfirm.style.display = 'none';
-            ResourcesList.querySelectorAll('.resourceThumb').forEach(function(t) { t.classList.remove('markedForDeletion'); });
-            ResourcesList.removeEventListener('click', _thumbClickHandler);
-            deleteActive = false;
+        var licenseSelectOptions = licenseOptions.map(function(opt) {
+            var selected = (opt.value === (resourceData.licenseType || '')) ? ' selected' : '';
+            return '<option value="' + opt.value + '"' + selected + '>' + opt.label + '</option>';
+        }).join('');
 
-            ResourcesControls.querySelector('.message').textContent = '';
-            ResourcesControls.querySelector('.message').classList.remove('active');
+        var content = document.createElement('div');
+        content.className = 'resourceEditDialogContent';
+        content.innerHTML = ''
+            + '<div class="layoutRow">'
+            +     '<div class="column-12">'
+            +         '<label>' + labels['GenericName'] + '</label>'
+            +         '<input type="text" class="resourceEditName" value="">'
+            +     '</div>'
+            + '</div>'
+            + '<div class="layoutRow">'
+            +     '<div class="column-12">'
+            +         '<label>' + labels['ResourceEditLicenseType'] + '</label>'
+            +         '<div class="custom-select"><select class="resourceEditLicenseType">' + licenseSelectOptions + '</select></div>'
+            +     '</div>'
+            + '</div>'
+            + '<div class="layoutRow">'
+            +     '<div class="column-12">'
+            +         '<label>' + labels['ResourceEditLicenseAttribution'] + '</label>'
+            +         '<input type="text" class="resourceEditLicenseAttribution" value="">'
+            +     '</div>'
+            + '</div>'
+            + '<p class="message active mb-0" style="margin-top: 10px;">' + labels['ResourceEditNameNote'] + '</p>';
 
-        } else {
+        // Set value of name input after creation (avoids HTML encoding issues)
+        content.querySelector('.resourceEditName').value = resourceData.name || '';
+        content.querySelector('.resourceEditLicenseAttribution').value = resourceData.licenseAttribution || '';
 
-            ResourceDelete.textContent = labels['GenericCancel'];
-            ResourceDelete.classList.add('active');
-            ResourceDeleteConfirm.style.display = '';
-            _thumbClickHandler = function(evt) {
-                var thumb = evt.target.closest('.resourceThumb');
-                if (thumb) { thumb.classList.toggle('markedForDeletion'); }
-            };
-            ResourcesList.addEventListener('click', _thumbClickHandler);
-            deleteActive = true;
+        var editDialog = Dialog({
+            title:   labels['ResourceEditDialogTitle'],
+            content: content,
+            modal:   true,
+            width:   500
+        });
 
-            ResourcesControls.querySelector('.message').textContent = labels['MessageSelectResourcesToDelete'];
-            ResourcesControls.querySelector('.message').classList.remove('error');
-            ResourcesControls.querySelector('.message').classList.add('active');
+        var buttonPane = editDialog.widget().querySelector('.ft-dialog-buttonpane');
 
+        var msgEl = document.createElement('div');
+        msgEl.className = 'message';
+        msgEl.style.flexBasis = '100%';
+        buttonPane.appendChild(msgEl);
+
+        var saveBtn = document.createElement('button');
+        saveBtn.textContent = labels['GenericSave'];
+        buttonPane.appendChild(saveBtn);
+
+        var deleteBtn = document.createElement('button');
+        deleteBtn.innerHTML = '<span class="icon-trash"></span> ' + labels['GenericDelete'];
+        deleteBtn.style.marginLeft = 'auto';
+        buttonPane.appendChild(deleteBtn);
+
+        function showMessage(text, isError) {
+            msgEl.textContent = text;
+            msgEl.classList.toggle('error', !!isError);
+            msgEl.classList.add('active');
         }
 
-    }
+        function clearMessage() {
+            msgEl.textContent = '';
+            msgEl.classList.remove('active', 'error');
+        }
 
-    /**
-     * I execute the deletion of all resources selected by the user.
-     * @method executeDelete
-     */
-    function executeDelete() {
-
-        FrameTrail.module('UserManagement').ensureAuthenticated(function(){
-
-            ResourcesControls.querySelector('.message').textContent = '';
-            ResourcesControls.querySelector('.message').classList.remove('active');
-
-            var deleteCollection   = [],
-                callbackCollection = [];
-            ResourcesList.querySelectorAll('.resourceThumb.markedForDeletion').forEach(function(t){
-                deleteCollection.push(t.getAttribute('data-resourceid'));
-            });
-
-            for (var i in deleteCollection) {
-                FrameTrail.module('ResourceManager').deleteResource(
-                    deleteCollection[i],
-                    function(){
-                        callbackCollection.push(true);
-                        deletionFinished();
-                    },
-                    function(data){
-                        ResourcesControls.querySelector('.message').classList.add('error', 'active');
-                        ResourcesControls.querySelector('.message').textContent = data.string;
-                        callbackCollection.push(false);
-                        deletionFinished();
-                    }
-                );
-
+        saveBtn.addEventListener('click', function() {
+            var name = content.querySelector('.resourceEditName').value.trim();
+            if (!name) {
+                showMessage(labels['ResourceEditNameRequired'], true);
+                return;
             }
-
-
-            function deletionFinished() {
-
-                if (callbackCollection.length !== deleteCollection.length) return;
-
-                // delete finished;
-                // callbackCollection contains true/false for success/fail
-
-                if (callbackCollection[0] == true) {
+            var updateData = {
+                name:                name,
+                licenseType:         content.querySelector('.resourceEditLicenseType').value,
+                licenseAttribution:  content.querySelector('.resourceEditLicenseAttribution').value.trim()
+            };
+            saveBtn.disabled = true;
+            clearMessage();
+            FrameTrail.module('ResourceManager').updateResource(
+                resourceID,
+                updateData,
+                function() {
+                    editDialog.close();
                     updateList();
-                    toggleDeleteMode();
+                    showStatusMessage(labels['ResourceEditSaveSuccess']);
+                },
+                function(data) {
+                    saveBtn.disabled = false;
+                    showMessage(data.string || labels['GenericError'], true);
                 }
+            );
+        });
 
-            }
-
+        deleteBtn.addEventListener('click', function() {
+            deleteBtn.disabled = true;
+            clearMessage();
+            FrameTrail.module('ResourceManager').deleteResource(
+                resourceID,
+                function() {
+                    editDialog.close();
+                    updateList();
+                },
+                function(data) {
+                    deleteBtn.disabled = false;
+                    if (data.code === 5) {
+                        showMessage(labels['ResourceEditDeleteInUse'], true);
+                    } else {
+                        showMessage(data.string || labels['GenericError'], true);
+                    }
+                }
+            );
         });
 
     }
 
 
-
-
     /**
-     * I update the disabled state of the upload and delete buttons based on whether saving is allowed.
+     * I update the disabled state of the upload button based on whether saving is allowed.
      * @method updateButtonStates
      */
     function updateButtonStates() {
         var canSave = FrameTrail.module('StorageManager').canSave();
         ResourceUpload.disabled = !canSave;
-        ResourceDelete.disabled = !canSave;
     }
 
 
@@ -329,14 +371,11 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
      * @method changeViewSize
      * @param {Array} arrayWidthAndHeight
      */
-    function changeViewSize(arrayWidthAndHeight) {
+    function changeViewSize() {
 
-        
+
 
     }
-
-
-
 
 
 

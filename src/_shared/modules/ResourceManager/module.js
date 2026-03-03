@@ -1615,6 +1615,10 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
      */
     function renderResult(targetElement, array) {
 
+        var storageMode = FrameTrail.getState('storageMode');
+        var canSave = FrameTrail.module('StorageManager').canSave();
+        var userMgmt = FrameTrail.module('UserManagement');
+
         for (var id in array) {
 
             var resourceThumb = FrameTrail.newObject(
@@ -1626,6 +1630,18 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 
             //add thumb to target element
             targetElement.append(resourceThumb);
+
+            // Add edit button for owner or admin (when saving is possible)
+            var isOwnerOrAdmin = (String(userMgmt.userID) === String(array[id].creatorId))
+                              || userMgmt.userRole === 'admin';
+            if (canSave && (storageMode !== 'server' || isOwnerOrAdmin)) {
+                var editBtn = document.createElement('div');
+                editBtn.className = 'resourceEditButton';
+                editBtn.setAttribute('data-resource-id', id);
+                editBtn.title = labels['ResourceEditButton'];
+                editBtn.innerHTML = '<span class="icon-pencil"></span>';
+                resourceThumb.appendChild(editBtn);
+            }
 
         }
 
@@ -1839,6 +1855,76 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
     }
 
 
+    /**
+     * I update the name, licenseType and licenseAttribution of a resource.
+     *
+     * @method updateResource
+     * @param {String} resourceID
+     * @param {Object} updateData  Object with keys: name, licenseType, licenseAttribution
+     * @param {Function} successCallback
+     * @param {Function} cancelCallback
+     */
+    function updateResource(resourceID, updateData, successCallback, cancelCallback) {
+
+        if (FrameTrail.getState('storageMode') === 'local') {
+            var adapter = FrameTrail.module('StorageManager').getAdapter();
+            adapter.readJSON('resources/_index.json').then(function(indexData) {
+                if (!indexData.resources[resourceID]) {
+                    cancelCallback({ code: 3, string: 'Resource not found' });
+                    return;
+                }
+                indexData.resources[resourceID].name = updateData.name;
+                indexData.resources[resourceID].licenseType = updateData.licenseType;
+                indexData.resources[resourceID].licenseAttribution = updateData.licenseAttribution;
+                return adapter.writeJSON('resources/_index.json', indexData).then(function() {
+                    // Update in-memory database
+                    var db = FrameTrail.module('Database');
+                    if (db.resources[resourceID]) {
+                        db.resources[resourceID].name = updateData.name;
+                        db.resources[resourceID].licenseType = updateData.licenseType;
+                        db.resources[resourceID].licenseAttribution = updateData.licenseAttribution;
+                    }
+                });
+            }).then(function() {
+                successCallback();
+            }).catch(function(err) {
+                cancelCallback({ code: 1, string: err.message });
+            });
+            return;
+        }
+
+        fetch('_server/ajaxServer.php', {
+            method: 'POST',
+            cache: 'no-cache',
+            body: new URLSearchParams({
+                a: 'fileUpdate',
+                resourcesID: resourceID,
+                name: updateData.name,
+                licenseType: updateData.licenseType,
+                licenseAttribution: updateData.licenseAttribution
+            })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+
+            if (data.code === 0) {
+                // Update in-memory database
+                var db = FrameTrail.module('Database');
+                if (db.resources[resourceID]) {
+                    db.resources[resourceID].name = updateData.name;
+                    db.resources[resourceID].licenseType = updateData.licenseType;
+                    db.resources[resourceID].licenseAttribution = updateData.licenseAttribution;
+                }
+                successCallback();
+            } else {
+                cancelCallback(data);
+            }
+
+        });
+
+    };
+
+
     return {
 
         renderList:             renderList,
@@ -1846,7 +1932,8 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 
         updateResourceDatabase: updateResourceDatabase,
         uploadResource:         uploadResource,
-        deleteResource:         deleteResource
+        deleteResource:         deleteResource,
+        updateResource:         updateResource
 
     };
 

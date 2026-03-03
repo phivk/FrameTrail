@@ -141,11 +141,13 @@
                                 ? item.body.value
                                 : item.body.source;
                     })(),
-            "thumb":      item.body['frametrail:thumb'],
-            "start":      _parseTimeStart(item.target.selector.value),
-            "end":        _parseTimeEnd(item.target.selector.value),
-            "resourceId": item.body["frametrail:resourceId"],
-            "attributes": item.body['frametrail:attributes'] || {},
+            "thumb":                item.body['frametrail:thumb'],
+            "licenseType":          item.body['frametrail:licenseType'] || null,
+            "licenseAttribution":   item.body['frametrail:licenseAttribution'] || null,
+            "start":                _parseTimeStart(item.target.selector.value),
+            "end":                  _parseTimeEnd(item.target.selector.value),
+            "resourceId":           item.body["frametrail:resourceId"],
+            "attributes":           item.body['frametrail:attributes'] || {},
             "tags":       item['frametrail:tags'],
             "source":     source,
             "graphData":  item['frametrail:graphdata']     || null,
@@ -741,6 +743,8 @@
                                             ? _parseTimeEnd(contentItem.body.selector.value)
                                             : 0,
                             "attributes": (contentItem.body["frametrail:attributes"]) ? contentItem.body["frametrail:attributes"] : contentItem["frametrail:attributes"],
+                            "licenseType":          contentItem.body['frametrail:licenseType'] || null,
+                            "licenseAttribution":   contentItem.body['frametrail:licenseAttribution'] || null,
                             "position": _parseSpatialSelector(contentItem.target.selector.value),
                             "events": contentItem["frametrail:events"],
                             "tags": contentItem["frametrail:tags"]
@@ -1397,6 +1401,8 @@
                             })(),
                             "frametrail:name": overlays[i].name,
                             "frametrail:thumb": overlays[i].thumb,
+                            "frametrail:licenseType": overlays[i].licenseType,
+                            "frametrail:licenseAttribution": overlays[i].licenseAttribution,
                             "selector": (function () {
                                 if (   ['video', 'vimeo', 'youtube'].indexOf(overlays[i].type) >= 0
                                     && overlays[i].startOffset
@@ -1721,6 +1727,8 @@
                     })(),
                     "frametrail:name": annotationItem.name,
                     "frametrail:thumb": annotationItem.thumb,
+                    "frametrail:licenseType": annotationItem.licenseType,
+                    "frametrail:licenseAttribution": annotationItem.licenseAttribution,
                     "selector": (function () {
                         if (   ['video', 'vimeo', 'youtube'].indexOf(annotationItem.type) >= 0
                             && annotationItem.startOffset
