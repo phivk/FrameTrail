@@ -158,3 +158,4 @@
 .ql-snow .ql-picker.ql-size .ql-picker-item[data-value]::before {
     content: attr(data-value) !important;
 }
+

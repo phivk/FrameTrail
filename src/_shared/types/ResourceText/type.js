@@ -434,6 +434,11 @@ FrameTrail.defineType(
                         theme: 'snow'
                     });
 
+                    // Render each font picker item in its own typeface (font-family is inherited by ::before)
+                    visualEditorWrapper.querySelectorAll('.ql-font .ql-picker-item').forEach(function(item) {
+                        if (item.dataset.value) item.style.fontFamily = item.dataset.value;
+                    });
+
                     // Set initial content — text is stored HTML-escaped, so decode first
                     // (same unescape pattern as renderContent)
                     var quillInitHelper = document.createElement('div');
