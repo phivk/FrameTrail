@@ -213,6 +213,12 @@ FrameTrail.defineType(
                         htmlEditorContent.style.display = 'none';
                         visualEditorTab.classList.add('active');
                         visualEditorContent.style.display = '';
+                        // Sync CodeMirror → Quill on switch to Visual tab
+                        if (window.htmlCodeEditor && window.quillEditor) {
+                            window.quillEditor.clipboard.dangerouslyPasteHTML(
+                                window.htmlCodeEditor.state.doc.toString()
+                            );
+                        }
                     });
                     visualEditorTab.click();
 
@@ -221,6 +227,15 @@ FrameTrail.defineType(
                         visualEditorContent.style.display = 'none';
                         htmlEditorTab.classList.add('active');
                         htmlEditorContent.style.display = '';
+                        // Sync Quill → CodeMirror on switch to HTML tab
+                        if (window.quillEditor && window.htmlCodeEditor) {
+                            var quillHtml = window.quillEditor.root.innerHTML;
+                            var doc = window.htmlCodeEditor.state.doc;
+                            window.htmlCodeEditor.dispatch({
+                                changes: { from: 0, to: doc.length, insert: quillHtml },
+                                annotations: CM6.Transaction.userEvent.of('setValue')
+                            });
+                        }
                         if (window.htmlCodeEditor) {
                             window.htmlCodeEditor.requestMeasure();
 
@@ -319,16 +334,8 @@ FrameTrail.defineType(
                                 CM6.EditorView.updateListener.of(function(update) {
                                     if (!update.docChanged) { return; }
 
-                                    var isSetter = update.transactions.some(function(tr) {
-                                        return tr.annotation(CM6.Transaction.userEvent) === 'setValue';
-                                    });
-
                                     var newHtml = update.state.doc.toString();
                                     textChanged = true;
-
-                                    if (window.quillEditor && !isSetter) {
-                                        window.quillEditor.clipboard.dangerouslyPasteHTML(newHtml);
-                                    }
 
                                     var escapeHelper = document.createElement('div');
                                     escapeHelper.appendChild(document.createTextNode(newHtml));
