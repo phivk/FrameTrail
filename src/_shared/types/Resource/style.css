@@ -339,7 +339,7 @@ body > .resourceThumb:not(.resourceAnimationDiv) .resourceTitle {
 }
 
 .editPropertiesContainer .textContentEditorContainer {
-    height: 100%;
+    height: calc(100% - 90px);
 }
 
 .editPropertiesContainer .overlayOptionsWrapper {

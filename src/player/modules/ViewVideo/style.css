@@ -43,11 +43,6 @@
     transition-duration: 200ms;
 }
 
-.mainContainer.editActive .viewVideo .slideArea svg {
-    margin-top: -10px;
-    margin-left: -10px;
-}
-
 /* Player Container */
 
 .playerContainer {
