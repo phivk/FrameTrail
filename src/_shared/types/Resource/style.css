@@ -68,9 +68,11 @@
 .resourceThumb {
     background-repeat: no-repeat;
     background-size: cover;
+    background-position: top center;
     background-color: var(--primary-bg-color);
     outline: 1px solid var(--primary-bg-color);
     cursor: pointer;
+    border-radius: 2px;
 }
 
 .resourceThumb.dragPlaceholder {

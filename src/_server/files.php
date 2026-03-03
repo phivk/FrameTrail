@@ -984,7 +984,7 @@ function optimizeImage($sourcePath, $destPath, $maxWidth = 1920, $quality = 85) 
 
 /**
  * Generate thumbnail for an image
- * - Creates a 350x250 thumbnail (matching client-side canvas dimensions)
+ * - Scales to max 350px wide, height auto (maintains aspect ratio)
  * - Saves as PNG to preserve transparency
  *
  * @param string $sourcePath Path to source image
@@ -1031,22 +1031,10 @@ function generateThumbnail($sourcePath, $thumbPath) {
     $sourceWidth = imagesx($sourceImage);
     $sourceHeight = imagesy($sourceImage);
 
-    // Target thumbnail dimensions (350x250 max, matching client-side canvas)
-    // Client-side uses: <canvas width="350px" height="250px">
-    $thumbWidth = 350;
-    $thumbHeight = 250;
-
-    // Calculate dimensions while maintaining aspect ratio
-    $aspectRatio = $sourceWidth / $sourceHeight;
-    if ($aspectRatio > ($thumbWidth / $thumbHeight)) {
-        // Width is limiting factor
-        $newWidth = $thumbWidth;
-        $newHeight = (int)($thumbWidth / $aspectRatio);
-    } else {
-        // Height is limiting factor
-        $newHeight = $thumbHeight;
-        $newWidth = (int)($thumbHeight * $aspectRatio);
-    }
+    // Scale to max 350px wide, height auto (maintains aspect ratio)
+    $maxWidth = 350;
+    $newWidth = min($sourceWidth, $maxWidth);
+    $newHeight = (int)($sourceHeight * ($newWidth / $sourceWidth));
 
     // Create thumbnail canvas
     $thumbImage = imagecreatetruecolor($newWidth, $newHeight);

@@ -56,9 +56,17 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
                         +  '            <option value="reddit">Reddit</option>'
                         +  '            <option value="flickr">Flickr</option>'
                         +  '        </select></div>'
-                        +  '        <div class="resourcesCheckboxes">'
-                        +  '            <input type="checkbox" id="onlyCC" name="onlyCC" /><label for="onlyCC">'+ labels['ResourceTypesOnlyCC'] +'</label>'
-                        +  '        </div>'
+                        +  '        <div class="custom-select"><select name="ResourceFilterLicense">'
+                        +  '            <option value="">'+ labels['ResourceLicensesAll'] +'</option>'
+                        +  '            <option value="Copyright">Copyright</option>'
+                        +  '            <option value="CC-BY">CC BY</option>'
+                        +  '            <option value="CC-BY-SA">CC BY-SA</option>'
+                        +  '            <option value="CC-BY-ND">CC BY-ND</option>'
+                        +  '            <option value="CC-BY-NC">CC BY-NC</option>'
+                        +  '            <option value="CC-BY-NC-SA">CC BY-NC-SA</option>'
+                        +  '            <option value="CC-BY-NC-ND">CC BY-NC-ND</option>'
+                        +  '            <option value="CC0">CC0 / Public Domain</option>'
+                        +  '        </select></div>'
                         +  '    </div>'
                         +  '    <div class="resourcesList view-grid-medium"></div>'
                         +  '</div>';
@@ -87,12 +95,13 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
 
     domElement.querySelector('select[name=ResourceFilterType]').addEventListener('change', updateList);
 
-    domElement.querySelector('input[name=onlyCC]').addEventListener('change', function (evt) {
-     if (this.checked) {
-        ResourcesList.classList.add('onlyCC');
-     } else {
-        ResourcesList.classList.remove('onlyCC');
-     }
+    domElement.querySelector('select[name=ResourceFilterLicense]').addEventListener('change', function () {
+        var val = this.value;
+        if (val === '') {
+            ResourcesList.removeAttribute('data-filter-license');
+        } else {
+            ResourcesList.setAttribute('data-filter-license', val);
+        }
     });
 
     // View toggle functionality
@@ -148,6 +157,7 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
                 width:    954,
                 height:   600,
                 modal:    true,
+                classes:  'viewResourcesDialog',
                 close: function() {
                     callback && callback.call();
                 }
@@ -219,38 +229,52 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
             return '<option value="' + opt.value + '"' + selected + '>' + opt.label + '</option>';
         }).join('');
 
+        var thumbSrc = resourceData.thumb || resourceData.src || '';
+        var thumbUrl = thumbSrc ? FrameTrail.module('RouteNavigation').getResourceURL(thumbSrc) : '';
+        var thumbStyle = thumbUrl ? 'background-image:url(' + thumbUrl + ');' : '';
+
         var content = document.createElement('div');
         content.className = 'resourceEditDialogContent';
         content.innerHTML = ''
             + '<div class="layoutRow">'
-            +     '<div class="column-12">'
-            +         '<label>' + labels['GenericName'] + '</label>'
-            +         '<input type="text" class="resourceEditName" value="">'
+            +     '<div class="column-5">'
+            +         '<div class="resourceThumb" data-type="' + resourceData.type + '" style="' + thumbStyle + 'height:140px;margin-top:5px;cursor:default;position:relative;">'
+            +         '</div>'
             +     '</div>'
-            + '</div>'
-            + '<div class="layoutRow">'
-            +     '<div class="column-12">'
-            +         '<label>' + labels['ResourceEditLicenseType'] + '</label>'
-            +         '<div class="custom-select"><select class="resourceEditLicenseType">' + licenseSelectOptions + '</select></div>'
+            +     '<div class="column-7">'
+            +         '<div class="layoutRow">'
+            +             '<div class="column-12">'
+            +                 '<label>' + labels['GenericName'] + '</label>'
+            +                 '<input type="text" class="resourceEditName" value="">'
+            +             '</div>'
+            +         '</div>'
+            +         '<div class="layoutRow">'
+            +             '<div class="column-12">'
+            +                 '<label>' + labels['ResourceEditLicenseType'] + '</label>'
+            +                 '<div class="custom-select"><select class="resourceEditLicenseType">' + licenseSelectOptions + '</select></div>'
+            +             '</div>'
+            +         '</div>'
+            +         '<div class="layoutRow">'
+            +             '<div class="column-12">'
+            +                 '<label>' + labels['ResourceEditLicenseAttribution'] + '</label>'
+            +                 '<input type="text" class="resourceEditLicenseAttribution" value="">'
+            +             '</div>'
+            +         '</div>'
+            +         '<p class="message active mb-0" style="margin-top: 10px;">' + labels['ResourceEditNameNote'] + '</p>'
             +     '</div>'
-            + '</div>'
-            + '<div class="layoutRow">'
-            +     '<div class="column-12">'
-            +         '<label>' + labels['ResourceEditLicenseAttribution'] + '</label>'
-            +         '<input type="text" class="resourceEditLicenseAttribution" value="">'
-            +     '</div>'
-            + '</div>'
-            + '<p class="message active mb-0" style="margin-top: 10px;">' + labels['ResourceEditNameNote'] + '</p>';
+            + '</div>';
 
         // Set value of name input after creation (avoids HTML encoding issues)
         content.querySelector('.resourceEditName').value = resourceData.name || '';
         content.querySelector('.resourceEditLicenseAttribution').value = resourceData.licenseAttribution || '';
 
-        var editDialog = Dialog({
+        var editDialog;
+        editDialog = Dialog({
             title:   labels['ResourceEditDialogTitle'],
             content: content,
             modal:   true,
-            width:   500
+            width:   600,
+            close:   function() { editDialog.destroy(); }
         });
 
         var buttonPane = editDialog.widget().querySelector('.ft-dialog-buttonpane');
@@ -297,7 +321,7 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
                 resourceID,
                 updateData,
                 function() {
-                    editDialog.close();
+                    editDialog.destroy();
                     updateList();
                     showStatusMessage(labels['ResourceEditSaveSuccess']);
                 },
@@ -314,7 +338,7 @@ FrameTrail.defineModule('ViewResources', function(FrameTrail){
             FrameTrail.module('ResourceManager').deleteResource(
                 resourceID,
                 function() {
-                    editDialog.close();
+                    editDialog.destroy();
                     updateList();
                 },
                 function(data) {

@@ -2,6 +2,17 @@
     color: var(--primary-bg-color);
     display: flex;
     flex-flow: column;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.ft-dialog.viewResourcesDialog .ft-dialog-content {
+    padding: 0;
+    overflow: hidden;
+}
+
+.ft-dialog.viewResourcesDialog .viewResources {
+    height: 100%;
 }
 
 .viewResources .resourcesControls {
@@ -120,9 +131,14 @@
     box-sizing: border-box;
 }
 
-.viewResources .resourcesList.onlyCC .resourceThumb:not([data-license-type^="CC-"]) {
-    display: none;
-}
+.viewResources .resourcesList[data-filter-license="Copyright"] .resourceThumb:not([data-license-type="Copyright"]) { display: none; }
+.viewResources .resourcesList[data-filter-license="CC-BY"] .resourceThumb:not([data-license-type="CC-BY"]) { display: none; }
+.viewResources .resourcesList[data-filter-license="CC-BY-SA"] .resourceThumb:not([data-license-type="CC-BY-SA"]) { display: none; }
+.viewResources .resourcesList[data-filter-license="CC-BY-ND"] .resourceThumb:not([data-license-type="CC-BY-ND"]) { display: none; }
+.viewResources .resourcesList[data-filter-license="CC-BY-NC"] .resourceThumb:not([data-license-type="CC-BY-NC"]) { display: none; }
+.viewResources .resourcesList[data-filter-license="CC-BY-NC-SA"] .resourceThumb:not([data-license-type="CC-BY-NC-SA"]) { display: none; }
+.viewResources .resourcesList[data-filter-license="CC-BY-NC-ND"] .resourceThumb:not([data-license-type="CC-BY-NC-ND"]) { display: none; }
+.viewResources .resourcesList[data-filter-license="CC0"] .resourceThumb:not([data-license-type="CC0"]) { display: none; }
 
 .viewResources .resourcesList .resourceThumb, .videoResourceList .resourceThumb {
     position: relative;
@@ -185,8 +201,7 @@
 /* List View - full width rows */
 .viewResources .resourcesList.view-list {
     grid-template-columns: 1fr;
-    gap: 4px;
-    padding: 4px;
+    gap: 10px;
 }
 .viewResources .resourcesList.view-list .resourceThumb {
     width: 100%;
@@ -217,9 +232,14 @@
     height: 80px;
 }
 
-.viewResources .resourcesList.view-list .resourceThumb .resourcePreviewButton {
+.viewResources .resourcesList.view-list .resourceThumb .resourcePreviewButton, 
+.viewResources .resourcesList.view-list .resourceThumb .resourceEditButton {
     position: static;
     margin-left: auto;
+    margin-right: 10px;
+}
+
+.viewResources .resourcesList.view-list .resourceThumb .resourcePreviewButton {
     margin-right: 10px;
 }
 

@@ -123,8 +123,6 @@
             toggleLoginState(loginState);
         });
 
-        initWindowResizeHandler();
-
     }
 
     /**
@@ -188,28 +186,6 @@
     }
 
 
-    /**
-     * I set the event handler for the window's resize event.
-     * @method initWindowResizeHandler
-     */
-    function initWindowResizeHandler() {
-
-        function _handleResize() {
-            var width  = window.innerWidth;
-            var height = window.innerHeight;
-            var _targetEl = document.querySelector(FrameTrail.getState('target'));
-            _targetEl.querySelector('.mainContainer').style.height = height + 'px';
-            var _vr = _targetEl.querySelector('.viewResources');
-            _vr.style.margin = '10px';
-            _vr.style.height = (height - 20 - _targetEl.querySelector('.titlebar').offsetHeight) + 'px';
-            FrameTrail.changeState('viewSize', [width, height]);
-        }
-
-        window.addEventListener('resize', _handleResize);
-        _handleResize();
-
-
-    }
 
 
 

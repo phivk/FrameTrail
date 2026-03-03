@@ -269,10 +269,13 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                 var blobUrl = URL.createObjectURL(file);
                 var img = new Image();
                 img.onload = function() {
+                    var maxW = 350;
+                    var w = Math.min(img.naturalWidth, maxW);
+                    var h = Math.round(img.naturalHeight * (w / img.naturalWidth));
                     var canvas = document.createElement('canvas');
-                    canvas.width = 350;
-                    canvas.height = 250;
-                    canvas.getContext('2d').drawImage(img, 0, 0, 350, 250);
+                    canvas.width = w;
+                    canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
                     URL.revokeObjectURL(blobUrl);
                     try { resolve(canvas.toDataURL('image/png')); } catch(e) { resolve(null); }
                 };
@@ -282,17 +285,22 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
             } else if (type === 'video') {
                 var blobUrl = URL.createObjectURL(file);
                 var video = document.createElement('video');
-                video.style.cssText = 'position:absolute;visibility:hidden;width:400px;height:300px;';
+                video.style.cssText = 'position:absolute;visibility:hidden;';
                 document.body.appendChild(video);
 
                 video.addEventListener('loadedmetadata', function() {
                     video.currentTime = video.duration / 2;
                 });
                 video.addEventListener('seeked', function() {
+                    var maxW = 400;
+                    var vw = video.videoWidth || maxW;
+                    var vh = video.videoHeight || 225;
+                    var w = Math.min(vw, maxW);
+                    var h = Math.round(vh * (w / vw));
                     var canvas = document.createElement('canvas');
-                    canvas.width = 400;
-                    canvas.height = 300;
-                    canvas.getContext('2d').drawImage(video, 0, 0, 400, 300);
+                    canvas.width = w;
+                    canvas.height = h;
+                    canvas.getContext('2d').drawImage(video, 0, 0, w, h);
                     document.body.removeChild(video);
                     URL.revokeObjectURL(blobUrl);
                     try { resolve(canvas.toDataURL('image/png')); } catch(e) { resolve(null); }

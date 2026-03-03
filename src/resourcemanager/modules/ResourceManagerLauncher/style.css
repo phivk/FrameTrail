@@ -1,6 +1,15 @@
-body {
-    background: var(--primary-bg-color);
-    transition: background 200ms linear;
+body.frametrail-body {
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+}
+
+.frametrail-body > .mainContainer {
+    flex: 1;
+    min-height: 0;
+    position: relative;
 }
 
 /*
@@ -58,6 +67,7 @@ body {
 
 .mainContainer .resourceManagerContent .viewResources {
     color: var(--primary-fg-color);
+    height: 100%;
 }
 
 .mainContainer.editActive .resourceManagerContent .viewResources {

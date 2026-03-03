@@ -224,7 +224,7 @@ window.FrameTrail_L10n['de'] = {
     "ResourceTypeVideo": "Video",
     "ResourceTypeWebpage": "Webseite",
     "ResourceTypesAll": "Alle Typen",
-    "ResourceTypesOnlyCC": "Nur Creative Commons anzeigen",
+    "ResourceLicensesAll": "Alle Lizenzen",
     "ResourceUploadFiles": "Dateien hochladen",
     "ResourceUploadStart": "Upload starten",
     "ResourceUploadVideo": "Video hochladen",
