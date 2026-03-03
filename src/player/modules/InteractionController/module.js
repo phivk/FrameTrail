@@ -22,6 +22,7 @@ FrameTrail.defineModule('InteractionController', function(FrameTrail){
     // Double/triple-click word/line selection is still allowed via e.detail >= 2.
     document.addEventListener('mousedown', function(e) {
         if (e.detail >= 2) return;
+        if (e.target.closest('[contenteditable]')) return;
         function onSelectStart(evt) {
             evt.preventDefault();
         }
