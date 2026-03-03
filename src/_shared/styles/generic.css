@@ -1279,13 +1279,6 @@ input:checked + .slider:before {
     color: #666;
 }
 
-
-/* Disable text selection globally while an interact.js drag is in progress */
-body.ft-dragging, body.ft-dragging * {
-    user-select: none !important;
-    -webkit-user-select: none !important;
-}
-
 /* SortableJS drag ghost placeholder (replaces jQuery UI ui-state-highlight) */
 .sortable-placeholder {
     background: var(--semi-transparent-fg-color, rgba(255,255,255,0.15));

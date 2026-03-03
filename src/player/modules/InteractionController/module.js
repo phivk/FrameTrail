@@ -16,18 +16,20 @@
 
 FrameTrail.defineModule('InteractionController', function(FrameTrail){
 
-    // Prevent text selection during any drag operation (one-time global setup)
-    document.addEventListener('mousedown', function() {
-        function onMove() {
-            document.body.classList.add('ft-dragging');
-            document.removeEventListener('mousemove', onMove);
+    // Prevent accidental drag-selection of text (one-time global setup).
+    // We intercept 'selectstart' (fires only when a selection drag begins) rather than
+    // using user-select:none, which would also block click-to-deselect.
+    // Double/triple-click word/line selection is still allowed via e.detail >= 2.
+    document.addEventListener('mousedown', function(e) {
+        if (e.detail >= 2) return;
+        function onSelectStart(evt) {
+            evt.preventDefault();
         }
         function onUp() {
-            document.body.classList.remove('ft-dragging');
-            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('selectstart', onSelectStart);
             document.removeEventListener('mouseup', onUp);
         }
-        document.addEventListener('mousemove', onMove);
+        document.addEventListener('selectstart', onSelectStart);
         document.addEventListener('mouseup', onUp);
     });
 
