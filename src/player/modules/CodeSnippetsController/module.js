@@ -208,8 +208,8 @@ FrameTrail.defineModule('CodeSnippetsController', function(FrameTrail){
             var _cseWrapper = document.createElement('div');
             _cseWrapper.innerHTML = '<div class="codeSnippetEditingTabs">' +
                 '    <ul>' +
-                '        <li><a href="#CodeSnippetList">'+ labels['SettingsCodeSnippetAdd'] +'</a></li>' +
-                '        <li><a href="#CustomCSS">'+ labels['GenericCustomCSS'] +'</a></li>' +
+                '        <li><a href="#CodeSnippetList">'+ labels['SidebarCustomCode'] +'</a></li>' +
+                '        <li><a href="#CustomCSS">CSS</a></li>' +
                 '        <li class="ui-tabs-right"><a href="#EventOnEnded">onEnded</a></li>' +
                 '        <li class="ui-tabs-right"><a href="#EventOnPause">onPause</a></li>' +
                 '        <li class="ui-tabs-right"><a href="#EventOnPlay">onPlay</a></li>' +

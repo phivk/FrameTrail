@@ -72,7 +72,7 @@
     background-color: var(--primary-bg-color);
     outline: 1px solid var(--primary-bg-color);
     cursor: pointer;
-    border-radius: 2px;
+    border-radius: 3px;
 }
 
 .resourceThumb.dragPlaceholder {
