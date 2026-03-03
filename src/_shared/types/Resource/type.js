@@ -50,25 +50,28 @@ FrameTrail.defineType(
                     }
 
                     var rect = elementOrigin.getBoundingClientRect();
-                    var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                    var scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-                    var originTop = rect.top + scrollTop;
-                    var originLeft = rect.left + scrollLeft;
+                    var originTop = rect.top;
+                    var originLeft = rect.left;
                     var originWidth = elementOrigin.offsetWidth;
                     var originHeight = elementOrigin.offsetHeight;
                     var finalTop = (window.innerHeight / 2) - 240;
                     var finalLeft = (window.innerWidth / 2) - 440;
                     var self = this;
 
+                    // If the thumbnail is inside a modal <dialog>, append the animation div
+                    // there so it renders in the top layer (above the modal backdrop).
+                    // Use position:fixed so viewport-relative coords work in both cases.
+                    var dialogAncestor = elementOrigin.closest('dialog');
+
                     var animationDiv = elementOrigin.cloneNode(true);
                     animationDiv.classList.add('resourceAnimationDiv');
-                    animationDiv.style.position = 'absolute';
+                    animationDiv.style.position = 'fixed';
                     animationDiv.style.top = originTop + 'px';
                     animationDiv.style.left = originLeft + 'px';
                     animationDiv.style.width = originWidth + 'px';
                     animationDiv.style.height = originHeight + 'px';
                     animationDiv.style.zIndex = 101;
-                    document.body.appendChild(animationDiv);
+                    (dialogAncestor || document.body).appendChild(animationDiv);
 
                     var anim = animationDiv.animate([
                         { top: originTop + 'px', left: originLeft + 'px', width: originWidth + 'px', height: originHeight + 'px' },
