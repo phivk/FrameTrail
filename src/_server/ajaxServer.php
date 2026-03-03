@@ -72,6 +72,16 @@ switch($_REQUEST["a"]) {
         $return = fileDelete($_REQUEST["resourcesID"]);
         break;
 
+    case "fileUpdate":
+        include_once("files.php");
+        $return = fileUpdate(
+            $_REQUEST["resourcesID"],
+            $_REQUEST["name"],
+            $_REQUEST["licenseType"],
+            $_REQUEST["licenseAttribution"]
+        );
+        break;
+
     case "fileGetByFilter":
         include_once("files.php");
         $return = fileGetByFilter($_REQUEST["key"],$_REQUEST["condition"],$_REQUEST["values"]);

@@ -559,6 +559,60 @@ function fileDelete($resourcesID) {
 }
 
 /**
+ * @param $resourcesID
+ * @param $name
+ * @param $licenseType
+ * @param $licenseAttribution
+ * @return mixed
+ *
+ * Returning Code:
+ * 0       =   Success. Resource has been updated
+ * 1       =   failed. Not logged in
+ * 2       =   failed. Could not find resources database
+ * 3       =   failed. No valid resourcesID
+ * 4       =   failed. Not permitted
+ */
+function fileUpdate($resourcesID, $name, $licenseType, $licenseAttribution) {
+    global $conf;
+    if ($err = requireLogin()) return $err;
+
+    if (!file_exists($conf["dir"]["data"]."/resources/_index.json")) {
+        $return["status"] = "fail";
+        $return["code"] = 2;
+        $return["string"] = "Could not find resources database";
+        return $return;
+    }
+    $file = new sharedFile($conf["dir"]["data"]."/resources/_index.json");
+    $json = $file->read();
+    $res = json_decode($json, true);
+    if (!$res["resources"][$resourcesID]) {
+        $return["status"] = "fail";
+        $return["code"] = 3;
+        $return["string"] = "No valid resourcesID";
+        $file->close();
+        return $return;
+    }
+    if (($res["resources"][$resourcesID]["creatorId"] != $_SESSION["ohv"]["user"]["id"]) && ($_SESSION["ohv"]["user"]["role"] != "admin")) {
+        $return["status"] = "fail";
+        $return["code"] = 4;
+        $return["string"] = "Not permitted. It's not your resource and you're not an admin!";
+        $file->close();
+        return $return;
+    }
+
+    $res["resources"][$resourcesID]["name"] = $name;
+    $res["resources"][$resourcesID]["licenseType"] = $licenseType;
+    $res["resources"][$resourcesID]["licenseAttribution"] = $licenseAttribution;
+
+    $file->writeClose(json_encode($res, $conf["settings"]["json_flags"]));
+    $return["status"] = "success";
+    $return["code"] = 0;
+    $return["string"] = "Resource updated";
+    $return["resource"] = $res["resources"][$resourcesID];
+    return $return;
+}
+
+/**
  * @param $key
  * @param $condition
  * @param $values
