@@ -117,10 +117,9 @@
 
         FrameTrail.module('ViewResources').create(true);
 
-        FrameTrail.module('ViewResources').open();
-
         FrameTrail.module('UserManagement').isLoggedIn(function(loginState) {
             toggleLoginState(loginState);
+            FrameTrail.module('ViewResources').open();
         });
 
     }
