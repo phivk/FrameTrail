@@ -25,7 +25,7 @@ FrameTrail.defineType(
             switch (type) {
 
                 case 'TimedContent':
-                    var cardClass = isHorizontal ? 'schematicCard' : 'schematicCard vertical';
+                    var cardClass = (thumbnail || !isHorizontal) ? 'schematicCard vertical' : 'schematicCard';
                     var cardCount = thumbnail ? 1 : (isHorizontal
                         ? ((size == 'small') ? 5 : (size == 'medium') ? 4 : 3)
                         : ((size == 'small') ? 5 : (size == 'medium') ? 3 : 1));
@@ -1566,13 +1566,13 @@ FrameTrail.defineType(
 
                     var anim = animationDiv.animate([
                         { top: originOffset.top + 'px', left: originOffset.left + 'px', width: originWidth + 'px', height: originHeight + 'px' },
-                        { top: finalTop + 'px', left: finalLeft + 'px', width: '814px', height: '600px' }
+                        { top: finalTop + 'px', left: finalLeft + 'px', width: '860px', height: '600px' }
                     ], { duration: 300, easing: 'ease', fill: 'forwards' });
 
                     anim.finished.then(function() {
                         animationDiv.style.top = finalTop + 'px';
                         animationDiv.style.left = finalLeft + 'px';
-                        animationDiv.style.width = '814px';
+                        animationDiv.style.width = '860px';
                         animationDiv.style.height = '600px';
                         anim.cancel();
 
@@ -1586,7 +1586,7 @@ FrameTrail.defineType(
                             title:     dialogTitle,
                             content:   editDialog,
                             resizable: false,
-                            width:     814,
+                            width:     860,
                             height:    600,
                             modal:     true,
                             close: function() {
@@ -1690,14 +1690,14 @@ FrameTrail.defineType(
                                     +'    </div>'
                                     +'    <hr>'
                                     +'    <div class="layoutRow">'
-                                    +'        <div class="contentViewData column-5" data-property="type" data-value="'+ contentViewData.type +'">'
+                                    +'        <div class="contentViewData column-6" data-property="type" data-value="'+ contentViewData.type +'">'
                                     +'            <label>'+ self.labels['GenericType'] +':</label>'
                                     +'            <div '+ (contentViewData.type == 'TimedContent' ? 'class="active"' : '') +' data-value="TimedContent">'+ self.labels['GenericAnnotationCollection'] +'</div>'
                                     +'            <div '+ (contentViewData.type == 'CustomHTML' ? 'class="active"' : '') +' data-value="CustomHTML">'+ self.labels['GenericCustomHTML'] +'</div>'
                                     +'            <div '+ (contentViewData.type == 'Transcript' ? 'class="active"' : '') +' data-value="Transcript">'+ self.labels['GenericTextTranscript'] +'</div>'
                                     +'            <div '+ (contentViewData.type == 'Timelines' ? 'class="active"' : '') +' data-value="Timelines">'+ self.labels['GenericTimelines'] +'</div>'
                                     +'        </div>'
-                                    +'        <div class="generic column-7">'
+                                    +'        <div class="generic column-6">'
                                     +'            <div class="contentViewData" data-property="contentSize" data-value="'+ contentViewData.contentSize +'">'
                                     +'                <label>'+ self.labels['SettingsContentViewSize'] +':</label>'
                                     +'                <div '+ (contentViewData.contentSize == 'small' ? 'class="active"' : '') +' data-value="small">'+ self.labels['SettingsContentViewSmall'] +'</div>'

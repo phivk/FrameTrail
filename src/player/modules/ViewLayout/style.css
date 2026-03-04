@@ -201,7 +201,7 @@
 
 .layoutManagerContainer .layoutManagerMain {
     float: left;
-    width: calc(100% - 200px);
+    width: calc(100% - 176px);
     margin-right: 10px;
     display: flex;
     flex-direction: column;
@@ -231,7 +231,7 @@
 
 .layoutManagerContainer .layoutManagerOptions {
     float: right;
-    width: 190px;
+    width: 163px;
     padding: 10px;
     overflow-x: hidden;
     overflow-y: auto;
@@ -276,7 +276,7 @@ body > .contentViewTemplate {
 
 .layoutManagerContainer .contentViewTemplate .contentViewTemplateLabel {
     padding: 5px 6px;
-    font-size: 11px;
+    font-size: 13px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
