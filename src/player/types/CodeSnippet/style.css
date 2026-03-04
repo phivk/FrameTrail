@@ -69,11 +69,6 @@
     cursor: move;
 }
 
-.codeSnippetEditingTabs .codeSnippetList .dragPlaceholder {
-    outline: 1px dashed var(--primary-bg-color);
-    background: transparent;
-    border-color: #efefef;
-}
 
 body .codeSnippetElement {
     background: var(--primary-bg-color) none repeat scroll 0 0;

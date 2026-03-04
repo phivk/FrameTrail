@@ -96,15 +96,6 @@
     opacity: 1;
 }
 
-.hypervideoThumb.dragPlaceholder {
-    outline: 1px dashed var(--primary-bg-color);
-    border-color: transparent;
-    background: none !important;
-}
-
-.hypervideoThumb.dragPlaceholder .hypervideoThumbContent, .hypervideoThumb.dragPlaceholder .hypervideoTitle {
-    opacity: .2;
-}
 
 .hypervideoThumb.ui-draggable-dragging {
     outline: 1px solid #FF9919;

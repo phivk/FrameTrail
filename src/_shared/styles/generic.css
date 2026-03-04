@@ -1286,6 +1286,19 @@ input:checked + .slider:before {
     opacity: 0.5;
 }
 
+/* interact.js drag source placeholder — the element left in place while the clone is dragged */
+.dragPlaceholder {
+    background: var(--secondary-fg-color) !important;
+    background-image: none !important;
+    outline: 2px dashed var(--secondary-fg-color, rgba(220,220,220,1)) !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+}
+
+.dragPlaceholder > * {
+    opacity: 0.2;
+}
+
 /* CodeMirror 6 editor wrapper sizing */
 .cm6-wrapper {
     position: relative;

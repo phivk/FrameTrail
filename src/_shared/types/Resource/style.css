@@ -75,14 +75,6 @@
     border-radius: 3px;
 }
 
-.resourceThumb.dragPlaceholder {
-    outline: 1px dashed var(--primary-bg-color);
-    background: none !important;
-}
-
-.resourceThumb.dragPlaceholder .resourceOverlay, .resourceThumb.dragPlaceholder .resourceTitle {
-    opacity: .2;
-}
 
 .resourceThumb.ft-drag-clone {
     outline: 1px solid #FF9919;
