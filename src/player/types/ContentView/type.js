@@ -175,7 +175,8 @@ FrameTrail.defineType(
                     var self = this;
 
                     self.contentViewTab.setAttribute('data-type', self.contentViewData.type);
-                    self.contentViewTab.querySelector('.contentViewTabName').textContent = self.contentViewData.name;
+                    self.contentViewTab.querySelector('.contentViewTabName').innerHTML =
+                        self.contentViewData.icon ? '<span class="'+ self.contentViewData.icon +'">'+ self.contentViewData.name +'</span>' : self.contentViewData.name;
 
                     self.contentViewContainer.setAttribute('data-type', self.contentViewData.type);
                     self.contentViewContainer.setAttribute('data-size', self.contentViewData.contentSize);
@@ -767,7 +768,8 @@ FrameTrail.defineType(
                     var self = this;
 
                     self.contentViewPreviewTab.setAttribute('data-type', self.contentViewData.type);
-                    self.contentViewPreviewTab.querySelector('.contentViewTabName').innerHTML = self.contentViewData.name;
+                    self.contentViewPreviewTab.querySelector('.contentViewTabName').innerHTML =
+                        self.contentViewData.icon ? '<span class="'+ self.contentViewData.icon +'">'+ self.contentViewData.name +'</span>' : self.contentViewData.name;
 
                     self.contentViewPreviewElement.setAttribute('data-type', self.contentViewData.type);
                     self.contentViewPreviewElement.setAttribute('data-size', self.contentViewData.contentSize);
@@ -784,7 +786,9 @@ FrameTrail.defineType(
                         tabElement = document.createElement('div');
                     tabElement.className = 'contentViewTab';
                     tabElement.setAttribute('data-type', self.contentViewData.type);
-                    tabElement.innerHTML = '    <div class="contentViewTabName">'+ self.contentViewData.name +'</div>'
+                    tabElement.innerHTML = '    <div class="contentViewTabName">'
+                                         + (self.contentViewData.icon ? '<span class="'+ self.contentViewData.icon +'">'+ self.contentViewData.name +'</span>' : self.contentViewData.name)
+                                         + '</div>'
                                          + (withCloseButton ? '    <div class="layoutAreaToggleCloseButton"></div>' : '');
                     tabElement.addEventListener('click', function() { onActivate.call(self); });
                     if (withCloseButton) {

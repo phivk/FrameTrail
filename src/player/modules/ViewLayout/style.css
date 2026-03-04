@@ -78,6 +78,11 @@
     white-space: nowrap;
 }
 
+/* Gap between icon and name text — suppressed when span is icon-only (empty) */
+.layoutArea .layoutAreaTabs .contentViewTab .contentViewTabName [class^="icon-"]:not(:empty)::before {
+    margin-right: 8px;
+}
+
 .layoutArea[data-area="areaLeft"] .layoutAreaTabs .contentViewTab .contentViewTabName [class^="icon-"]::before,
 .layoutArea[data-area="areaRight"] .layoutAreaTabs .contentViewTab .contentViewTabName [class^="icon-"]::before {
     transform-origin: center;
