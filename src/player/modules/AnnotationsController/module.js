@@ -1265,10 +1265,12 @@
      */
     function makeTimelinesSortable(containerElement) {
         Sortable.create(containerElement, {
-            draggable:  '.userTimelineWrapper',
-            ghostClass: 'sortable-placeholder',
-            filter:     '.compareTimelineElement',
-            animation:  100
+            draggable:        '.userTimelineWrapper',
+            ghostClass:       'sortable-placeholder',
+            filter:           '.compareTimelineElement',
+            animation:        100,
+            delay:            150,
+            delayOnTouchOnly: true
         });
     }
 

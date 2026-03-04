@@ -995,6 +995,11 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     height: 100%;
     min-height: 100%;
     min-width: 100%;
+    touch-action: none;
+}
+
+.playerContainer .timelineRuler {
+    touch-action: none;
 }
 
 /* ===========================================

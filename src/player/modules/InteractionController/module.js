@@ -17,10 +17,10 @@
 FrameTrail.defineModule('InteractionController', function(FrameTrail){
 
     // Prevent accidental drag-selection of text (one-time global setup).
-    // We intercept 'selectstart' (fires only when a selection drag begins) rather than
-    // using user-select:none, which would also block click-to-deselect.
+    // Uses pointer events to cover both mouse and touch input.
     // Double/triple-click word/line selection is still allowed via e.detail >= 2.
-    document.addEventListener('mousedown', function(e) {
+    document.addEventListener('pointerdown', function(e) {
+        if (e.pointerType !== 'mouse') return; // touch/pen don't trigger selectstart
         if (e.detail >= 2) return;
         if (e.target.closest('[contenteditable]')) return;
         function onSelectStart(evt) {
@@ -28,10 +28,10 @@ FrameTrail.defineModule('InteractionController', function(FrameTrail){
         }
         function onUp() {
             document.removeEventListener('selectstart', onSelectStart);
-            document.removeEventListener('mouseup', onUp);
+            document.removeEventListener('pointerup', onUp);
         }
         document.addEventListener('selectstart', onSelectStart);
-        document.addEventListener('mouseup', onUp);
+        document.addEventListener('pointerup', onUp);
     });
 
 
@@ -131,13 +131,15 @@ FrameTrail.defineModule('InteractionController', function(FrameTrail){
         };
         document.addEventListener('keydown', _keydownHandler);
 
-        if (_mousemoveHandler) { document.removeEventListener('mousemove', _mousemoveHandler); }
+        if (_mousemoveHandler) {
+            document.removeEventListener('mousemove', _mousemoveHandler);
+            document.removeEventListener('pointermove', _mousemoveHandler);
+        }
         _mousemoveHandler = function(evt){
-
             FrameTrail.changeState('userActivity', true);
-
         };
         document.addEventListener('mousemove', _mousemoveHandler);
+        document.addEventListener('pointermove', _mousemoveHandler);
 
         initActivityCheck();
 

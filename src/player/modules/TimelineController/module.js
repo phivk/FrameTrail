@@ -122,7 +122,10 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
                 t.playhead.remove();
             }
             if (t.scroller) {
-                t.scroller.removeEventListener('click', t._clickHandler);
+                t.scroller.removeEventListener('pointerdown', t._scrubStart);
+                t.scroller.removeEventListener('pointermove', t._scrubMove);
+                t.scroller.removeEventListener('pointerup', t._scrubEnd);
+                t.scroller.removeEventListener('pointercancel', t._scrubEnd);
                 Array.from(t.scroller.children).forEach(function(c) { t.element.appendChild(c); });
                 t.scroller.remove();
             }
@@ -360,20 +363,31 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
         };
         el.addEventListener('scroll', scrollHandler);
 
-        // Click-to-seek on timeline
-        var clickHandler = function(e) {
-            // Don't seek if clicking on a timelineElement (that has its own interactions)
-            if (e.target.closest('.timelineElement')) return;
-
+        // Drag-to-scrub on timeline (works for both click and drag, mouse + touch)
+        var scrubbing = false;
+        var scrubSeek = function(e) {
             var scrollerWidth = scroller.offsetWidth;
             if (scrollerWidth === 0 || duration === 0) return;
-
             var rect = scroller.getBoundingClientRect();
-            var clickX = e.clientX - rect.left;
-            var time = (clickX / scrollerWidth) * duration;
-            FrameTrail.module('HypervideoController').currentTime = Math.max(0, Math.min(time, duration));
+            var x = e.clientX - rect.left;
+            FrameTrail.module('HypervideoController').currentTime = Math.max(0, Math.min((x / scrollerWidth) * duration, duration));
         };
-        scroller.addEventListener('click', clickHandler);
+        var scrubStart = function(e) {
+            if (e.target.closest('.timelineElement')) return;
+            if (e.button !== undefined && e.button !== 0) return;
+            scrubbing = true;
+            scroller.setPointerCapture(e.pointerId);
+            scrubSeek(e);
+        };
+        var scrubMove = function(e) {
+            if (!scrubbing) return;
+            scrubSeek(e);
+        };
+        var scrubEnd = function() { scrubbing = false; };
+        scroller.addEventListener('pointerdown', scrubStart);
+        scroller.addEventListener('pointermove', scrubMove);
+        scroller.addEventListener('pointerup', scrubEnd);
+        scroller.addEventListener('pointercancel', scrubEnd);
 
         // Preview popup for main timeline elements
         var previewHandlers = setupPreviewPopup(el, '.timelineElement');
@@ -391,7 +405,9 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
             scroller: scroller,
             playhead: playhead,
             _scrollHandler: scrollHandler,
-            _clickHandler: clickHandler,
+            _scrubStart: scrubStart,
+            _scrubMove: scrubMove,
+            _scrubEnd: scrubEnd,
             _dragstartHandler: dragstartHandler,
             _previewHandlers: previewHandlers
         };
@@ -697,14 +713,26 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
 
         updateTimeRuler();
 
-        // Click to seek
-        timeRulerElement.addEventListener('click', function(e) {
+        // Drag-to-scrub on time ruler (mouse + touch)
+        var rulerScrubbing = false;
+        var rulerSeek = function(e) {
             var rect = timeRulerElement.getBoundingClientRect();
-            var clickX = e.clientX - rect.left + timeRulerElement.scrollLeft;
+            var x = e.clientX - rect.left + timeRulerElement.scrollLeft;
             var scrollerWidth = containerWidth * zoomLevel;
-            var time = (clickX / scrollerWidth) * duration;
-            FrameTrail.module('HypervideoController').currentTime = Math.max(0, Math.min(time, duration));
+            FrameTrail.module('HypervideoController').currentTime = Math.max(0, Math.min((x / scrollerWidth) * duration, duration));
+        };
+        timeRulerElement.addEventListener('pointerdown', function(e) {
+            if (e.button !== undefined && e.button !== 0) return;
+            rulerScrubbing = true;
+            timeRulerElement.setPointerCapture(e.pointerId);
+            rulerSeek(e);
         });
+        timeRulerElement.addEventListener('pointermove', function(e) {
+            if (!rulerScrubbing) return;
+            rulerSeek(e);
+        });
+        timeRulerElement.addEventListener('pointerup', function() { rulerScrubbing = false; });
+        timeRulerElement.addEventListener('pointercancel', function() { rulerScrubbing = false; });
 
         wrapper.appendChild(timeRulerElement);
         controlsContainer.appendChild(wrapper);
