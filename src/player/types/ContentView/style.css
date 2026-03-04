@@ -452,11 +452,85 @@
 }
 
 .contentViewEditingUI .contentViewData > div[data-value] {
-    display: inline-block;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: stretch;
     cursor: pointer;
+    vertical-align: top;
+    width: 140px;
+    margin-top: 6px;
+    margin-right: 6px;
+    border: 2px solid transparent;
+    border-radius: 2px;
+    overflow: hidden;
 }
 
-.contentViewEditingUI .contentViewData > div[data-value].active, .collectionCounter {
+.contentViewEditingUI .contentViewData > div[data-value].active {
+    outline: 4px solid #F90;
+}
+
+.contentViewEditingUI .contentViewData > div[data-value] > span {
+    font-size: 13px;
+    text-align: center;
+    padding: 3px 4px 4px 4px;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background: var(--secondary-bg-color);
+}
+
+.contentViewEditingUI .contentViewData > div[data-value].active > span {
+    font-weight: bold;
+}
+
+.contentViewEditingUI .contentViewData > div[data-value="small"] {
+    width: 54px;
+}
+
+.contentViewEditingUI .contentViewData > div[data-value="small"] .contentViewOptionThumb {
+    height: 47px;
+}
+
+.contentViewEditingUI .contentViewData > div[data-value="medium"] {
+    width: 114px;
+}
+
+.contentViewEditingUI .contentViewData > div[data-value="medium"] .contentViewOptionThumb {
+    height: 87px;
+}
+
+.contentViewEditingUI .contentViewData > div[data-value="large"] {
+    width: 200px;
+}
+
+.contentViewEditingUI .contentViewData > div[data-value="large"] .contentViewOptionThumb {
+    height: 157px;
+}
+
+.contentViewEditingUI .contentViewOptionThumb {
+    position: relative;
+    height: 60px;
+    overflow: hidden;
+    background: var(--primary-bg-color);
+    flex-shrink: 0;
+}
+
+/* Size selector: single card fills the thumbnail container */
+.contentViewData[data-property="contentSize"] .contentViewOptionThumb .schematicCard {
+    float: none;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+}
+
+/* Type selector + template sidebar: narrow cards so ~3 fit side by side */
+:is(.contentViewData[data-property="type"], .contentViewTemplate) .contentViewOptionThumb .schematicCard[data-size="medium"] {
+    width: 37px;
+    margin: 0 1px 0 3px;
+}
+
+.collectionCounter {
     font-weight: bold;
 }
 
@@ -479,7 +553,7 @@
 * Schematic Preview (Layout Manager)
 *******************/
 
-.layoutManager .contentViewPreview .schematicPreview {
+:is(.layoutManager .contentViewPreview, .contentViewOptionThumb) .schematicPreview {
     position: absolute;
     top: 0;
     left: 0;
@@ -488,11 +562,12 @@
     overflow: hidden;
     pointer-events: none;
     padding: 8px;
+    box-sizing: border-box;
 }
 
-/* TimedContent - Horizontal Cards (top/bottom) */
+/* TimedContent Cards */
 
-.layoutManager .contentViewPreview .schematicCard {
+:is(.layoutManager .contentViewPreview, .contentViewOptionThumb) .schematicCard {
     float: left;
     box-sizing: border-box;
     background: var(--primary-fg-color);
@@ -500,134 +575,89 @@
     margin-right: 7px;
     opacity: 0.5;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
-.layoutManager .contentViewPreview .schematicCard.active {
+:is(.layoutManager .contentViewPreview, .contentViewOptionThumb) .schematicCard.active {
     opacity: 1;
     border-color: var(--primary-fg-color);
 }
 
-.layoutManager .contentViewPreview .schematicCard .schematicThumb {
+:is(.layoutManager .contentViewPreview, .contentViewOptionThumb) .schematicCard .schematicThumb {
     background: rgba(127,127,127,0.2);
-    width: 100%;
+    flex: 1;
+    min-height: 0;
 }
 
-.layoutManager .contentViewPreview .schematicCard .schematicTitle {
+:is(.layoutManager .contentViewPreview, .contentViewOptionThumb) .schematicCard .schematicTitle {
     height: 6px;
     margin: 4px 3px 2px 3px;
     background: rgba(127,127,127,0.3);
     border-radius: 1px;
+    flex-shrink: 0;
 }
 
-.layoutManager .contentViewPreview .schematicCard .schematicBody {
+:is(.layoutManager .contentViewPreview, .contentViewOptionThumb) .schematicCard .schematicBody {
     padding: 2px 3px;
+    flex-shrink: 0;
 }
 
-.layoutManager .contentViewPreview .schematicCard .schematicLine {
+:is(.layoutManager .contentViewPreview, .contentViewOptionThumb) .schematicCard .schematicLine {
     height: 4px;
     margin-bottom: 3px;
     background: rgba(127,127,127,0.15);
     border-radius: 1px;
 }
 
-.layoutManager .contentViewPreview .schematicCard .schematicLine.short {
+:is(.layoutManager .contentViewPreview, .contentViewOptionThumb) .schematicCard .schematicLine.short {
     width: 60%;
 }
 
 /* Horizontal card sizes */
 
-.layoutManager .contentViewPreview .schematicCard[data-size="small"] {
+:is(.layoutManager .contentViewPreview, .contentViewOptionThumb) .schematicCard[data-size="small"] {
     width: 28px;
     height: calc(100% - 4px);
     margin-top: 2px;
 }
 
-.layoutManager .contentViewPreview .schematicCard[data-size="small"] .schematicThumb {
-    height: 100%;
-}
-
-.layoutManager .contentViewPreview .schematicCard[data-size="medium"] {
+:is(.layoutManager .contentViewPreview, .contentViewOptionThumb) .schematicCard[data-size="medium"] {
     width: 100px;
     height: calc(100% - 4px);
     margin-top: 2px;
 }
 
-.layoutManager .contentViewPreview .schematicCard[data-size="medium"] .schematicThumb {
-    height: calc(100% - 16px);
-}
-
-.layoutManager .contentViewPreview .schematicCard[data-size="large"] {
+:is(.layoutManager .contentViewPreview, .contentViewOptionThumb) .schematicCard[data-size="large"] {
     width: 230px;
     height: calc(100% - 8px);
     margin-top: 4px;
 }
 
-.layoutManager .contentViewPreview .schematicCard[data-size="large"] .schematicThumb {
-    height: calc(100% - 34px);
-}
+/* Vertical card overrides */
 
-/* TimedContent - Vertical Cards (left/right) */
-
-.layoutManager .contentViewPreview .schematicCard.vertical {
+:is(.layoutManager .contentViewPreview, .contentViewOptionThumb) .schematicCard.vertical {
     float: none;
     width: calc(100% - 4px);
     margin: 0 2px 7px 2px;
-    display: flex;
-    flex-direction: row;
 }
 
-.layoutManager .contentViewPreview .schematicCard.vertical[data-size="small"] {
+:is(.layoutManager .contentViewPreview, .contentViewOptionThumb) .schematicCard.vertical[data-size="small"] {
     height: 30px;
 }
 
-.layoutManager .contentViewPreview .schematicCard.vertical[data-size="small"] .schematicThumb {
-    width: 30px;
-    min-width: 30px;
-    height: 100%;
-}
-
-.layoutManager .contentViewPreview .schematicCard.vertical[data-size="medium"] {
+:is(.layoutManager .contentViewPreview, .contentViewOptionThumb) .schematicCard.vertical[data-size="medium"] {
     height: 70px;
 }
 
-.layoutManager .contentViewPreview .schematicCard.vertical[data-size="medium"] .schematicThumb {
-    width: 40px;
-    min-width: 40px;
-    height: 100%;
-}
-
-.layoutManager .contentViewPreview .schematicCard.vertical[data-size="medium"] .schematicMeta {
-    flex: 1;
-    padding: 4px;
-    overflow: hidden;
-}
-
-.layoutManager .contentViewPreview .schematicCard.vertical[data-size="large"] {
+:is(.layoutManager .contentViewPreview, .contentViewOptionThumb) .schematicCard.vertical[data-size="large"] {
     height: calc(100% - 4px);
-    flex-direction: column;
-}
-
-.layoutManager .contentViewPreview .schematicCard.vertical[data-size="large"] .schematicThumb.large {
-    width: 100%;
-    height: 60%;
-}
-
-.layoutManager .contentViewPreview .schematicCard.vertical[data-size="large"] .schematicMeta {
-    padding: 4px;
-}
-
-.layoutManager .contentViewPreview .schematicCard.vertical .schematicTitle {
-    margin: 0 0 3px 0;
-}
-
-.layoutManager .contentViewPreview .schematicCard.vertical .schematicLine {
-    height: 3px;
     margin-bottom: 2px;
 }
 
 /* CustomHTML */
 
-.layoutManager .contentViewPreview .schematicCustomHTML {
+:is(.layoutManager .contentViewPreview, .contentViewOptionThumb) .schematicCustomHTML {
     background: rgba(127,127,127,0.08);
     padding: 6px 8px;
     font-size: 9px;
@@ -638,18 +668,18 @@
     overflow: hidden;
 }
 
-.layoutManager .contentViewPreview .schematicCustomHTML p {
+:is(.layoutManager .contentViewPreview, .contentViewOptionThumb) .schematicCustomHTML p {
     margin: 0 0 4px 0;
 }
 
-.layoutManager .contentViewPreview .schematicCustomHTML .schematicHighlight {
+:is(.layoutManager .contentViewPreview, .contentViewOptionThumb) .schematicCustomHTML .schematicHighlight {
     background-color: rgba(100,110,100,.3);
     padding: 1px 2px;
 }
 
 /* Transcript */
 
-.layoutManager .contentViewPreview .schematicTranscript {
+:is(.layoutManager .contentViewPreview, .contentViewOptionThumb) .schematicTranscript {
     padding: 6px 8px;
     font-size: 9px;
     line-height: 1.6;
@@ -658,31 +688,31 @@
     overflow: hidden;
 }
 
-.layoutManager .contentViewPreview .schematicTranscript span {
+:is(.layoutManager .contentViewPreview, .contentViewOptionThumb) .schematicTranscript span {
     padding: 1px 1px;
     opacity: 0.5;
 }
 
-.layoutManager .contentViewPreview .schematicTranscript span.active {
+:is(.layoutManager .contentViewPreview, .contentViewOptionThumb) .schematicTranscript span.active {
     opacity: 1;
 }
 
 /* Timelines */
 
-.layoutManager .contentViewPreview .schematicTimelines {
+:is(.layoutManager .contentViewPreview, .contentViewOptionThumb) .schematicTimelines {
     padding: 4px 6px;
     height: 100%;
     overflow: hidden;
 }
 
-.layoutManager .contentViewPreview .schematicTimelineRow {
+:is(.layoutManager .contentViewPreview, .contentViewOptionThumb) .schematicTimelineRow {
     display: flex;
     align-items: center;
     margin-bottom: 4px;
     height: 14px;
 }
 
-.layoutManager .contentViewPreview .schematicTimelineLabel {
+:is(.layoutManager .contentViewPreview, .contentViewOptionThumb) .schematicTimelineLabel {
     font-size: 7px;
     color: var(--primary-fg-color);
     opacity: 0.6;
@@ -692,7 +722,7 @@
     overflow: hidden;
 }
 
-.layoutManager .contentViewPreview .schematicTimelineTrack {
+:is(.layoutManager .contentViewPreview, .contentViewOptionThumb) .schematicTimelineTrack {
     flex: 1;
     height: 10px;
     position: relative;
@@ -700,7 +730,7 @@
     border-radius: 1px;
 }
 
-.layoutManager .contentViewPreview .schematicTimelineBar {
+:is(.layoutManager .contentViewPreview, .contentViewOptionThumb) .schematicTimelineBar {
     position: absolute;
     top: 1px;
     height: 8px;
@@ -709,6 +739,6 @@
     border-radius: 1px;
 }
 
-.layoutManager .contentViewPreview .schematicTimelineBar:first-child {
+:is(.layoutManager .contentViewPreview, .contentViewOptionThumb) .schematicTimelineBar:first-child {
     opacity: 0.5;
 }

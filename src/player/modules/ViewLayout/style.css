@@ -249,11 +249,12 @@
 }
 
 .layoutManagerContainer .layoutManagerOptions .contentViewTemplate, body > .contentViewTemplate {
-    padding: 10px 5px 7px 5px;
     background: var(--primary-bg-color);
     margin-bottom: 10px;
     cursor: move;
     border: 1px solid #999;
+    position: relative;
+    overflow: hidden;
 }
 
 body > .contentViewTemplate {
@@ -261,24 +262,19 @@ body > .contentViewTemplate {
     color: var(--primary-fg-color);
 }
 
-.layoutManagerContainer .contentViewTemplate .contentViewTemplateSize {
-    text-align: center;
+.layoutManagerContainer .contentViewTemplate .contentViewOptionThumb {
+    height: 60px;
+    position: relative;
     overflow: hidden;
+    background: var(--primary-bg-color);
 }
 
-.layoutManagerContainer .contentViewTemplate[data-size="small"] .contentViewTemplateSize [class^="icon-"]::before {
-    font-size: 40px !important;
-    line-height: 30px;
-}
-
-.layoutManagerContainer .contentViewTemplate[data-size="medium"] .contentViewTemplateSize [class^="icon-"]::before {
-    font-size: 70px !important;
-    line-height: 50px;
-}
-
-.layoutManagerContainer .contentViewTemplate[data-size="large"] .contentViewTemplateSize [class^="icon-"]::before {
-    font-size: 100px !important;
-    line-height: 70px;
+.layoutManagerContainer .contentViewTemplate .contentViewTemplateLabel {
+    padding: 5px 6px;
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* Layout Areas */

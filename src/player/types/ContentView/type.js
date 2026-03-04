@@ -16,6 +16,101 @@ FrameTrail.defineType(
     'ContentView',
 
     function (FrameTrail) {
+
+        function _generateSchematic(type, size, axis, thumbnail, maxCards) {
+            var isHorizontal = (axis === 'x'),
+                schematic = document.createElement('div');
+            schematic.className = 'schematicPreview';
+
+            switch (type) {
+
+                case 'TimedContent':
+                    var cardClass = isHorizontal ? 'schematicCard' : 'schematicCard vertical';
+                    var cardCount = thumbnail ? 1 : (isHorizontal
+                        ? ((size == 'small') ? 5 : (size == 'medium') ? 4 : 3)
+                        : ((size == 'small') ? 5 : (size == 'medium') ? 3 : 1));
+                    if (maxCards) cardCount = Math.min(cardCount, maxCards);
+                    for (var i = 0; i < cardCount; i++) {
+                        var card = document.createElement('div');
+                        card.className = cardClass;
+                        card.setAttribute('data-size', size);
+                        card.insertAdjacentHTML('beforeend', '<div class="schematicThumb"></div>');
+                        if (size == 'medium' || size == 'large') {
+                            card.insertAdjacentHTML('beforeend', '<div class="schematicTitle"></div>');
+                        }
+                        if (size == 'large') {
+                            card.insertAdjacentHTML('beforeend', '<div class="schematicBody"><div class="schematicLine"></div><div class="schematicLine short"></div></div>');
+                        }
+                        if (thumbnail || i === (isHorizontal ? 1 : 0)) card.classList.add('active');
+                        schematic.appendChild(card);
+                    }
+                    break;
+
+                case 'CustomHTML':
+                    var container = document.createElement('div');
+                    container.className = 'schematicCustomHTML';
+                    container.innerHTML = '<p>Custom HTML content area</p>'
+                        + '<p><span class="schematicHighlight">time-based element</span> with interactive text</p>'
+                        + '<p>Additional content goes here...</p>';
+                    schematic.appendChild(container);
+                    break;
+
+                case 'Transcript':
+                    var container = document.createElement('div');
+                    container.className = 'schematicTranscript';
+                    container.innerHTML = '<span>Welcome</span> '
+                        + '<span>to</span> '
+                        + '<span>this</span> '
+                        + '<span class="active">video.</span> '
+                        + '<span class="active">Here</span> '
+                        + '<span class="active">we</span> '
+                        + '<span>explore</span> '
+                        + '<span>the</span> '
+                        + '<span>topic</span> '
+                        + '<span>in</span> '
+                        + '<span>detail.</span> '
+                        + '<span>Each</span> '
+                        + '<span>word</span> '
+                        + '<span>syncs</span> '
+                        + '<span>with</span> '
+                        + '<span>the</span> '
+                        + '<span>video</span> '
+                        + '<span>timeline.</span>';
+                    schematic.appendChild(container);
+                    break;
+
+                case 'Timelines':
+                    var container = document.createElement('div');
+                    container.className = 'schematicTimelines';
+                    var rows = [
+                        { label: 'User 1', offset: '10%', width: '35%' },
+                        { label: 'User 1', offset: '55%', width: '20%' },
+                        { label: 'User 2', offset: '5%',  width: '25%' },
+                        { label: 'User 2', offset: '40%', width: '40%' },
+                        { label: 'User 3', offset: '20%', width: '50%' }
+                    ];
+                    var currentLabel = '';
+                    var row;
+                    for (var i = 0; i < rows.length; i++) {
+                        if (rows[i].label !== currentLabel) {
+                            currentLabel = rows[i].label;
+                            row = document.createElement('div');
+                            row.className = 'schematicTimelineRow';
+                            row.insertAdjacentHTML('beforeend', '<span class="schematicTimelineLabel">'+ rows[i].label +'</span>');
+                            row.insertAdjacentHTML('beforeend', '<div class="schematicTimelineTrack"></div>');
+                            container.appendChild(row);
+                        }
+                        row.querySelector('.schematicTimelineTrack').insertAdjacentHTML('beforeend',
+                            '<div class="schematicTimelineBar" style="left:'+ rows[i].offset +';width:'+ rows[i].width +'"></div>'
+                        );
+                    }
+                    schematic.appendChild(container);
+                    break;
+            }
+
+            return schematic;
+        }
+
         return {
             constructor: function (contentViewData, whichArea) {
 
@@ -873,117 +968,12 @@ FrameTrail.defineType(
                  * @return {HTMLElement} previewElement
                  */
                 generateSchematicPreview: function() {
+                    var axis = (this.whichArea === 'top' || this.whichArea === 'bottom') ? 'x' : 'y';
+                    return _generateSchematic(this.contentViewData.type, this.contentViewData.contentSize, axis);
+                },
 
-                    var self = this,
-                        type = self.contentViewData.type,
-                        size = self.contentViewData.contentSize,
-                        area = self.whichArea,
-                        isHorizontal = (area == 'top' || area == 'bottom'),
-                        schematic = document.createElement('div');
-                    schematic.className = 'schematicPreview';
-
-                    switch (type) {
-
-                        case 'TimedContent':
-                            if (isHorizontal) {
-                                var cardCount = (size == 'small') ? 5 : (size == 'medium') ? 4 : 3;
-                                for (var i = 0; i < cardCount; i++) {
-                                    var card = document.createElement('div');
-                                    card.className = 'schematicCard';
-                                    card.setAttribute('data-size', size);
-                                    card.insertAdjacentHTML('beforeend', '<div class="schematicThumb"></div>');
-                                    if (size == 'medium' || size == 'large') {
-                                        card.insertAdjacentHTML('beforeend', '<div class="schematicTitle"></div>');
-                                    }
-                                    if (size == 'large') {
-                                        card.insertAdjacentHTML('beforeend', '<div class="schematicBody"><div class="schematicLine"></div><div class="schematicLine short"></div></div>');
-                                    }
-                                    if (i === 1) card.classList.add('active');
-                                    schematic.appendChild(card);
-                                }
-                            } else {
-                                var cardCount = (size == 'small') ? 5 : (size == 'medium') ? 3 : 1;
-                                for (var i = 0; i < cardCount; i++) {
-                                    var card = document.createElement('div');
-                                    card.className = 'schematicCard vertical';
-                                    card.setAttribute('data-size', size);
-                                    if (size == 'small') {
-                                        card.insertAdjacentHTML('beforeend', '<div class="schematicThumb"></div>');
-                                    } else if (size == 'medium') {
-                                        card.insertAdjacentHTML('beforeend', '<div class="schematicThumb"></div><div class="schematicMeta"><div class="schematicTitle"></div></div>');
-                                    } else {
-                                        card.insertAdjacentHTML('beforeend', '<div class="schematicThumb large"></div><div class="schematicMeta"><div class="schematicTitle"></div><div class="schematicLine"></div><div class="schematicLine short"></div></div>');
-                                    }
-                                    if (i === 0) card.classList.add('active');
-                                    schematic.appendChild(card);
-                                }
-                            }
-                            break;
-
-                        case 'CustomHTML':
-                            var container = document.createElement('div');
-                            container.className = 'schematicCustomHTML';
-                            container.innerHTML = '<p>Custom HTML content area</p>'
-                                + '<p><span class="schematicHighlight">time-based element</span> with interactive text</p>'
-                                + '<p>Additional content goes here...</p>';
-                            schematic.appendChild(container);
-                            break;
-
-                        case 'Transcript':
-                            var container = document.createElement('div');
-                            container.className = 'schematicTranscript';
-                            container.innerHTML = '<span>Welcome</span> '
-                                + '<span>to</span> '
-                                + '<span>this</span> '
-                                + '<span class="active">video.</span> '
-                                + '<span class="active">Here</span> '
-                                + '<span class="active">we</span> '
-                                + '<span>explore</span> '
-                                + '<span>the</span> '
-                                + '<span>topic</span> '
-                                + '<span>in</span> '
-                                + '<span>detail.</span> '
-                                + '<span>Each</span> '
-                                + '<span>word</span> '
-                                + '<span>syncs</span> '
-                                + '<span>with</span> '
-                                + '<span>the</span> '
-                                + '<span>video</span> '
-                                + '<span>timeline.</span>';
-                            schematic.appendChild(container);
-                            break;
-
-                        case 'Timelines':
-                            var container = document.createElement('div');
-                            container.className = 'schematicTimelines';
-                            var rows = [
-                                { label: 'User 1', offset: '10%', width: '35%' },
-                                { label: 'User 1', offset: '55%', width: '20%' },
-                                { label: 'User 2', offset: '5%',  width: '25%' },
-                                { label: 'User 2', offset: '40%', width: '40%' },
-                                { label: 'User 3', offset: '20%', width: '50%' }
-                            ];
-                            var currentLabel = '';
-                            var row;
-                            for (var i = 0; i < rows.length; i++) {
-                                if (rows[i].label !== currentLabel) {
-                                    currentLabel = rows[i].label;
-                                    row = document.createElement('div');
-                                    row.className = 'schematicTimelineRow';
-                                    row.insertAdjacentHTML('beforeend', '<span class="schematicTimelineLabel">'+ rows[i].label +'</span>');
-                                    row.insertAdjacentHTML('beforeend', '<div class="schematicTimelineTrack"></div>');
-                                    container.appendChild(row);
-                                }
-                                row.querySelector('.schematicTimelineTrack').insertAdjacentHTML('beforeend',
-                                    '<div class="schematicTimelineBar" style="left:'+ rows[i].offset +';width:'+ rows[i].width +'"></div>'
-                                );
-                            }
-                            schematic.appendChild(container);
-                            break;
-                    }
-
-                    return schematic;
-
+                generateSchematicPreviewFor: function(type, size, axis, thumbnail) {
+                    return _generateSchematic(type, size, axis, thumbnail);
                 },
 
 
@@ -1682,13 +1672,14 @@ FrameTrail.defineType(
                         editingUI = document.createElement('div');
                     editingUI.className = 'contentViewEditingUI';
                     editingUI.innerHTML = '    <div class="layoutRow">'
-                                    +'        <div class="contentViewData column-6" data-property="type" data-value="'+ contentViewData.type +'">'
+                                    +'        <div class="contentViewData column-5" data-property="type" data-value="'+ contentViewData.type +'">'
                                     +'            <label>'+ self.labels['GenericType'] +':</label>'
                                     +'            <div '+ (contentViewData.type == 'TimedContent' ? 'class="active"' : '') +' data-value="TimedContent">'+ self.labels['GenericAnnotationCollection'] +'</div>'
                                     +'            <div '+ (contentViewData.type == 'CustomHTML' ? 'class="active"' : '') +' data-value="CustomHTML">'+ self.labels['GenericCustomHTML'] +'</div>'
                                     +'            <div '+ (contentViewData.type == 'Transcript' ? 'class="active"' : '') +' data-value="Transcript">'+ self.labels['GenericTextTranscript'] +'</div>'
+                                    +'            <div '+ (contentViewData.type == 'Timelines' ? 'class="active"' : '') +' data-value="Timelines">'+ self.labels['GenericTimelines'] +'</div>'
                                     +'        </div>'
-                                    +'        <div class="generic column-6">'
+                                    +'        <div class="generic column-7">'
                                     +'            <div class="contentViewData" data-property="contentSize" data-value="'+ contentViewData.contentSize +'">'
                                     +'                <label>'+ self.labels['SettingsContentViewSize'] +':</label>'
                                     +'                <div '+ (contentViewData.contentSize == 'small' ? 'class="active"' : '') +' data-value="small">'+ self.labels['SettingsContentViewSmall'] +'</div>'
@@ -1769,7 +1760,44 @@ FrameTrail.defineType(
                                     +'        <div class="message active">'+ self.labels['MessageHintNewTranscriptsUpload'] +'</div>'
                                     +'        <div class="existingTranscripts"></div>'
                                     +'        <input type="hidden" class="contentViewData" data-property="transcriptSource" data-value="'+ contentViewData.transcriptSource +'" value="'+ contentViewData.transcriptSource +'">'
+                                    +'    </div>'
+                                    +'    <div class="typeSpecific '+ (contentViewData.type == 'Timelines' ? 'active' : '') +'" data-type="Timelines">'
                                     +'    </div>';
+
+                    // Inject schematic thumbnails into type and size option divs
+                    var thumbAxis = (self.whichArea === 'top' || self.whichArea === 'bottom') ? 'x' : 'y';
+                    editingUI.querySelector('.contentViewData[data-property="type"]').querySelectorAll(':scope > div[data-value]').forEach(function(optionEl) {
+                        var thatType = optionEl.getAttribute('data-value');
+                        var thumbWrapper = document.createElement('div');
+                        thumbWrapper.className = 'contentViewOptionThumb';
+                        thumbWrapper.appendChild(_generateSchematic(thatType, 'medium', 'x', false, 3));
+                        var labelSpan = document.createElement('span');
+                        labelSpan.textContent = optionEl.textContent;
+                        optionEl.innerHTML = '';
+                        optionEl.appendChild(thumbWrapper);
+                        optionEl.appendChild(labelSpan);
+                    });
+
+                    function refreshSizeThumbs(type) {
+                        editingUI.querySelector('.contentViewData[data-property="contentSize"]').querySelectorAll(':scope > div[data-value]').forEach(function(optionEl) {
+                            var thatSize = optionEl.getAttribute('data-value');
+                            var existingThumb = optionEl.querySelector('.contentViewOptionThumb');
+                            if (existingThumb) {
+                                existingThumb.innerHTML = '';
+                                existingThumb.appendChild(_generateSchematic(type, thatSize, thumbAxis, true));
+                            } else {
+                                var thumbWrapper = document.createElement('div');
+                                thumbWrapper.className = 'contentViewOptionThumb';
+                                thumbWrapper.appendChild(_generateSchematic(type, thatSize, thumbAxis, true));
+                                var labelSpan = document.createElement('span');
+                                labelSpan.textContent = optionEl.textContent;
+                                optionEl.innerHTML = '';
+                                optionEl.appendChild(thumbWrapper);
+                                optionEl.appendChild(labelSpan);
+                            }
+                        });
+                    }
+                    refreshSizeThumbs(contentViewData.type);
 
                     editingUI.querySelectorAll('.contentViewData').forEach(function(el) {
 
@@ -1791,6 +1819,7 @@ FrameTrail.defineType(
                                         editingUI.querySelectorAll('.typeSpecific').forEach(function(el) { el.classList.remove('active'); });
                                         var typeSpecific = editingUI.querySelector('.typeSpecific[data-type="'+ parent.getAttribute('data-value') +'"]');
                                         if (typeSpecific) { typeSpecific.classList.add('active'); }
+                                        refreshSizeThumbs(parent.getAttribute('data-value'));
                                     }
 
                                     editingUI.querySelectorAll('.cm6-wrapper').forEach(function(el) {

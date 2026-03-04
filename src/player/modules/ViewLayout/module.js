@@ -16,6 +16,96 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
 
     var labels = FrameTrail.module('Localization').labels;
 
+    function _generateTemplateSchematic(type, size, axis) {
+        var isHorizontal = (axis === 'x'),
+            schematic = document.createElement('div');
+        schematic.className = 'schematicPreview';
+
+        switch (type) {
+
+            case 'TimedContent':
+                var cardCount = 3;
+                for (var i = 0; i < cardCount; i++) {
+                    var card = document.createElement('div');
+                    card.className = isHorizontal ? 'schematicCard' : 'schematicCard vertical';
+                    if (i === (isHorizontal ? 1 : 0)) card.classList.add('active');
+                    card.setAttribute('data-size', size);
+                    card.insertAdjacentHTML('beforeend', '<div class="schematicThumb"></div>');
+                    if (size == 'medium' || size == 'large') {
+                        card.insertAdjacentHTML('beforeend', '<div class="schematicTitle"></div>');
+                    }
+                    if (size == 'large') {
+                        card.insertAdjacentHTML('beforeend', '<div class="schematicBody"><div class="schematicLine"></div><div class="schematicLine short"></div></div>');
+                    }
+                    schematic.appendChild(card);
+                }
+                break;
+
+            case 'CustomHTML':
+                var container = document.createElement('div');
+                container.className = 'schematicCustomHTML';
+                container.innerHTML = '<p>Custom HTML content area</p>'
+                    + '<p><span class="schematicHighlight">time-based element</span> with interactive text</p>'
+                    + '<p>Additional content goes here...</p>';
+                schematic.appendChild(container);
+                break;
+
+            case 'Transcript':
+                var container = document.createElement('div');
+                container.className = 'schematicTranscript';
+                container.innerHTML = '<span>Welcome</span> '
+                    + '<span>to</span> '
+                    + '<span>this</span> '
+                    + '<span class="active">video.</span> '
+                    + '<span class="active">Here</span> '
+                    + '<span class="active">we</span> '
+                    + '<span>explore</span> '
+                    + '<span>the</span> '
+                    + '<span>topic</span> '
+                    + '<span>in</span> '
+                    + '<span>detail.</span> '
+                    + '<span>Each</span> '
+                    + '<span>word</span> '
+                    + '<span>syncs</span> '
+                    + '<span>with</span> '
+                    + '<span>the</span> '
+                    + '<span>video</span> '
+                    + '<span>timeline.</span>';
+                schematic.appendChild(container);
+                break;
+
+            case 'Timelines':
+                var container = document.createElement('div');
+                container.className = 'schematicTimelines';
+                var rows = [
+                    { label: 'User 1', offset: '10%', width: '35%' },
+                    { label: 'User 1', offset: '55%', width: '20%' },
+                    { label: 'User 2', offset: '5%',  width: '25%' },
+                    { label: 'User 2', offset: '40%', width: '40%' },
+                    { label: 'User 3', offset: '20%', width: '50%' }
+                ];
+                var currentLabel = '';
+                var row;
+                for (var i = 0; i < rows.length; i++) {
+                    if (rows[i].label !== currentLabel) {
+                        currentLabel = rows[i].label;
+                        row = document.createElement('div');
+                        row.className = 'schematicTimelineRow';
+                        row.insertAdjacentHTML('beforeend', '<span class="schematicTimelineLabel">'+ rows[i].label +'</span>');
+                        row.insertAdjacentHTML('beforeend', '<div class="schematicTimelineTrack"></div>');
+                        container.appendChild(row);
+                    }
+                    row.querySelector('.schematicTimelineTrack').insertAdjacentHTML('beforeend',
+                        '<div class="schematicTimelineBar" style="left:'+ rows[i].offset +';width:'+ rows[i].width +'"></div>'
+                    );
+                }
+                schematic.appendChild(container);
+                break;
+        }
+
+        return schematic;
+    }
+
     var configLayoutArea,
 
         /*
@@ -471,26 +561,21 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
             '    </div>' +
             '    <div class="layoutManagerOptions">' +
             '        <div class="message active">'+ labels['MessageLayoutManagerDropContentViews'] +'</div>' +
-            '        <div class="contentViewTemplate" data-type="TimedContent" data-size="small">' +
-            '            <div class="contentViewTemplateType"><span class="icon-docs">'+ labels['GenericAnnotationCollection'] +'</span></div>' +
-            '            <div class="contentViewTemplateSize"><span class="icon-coverflow"></span></div>' +
-            '        </div>' +
             '        <div class="contentViewTemplate" data-type="TimedContent" data-size="medium">' +
-            '            <div class="contentViewTemplateType"><span class="icon-docs">'+ labels['GenericAnnotationCollection'] +'</span></div>' +
-            '            <div class="contentViewTemplateSize"><span class="icon-coverflow"></span></div>' +
-            '        </div>' +
-            '        <div class="contentViewTemplate" data-type="TimedContent" data-size="large">' +
-            '            <div class="contentViewTemplateType"><span class="icon-docs">'+ labels['GenericAnnotationCollection'] +'</span></div>' +
-            '            <div class="contentViewTemplateSize"><span class="icon-coverflow"></span></div>' +
+            '            <div class="contentViewOptionThumb"></div>' +
+            '            <div class="contentViewTemplateLabel"><span class="icon-docs">'+ labels['GenericAnnotationCollection'] +'</span></div>' +
             '        </div>' +
             '        <div class="contentViewTemplate" data-type="CustomHTML" data-size="medium">' +
-            '            <div class="contentViewTemplateType"><span class="icon-file-code">'+ labels['GenericCustomHTML'] +'</span></div>' +
+            '            <div class="contentViewOptionThumb"></div>' +
+            '            <div class="contentViewTemplateLabel"><span class="icon-file-code">'+ labels['GenericCustomHTML'] +'</span></div>' +
             '        </div>' +
             '        <div class="contentViewTemplate" data-type="Transcript" data-size="large">' +
-            '            <div class="contentViewTemplateType"><span class="icon-doc-text">'+ labels['GenericTextTranscript'] +'</span></div>' +
+            '            <div class="contentViewOptionThumb"></div>' +
+            '            <div class="contentViewTemplateLabel"><span class="icon-doc-text">'+ labels['GenericTextTranscript'] +'</span></div>' +
             '        </div>' +
             '        <div class="contentViewTemplate" data-type="Timelines" data-size="large">' +
-            '            <div class="contentViewTemplateType"><span class="icon-doc-text">'+ labels['GenericTimelines'] +'</span></div>' +
+            '            <div class="contentViewOptionThumb"></div>' +
+            '            <div class="contentViewTemplateLabel"><span class="icon-doc-text">'+ labels['GenericTimelines'] +'</span></div>' +
             '        </div>' +
             '    </div>' +
             '</div>';
@@ -500,6 +585,14 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
         self = this;
 
         HypervideoLayoutContainer.append(domElement);
+
+        // Populate template preview thumbnails
+        LayoutManagerOptions.querySelectorAll('.contentViewTemplate').forEach(function(tmpl) {
+            var thumb = tmpl.querySelector('.contentViewOptionThumb');
+            if (thumb) {
+                thumb.appendChild(_generateTemplateSchematic(tmpl.dataset.type, tmpl.dataset.size, 'x'));
+            }
+        });
 
         // Layout template drag-and-drop via interact.js (clone helper pattern)
         (function() {
