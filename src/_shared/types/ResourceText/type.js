@@ -465,10 +465,15 @@ FrameTrail.defineType(
 
                 getDisplayLabel: function() {
                     if (this.resourceData.attributes && this.resourceData.attributes.text) {
-                        var _gdh = document.createElement('div');
-                        _gdh.innerHTML = this.resourceData.attributes.text;
-                        var decoded = _gdh.textContent;
-                        return decoded.substring(0, 50) || this.resourceData.name || 'Text';
+                        // attributes.text is HTML-escaped HTML; two-step decode:
+                        // step 1: decode HTML entities → real HTML string
+                        var _step1 = document.createElement('div');
+                        _step1.innerHTML = this.resourceData.attributes.text;
+                        // step 2: parse real HTML, extract plain text
+                        var _step2 = document.createElement('div');
+                        _step2.innerHTML = _step1.textContent;
+                        var plainText = _step2.textContent.trim();
+                        return plainText.substring(0, 50) || this.resourceData.name || 'Text';
                     }
                     return this.resourceData.name || 'Text';
                 }
