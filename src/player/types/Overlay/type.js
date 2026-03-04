@@ -484,15 +484,15 @@ FrameTrail.defineType(
                             _rd._leafletMap.invalidateSize();
                         }
 
+                        if (this.syncedMedia) {
+
+                            FrameTrail.module('OverlaysController').addSyncedMedia(this);
+
+                        }
+
                     }
 
                     this.timelineElement.classList.add('active');
-
-                    if (this.syncedMedia) {
-
-                        FrameTrail.module('OverlaysController').addSyncedMedia(this);
-
-                    }
 
                     if (this.data.events.onStart && !this.activeState && !this.permanentFocusState) {
                         try {
