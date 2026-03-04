@@ -239,6 +239,7 @@ window.FrameTrail_L10n['fr'] = {
     "ResourceEditNameRequired": "Le nom est obligatoire.",
     "ResourceEditSaveSuccess": "Ressource enregistrée.",
     "ResourceEditDeleteInUse": "Impossible de supprimer : cette ressource est actuellement utilisée.",
+    "ResourceEditDeleteConfirm": "Voulez-vous vraiment supprimer cette ressource ? Cette action est irréversible.",
     "SaveAsDownload": "Télécharger en tant que fichiers",
     "SaveToLocalFolder": "Enregistrer dans un dossier local",
     "SaveToServer": "Enregistrer sur le serveur",

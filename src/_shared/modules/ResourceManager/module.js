@@ -2296,23 +2296,31 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
         });
 
         deleteBtn.addEventListener('click', function() {
-            deleteBtn.disabled = true;
-            clearMessage();
-            deleteResource(
-                resourceID,
-                function() {
-                    editDialog.destroy();
-                    refreshCallback();
-                },
-                function(data) {
-                    deleteBtn.disabled = false;
-                    if (data.code === 5) {
-                        showMessage(labels['ResourceEditDeleteInUse'], true);
-                    } else {
-                        showMessage(data.string || labels['GenericError'], true);
-                    }
+            ConfirmDialog({
+                title:        labels['GenericConfirmDelete'],
+                message:      labels['ResourceEditDeleteConfirm'],
+                confirmLabel: labels['GenericYes'],
+                cancelLabel:  labels['GenericCancel'],
+                onConfirm: function() {
+                    deleteBtn.disabled = true;
+                    clearMessage();
+                    deleteResource(
+                        resourceID,
+                        function() {
+                            editDialog.destroy();
+                            refreshCallback();
+                        },
+                        function(data) {
+                            deleteBtn.disabled = false;
+                            if (data.code === 5) {
+                                showMessage(labels['ResourceEditDeleteInUse'], true);
+                            } else {
+                                showMessage(data.string || labels['GenericError'], true);
+                            }
+                        }
+                    );
                 }
-            );
+            });
         });
 
     }

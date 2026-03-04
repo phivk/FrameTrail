@@ -240,3 +240,57 @@ window.Dialog = function(opts) {
 
     return ctrl;
 };
+
+
+/**
+ * Lightweight "are you sure?" confirmation dialog built on top of Dialog().
+ *
+ * Usage:
+ *   ConfirmDialog({
+ *       title:        'Confirm',          // dialog title (optional)
+ *       message:      'Are you sure?',    // body text shown to the user
+ *       confirmLabel: 'Yes',              // confirm button label
+ *       cancelLabel:  'Cancel',           // cancel button label
+ *       onConfirm:    function() { ... }, // called when confirmed
+ *       onCancel:     function() { ... }, // called when cancelled (button or backdrop)
+ *       width:        380                 // optional width in px (default 380)
+ *   });
+ *
+ * Returns the Dialog controller (ctrl).
+ */
+window.ConfirmDialog = function(opts) {
+    opts = opts || {};
+
+    var contentEl = document.createElement('p');
+    contentEl.textContent = opts.message || '';
+
+    var d = Dialog({
+        title:   opts.title || '',
+        content: contentEl,
+        modal:   true,
+        width:   opts.width || 380,
+        buttons: [
+            {
+                text: opts.confirmLabel || 'Yes',
+                click: function() {
+                    d.destroy();
+                    if (opts.onConfirm) { opts.onConfirm(); }
+                }
+            },
+            {
+                text: opts.cancelLabel || 'Cancel',
+                click: function() {
+                    d.destroy();
+                    if (opts.onCancel) { opts.onCancel(); }
+                }
+            }
+        ],
+        // backdrop click or Escape → treat as cancel
+        close: function() {
+            d.destroy();
+            if (opts.onCancel) { opts.onCancel(); }
+        }
+    });
+
+    return d;
+};

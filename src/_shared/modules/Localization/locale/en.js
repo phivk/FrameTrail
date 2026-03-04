@@ -239,6 +239,7 @@ window.FrameTrail_L10n['en'] = {
     "ResourceEditNameRequired": "Name is required.",
     "ResourceEditSaveSuccess": "Resource saved.",
     "ResourceEditDeleteInUse": "Cannot delete: this resource is currently in use.",
+    "ResourceEditDeleteConfirm": "Are you sure you want to delete this resource? This action cannot be undone.",
     "SaveAsDownload": "Download as Files",
     "SaveToLocalFolder": "Save to Local Folder",
     "SaveToServer": "Save to Server",
