@@ -105,6 +105,12 @@ function fileUpload($type, $name, $description="", $attributes, $files, $lat, $l
             $newResource["type"] = $urlAttr["type"];
             $newResource["attributes"] = $urlAttr["attributes"];
             $newResource["thumb"] = $urlAttr["thumb"];
+            if (!empty($urlAttr["licenseType"])) {
+                $newResource["licenseType"] = $urlAttr["licenseType"];
+            }
+            if (isset($urlAttr["licenseAttribution"])) {
+                $newResource["licenseAttribution"] = $urlAttr["licenseAttribution"];
+            }
         break;
 
         case "image":
@@ -1300,6 +1306,147 @@ function transcodeAudioToMP3($sourcePath, $destPath, $bitrate = 192) {
         error_log('FrameTrail: ' . $errorMsg);
         return ['error' => $errorMsg];
     }
+}
+
+
+/**
+ * Download an image from a URL and store it as a local resource.
+ * Used by the Openverse image search tab to avoid hotlinking.
+ * Applies the same optimizeImage() / generateThumbnail() pipeline as direct uploads.
+ *
+ * @param $url              Full image URL to download (must be http/https)
+ * @param $name             Resource display name
+ * @param $licenseType      License identifier (e.g. "CC-BY-SA")
+ * @param $licenseAttribution  Attribution text (creator name)
+ * @return array
+ *
+ * Return codes:
+ *   0   Success
+ *   1   Not logged in
+ *   3   Resources folder missing
+ *   4   Download failed
+ *   8   Missing url or name
+ *   9   Not a valid image
+ *   10  File too large
+ *   11  Invalid URL scheme
+ *   20  Uploads disabled
+ */
+function fileDownloadFromUrl($url, $name, $licenseType, $licenseAttribution) {
+    global $conf;
+
+    if ($err = requireLogin()) return $err;
+
+    if (!is_dir($conf["dir"]["data"]."/resources")) {
+        return ["status" => "fail", "code" => 3, "string" => "Could not find the resources folder"];
+    }
+
+    if (!$url || !$name || $name === "") {
+        return ["status" => "fail", "code" => 8, "string" => "URL and name are required"];
+    }
+
+    // Validate scheme to prevent SSRF
+    $parsed = parse_url($url);
+    $scheme = strtolower($parsed['scheme'] ?? '');
+    if (!$parsed || !in_array($scheme, ['http', 'https'])) {
+        return ["status" => "fail", "code" => 11, "string" => "Invalid URL: only http and https are supported"];
+    }
+
+    // Check allowUploads config
+    $configDB = json_decode(file_get_contents($conf["dir"]["data"]."/config.json"), true);
+    if ($configDB["allowUploads"] === false) {
+        return ["status" => "fail", "code" => 20, "string" => "User not allowed to upload files"];
+    }
+
+    // Download image
+    $context = stream_context_create([
+        'http'  => ['timeout' => 30, 'user_agent' => 'FrameTrail/1.0', 'method' => 'GET'],
+        'https' => ['timeout' => 30, 'user_agent' => 'FrameTrail/1.0'],
+    ]);
+    $imageData = @file_get_contents($url, false, $context);
+    if ($imageData === false || strlen($imageData) === 0) {
+        return ["status" => "fail", "code" => 4, "string" => "Could not download image from URL"];
+    }
+
+    // Check against upload size limit
+    $sizeValidation = validateFileSize(strlen($imageData));
+    if (!$sizeValidation['valid']) {
+        return ["status" => "fail", "code" => 10, "string" => $sizeValidation['error']];
+    }
+
+    // Write to temp file and verify it's a valid image
+    $tempPath = tempnam(sys_get_temp_dir(), 'ft_ov_');
+    file_put_contents($tempPath, $imageData);
+    unset($imageData);
+
+    $imageInfo = @getimagesize($tempPath);
+    if (!$imageInfo) {
+        unlink($tempPath);
+        return ["status" => "fail", "code" => 9, "string" => "Downloaded file is not a valid image"];
+    }
+
+    $mimeToExt = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/gif' => 'gif', 'image/webp' => 'jpg'];
+    $ext = $mimeToExt[$imageInfo['mime']] ?? null;
+    if (!$ext) {
+        unlink($tempPath);
+        return ["status" => "fail", "code" => 9, "string" => "Unsupported image type: " . $imageInfo['mime']];
+    }
+
+    $cTime = time();
+    $safeName = sanitize($name);
+    $filename = substr($_SESSION["ohv"]["user"]["id"]."_".$cTime."_".$safeName, 0, 90).".".$ext;
+    $finalPath = $conf["dir"]["data"]."/resources/".$filename;
+
+    // Optimize (resize to max 1920px wide, compress) if GD is available
+    if (extension_loaded('gd') && in_array($imageInfo['mime'], ['image/jpeg', 'image/png', 'image/gif'])) {
+        $result = optimizeImage($tempPath, $finalPath, 1920, 85);
+        if (isset($result['error'])) {
+            copy($tempPath, $finalPath);
+        }
+    } else {
+        copy($tempPath, $finalPath);
+    }
+    unlink($tempPath);
+
+    $newResource = [
+        "name"       => $name,
+        "creator"    => (string)$_SESSION["ohv"]["user"]["name"],
+        "creatorId"  => (string)$_SESSION["ohv"]["user"]["id"],
+        "created"    => (int)$cTime,
+        "src"        => $filename,
+        "type"       => "image",
+        "attributes" => [],
+    ];
+
+    if (!empty($licenseType)) {
+        $newResource["licenseType"] = $licenseType;
+    }
+    if ($licenseAttribution !== null && $licenseAttribution !== '') {
+        $newResource["licenseAttribution"] = $licenseAttribution;
+    }
+
+    // Generate thumbnail
+    if (extension_loaded('gd')) {
+        $thumbFilename = substr($_SESSION["ohv"]["user"]["id"]."_".$cTime."_thumb_".$safeName, 0, 90).".png";
+        $thumbResult = generateThumbnail($finalPath, $conf["dir"]["data"]."/resources/".$thumbFilename);
+        if (!isset($thumbResult['error'])) {
+            $newResource["thumb"] = $thumbFilename;
+        }
+    }
+
+    // Save to _index.json
+    $file = new sharedFile($conf["dir"]["data"]."/resources/_index.json");
+    $res = json_decode($file->read(), true);
+    if (!$res["resources-increment"]) { $res["resources-increment"] = 0; }
+    $res["resources-increment"]++;
+    $res["resources"][$res["resources-increment"]] = $newResource;
+    $file->writeClose(json_encode($res, $conf["settings"]["json_flags"]));
+
+    return [
+        "status"   => "success",
+        "code"     => 0,
+        "string"   => "Image downloaded and saved.",
+        "response" => ["resource" => $newResource, "resId" => $res["resources-increment"]],
+    ];
 }
 
 

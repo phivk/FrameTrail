@@ -82,6 +82,11 @@ switch($_REQUEST["a"]) {
         );
         break;
 
+    case "fileDownloadFromUrl":
+        include_once("files.php");
+        $return = fileDownloadFromUrl($_REQUEST["url"], $_REQUEST["name"], $_REQUEST["licenseType"], $_REQUEST["licenseAttribution"]);
+        break;
+
     case "fileGetByFilter":
         include_once("files.php");
         $return = fileGetByFilter($_REQUEST["key"],$_REQUEST["condition"],$_REQUEST["values"]);

@@ -26,7 +26,7 @@
 }
 
 .resourceDetail:hover .resourceOptions {
-    opacity: 1;
+    opacity: 0.85;
 }
 
 .resourceDetail .resourceOptions .licenseInformation {
@@ -38,6 +38,7 @@
 .resourceDetail .resourceOptions .licenseInformation a {
     border: 0;
     outline: 0;
+    color: var(--primary-fg-color);
 }
 
 .resourceDetail .resourceOptions .licenseInformation a .cc-by-sa-bg-image {

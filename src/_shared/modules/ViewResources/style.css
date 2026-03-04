@@ -151,14 +151,6 @@
     outline: 4px solid #FF9900;
 }
 
-.viewResources .resourcesList .resourceThumb.markedForDeletion {
-    box-shadow: 0 0 2px 2px #cd0a0a;
-}
-
-.viewResources .resourcesList .resourceThumb.markedForDeletion .resourceOverlay {
-    background: rgba(205, 10, 10, .6);
-}
-
 /* Grid View Modes */
 
 /* Medium Grid (default) - ~120px wide thumbnails */

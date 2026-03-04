@@ -29,7 +29,10 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
         serverCapabilities = {
             maxUploadBytes: 500 * 1024 * 1024,
             ffmpegAvailable: false
-        };
+        },
+        openverseNextUrl = null,
+        openverseSelectedItem = null,
+        openverseAbortCtrl = null;
 
 
     /**
@@ -511,6 +514,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                                         + (onlyVideo ? '' : '            <li data-type="url"><a href="#resourceInputTabURL">'+ labels['ResourcePasteURL'] +'</a></li>')
                                         + '            <li data-type="file"><a href="#resourceInputTabFile">'+ labels['ResourceUploadFiles'] +'</a></li>'
                                         + (onlyVideo ? '' : '            <li data-type="map"><a href="#resourceInputTabMap">'+ labels['ResourceAddMap'] +'</a></li>')
+                                        + (onlyVideo ? '' : '            <li data-type="search"><a href="#resourceInputTabSearch">Search Images</a></li>')
                                         + '        </ul>'
                                         + (onlyVideo ? '' :
                                               '        <div id="resourceInputTabURL">'
@@ -548,6 +552,31 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                                             + '            <input type="hidden" name="boundingBox[]" class="BB2">'
                                             + '            <input type="hidden" name="boundingBox[]" class="BB3">'
                                             + '            <input type="hidden" name="boundingBox[]" class="BB4">'
+                                            + '        </div>'
+                                        )
+                                        + (onlyVideo ? '' :
+                                              '        <div id="resourceInputTabSearch">'
+                                            + '            <div class="openverseSearchBar">'
+                                            + '                <input type="text" name="openverseQ" placeholder="Search open-licensed images\u2026">'
+                                            + '                <div class="custom-select">'
+                                            + '                    <select name="openverseLicense">'
+                                            + '                        <option value="">All Open Licenses</option>'
+                                            + '                        <option value="cc0">CC0 / Public Domain</option>'
+                                            + '                        <option value="by">CC BY</option>'
+                                            + '                        <option value="by-sa">CC BY-SA</option>'
+                                            + '                        <option value="by-nd">CC BY-ND</option>'
+                                            + '                        <option value="by-nc">CC BY-NC</option>'
+                                            + '                        <option value="by-nc-sa">CC BY-NC-SA</option>'
+                                            + '                        <option value="by-nc-nd">CC BY-NC-ND</option>'
+                                            + '                    </select>'
+                                            + '                </div>'
+                                            + '                <button type="button" class="openverseSearchBtn">Search</button>'
+                                            + '            </div>'
+                                            + '            <div class="openverseResults"></div>'
+                                            + '            <div class="openverseLoadMore" style="display:none">'
+                                            + '                <button type="button" class="openverseLoadMoreBtn">Load more</button>'
+                                            + '            </div>'
+                                            + '            <p class="openverseAttribution">Images via <a href="https://openverse.org" target="_blank" rel="noopener">Openverse</a></p>'
                                             + '        </div>'
                                         )
                                         + '    </div>'
@@ -670,6 +699,31 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                             });
                     });
 
+                    // ---- Search Images tab: Openverse ----
+                    if (!onlyVideo) {
+                        uploadDialog.querySelector('.openverseSearchBtn').addEventListener('click', function() {
+                            var q = uploadDialog.querySelector('input[name="openverseQ"]').value.trim();
+                            var lic = uploadDialog.querySelector('select[name="openverseLicense"]').value;
+                            if (!q) { return; }
+                            searchOpenverse(buildOpenverseUrl(q, lic), false);
+                        });
+
+                        uploadDialog.querySelector('input[name="openverseQ"]').addEventListener('keydown', function(e) {
+                            if (e.key === 'Enter') { uploadDialog.querySelector('.openverseSearchBtn').click(); }
+                        });
+
+                        uploadDialog.querySelector('select[name="openverseLicense"]').addEventListener('change', function() {
+                            var q = uploadDialog.querySelector('input[name="openverseQ"]').value.trim();
+                            if (!q) { return; }
+                            searchOpenverse(buildOpenverseUrl(q, this.value), false);
+                        });
+
+                        uploadDialog.querySelector('.openverseLoadMoreBtn').addEventListener('click', function() {
+                            if (!openverseNextUrl) { return; }
+                            searchOpenverse(openverseNextUrl, true);
+                        });
+                    }
+
                     // ---- Tabs ----
                     FTTabs(uploadDialog.querySelector('.resourceInputTabContainer'), {
                         activate: function(e, ui) {
@@ -694,6 +748,11 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                                 uploadDialogCtrl.setButtons(buttons);
                                 var hasCoords = uploadDialog.querySelector('input[name="lat"]').value.length > 0;
                                 uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = !hasCoords;
+                            } else if (tabType === 'search') {
+                                uploadDialog.querySelector('.nameInputContainer').style.display = 'none';
+                                buttons[0].text = labels['ResourceAddNew'] || 'Add Resource';
+                                uploadDialogCtrl.setButtons(buttons);
+                                uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = (openverseSelectedItem === null);
                             }
                         },
                         create: function() {
@@ -838,6 +897,152 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                         }
                     }
 
+                    function buildOpenverseUrl(query, license) {
+                        var params = new URLSearchParams({ q: query, page_size: 20 });
+                        if (license) { params.set('license', license); }
+                        return 'https://api.openverse.org/v1/images/?' + params.toString();
+                    }
+
+                    function searchOpenverse(url, append) {
+                        if (openverseAbortCtrl) { openverseAbortCtrl.abort(); }
+                        openverseAbortCtrl = new AbortController();
+                        var resultsEl = uploadDialog.querySelector('.openverseResults');
+                        var loadMoreEl = uploadDialog.querySelector('.openverseLoadMore');
+
+                        if (!append) {
+                            resultsEl.innerHTML = '<div class="workingSpinner dark"></div>';
+                            openverseSelectedItem = null;
+                            uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = true;
+                        } else {
+                            resultsEl.insertAdjacentHTML('beforeend', '<div class="workingSpinner dark"></div>');
+                        }
+                        loadMoreEl.style.display = 'none';
+
+                        fetch(url, { signal: openverseAbortCtrl.signal })
+                            .then(function(r) { return r.json(); })
+                            .then(function(data) {
+                                openverseNextUrl = data.next || null;
+                                var spinner = resultsEl.querySelector('.workingSpinner');
+                                if (spinner) { spinner.remove(); }
+                                if (!append) { resultsEl.innerHTML = ''; }
+
+                                if (!data.results || data.results.length === 0) {
+                                    if (!append) {
+                                        resultsEl.insertAdjacentHTML('beforeend', '<div class="message active">No results found.</div>');
+                                    }
+                                    return;
+                                }
+
+                                data.results.forEach(function(item) {
+                                    var thumb = document.createElement('div');
+                                    thumb.className = 'resourceThumb openverseThumb';
+                                    thumb.dataset.licenseType = mapOpenverseLicense(item.license);
+                                    thumb.style.backgroundImage = 'url(' + item.thumbnail + ')';
+                                    thumb.innerHTML =
+                                        '<div class="resourceTitle">' + (item.title || 'Untitled').replace(/</g, '&lt;') + '</div>';
+
+                                    thumb.addEventListener('click', function() {
+                                        resultsEl.querySelectorAll('.openverseThumb').forEach(function(t) { t.classList.remove('selected'); });
+                                        thumb.classList.add('selected');
+                                        openverseSelectedItem = item;
+                                        uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = false;
+                                    });
+
+                                    resultsEl.appendChild(thumb);
+                                });
+
+                                loadMoreEl.style.display = openverseNextUrl ? '' : 'none';
+                            })
+                            .catch(function(err) {
+                                if (err.name === 'AbortError') { return; }
+                                var spinner = resultsEl.querySelector('.workingSpinner');
+                                if (spinner) { spinner.remove(); }
+                                if (!append) { resultsEl.innerHTML = ''; }
+                                resultsEl.insertAdjacentHTML('beforeend', '<div class="message active error">Search failed. Please try again.</div>');
+                            });
+                    }
+
+                    function submitOpenverse() {
+                        if (!openverseSelectedItem) { return; }
+                        var item = openverseSelectedItem;
+                        var itemName = item.title || 'Openverse Image';
+                        var itemLicense = mapOpenverseLicense(item.license);
+                        var itemAttribution = (function() {
+                            var parts = [];
+                            var titlePart = item.title
+                                ? (item.foreign_landing_url
+                                    ? '<a href="' + item.foreign_landing_url + '" target="_blank" rel="noopener">' + item.title + '</a>'
+                                    : item.title)
+                                : null;
+                            var creatorPart = item.creator
+                                ? (item.creator_url
+                                    ? '<a href="' + item.creator_url + '" target="_blank" rel="noopener">' + item.creator + '</a>'
+                                    : item.creator)
+                                : null;
+                            var licensePart = item.license_url
+                                ? '<a href="' + item.license_url + '" target="_blank" rel="noopener">' + itemLicense.replace('CC0', 'CC0 1.0') + (item.license_version ? ' ' + item.license_version : '') + '</a>'
+                                : itemLicense;
+                            if (titlePart) { parts.push(titlePart); }
+                            if (creatorPart) { parts.push('by ' + creatorPart); }
+                            parts.push(licensePart);
+                            return parts.join(' · ');
+                        }());
+                        uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = true;
+
+                        if (isLocalMode) {
+                            // Local mode: no PHP server available, store as external URL reference
+                            var resourceObj = {
+                                src: item.url,
+                                type: 'image',
+                                name: itemName,
+                                thumb: item.thumbnail,
+                                licenseType: itemLicense,
+                                licenseAttribution: itemAttribution,
+                                attributes: {}
+                            };
+                            addResourceLocally(resourceObj).then(function() {
+                                FrameTrail.module('Database').loadResourceData(function() {
+                                    uploadDialogCtrl.close();
+                                    successCallback && successCallback.call();
+                                });
+                            }).catch(function(err) {
+                                uploadDialog.querySelector('#resourceInputTabSearch').insertAdjacentHTML('beforeend',
+                                    '<div class="message active error">' + err.message + '</div>');
+                                uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = false;
+                            });
+                        } else {
+                            // Server mode: PHP downloads, optimizes, generates thumbnail, stores locally
+                            fetch('_server/ajaxServer.php', {
+                                method: 'POST',
+                                body: new URLSearchParams({
+                                    a: 'fileDownloadFromUrl',
+                                    url: item.url,
+                                    name: itemName,
+                                    licenseType: itemLicense,
+                                    licenseAttribution: itemAttribution
+                                })
+                            })
+                            .then(function(r) { return r.json(); })
+                            .then(function(resp) {
+                                if (resp.code === 0) {
+                                    FrameTrail.module('Database').loadResourceData(function() {
+                                        uploadDialogCtrl.close();
+                                        successCallback && successCallback.call();
+                                    });
+                                } else {
+                                    uploadDialog.querySelector('#resourceInputTabSearch').insertAdjacentHTML('beforeend',
+                                        '<div class="message active error">' + (resp.string || labels['ErrorGeneric']) + '</div>');
+                                    uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = false;
+                                }
+                            })
+                            .catch(function() {
+                                uploadDialog.querySelector('#resourceInputTabSearch').insertAdjacentHTML('beforeend',
+                                    '<div class="message active error">' + labels['ErrorGeneric'] + '</div>');
+                                uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = false;
+                            });
+                        }
+                    }
+
                     function startBatchUpload() {
                         var buttons = uploadDialogCtrl.getButtons();
                         buttons[0].text = labels['ResourceUploading'] || 'Uploading...';
@@ -848,12 +1053,15 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 
                     function resetAndClose() {
                         if (previewController) { previewController.abort(); previewController = null; }
+                        if (openverseAbortCtrl) { openverseAbortCtrl.abort(); openverseAbortCtrl = null; }
                         uploadQueue = [];
                         completedUploads = [];
                         isUploading = false;
                         currentUploadDialog = null;
                         currentUploadDialogCtrl = null;
                         currentSuccessCallback = null;
+                        openverseNextUrl = null;
+                        openverseSelectedItem = null;
                     }
 
                     uploadDialogCtrl = Dialog({
@@ -884,6 +1092,8 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                                         }
                                     } else if (tabType === 'map') {
                                         submitMap();
+                                    } else if (tabType === 'search') {
+                                        submitOpenverse();
                                     }
                                 }
                             },
@@ -1493,6 +1703,17 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
      * @param {} thumb
      * @return r
      */
+    function mapOpenverseLicense(license) {
+        var map = {
+            'cc0': 'CC0', 'pdm': 'CC0',
+            'by': 'CC-BY', 'by-sa': 'CC-BY-SA',
+            'by-nd': 'CC-BY-ND', 'by-nc': 'CC-BY-NC',
+            'by-nc-sa': 'CC-BY-NC-SA', 'by-nc-nd': 'CC-BY-NC-ND'
+        };
+        return map[(license || '').toLowerCase()] || 'CC-BY';
+    }
+
+
     function createResource(src, type, name, thumb) {
         var r = {};
         r.src = src;
