@@ -41,6 +41,7 @@
     background-color: var(--primary-fg-color);
     border: 2px solid #000;
     border-radius: 3px;
+    touch-action: none;
 }
 
 .annotationTimeline .timelineElement.ui-resizable .ui-resizable-handle:hover {
@@ -55,6 +56,18 @@
 .annotationTimeline .timelineElement.ui-resizable .ui-resizable-handle.ui-resizable-w {
     left: -2px;
     cursor: ew-resize;
+}
+
+@media (pointer: coarse) {
+    .annotationTimeline .timelineElement.ui-resizable .ui-resizable-handle {
+        width: 12px;
+    }
+    .annotationTimeline .timelineElement.ui-resizable .ui-resizable-handle.ui-resizable-e {
+        right: -6px;
+    }
+    .annotationTimeline .timelineElement.ui-resizable .ui-resizable-handle.ui-resizable-w {
+        left: -6px;
+    }
 }
 
 .annotationTimeline .timelineElement.ui-resizable .ui-resizable-handle.ui-resizable-ne {

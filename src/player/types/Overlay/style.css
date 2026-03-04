@@ -49,6 +49,7 @@
     background-color: var(--primary-fg-color);
     border: 2px solid #000;
     border-radius: 3px;
+    touch-action: none;
 }
 
 .overlayTimeline .timelineElement.ui-resizable .ui-resizable-handle:hover {
@@ -63,6 +64,18 @@
 .overlayTimeline .timelineElement.ui-resizable .ui-resizable-handle.ui-resizable-w {
     left: -2px;
     cursor: ew-resize;
+}
+
+@media (pointer: coarse) {
+    .overlayTimeline .timelineElement.ui-resizable .ui-resizable-handle {
+        width: 12px;
+    }
+    .overlayTimeline .timelineElement.ui-resizable .ui-resizable-handle.ui-resizable-e {
+        right: -6px;
+    }
+    .overlayTimeline .timelineElement.ui-resizable .ui-resizable-handle.ui-resizable-w {
+        left: -6px;
+    }
 }
 
 .overlayTimeline .timelineElement.ui-resizable .ui-resizable-handle.ui-resizable-ne {
@@ -250,8 +263,9 @@
     height: 4px;
     background-color: var(--primary-fg-color);
     border: 3px solid var(--primary-bg-color);
-    border-radius: 4px;
+    border-radius: 50%;
     display: none !important;
+    touch-action: none;
 }
 
 .overlayContainer .overlayElement.ui-resizable .ui-resizable-handle:hover {
@@ -282,7 +296,32 @@
     cursor: sw-resize;
 }
 
-.overlayContainer .overlayElement.ui-resizable:hover .ui-resizable-handle {
+@media (pointer: coarse) {
+    .overlayContainer .overlayElement.ui-resizable .ui-resizable-handle {
+        width: 20px;
+        height: 20px;
+        border-width: 3px;
+    }
+    .overlayContainer .overlayElement.ui-resizable .ui-resizable-handle.ui-resizable-ne {
+        top: -10px;
+        right: -10px;
+    }
+    .overlayContainer .overlayElement.ui-resizable .ui-resizable-handle.ui-resizable-nw {
+        top: -10px;
+        left: -10px;
+    }
+    .overlayContainer .overlayElement.ui-resizable .ui-resizable-handle.ui-resizable-se {
+        bottom: -10px;
+        right: -10px;
+    }
+    .overlayContainer .overlayElement.ui-resizable .ui-resizable-handle.ui-resizable-sw {
+        bottom: -10px;
+        left: -10px;
+    }
+}
+
+.overlayContainer .overlayElement.ui-resizable:hover .ui-resizable-handle,
+.overlayContainer .overlayElement.ui-resizable.highlighted .ui-resizable-handle {
     display: block !important;
 }
 
