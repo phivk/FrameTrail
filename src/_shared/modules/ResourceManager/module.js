@@ -30,7 +30,6 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
             maxUploadBytes: 500 * 1024 * 1024,
             ffmpegAvailable: false
         },
-        openverseNextUrl = null,
         openverseSelectedItem = null,
         openverseAbortCtrl = null;
 
@@ -573,9 +572,6 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                                             + '                <button type="button" class="openverseSearchBtn">Search</button>'
                                             + '            </div>'
                                             + '            <div class="openverseResults"></div>'
-                                            + '            <div class="openverseLoadMore" style="display:none">'
-                                            + '                <button type="button" class="openverseLoadMoreBtn">Load more</button>'
-                                            + '            </div>'
                                             + '            <p class="openverseAttribution">Images via <a href="https://openverse.org" target="_blank" rel="noopener">Openverse</a></p>'
                                             + '        </div>'
                                         )
@@ -718,10 +714,6 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                             searchOpenverse(buildOpenverseUrl(q, this.value), false);
                         });
 
-                        uploadDialog.querySelector('.openverseLoadMoreBtn').addEventListener('click', function() {
-                            if (!openverseNextUrl) { return; }
-                            searchOpenverse(openverseNextUrl, true);
-                        });
                     }
 
                     // ---- Tabs ----
@@ -903,33 +895,24 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                         return 'https://api.openverse.org/v1/images/?' + params.toString();
                     }
 
-                    function searchOpenverse(url, append) {
+                    function searchOpenverse(url) {
                         if (openverseAbortCtrl) { openverseAbortCtrl.abort(); }
                         openverseAbortCtrl = new AbortController();
                         var resultsEl = uploadDialog.querySelector('.openverseResults');
-                        var loadMoreEl = uploadDialog.querySelector('.openverseLoadMore');
 
-                        if (!append) {
-                            resultsEl.innerHTML = '<div class="workingSpinner dark"></div>';
-                            openverseSelectedItem = null;
-                            uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = true;
-                        } else {
-                            resultsEl.insertAdjacentHTML('beforeend', '<div class="workingSpinner dark"></div>');
-                        }
-                        loadMoreEl.style.display = 'none';
+                        resultsEl.innerHTML = '<div class="workingSpinner dark"></div>';
+                        openverseSelectedItem = null;
+                        uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = true;
 
                         fetch(url, { signal: openverseAbortCtrl.signal })
                             .then(function(r) { return r.json(); })
                             .then(function(data) {
-                                openverseNextUrl = data.next || null;
                                 var spinner = resultsEl.querySelector('.workingSpinner');
                                 if (spinner) { spinner.remove(); }
-                                if (!append) { resultsEl.innerHTML = ''; }
+                                resultsEl.innerHTML = '';
 
                                 if (!data.results || data.results.length === 0) {
-                                    if (!append) {
-                                        resultsEl.insertAdjacentHTML('beforeend', '<div class="message active">No results found.</div>');
-                                    }
+                                    resultsEl.insertAdjacentHTML('beforeend', '<div class="message active">No results found.</div>');
                                     return;
                                 }
 
@@ -950,14 +933,12 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 
                                     resultsEl.appendChild(thumb);
                                 });
-
-                                loadMoreEl.style.display = openverseNextUrl ? '' : 'none';
                             })
                             .catch(function(err) {
                                 if (err.name === 'AbortError') { return; }
                                 var spinner = resultsEl.querySelector('.workingSpinner');
                                 if (spinner) { spinner.remove(); }
-                                if (!append) { resultsEl.innerHTML = ''; }
+                                resultsEl.innerHTML = '';
                                 resultsEl.insertAdjacentHTML('beforeend', '<div class="message active error">Search failed. Please try again.</div>');
                             });
                     }
@@ -1060,7 +1041,6 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                         currentUploadDialog = null;
                         currentUploadDialogCtrl = null;
                         currentSuccessCallback = null;
-                        openverseNextUrl = null;
                         openverseSelectedItem = null;
                     }
 

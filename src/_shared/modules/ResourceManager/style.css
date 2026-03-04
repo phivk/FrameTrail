@@ -53,12 +53,6 @@
     margin: 0;
 }
 
-/* Upload Dialog Layout */
-
-.uploadDialog .resourceInputTabContainer {
-    margin-bottom: 10px;
-}
-
 /* URL Tab */
 
 #resourceInputTabURL {
@@ -306,9 +300,6 @@
     display: block;
 }
 
-.openverseLoadMore {
-    text-align: center;
-}
 
 .openverseAttribution {
     font-size: 11px;
