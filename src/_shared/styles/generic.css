@@ -70,12 +70,20 @@ input, select {
     font-weight: 300;
 }
 
-.frametrail-body {
-    position: relative;
-    background: var(--primary-bg-color);
+/* Base typography for FrameTrail UI roots and detached overlays/clones. */
+.frametrail-body,
+.ft-dialog,
+body > .contentViewPreview,
+body > .timelineElement.previewPopupWrapper,
+.ft-drag-clone {
     font-family: TitilliumWeb,"Helvetica Neue",Helvetica,Arial,sans-serif;
     font-size: 14px;
     font-weight: 400;
+}
+
+.frametrail-body {
+    position: relative;
+    background: var(--primary-bg-color);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -87,7 +95,6 @@ input, select {
     align-items: flex-start;
 }
 
-
 .frametrail-body.editActive {
     position: fixed !important;
     top: 0px !important;
@@ -96,11 +103,9 @@ input, select {
     height: 100% !important;
 }
 
-body > .contentViewPreview {
+body > .contentViewPreview,
+body > .timelineElement.previewPopupWrapper {
     background-color: var(--primary-bg-color);
-    font-family: TitilliumWeb,"Helvetica Neue",Helvetica,Arial,sans-serif;
-    font-size: 14px;
-    font-weight: 400;
 }
 
 button, input[type="submit"], input[type="button"], .button {
