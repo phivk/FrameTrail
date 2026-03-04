@@ -189,6 +189,12 @@ details[open] > summary {
     margin-bottom: 6px;
 }
 
+.frametrail-body hr {
+    border-bottom: 1px solid var(--secondary-fg-color);
+    border-top: none;
+    margin-top: 10px;
+}
+
 /* CSS Grid system with 12 columns and Bootstrap-like breakpoints */
 /* Gap of 15px (7.5px on each side) */
 
