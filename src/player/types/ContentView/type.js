@@ -118,7 +118,7 @@ FrameTrail.defineType(
 
                 contentViewData.type                   =  contentViewData.type || "TimedContent";
                 contentViewData.name                   =  contentViewData.name || "";
-                contentViewData.description            = contentViewData.description || "";
+                contentViewData.icon                   =  contentViewData.icon || "";
                 contentViewData.cssClass               = contentViewData.cssClass || "";
                 contentViewData.html                   = contentViewData.html || "";
                     contentViewData.collectionFilter   = contentViewData.collectionFilter || {};
@@ -1672,6 +1672,20 @@ FrameTrail.defineType(
                         editingUI = document.createElement('div');
                     editingUI.className = 'contentViewEditingUI';
                     editingUI.innerHTML = '    <div class="layoutRow">'
+                                    +'        <div class="generic column-8">'
+                                    +'            <label>'+ self.labels['GenericName'] +':</label>'
+                                    +'            <input type="text" class="contentViewData" data-property="name" value="'+ contentViewData.name +'" placeholder="('+ self.labels['GenericOptional'] +')">'
+                                    +'        </div>'
+                                    +'        <div class="generic column-4">'
+                                    +'            <label>Icon:</label>'
+                                    +'            <div class="iconInputRow">'
+                                    +'                <span class="iconPreview '+ contentViewData.icon +'"></span>'
+                                    +'                <input type="text" class="contentViewData" data-property="icon" value="'+ contentViewData.icon +'" placeholder="(optional)">'
+                                    +'            </div>'
+                                    +'        </div>'
+                                    +'    </div>'
+                                    +'    <hr>'
+                                    +'    <div class="layoutRow">'
                                     +'        <div class="contentViewData column-5" data-property="type" data-value="'+ contentViewData.type +'">'
                                     +'            <label>'+ self.labels['GenericType'] +':</label>'
                                     +'            <div '+ (contentViewData.type == 'TimedContent' ? 'class="active"' : '') +' data-value="TimedContent">'+ self.labels['GenericAnnotationCollection'] +'</div>'
@@ -1686,17 +1700,6 @@ FrameTrail.defineType(
                                     +'                <div '+ (contentViewData.contentSize == 'medium' ? 'class="active"' : '') +' data-value="medium">'+ self.labels['SettingsContentViewMedium'] +'</div>'
                                     +'                <div '+ (contentViewData.contentSize == 'large' ? 'class="active"' : '') +' data-value="large">'+ self.labels['SettingsContentViewLarge'] +'</div>'
                                     +'            </div>'
-                                    +'        </div>'
-                                    +'    </div>'
-                                    +'    <hr>'
-                                    +'    <div class="layoutRow">'
-                                    +'        <div class="generic column-3">'
-                                    +'            <label>'+ self.labels['GenericName'] +':</label>'
-                                    +'            <input type="text" class="contentViewData" data-property="name" data-value="'+ contentViewData.name +'" value="'+ contentViewData.name +'" placeholder="('+ self.labels['GenericRequired'] +')">'
-                                    +'        </div>'
-                                    +'        <div class="generic column-9">'
-                                    +'            <label>'+ self.labels['GenericDescription'] +':</label>'
-                                    +'            <textarea class="contentViewData" data-property="description" data-value="'+ contentViewData.description +'" placeholder="(optional)">'+ contentViewData.description +'</textarea>'
                                     +'        </div>'
                                     +'    </div>'
                                     +'    <div class="generic" style="display: none;">'
@@ -1763,6 +1766,13 @@ FrameTrail.defineType(
                                     +'    </div>'
                                     +'    <div class="typeSpecific '+ (contentViewData.type == 'Timelines' ? 'active' : '') +'" data-type="Timelines">'
                                     +'    </div>';
+
+                    // Live icon preview
+                    var iconInput = editingUI.querySelector('[data-property="icon"]'),
+                        iconPreview = editingUI.querySelector('.iconPreview');
+                    iconInput.addEventListener('input', function() {
+                        iconPreview.className = 'iconPreview ' + this.value.trim();
+                    });
 
                     // Inject schematic thumbnails into type and size option divs
                     var thumbAxis = (self.whichArea === 'top' || self.whichArea === 'bottom') ? 'x' : 'y';

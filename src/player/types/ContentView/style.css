@@ -534,6 +534,30 @@
     font-weight: bold;
 }
 
+.contentViewEditingUI .iconInputRow {
+    display: flex;
+    margin: 4px 8px 4px 0;
+}
+
+.contentViewEditingUI .iconInputRow .iconPreview {
+    border: 2px solid var(--semi-transparent-bg-color);
+    border-right: none;
+    background: var(--primary-fg-color);
+    color: var(--primary-bg-color);
+    padding: 3px 7px;
+    font-size: 1.3em;
+    display: flex;
+    min-width: 16px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.contentViewEditingUI .iconInputRow input[type="text"] {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+}
+
 .contentViewEditingUI .existingSubtitlesItem {
     display: inline-block;
     margin-right: 8px;
