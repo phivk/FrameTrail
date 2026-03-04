@@ -1822,11 +1822,37 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
      * @param {Array} array
      * @private
      */
-    function renderResult(targetElement, array) {
+    /**
+     * I add a pencil edit button to a resource thumb element if the current user
+     * has permission to edit that resource. Used by both renderResult and renderResourcePicker.
+     *
+     * @method addEditButtonIfAllowed
+     * @param {HTMLElement} thumbEl
+     * @param {String} resourceID
+     * @param {Object} resourceData
+     * @private
+     */
+    function addEditButtonIfAllowed(thumbEl, resourceID, resourceData) {
 
         var storageMode = FrameTrail.getState('storageMode');
         var canSave = FrameTrail.module('StorageManager').canSave();
         var userMgmt = FrameTrail.module('UserManagement');
+        var isOwnerOrAdmin = (String(userMgmt.userID) === String(resourceData.creatorId))
+                          || userMgmt.userRole === 'admin';
+
+        if (canSave && (storageMode !== 'server' || isOwnerOrAdmin)) {
+            var editBtn = document.createElement('div');
+            editBtn.className = 'resourceEditButton';
+            editBtn.setAttribute('data-resource-id', resourceID);
+            editBtn.title = labels['ResourceEditButton'];
+            editBtn.innerHTML = '<span class="icon-pencil"></span>';
+            thumbEl.appendChild(editBtn);
+        }
+
+    }
+
+
+    function renderResult(targetElement, array) {
 
         for (var id in array) {
 
@@ -1840,17 +1866,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
             //add thumb to target element
             targetElement.append(resourceThumb);
 
-            // Add edit button for owner or admin (when saving is possible)
-            var isOwnerOrAdmin = (String(userMgmt.userID) === String(array[id].creatorId))
-                              || userMgmt.userRole === 'admin';
-            if (canSave && (storageMode !== 'server' || isOwnerOrAdmin)) {
-                var editBtn = document.createElement('div');
-                editBtn.className = 'resourceEditButton';
-                editBtn.setAttribute('data-resource-id', id);
-                editBtn.title = labels['ResourceEditButton'];
-                editBtn.innerHTML = '<span class="icon-pencil"></span>';
-                resourceThumb.appendChild(editBtn);
-            }
+            addEditButtonIfAllowed(resourceThumb, id, array[id]);
 
         }
 
@@ -1992,14 +2008,16 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
         var resourceList = container.querySelector('.resourcePickerList');
         var resourceThumb;
 
+        function refreshPicker() {
+            targetElement.innerHTML = '';
+            renderResourcePicker(targetElement);
+        }
+
         container.querySelector('.addResourcesButton').addEventListener('click', function() {
 
             FrameTrail.module('ResourceManager').uploadResource(function(){
 
-                FrameTrail.module('Database').loadResourceData(function() {
-                    targetElement.innerHTML = '';
-                    renderResourcePicker(targetElement);
-                });
+                FrameTrail.module('Database').loadResourceData(refreshPicker);
 
             });
 
@@ -2008,6 +2026,16 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
         if (!FrameTrail.module('StorageManager').canSave()) {
             container.querySelector('.addResourcesButton').disabled = true;
         }
+
+        // Delegated click handler for edit buttons
+        resourceList.addEventListener('click', function(e) {
+            var editBtn = e.target.closest('.resourceEditButton');
+            if (!editBtn) { return; }
+            e.stopPropagation();
+            var resourceID = editBtn.getAttribute('data-resource-id');
+            var resourceData = FrameTrail.module('Database').resources[resourceID];
+            openEditDialog(resourceID, resourceData, refreshPicker);
+        });
 
         for (var i in resourceDatabase) {
 
@@ -2018,9 +2046,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                 resourceDatabase[i]
             ).renderThumb();
 
-
-
-            (function(el) {
+            (function(el, id, data) {
                 interact(el).draggable({
                     listeners: {
                         start: function(e) {
@@ -2052,7 +2078,10 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                         }
                     }
                 });
-            }(resourceThumb));
+
+                addEditButtonIfAllowed(el, id, data);
+
+            }(resourceThumb, i, resourceDatabase[i]));
 
             resourceList.appendChild(resourceThumb);
 
@@ -2134,10 +2163,166 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
     };
 
 
+    /**
+     * I build and open a dialog for editing the metadata of a resource (name, license type,
+     * license attribution) and for deleting it.
+     *
+     * @method openEditDialog
+     * @param {String} resourceID
+     * @param {Object} resourceData
+     * @param {Function} refreshCallback  Called after a successful save or delete so the caller can re-render its list.
+     * @param {Function} [onSaveSuccess]  Optional extra callback called after a successful save (e.g. to show a status message).
+     */
+    function openEditDialog(resourceID, resourceData, refreshCallback, onSaveSuccess) {
+
+        var licenseOptions = [
+            { value: '',            label: '\u2014 ' + labels['ResourceEditLicenseUnspecified'] + ' \u2014' },
+            { value: 'Copyright',   label: 'Copyright' },
+            { value: 'CC-BY',       label: 'CC BY' },
+            { value: 'CC-BY-SA',    label: 'CC BY-SA' },
+            { value: 'CC-BY-ND',    label: 'CC BY-ND' },
+            { value: 'CC-BY-NC',    label: 'CC BY-NC' },
+            { value: 'CC-BY-NC-SA', label: 'CC BY-NC-SA' },
+            { value: 'CC-BY-NC-ND', label: 'CC BY-NC-ND' },
+            { value: 'CC0',         label: 'CC0 / Public Domain' }
+        ];
+
+        var licenseSelectOptions = licenseOptions.map(function(opt) {
+            var selected = (opt.value === (resourceData.licenseType || '')) ? ' selected' : '';
+            return '<option value="' + opt.value + '"' + selected + '>' + opt.label + '</option>';
+        }).join('');
+
+        var thumbSrc = resourceData.thumb || resourceData.src || '';
+        var thumbUrl = thumbSrc ? FrameTrail.module('RouteNavigation').getResourceURL(thumbSrc) : '';
+        var thumbStyle = thumbUrl ? 'background-image:url(' + thumbUrl + ');' : '';
+
+        var content = document.createElement('div');
+        content.className = 'resourceEditDialogContent';
+        content.innerHTML = ''
+            + '<div class="layoutRow">'
+            +     '<div class="column-5">'
+            +         '<div class="resourceThumb" data-type="' + resourceData.type + '" style="' + thumbStyle + 'height:140px;margin-top:5px;cursor:default;position:relative;">'
+            +         '</div>'
+            +     '</div>'
+            +     '<div class="column-7">'
+            +         '<div class="layoutRow">'
+            +             '<div class="column-12">'
+            +                 '<label>' + labels['GenericName'] + '</label>'
+            +                 '<input type="text" class="resourceEditName" value="">'
+            +             '</div>'
+            +         '</div>'
+            +         '<div class="layoutRow">'
+            +             '<div class="column-12">'
+            +             '<label>' + labels['ResourceEditLicenseType'] + '</label>'
+            +                 '<div class="custom-select"><select class="resourceEditLicenseType">' + licenseSelectOptions + '</select></div>'
+            +             '</div>'
+            +         '</div>'
+            +         '<div class="layoutRow">'
+            +             '<div class="column-12">'
+            +                 '<label>' + labels['ResourceEditLicenseAttribution'] + '</label>'
+            +                 '<input type="text" class="resourceEditLicenseAttribution" value="">'
+            +             '</div>'
+            +         '</div>'
+            +         '<p class="message active mb-0" style="margin-top: 10px;">' + labels['ResourceEditNameNote'] + '</p>'
+            +     '</div>'
+            + '</div>';
+
+        // Set value of name input after creation (avoids HTML encoding issues)
+        content.querySelector('.resourceEditName').value = resourceData.name || '';
+        content.querySelector('.resourceEditLicenseAttribution').value = resourceData.licenseAttribution || '';
+
+        var editDialog;
+        editDialog = Dialog({
+            title:   labels['ResourceEditDialogTitle'],
+            content: content,
+            modal:   true,
+            width:   600,
+            close:   function() { editDialog.destroy(); }
+        });
+
+        var buttonPane = editDialog.widget().querySelector('.ft-dialog-buttonpane');
+
+        var msgEl = document.createElement('div');
+        msgEl.className = 'message';
+        msgEl.style.flexBasis = '100%';
+        buttonPane.appendChild(msgEl);
+
+        var saveBtn = document.createElement('button');
+        saveBtn.textContent = labels['GenericSave'];
+        buttonPane.appendChild(saveBtn);
+
+        var deleteBtn = document.createElement('button');
+        deleteBtn.innerHTML = '<span class="icon-trash"></span> ' + labels['GenericDelete'];
+        deleteBtn.style.marginLeft = 'auto';
+        buttonPane.appendChild(deleteBtn);
+
+        function showMessage(text, isError) {
+            msgEl.textContent = text;
+            msgEl.classList.toggle('error', !!isError);
+            msgEl.classList.add('active');
+        }
+
+        function clearMessage() {
+            msgEl.textContent = '';
+            msgEl.classList.remove('active', 'error');
+        }
+
+        saveBtn.addEventListener('click', function() {
+            var name = content.querySelector('.resourceEditName').value.trim();
+            if (!name) {
+                showMessage(labels['ResourceEditNameRequired'], true);
+                return;
+            }
+            var updateData = {
+                name:                name,
+                licenseType:         content.querySelector('.resourceEditLicenseType').value,
+                licenseAttribution:  content.querySelector('.resourceEditLicenseAttribution').value.trim()
+            };
+            saveBtn.disabled = true;
+            clearMessage();
+            updateResource(
+                resourceID,
+                updateData,
+                function() {
+                    editDialog.destroy();
+                    refreshCallback();
+                    if (onSaveSuccess) { onSaveSuccess(); }
+                },
+                function(data) {
+                    saveBtn.disabled = false;
+                    showMessage(data.string || labels['GenericError'], true);
+                }
+            );
+        });
+
+        deleteBtn.addEventListener('click', function() {
+            deleteBtn.disabled = true;
+            clearMessage();
+            deleteResource(
+                resourceID,
+                function() {
+                    editDialog.destroy();
+                    refreshCallback();
+                },
+                function(data) {
+                    deleteBtn.disabled = false;
+                    if (data.code === 5) {
+                        showMessage(labels['ResourceEditDeleteInUse'], true);
+                    } else {
+                        showMessage(data.string || labels['GenericError'], true);
+                    }
+                }
+            );
+        });
+
+    }
+
+
     return {
 
         renderList:             renderList,
         renderResourcePicker:   renderResourcePicker,
+        openEditDialog:         openEditDialog,
 
         updateResourceDatabase: updateResourceDatabase,
         uploadResource:         uploadResource,
