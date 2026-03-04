@@ -930,7 +930,9 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
 .playerContainer .editable .timelineElement .timelineElementLabel {
     flex: 1 1 auto;
     min-width: 0;
-    padding: 0 4px;
+    max-width: max(0px, calc(100% - 20px));
+    box-sizing: border-box;
+    padding: 0 0 0 4px;
     font-size: 12px;
     line-height: 1.2;
     white-space: nowrap;
