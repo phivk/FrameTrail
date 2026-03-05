@@ -36,6 +36,7 @@
     width: 100%;
     overflow: hidden;
     margin-top: 0px;
+    background: var(--primary-bg-color);
 }
 
 .viewVideo .slideArea.is-sliding {
