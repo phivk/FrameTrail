@@ -36,7 +36,7 @@ CSS_FILES=(
     "_lib/leaflet/leaflet.css"
     # FrameTrail base styles
     "_shared/styles/variables.css"
-    "_shared/styles/frametrail-webfont.css"
+    "_shared/styles/frametrail-icons.css"
     "_shared/styles/generic.css"
     "_lib/dialog/dialog.css"
 
@@ -266,8 +266,8 @@ inline_font() {
 
 # FrameTrail icon webfont
 inline_font "$BUILD_DIR/frametrail.css" \
-    "../fonts/FrameTrail_Web/frametrail-webfont.woff2" \
-    "$FONTS_DIR/FrameTrail_Web/frametrail-webfont.woff2"
+    "../fonts/FrameTrail_Icons/frametrail-icons.woff2" \
+    "$FONTS_DIR/FrameTrail_Icons/frametrail-icons.woff2"
 
 # Titillium Web text font (3 weights)
 inline_font "$BUILD_DIR/frametrail.css" \

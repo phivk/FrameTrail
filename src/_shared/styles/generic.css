@@ -1288,7 +1288,7 @@ input:checked + .slider:before {
 }
 
 .custom-select::after {
-    font-family: "frametrail-webfont";
+    font-family: "FrameTrail";
     content: '\f107';  /* icon-angle-down */
     position: absolute;
     right: 10px;
