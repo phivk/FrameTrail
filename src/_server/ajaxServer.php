@@ -528,6 +528,45 @@ switch($_REQUEST["a"]) {
         }
         break;
 
+    /*#########################################
+     ############ Data Export (ZIP)
+     #########################################*/
+
+    case "dataExport":
+        // No auth check — intentionally public; excludes users.json
+        if (!class_exists('ZipArchive')) {
+            $return["status"] = "error";
+            $return["code"]   = 500;
+            $return["string"] = "ZipArchive not available on this server";
+            break;
+        }
+        $dataDir = realpath($conf["dir"]["data"]);
+        if (!$dataDir || !is_dir($dataDir)) {
+            $return["status"] = "error";
+            $return["code"]   = 500;
+            $return["string"] = "Data directory not found";
+            break;
+        }
+        $tmpFile = tempnam(sys_get_temp_dir(), "ft_export_");
+        $zip = new ZipArchive();
+        $zip->open($tmpFile, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dataDir, RecursiveDirectoryIterator::SKIP_DOTS));
+        foreach ($iterator as $file) {
+            if ($file->isFile()) {
+                $relativePath = substr($file->getPathname(), strlen($dataDir) + 1);
+                if (basename($relativePath) === "users.json") { continue; }
+                $zip->addFile($file->getPathname(), "_data/" . str_replace(DIRECTORY_SEPARATOR, "/", $relativePath));
+            }
+        }
+        $zip->close();
+        header("Content-Type: application/zip");
+        header("Content-Disposition: attachment; filename=\"frametrail-data-export.zip\"");
+        header("Content-Length: " . filesize($tmpFile));
+        header("Cache-Control: no-cache");
+        readfile($tmpFile);
+        unlink($tmpFile);
+        exit;
+
     default:
         $return["status"] = "success";
         $return["code"] = 0;

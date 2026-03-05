@@ -1048,18 +1048,18 @@
             + '<div class="column-4">'
             + '<button class="saveToServer" style="width: 100%; padding: 10px;"'
             + (canSaveToServer ? '' : ' disabled') + '>'
-            + '<span class="icon-floppy"></span> ' + labels['SaveToServer']
+            + '<span class="icon-floppy" style="font-size: 18px;"></span> ' + labels['SaveToServer']
             + '</button>'
             + '</div>'
             + '<div class="column-4">'
             + '<button class="saveToLocal" style="width: 100%; padding: 10px;"'
             + (canSaveToLocal ? '' : ' disabled') + '>'
-            + '<span class="icon-folder"></span> ' + labels['SaveToLocalFolder']
+            + '<span class="icon-folder" style="font-size: 18px;"></span> ' + labels['SaveToLocalFolder']
             + '</button>'
             + '</div>'
             + '<div class="column-4">'
             + '<button class="saveToDownload" style="width: 100%; padding: 10px;">'
-            + '<span class="icon-download"></span> ' + labels['SaveAsDownload']
+            + '<span class="icon-download" style="font-size: 18px;"></span> ' + labels['SaveAsDownload']
             + '</button>'
             + '</div>'
             + '</div>'
@@ -1067,12 +1067,14 @@
             // Scope row — separate layoutRow so the grid equalizes heights across all three columns
             + '<div class="layoutRow" style="margin-bottom: 4px;">'
             + '<div class="column-4" style="display: flex;">'
-            + '<button class="pressed" style="flex: 1; padding: 8px; text-align: center; pointer-events: none;">'
+            + '<button class="' + (canSaveToServer ? 'pressed' : '') + '" style="flex: 1; padding: 8px; text-align: center; pointer-events: none;"'
+            + (canSaveToServer ? '' : ' disabled') + '>'
             + labels['DownloadAllData']
             + '</button>'
             + '</div>'
             + '<div class="column-4" style="display: flex;">'
-            + '<button class="pressed" style="flex: 1; padding: 8px; text-align: center; pointer-events: none;">'
+            + '<button class="' + (canSaveToLocal ? 'pressed' : '') + '" style="flex: 1; padding: 8px; text-align: center; pointer-events: none;"'
+            + (canSaveToLocal ? '' : ' disabled') + '>'
             + labels['DownloadAllData']
             + '</button>'
             + '</div>'
@@ -1097,19 +1099,15 @@
             + '<label><input type="radio" name="downloadFormat" value="json" checked> JSON</label>'
             + '<label><input type="radio" name="downloadFormat" value="html"> HTML</label>'
             + '</div>'
+            + '<div class="downloadHtmlDataPath" style="display: none; margin-top: 6px;">'
+            + '<small>' + labels['DownloadResourceBaseUrl'] + '</small>'
+            + '<input type="text" name="htmlDataPath" placeholder="https://example.com/_data/" style="margin-top: 2px;">'
+            + '</div>'
             + '</div>'
             + '<div class="downloadOptionsSection" style="display: none;">'
             + '<div class="checkboxRow">'
-            + '<label class="switch"><input type="checkbox" name="allHv" checked><span class="slider round"></span></label>'
-            + '<label>' + labels['DownloadAllHypervideos'] + '</label>'
-            + '</div>'
-            + '<div class="checkboxRow">'
-            + '<label class="switch"><input type="checkbox" name="resources"><span class="slider round"></span></label>'
-            + '<label>' + labels['DownloadResourcesIndex'] + '</label>'
-            + '</div>'
-            + '<div class="checkboxRow">'
-            + '<label class="switch"><input type="checkbox" name="config"><span class="slider round"></span></label>'
-            + '<label>' + labels['DownloadConfiguration'] + '</label>'
+            + '<label class="switch"><input type="checkbox" name="includeMedia"' + (canSaveToServer ? '' : ' disabled') + '><span class="slider round"></span></label>'
+            + '<label' + (canSaveToServer ? '' : ' style="opacity: 0.4;"') + '>' + labels['DownloadIncludeMediaFiles'] + '</label>'
             + '</div>'
             + '</div>'
             + '</div>'
@@ -1121,7 +1119,13 @@
         var scopeCurrentHvBtn  = saveAsDialog.querySelector('.scopeCurrentHv');
         var scopeAllDataBtn    = saveAsDialog.querySelector('.scopeAllData');
         var formatSection      = saveAsDialog.querySelector('.downloadFormatSection');
+        var htmlDataPathDiv    = saveAsDialog.querySelector('.downloadHtmlDataPath');
         var optionsSection     = saveAsDialog.querySelector('.downloadOptionsSection');
+
+        // Default htmlDataPath to the absolute URL of the current _data/ directory
+        var _dataPathInput = saveAsDialog.querySelector('[name="htmlDataPath"]');
+        var _resolvedDataURL = FrameTrail.module('RouteNavigation').resolveDataURL('');
+        _dataPathInput.value = new URL(_resolvedDataURL, window.location.href).href;
 
         scopeCurrentHvBtn.addEventListener('click', function() {
             scopeCurrentHvBtn.classList.add('pressed');
@@ -1135,6 +1139,13 @@
             scopeCurrentHvBtn.classList.remove('pressed');
             formatSection.style.display = 'none';
             optionsSection.style.display = '';
+        });
+
+        // Show/hide dataPath input when HTML format is selected
+        formatSection.querySelectorAll('[name="downloadFormat"]').forEach(function(radio) {
+            radio.addEventListener('change', function() {
+                htmlDataPathDiv.style.display = (radio.value === 'html' && radio.checked) ? '' : 'none';
+            });
         });
 
         var saveAsDialogCtrl;
@@ -1160,19 +1171,24 @@
             var hvID = FrameTrail.module('RouteNavigation').hypervideoID;
             downloadAdapter._frameTrailInstance = FrameTrail;
 
-            var isAllData = scopeAllDataBtn.classList.contains('active');
+            var isAllData = scopeAllDataBtn.classList.contains('pressed');
 
             if (isAllData) {
-                var options = {
-                    allHv:     saveAsDialog.querySelector('[name="allHv"]').checked,
-                    resources: saveAsDialog.querySelector('[name="resources"]').checked,
-                    config:    saveAsDialog.querySelector('[name="config"]').checked
-                };
-                downloadAdapter._performDownload(hvID, options);
+                var includeMedia = saveAsDialog.querySelector('[name="includeMedia"]').checked;
+                if (includeMedia) {
+                    var serverUrl = FrameTrail.getState('server') || '_server/';
+                    var a = document.createElement('a');
+                    a.href = serverUrl + 'ajaxServer.php?a=dataExport';
+                    a.download = 'frametrail-data-export.zip';
+                    a.click();
+                } else {
+                    downloadAdapter._performZipDownload(hvID, { allHv: true, resources: true, config: true });
+                }
             } else {
                 var format = saveAsDialog.querySelector('[name="downloadFormat"]:checked').value;
                 if (format === 'html') {
-                    downloadAdapter._generateStandaloneHTML(hvID);
+                    var dataPath = saveAsDialog.querySelector('[name="htmlDataPath"]').value.trim();
+                    downloadAdapter._generateStandaloneHTML(hvID, dataPath);
                 } else {
                     downloadAdapter._performDownload(hvID, { currentHv: true });
                 }
@@ -1185,7 +1201,7 @@
             title:   labels['GenericSaveAs'],
             content: saveAsDialog,
             modal:   true,
-            width:   700,
+            width:   800,
             close: function() {
                 saveAsDialogCtrl.destroy();
             }

@@ -108,26 +108,70 @@ class StorageAdapterDownload extends StorageAdapter {
     }
 
     /**
-     * Generate a standalone HTML file with embedded FrameTrail assets and inline hypervideo data.
-     * TODO: Implement — should embed minified CSS/JS from CDN and all hypervideo data inline,
-     * producing a self-contained file that plays the hypervideo without a server.
-     * @param {String} hypervideoID - Current hypervideo ID
+     * Generate a standalone HTML file with the hypervideo data embedded inline.
+     * Loads FrameTrail CSS/JS from the jsDelivr CDN — no server required to play.
+     * @param {String} hypervideoID
+     * @param {String} dataPath - Optional base URL for _data/ (resolves uploaded resource files)
      */
-    _generateStandaloneHTML(hypervideoID) {
-        console.warn('Standalone HTML export not yet implemented for hypervideo:', hypervideoID);
+    _generateStandaloneHTML(hypervideoID, dataPath) {
+        var Database = this._frameTrailInstance.module('Database');
+        var hvData   = Database.convertToDatabaseFormat(hypervideoID);
+        var config   = Database.config || {};
+        var hvName   = (Database.hypervideos[hypervideoID] && Database.hypervideos[hypervideoID].name) || 'hypervideo';
+        var filename = hvName.replace(/[^a-z0-9]/gi, '_').substring(0, 50) + '.html';
+
+        var cdnBase = 'https://cdn.jsdelivr.net/npm/@frametrail/frametrail/';
+
+        var initOptions = {
+            target:   'body',
+            config:   config,
+            contents: [{ hypervideo: hvData }]
+        };
+        if (dataPath) {
+            initOptions.dataPath = dataPath;
+        }
+
+        var safeTitle = hvName.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        var html = '<!DOCTYPE html>\n'
+            + '<html>\n'
+            + '<head>\n'
+            + '  <meta charset="UTF-8">\n'
+            + '  <title>' + safeTitle + '</title>\n'
+            + '  <link rel="stylesheet" href="' + cdnBase + 'frametrail.min.css">\n'
+            + '</head>\n'
+            + '<body>\n'
+            + '  <script src="' + cdnBase + 'frametrail.min.js"><\/script>\n'
+            + '  <script>\n'
+            + '  FrameTrail.init(' + JSON.stringify(initOptions, null, 4) + ', \'PlayerLauncher\');\n'
+            + '  <\/script>\n'
+            + '</body>\n'
+            + '</html>';
+
+        this._triggerDownload(html, filename, 'text/html');
     }
 
     /**
-     * Generate and trigger file download.
-     * @private
+     * Download current hypervideo as a flat hypervideo.json (matches on-disk server format).
+     * For "All Data" exports use _performZipDownload instead.
+     * @param {String} hypervideoID
+     * @param {Object} options - { currentHv, allHv, resources, config }
      */
     _performDownload(hypervideoID, options) {
-        var data = {};
         var Database = this._frameTrailInstance.module('Database');
 
+        // Current hypervideo only → flat hypervideo.json matching the server's on-disk format
+        if (options.currentHv && !options.allHv && !options.resources && !options.config && hypervideoID) {
+            var hvData   = Database.convertToDatabaseFormat(hypervideoID);
+            var hvName   = (Database.hypervideos[hypervideoID] && Database.hypervideos[hypervideoID].name) || 'hypervideo';
+            var filename = hvName.replace(/[^a-z0-9]/gi, '_').substring(0, 50) + '.json';
+            this._triggerDownload(JSON.stringify(hvData, null, 2), filename, 'application/json');
+            return;
+        }
+
+        // Multi-option export (used by legacy showDownloadDialog) → wrapped envelope
+        var data = {};
         if (options.currentHv || options.allHv) {
             data.hypervideos = {};
-
             if (options.allHv) {
                 var allHvs = Database.hypervideos;
                 for (var id in allHvs) {
@@ -139,29 +183,77 @@ class StorageAdapterDownload extends StorageAdapter {
                 data.hypervideos[hypervideoID] = Database.convertToDatabaseFormat(hypervideoID);
             }
         }
+        if (options.resources) { data.resources = Database.resources; }
+        if (options.config)    { data.config    = Database.config; }
+
+        this._triggerDownload(JSON.stringify(data, null, 2), 'frametrail-export.json', 'application/json');
+    }
+
+    /**
+     * Download selected All Data options as a ZIP (multiple files) or single JSON file (one file).
+     * Requires fflate to be loaded globally when producing a ZIP.
+     * @param {String} hypervideoID - Current hypervideo ID (used for context, not included directly)
+     * @param {Object} options - { allHv, resources, config }
+     */
+    _performZipDownload(hypervideoID, options) {
+        var Database = this._frameTrailInstance.module('Database');
+        var files = {};
+
+        if (options.allHv) {
+            var allHvs  = Database.hypervideos;
+            var hvIndex = {};
+            for (var id in allHvs) {
+                if (allHvs.hasOwnProperty(id)) {
+                    files['hypervideos/' + id + '/hypervideo.json'] = Database.convertToDatabaseFormat(id);
+                    hvIndex[id] = allHvs[id];
+                }
+            }
+            files['hypervideos/_index.json'] = hvIndex;
+        }
 
         if (options.resources) {
-            data.resources = Database.resources;
+            files['resources/_index.json'] = Database.resources;
         }
 
         if (options.config) {
-            data.config = Database.config;
+            files['config.json'] = Database.config;
         }
 
-        // Generate filename
-        var filename = 'frametrail-export';
-        if (options.currentHv && !options.allHv && hypervideoID) {
-            var hvs = Database.hypervideos;
-            var hvName = (hvs[hypervideoID] && hvs[hypervideoID].name) || 'hypervideo';
-            filename = hvName.replace(/[^a-z0-9]/gi, '_').substring(0, 50);
-        }
-        filename += '.json';
+        var paths = Object.keys(files);
+        if (paths.length === 0) { return; }
 
-        // Trigger download
-        var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        var url = URL.createObjectURL(blob);
-        var a = document.createElement('a');
-        a.href = url;
+        if (paths.length === 1) {
+            // Single file — download directly as JSON
+            var path     = paths[0];
+            var filename = path.split('/').pop();
+            this._triggerDownload(JSON.stringify(files[path], null, 2), filename, 'application/json');
+            return;
+        }
+
+        // Multiple files — bundle as ZIP using fflate
+        var zipFiles = {};
+        for (var p in files) {
+            zipFiles[p] = new TextEncoder().encode(JSON.stringify(files[p], null, 2));
+        }
+        var zipped = fflate.zipSync(zipFiles, { level: 6 });
+        var blob   = new Blob([zipped], { type: 'application/zip' });
+        var url    = URL.createObjectURL(blob);
+        var a      = document.createElement('a');
+        a.href     = url;
+        a.download = 'frametrail-export.zip';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    /**
+     * Create a blob from content and trigger a browser file download.
+     * @private
+     */
+    _triggerDownload(content, filename, mimeType) {
+        var blob = new Blob([content], { type: mimeType });
+        var url  = URL.createObjectURL(blob);
+        var a    = document.createElement('a');
+        a.href     = url;
         a.download = filename;
         a.click();
         URL.revokeObjectURL(url);

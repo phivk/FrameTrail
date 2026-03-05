@@ -263,6 +263,15 @@
 
                 function(){
 
+                    // Auto-open if there is exactly one hypervideo and no explicit ID was requested
+                    var hvIDs = Object.keys(FrameTrail.module('Database').hypervideos);
+                    if (hvIDs.length === 1) {
+                        FrameTrail.module('RouteNavigation').hypervideoID = hvIDs[0];
+                        FrameTrail.changeState('viewMode', 'video');
+                        continueLoading();
+                        return;
+                    }
+
                     // Apply config language before any UI is rendered
                     var configLang = (FrameTrail.module('Database').config || {}).defaultLanguage;
                     if (configLang) { FrameTrail.module('Localization').setLanguage(configLang); }
