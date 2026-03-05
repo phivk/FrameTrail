@@ -300,7 +300,8 @@ FrameTrail uses a strategy pattern for data persistence. The `StorageManager` mo
 |---------|-------|-----------|
 | Server | `StorageAdapterServer` | HTTP/HTTPS with PHP backend responding at `_server/ajaxServer.php` |
 | Local | `StorageAdapterLocal` | File System Access API available (Chrome/Edge) and folder selected |
-| Download | `StorageAdapterDownload` | Primary adapter when no server and no File System Access API (Firefox/Safari, or `file://` protocol). Stores data in memory; `canSave` is `false` (no persistent target); exports via Save As. Also available as a supplemental export tool in server and local modes. |
+| Download | `StorageAdapterDownload` | No server and no File System Access API (Firefox/Safari, or `file://`). Stores data in memory; `canSave` is `false`; exports via Save As. Also available as a supplemental export tool in server and local modes. |
+| Static | `StorageAdapterStatic` | Explicit `dataPath` init option with no `server` option. Reads JSON from the CDN; inherits in-memory writes and Save As export from `StorageAdapterDownload`. |
 
 All adapters implement the same interface, so the rest of the application doesn't need to know which storage backend is active.
 
@@ -308,14 +309,19 @@ All adapters implement the same interface, so the rest of the application doesn'
 
 `StorageManager.init()` determines the storage mode at startup:
 
-1. If on HTTP/HTTPS **and** PHP backend responds at `_server/ajaxServer.php` → `'server'`
-2. If on HTTP/HTTPS **but** PHP is unreachable, or on `file://` protocol:
-   - If File System Access API is supported (Chrome/Edge) → try to restore a previously saved folder handle
+1. **Shorthand API** (`videoElement` / `videoSource` / `annotations` present) → `'download'` immediately (no server needed)
+2. **Explicit `server` option** → probe that URL; if PHP responds → `'server'`; if unreachable → fall through to local detection
+3. **Explicit `dataPath` + no `server`** → `'static'` (reads JSON from `dataPath`, in-memory writes, Save As export)
+4. **Auto-detect on HTTP/HTTPS** (neither option set) → probe `_server/ajaxServer.php`
+   - PHP responds → set `server` + `dataPath` state to defaults, use `'server'`
+   - PHP unreachable → fall through to local detection
+5. **Local detection** (no server found, or `file://` protocol):
+   - File System Access API supported (Chrome/Edge) → try to restore a previously saved folder handle
      - Handle restored → `'local'`
-     - No handle saved → `'needsFolder'` (folder picker dialog is shown)
+     - No handle → `'needsFolder'` (folder picker shown)
    - File System Access API not supported (Firefox/Safari) → `'download'`
 
-In `'download'` mode the `StorageAdapterDownload` is used: data is stored in memory, and users can export their work as JSON via the Save As dialog. Viewing and editing both work. Once a folder is selected in `'needsFolder'` mode, the state transitions to `'local'`.
+In `'download'` and `'static'` modes data is stored in memory and users can export their work via Save As. Once a folder is selected in `'needsFolder'` mode, the state transitions to `'local'`.
 
 ## Data Model
 
@@ -521,8 +527,8 @@ FrameTrail.init({
                                     // Caller must include the trailing slash and directory name.
                                     //   dataPath: '../_data/'          (one level up)
                                     //   dataPath: 'https://cdn.example.com/project/_data/'
-    server:         null,           // Base URL for the _server/ PHP directory. null = auto-detect.
-                                    // Omit entirely for CDN/static hosting (no PHP backend).
+    server:         null,           // Base URL for the _server/ PHP directory. null = auto-detect
+                                    // (probes '_server/ajaxServer.php' on HTTP/HTTPS).
                                     //   server: '../_server/'          (one level up)
                                     //   server: 'https://api.example.com/ft/_server/'
 
@@ -622,11 +628,11 @@ FrameTrail.init({
     // … other options …
 }, 'PlayerLauncher');
 
-// Static / CDN hosting — data served from a CDN, no PHP backend
-// storageMode becomes 'static': read-only from CDN, in-memory edits, Save As export
+// Static / CDN hosting — explicit dataPath + no server → storageMode 'static'
+// Data is read from the CDN; edits are stored in memory; export via Save As.
 FrameTrail.init({
     dataPath: 'https://cdn.example.com/project/_data/',
-    // server omitted → no PHP; read-only viewer + in-memory annotation editing
+    // no server option → StorageManager uses static mode (dataPath present, no PHP probe)
     // … other options …
 }, 'PlayerLauncher');
 ```

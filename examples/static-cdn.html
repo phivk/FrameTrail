@@ -40,8 +40,8 @@
             // Must end with a slash. The CDN must serve CORS headers.
             dataPath: 'https://cdn.example.com/your-project/_data/',
 
-            // No `server` option — static mode: no PHP backend, no file uploads.
-            // storageMode will be set to 'static' automatically.
+            // No `server` option. StorageManager detects the combination of an
+            // explicit dataPath + no server and sets storageMode to 'static'.
 
             // Open a specific hypervideo directly (skips the overview).
             startID: 'your-hypervideo-id',

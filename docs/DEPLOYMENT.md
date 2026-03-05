@@ -190,12 +190,12 @@ FrameTrail.init({
 
 ### Static CDN Hosting (read-only, no PHP)
 
-FrameTrail can serve hypervideo data from a static CDN without any PHP backend. Specify `dataPath` pointing to the CDN and omit `server`. The `storageMode` becomes `'static'`: data is read from the CDN, edits are stored in memory, and users can export their changes via Save As.
+FrameTrail can serve hypervideo data from a static CDN without any PHP backend. Pass an explicit `dataPath` pointing to the CDN and leave `server` unset. StorageManager detects this combination (explicit `dataPath`, no `server`) and sets `storageMode` to `'static'`: data is read from the CDN, edits are stored in memory, and users can export their changes via Save As.
 
 ```javascript
 FrameTrail.init({
     dataPath: 'https://cdn.example.com/project/_data/',
-    // server omitted → no PHP backend, viewer + in-memory editing only
+    // no server option — StorageManager sees explicit dataPath + no server → 'static' mode
     startID: 'your-hypervideo-id',
 }, 'PlayerLauncher');
 ```
