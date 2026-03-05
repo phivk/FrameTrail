@@ -28,7 +28,7 @@ FrameTrail.defineModule('StorageManager', function(FrameTrail) {
      * and the `dataPath` / `server` init options.
      *
      * Decision order:
-     *   1. Shorthand API (videoElement/videoSource) → download (in-memory)
+     *   1. Shorthand API (videoElement/videoSource) or inline contents → download (in-memory)
      *   2. `server` option provided → probe PHP at that URL → server mode
      *   3. `server` omitted + `dataPath` provided → static mode (CDN, in-memory edits)
      *   4. Neither provided + HTTP(S) → auto-detect PHP at '_server/' → server or local
@@ -49,8 +49,9 @@ FrameTrail.defineModule('StorageManager', function(FrameTrail) {
         var dataPathOption = FrameTrail.getState('dataPath');
         var onHTTP         = FrameTrail.module('RouteNavigation').environment.server;
 
-        // 1. Shorthand API — inline content, no server or folder needed
-        if (FrameTrail.getState('videoElement') || FrameTrail.getState('videoSource')) {
+        // 1. Shorthand API or full inline data — no server or folder needed
+        if (FrameTrail.getState('videoElement') || FrameTrail.getState('videoSource') ||
+                FrameTrail.getState('contents') !== null) {
             _currentAdapter = _downloadAdapter;
             FrameTrail.changeState('storageMode', 'download');
             _initialized = true;
