@@ -309,7 +309,7 @@ All adapters implement the same interface, so the rest of the application doesn'
 
 `StorageManager.init()` determines the storage mode at startup:
 
-1. **Shorthand API** (`videoElement` / `videoSource` / `annotations` present) → `'download'` immediately (no server needed)
+1. **Shorthand API or inline contents** (`videoElement` / `videoSource` present, or `contents` is not null) → `'download'` immediately (no server needed)
 2. **Explicit `server` option** → probe that URL; if PHP responds → `'server'`; if unreachable → fall through to local detection
 3. **Explicit `dataPath` + no `server`** → `'static'` (reads JSON from `dataPath`, in-memory writes, Save As export)
 4. **Auto-detect on HTTP/HTTPS** (neither option set) → probe `_server/ajaxServer.php`
