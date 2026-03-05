@@ -231,7 +231,8 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
             yt_iframe.setAttribute('type', 'text/html');
             yt_iframe.width = '720';
             yt_iframe.height = '405';
-            yt_iframe.src = 'https:'+ HypervideoModel.sourcePath +'?'+ yt_options;
+            var yt_id_match = /(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)([^\&\?\/]+)/.exec(HypervideoModel.sourcePath);
+            yt_iframe.src = 'https://www.youtube.com/embed/' + (yt_id_match ? yt_id_match[1] : HypervideoModel.sourcePath) + '?' + yt_options;
             yt_iframe.setAttribute('frameborder', '0');
             yt_iframe.allowFullscreen = true;
             videoElement.insertAdjacentElement('afterend', yt_iframe);
@@ -377,7 +378,8 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
             vm_iframe.setAttribute('type', 'text/html');
             vm_iframe.width = '720';
             vm_iframe.height = '405';
-            vm_iframe.src = 'https:'+ HypervideoModel.sourcePath +'?'+ vm_options;
+            var vm_id_match = /vimeo\.com\/(?:video\/)?([0-9]+)/.exec(HypervideoModel.sourcePath);
+            vm_iframe.src = 'https://player.vimeo.com/video/' + (vm_id_match ? vm_id_match[1] : HypervideoModel.sourcePath) + '?' + vm_options;
             vm_iframe.setAttribute('frameborder', '0');
             vm_iframe.allowFullscreen = true;
             vm_iframe.allow = 'autoplay';
