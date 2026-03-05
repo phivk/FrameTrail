@@ -1182,7 +1182,7 @@
                     a.download = 'frametrail-data-export.zip';
                     a.click();
                 } else {
-                    downloadAdapter._performZipDownload(hvID, { allHv: true, resources: true, config: true });
+                    downloadAdapter._performZipDownload({ allHv: true, resources: true, config: true });
                 }
             } else {
                 var format = saveAsDialog.querySelector('[name="downloadFormat"]:checked').value;
@@ -1190,7 +1190,7 @@
                     var dataPath = saveAsDialog.querySelector('[name="htmlDataPath"]').value.trim();
                     downloadAdapter._generateStandaloneHTML(hvID, dataPath);
                 } else {
-                    downloadAdapter._performDownload(hvID, { currentHv: true });
+                    downloadAdapter._performDownload(hvID);
                 }
             }
 

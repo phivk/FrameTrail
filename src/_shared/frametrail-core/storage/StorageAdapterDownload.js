@@ -56,58 +56,6 @@ class StorageAdapterDownload extends StorageAdapter {
     }
 
     /**
-     * Show download dialog where user chooses what to include.
-     * @param {String} hypervideoID - Current hypervideo ID
-     * @param {Object} frameTrailInstance - The FrameTrail instance (needed to access modules)
-     */
-    showDownloadDialog(hypervideoID, frameTrailInstance) {
-        this._frameTrailInstance = frameTrailInstance;
-        var labels = frameTrailInstance.module('Localization').labels;
-        var dialog = document.createElement('div');
-        dialog.className = 'downloadDialog';
-        dialog.innerHTML = '<p>' + labels['DownloadWhatToInclude'] + '</p>'
-            + '<div class="downloadOptions">'
-            + '  <label><input type="checkbox" name="currentHv" checked> ' + labels['DownloadCurrentHypervideo'] + '</label>'
-            + '  <small>hypervideo.json + annotations</small>'
-            + '  <label><input type="checkbox" name="allHv"> ' + labels['DownloadAllHypervideos'] + '</label>'
-            + '  <label><input type="checkbox" name="resources"> ' + labels['DownloadResourcesIndex'] + '</label>'
-            + '  <small>resources/_index.json</small>'
-            + '  <label><input type="checkbox" name="config"> ' + labels['DownloadConfiguration'] + '</label>'
-            + '  <small>config.json</small>'
-            + '</div>';
-
-        var self = this;
-        var dlgCtrl = Dialog({
-            title:   labels['DownloadProjectData'],
-            content: dialog,
-            modal:   true,
-            width:   400,
-            close: function() { dlgCtrl.destroy(); },
-            buttons: [
-                {
-                    text: labels['GenericDownload'],
-                    click: function() {
-                        var options = {
-                            currentHv: dialog.querySelector('[name="currentHv"]').checked,
-                            allHv:     dialog.querySelector('[name="allHv"]').checked,
-                            resources: dialog.querySelector('[name="resources"]').checked,
-                            config:    dialog.querySelector('[name="config"]').checked
-                        };
-                        self._performDownload(hypervideoID, options);
-                        dlgCtrl.close();
-                    }
-                },
-                {
-                    text: labels['GenericCancel'],
-                    click: function() {
-                        dlgCtrl.close();
-                    }
-                }
-            ]
-        });
-    }
-
-    /**
      * Generate a standalone HTML file with the hypervideo data embedded inline.
      * Loads FrameTrail CSS/JS from the jsDelivr CDN — no server required to play.
      * @param {String} hypervideoID
@@ -152,50 +100,22 @@ class StorageAdapterDownload extends StorageAdapter {
 
     /**
      * Download current hypervideo as a flat hypervideo.json (matches on-disk server format).
-     * For "All Data" exports use _performZipDownload instead.
      * @param {String} hypervideoID
-     * @param {Object} options - { currentHv, allHv, resources, config }
      */
-    _performDownload(hypervideoID, options) {
+    _performDownload(hypervideoID) {
         var Database = this._frameTrailInstance.module('Database');
-
-        // Current hypervideo only → flat hypervideo.json matching the server's on-disk format
-        if (options.currentHv && !options.allHv && !options.resources && !options.config && hypervideoID) {
-            var hvData   = Database.convertToDatabaseFormat(hypervideoID);
-            var hvName   = (Database.hypervideos[hypervideoID] && Database.hypervideos[hypervideoID].name) || 'hypervideo';
-            var filename = hvName.replace(/[^a-z0-9]/gi, '_').substring(0, 50) + '.json';
-            this._triggerDownload(JSON.stringify(hvData, null, 2), filename, 'application/json');
-            return;
-        }
-
-        // Multi-option export (used by legacy showDownloadDialog) → wrapped envelope
-        var data = {};
-        if (options.currentHv || options.allHv) {
-            data.hypervideos = {};
-            if (options.allHv) {
-                var allHvs = Database.hypervideos;
-                for (var id in allHvs) {
-                    if (allHvs.hasOwnProperty(id)) {
-                        data.hypervideos[id] = Database.convertToDatabaseFormat(id);
-                    }
-                }
-            } else if (options.currentHv && hypervideoID) {
-                data.hypervideos[hypervideoID] = Database.convertToDatabaseFormat(hypervideoID);
-            }
-        }
-        if (options.resources) { data.resources = Database.resources; }
-        if (options.config)    { data.config    = Database.config; }
-
-        this._triggerDownload(JSON.stringify(data, null, 2), 'frametrail-export.json', 'application/json');
+        var hvData   = Database.convertToDatabaseFormat(hypervideoID);
+        var hvName   = (Database.hypervideos[hypervideoID] && Database.hypervideos[hypervideoID].name) || 'hypervideo';
+        var filename = hvName.replace(/[^a-z0-9]/gi, '_').substring(0, 50) + '.json';
+        this._triggerDownload(JSON.stringify(hvData, null, 2), filename, 'application/json');
     }
 
     /**
      * Download selected All Data options as a ZIP (multiple files) or single JSON file (one file).
      * Requires fflate to be loaded globally when producing a ZIP.
-     * @param {String} hypervideoID - Current hypervideo ID (used for context, not included directly)
      * @param {Object} options - { allHv, resources, config }
      */
-    _performZipDownload(hypervideoID, options) {
+    _performZipDownload(options) {
         var Database = this._frameTrailInstance.module('Database');
         var files = {};
 
