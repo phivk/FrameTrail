@@ -52,11 +52,12 @@ FrameTrail/
 │   ├── index.html                  # Player/editor entry point (~60 script/link tags)
 │   ├── resources.html              # Standalone resource manager
 │   ├── setup.html                  # First-run setup wizard
-│   ├── _lib/                       # Vendored third-party libraries (10 packages)
+│   ├── _lib/                       # Vendored third-party libraries (11 packages)
 │   │   ├── tabsjs/                # FTTabs (custom vanilla-JS tab widget)
 │   │   ├── collisiondetection/    # Overlay collision detection
 │   │   ├── interactjs/            # Drag/drop and resize (overlay editing)
 │   │   ├── sortablejs/            # Sortable lists
+│   │   ├── fflate/                # ZIP file creation (Save As / All Data export)
 │   │   ├── dialog/                # Lightweight native <dialog> wrapper
 │   │   ├── leaflet/               # Leaflet (maps)
 │   │   ├── codemirror6/           # CodeMirror 6 (JS/CSS/HTML + linting)
@@ -69,7 +70,7 @@ FrameTrail/
 │   │   │   └── storage/           # StorageAdapter, StorageAdapterServer/Local/Download
 │   │   ├── modules/               # Shared modules
 │   │   │   ├── Database/          # Data loading and persistence
-│   │   │   ├── Localization/      # i18n (en, de)
+│   │   │   ├── Localization/      # i18n (en, de, fr)
 │   │   │   ├── ResourceManager/   # Resource CRUD
 │   │   │   ├── RouteNavigation/   # URL parsing, environment detection
 │   │   │   ├── StorageManager/    # Storage mode selection
@@ -121,7 +122,7 @@ FrameTrail uses a custom module system — no ES6 modules, no bundler. All code 
 - **Modules** (`FrameTrail.defineModule`) — Encapsulate business logic and UI. Private state in closures, public interface returned.
 - **Types** (`FrameTrail.defineType`) — Define data structures with inheritance (e.g., `ResourceYoutube` extends `Resource`).
 - **State** (`FrameTrail.changeState` / `getState`) — Centralized reactive state. Modules declare `onChange` handlers that fire automatically.
-- **Storage modes** — `server` (PHP/AJAX), `local` (File System Access API), `needsFolder` (waiting for folder selection), `noStorage` (read-only fallback).
+- **Storage modes** — `server` (PHP/AJAX), `local` (File System Access API), `needsFolder` (waiting for folder selection), `download` (in-memory + Save As export), `static` (CDN read + in-memory writes).
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full architecture documentation.
 

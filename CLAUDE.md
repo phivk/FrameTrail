@@ -20,7 +20,7 @@ FrameTrail/
 │   ├── setup.html                  # First-run setup wizard
 │   ├── .htaccess                   # Apache rewrite rules
 │   ├── favico.png
-│   ├── _lib/                       # Vendored third-party libraries (13 packages)
+│   ├── _lib/                       # Vendored third-party libraries (11 packages)
 │   ├── _shared/
 │   │   ├── frametrail-core/
 │   │   │   ├── frametrail-core.js  # Core: defineModule, defineType, init, state
@@ -115,12 +115,11 @@ _data/
 | `collisiondetection/` | Collision Detection | Overlay collision |
 | `interactjs/` | Interact.js | Drag/drop and resize for overlay editing |
 | `sortablejs/` | SortableJS | Sortable lists |
+| `fflate/` | fflate | ZIP file creation for Save As / All Data export |
 | `dialog/` | dialog (custom) | Lightweight wrapper around native `<dialog>` |
 | `leaflet/` | Leaflet | Map rendering (OpenStreetMap) |
 | `codemirror6/` | CodeMirror 6 | Code editor (JS/CSS/HTML modes + linting) |
 | `hlsjs/` | HLS.js | Adaptive video streaming |
-| `d3/` | D3.js v5 | Data visualization |
-| `animejs/` | Anime.js | Animation library |
 | `quill/` | Quill | Rich text editing (replaces WYSIHTML5) |
 | `parsers/` | VTT parser | Subtitle parsing |
 
