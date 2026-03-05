@@ -1034,68 +1034,150 @@
      */
     function saveAs() {
 
+        var canSaveToServer = FrameTrail.module('StorageManager').canSaveToServer();
+        var canSaveToLocal  = FrameTrail.module('StorageManager').canSaveToLocal();
+
         var _saveAsWrapper = document.createElement('div');
         _saveAsWrapper.innerHTML = '<div class="saveAsDialog">'
-            + '<p>'+ labels['GenericSaveAs'] +'</p>'
-            + '<div class="saveOptions"></div>'
+            + '<div style="text-align: center; margin-bottom: 20px;">'
+            + '<span class="icon-flow-tree" style="font-size: 3.5em;"></span>'
+            + '</div>'
+
+            // Save buttons row
+            + '<div class="layoutRow" style="margin-bottom: 4px;">'
+            + '<div class="column-4">'
+            + '<button class="saveToServer" style="width: 100%; padding: 10px;"'
+            + (canSaveToServer ? '' : ' disabled') + '>'
+            + '<span class="icon-floppy"></span> ' + labels['SaveToServer']
+            + '</button>'
+            + '</div>'
+            + '<div class="column-4">'
+            + '<button class="saveToLocal" style="width: 100%; padding: 10px;"'
+            + (canSaveToLocal ? '' : ' disabled') + '>'
+            + '<span class="icon-folder"></span> ' + labels['SaveToLocalFolder']
+            + '</button>'
+            + '</div>'
+            + '<div class="column-4">'
+            + '<button class="saveToDownload" style="width: 100%; padding: 10px;">'
+            + '<span class="icon-download"></span> ' + labels['SaveAsDownload']
+            + '</button>'
+            + '</div>'
+            + '</div>'
+
+            // Scope row — separate layoutRow so the grid equalizes heights across all three columns
+            + '<div class="layoutRow" style="margin-bottom: 4px;">'
+            + '<div class="column-4" style="display: flex;">'
+            + '<button class="pressed" style="flex: 1; padding: 8px; text-align: center; pointer-events: none;">'
+            + labels['DownloadAllData']
+            + '</button>'
+            + '</div>'
+            + '<div class="column-4" style="display: flex;">'
+            + '<button class="pressed" style="flex: 1; padding: 8px; text-align: center; pointer-events: none;">'
+            + labels['DownloadAllData']
+            + '</button>'
+            + '</div>'
+            + '<div class="column-4" style="display: flex;">'
+            + '<button class="scopeCurrentHv pressed" style="flex: 1; padding: 8px; text-align: center;">'
+            + labels['DownloadCurrentHypervideo']
+            + '</button>'
+            + '<button class="scopeAllData" style="flex: 1; padding: 8px; text-align: center; margin-left: -2px;">'
+            + labels['DownloadAllData']
+            + '</button>'
+            + '</div>'
+            + '</div>'
+
+            // Format / options row — aligned to download column via empty placeholders
+            + '<div class="layoutRow">'
+            + '<div class="column-4"></div>'
+            + '<div class="column-4"></div>'
+            + '<div class="column-4">'
+            + '<div class="downloadFormatSection">'
+            + '<small>' + labels['DownloadFormat'] + '</small>'
+            + '<div style="display: flex; gap: 12px; margin-top: 4px;">'
+            + '<label><input type="radio" name="downloadFormat" value="json" checked> JSON</label>'
+            + '<label><input type="radio" name="downloadFormat" value="html"> HTML</label>'
+            + '</div>'
+            + '</div>'
+            + '<div class="downloadOptionsSection" style="display: none;">'
+            + '<div class="checkboxRow">'
+            + '<label class="switch"><input type="checkbox" name="allHv" checked><span class="slider round"></span></label>'
+            + '<label>' + labels['DownloadAllHypervideos'] + '</label>'
+            + '</div>'
+            + '<div class="checkboxRow">'
+            + '<label class="switch"><input type="checkbox" name="resources"><span class="slider round"></span></label>'
+            + '<label>' + labels['DownloadResourcesIndex'] + '</label>'
+            + '</div>'
+            + '<div class="checkboxRow">'
+            + '<label class="switch"><input type="checkbox" name="config"><span class="slider round"></span></label>'
+            + '<label>' + labels['DownloadConfiguration'] + '</label>'
+            + '</div>'
+            + '</div>'
+            + '</div>'
+            + '</div>'
+
             + '</div>';
         var saveAsDialog = _saveAsWrapper.firstElementChild;
 
-        var options = saveAsDialog.querySelector('.saveOptions');
+        var scopeCurrentHvBtn  = saveAsDialog.querySelector('.scopeCurrentHv');
+        var scopeAllDataBtn    = saveAsDialog.querySelector('.scopeAllData');
+        var formatSection      = saveAsDialog.querySelector('.downloadFormatSection');
+        var optionsSection     = saveAsDialog.querySelector('.downloadOptionsSection');
 
-        // Server option (if available and logged in)
-        if (FrameTrail.module('StorageManager').canSaveToServer()) {
-            options.insertAdjacentHTML('beforeend',
-                '<button class="saveToServer" style="display:block; width:100%; margin:5px 0; padding:10px;">'
-                + '<span class="icon-cloud-upload"></span> '+ labels['SaveToServer']
-                + '</button>'
-            );
-        }
+        scopeCurrentHvBtn.addEventListener('click', function() {
+            scopeCurrentHvBtn.classList.add('pressed');
+            scopeAllDataBtn.classList.remove('pressed');
+            formatSection.style.display = '';
+            optionsSection.style.display = 'none';
+        });
 
-        // Local folder option (if File System Access API supported)
-        if (FrameTrail.module('StorageManager').canSaveToLocal()) {
-            options.insertAdjacentHTML('beforeend',
-                '<button class="saveToLocal" style="display:block; width:100%; margin:5px 0; padding:10px;">'
-                + '<span class="icon-folder"></span> '+ labels['SaveToLocalFolder']
-                + '</button>'
-            );
-        }
-
-        // Download option (always available)
-        options.insertAdjacentHTML('beforeend',
-            '<button class="saveToDownload" style="display:block; width:100%; margin:5px 0; padding:10px;">'
-            + '<span class="icon-download"></span> '+ labels['SaveAsDownload']
-            + '</button>'
-        );
+        scopeAllDataBtn.addEventListener('click', function() {
+            scopeAllDataBtn.classList.add('pressed');
+            scopeCurrentHvBtn.classList.remove('pressed');
+            formatSection.style.display = 'none';
+            optionsSection.style.display = '';
+        });
 
         var saveAsDialogCtrl;
 
-        var saveToServerBtn = saveAsDialog.querySelector('.saveToServer');
-        if (saveToServerBtn) {
-            saveToServerBtn.addEventListener('click', function() {
-                FrameTrail.module('StorageManager').switchToServer().then(function() {
-                    saveAsDialogCtrl.close();
-                    save();
-                });
+        saveAsDialog.querySelector('.saveToServer').addEventListener('click', function() {
+            FrameTrail.module('StorageManager').switchToServer().then(function() {
+                saveAsDialogCtrl.close();
+                save();
             });
-        }
+        });
 
-        var saveToLocalBtn = saveAsDialog.querySelector('.saveToLocal');
-        if (saveToLocalBtn) {
-            saveToLocalBtn.addEventListener('click', function() {
-                FrameTrail.module('StorageManager').switchToLocal().then(function() {
-                    saveAsDialogCtrl.close();
-                    save();
-                }).catch(function(err) {
-                    FrameTrail.module('InterfaceModal').showErrorMessage('Could not access folder: ' + err.message);
-                });
+        saveAsDialog.querySelector('.saveToLocal').addEventListener('click', function() {
+            FrameTrail.module('StorageManager').switchToLocal().then(function() {
+                saveAsDialogCtrl.close();
+                save();
+            }).catch(function(err) {
+                FrameTrail.module('InterfaceModal').showErrorMessage('Could not access folder: ' + err.message);
             });
-        }
+        });
 
         saveAsDialog.querySelector('.saveToDownload').addEventListener('click', function() {
             var downloadAdapter = FrameTrail.module('StorageManager').getDownloadAdapter();
             var hvID = FrameTrail.module('RouteNavigation').hypervideoID;
-            downloadAdapter.showDownloadDialog(hvID, FrameTrail);
+            downloadAdapter._frameTrailInstance = FrameTrail;
+
+            var isAllData = scopeAllDataBtn.classList.contains('active');
+
+            if (isAllData) {
+                var options = {
+                    allHv:     saveAsDialog.querySelector('[name="allHv"]').checked,
+                    resources: saveAsDialog.querySelector('[name="resources"]').checked,
+                    config:    saveAsDialog.querySelector('[name="config"]').checked
+                };
+                downloadAdapter._performDownload(hvID, options);
+            } else {
+                var format = saveAsDialog.querySelector('[name="downloadFormat"]:checked').value;
+                if (format === 'html') {
+                    downloadAdapter._generateStandaloneHTML(hvID);
+                } else {
+                    downloadAdapter._performDownload(hvID, { currentHv: true });
+                }
+            }
+
             saveAsDialogCtrl.close();
         });
 
@@ -1103,7 +1185,7 @@
             title:   labels['GenericSaveAs'],
             content: saveAsDialog,
             modal:   true,
-            width:   400,
+            width:   700,
             close: function() {
                 saveAsDialogCtrl.destroy();
             }

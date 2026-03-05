@@ -108,6 +108,16 @@ class StorageAdapterDownload extends StorageAdapter {
     }
 
     /**
+     * Generate a standalone HTML file with embedded FrameTrail assets and inline hypervideo data.
+     * TODO: Implement — should embed minified CSS/JS from CDN and all hypervideo data inline,
+     * producing a self-contained file that plays the hypervideo without a server.
+     * @param {String} hypervideoID - Current hypervideo ID
+     */
+    _generateStandaloneHTML(hypervideoID) {
+        console.warn('Standalone HTML export not yet implemented for hypervideo:', hypervideoID);
+    }
+
+    /**
      * Generate and trigger file download.
      * @private
      */

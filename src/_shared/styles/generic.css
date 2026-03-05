@@ -145,6 +145,13 @@ button.active, input[type="submit"].active, input[type="button"].active, .button
     color: var(--primary-fg-color);
 }
 
+button.pressed, input[type="submit"].pressed, input[type="button"].pressed, .button.pressed {
+    background-color: rgba(205,235,145,.8);
+    color: var(--primary-bg-color);
+    box-shadow: inset 0px 0px 5px rgba(0,0,0,0.45);
+    border-color: var(--secondary-bg-color);
+}
+
 input[type="text"], input[type="password"], textarea, input[type="number"], input[type="time"], input[type="email"] {
     font-family: TitilliumWeb,"Helvetica Neue",Helvetica,Arial,sans-serif;
     font-size: 14px;
@@ -433,8 +440,10 @@ details[open] > summary {
 .switch {
   position: relative;
   display: inline-block;
+  vertical-align: top;
   width: 30px;
   height: 17px;
+  margin-right: 8px;
 }
 
 .switch input {
