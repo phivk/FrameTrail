@@ -153,7 +153,7 @@
                 target:             resolvedTarget || 'body',
                 fullscreenTarget:   options.fullscreenTarget || null,
                 contentTargets:     options.contentTargets || {},
-                contents:           options.contents,
+                contents:           options.contents !== undefined ? options.contents : null,
                 startID:            options.startID,
                 resources:          options.resources !== undefined ? options.resources : null,
                 tagdefinitions:     options.tagdefinitions,
