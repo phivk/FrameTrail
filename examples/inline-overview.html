@@ -6,12 +6,10 @@
   (file://) or served from any static web server.
 
   Demonstrates:
-  - Passing multiple hypervideos as inline data
-  - Starting in overview (gallery) mode instead of a specific video
-  - FrameTrail launched via 'PlayerLauncher' with startID left empty so the
-    overview is shown first
+  - Passing multiple hypervideos as inline data via `contents`
+  - Starting in overview (gallery) mode by omitting startID
   - No _data directory, no PHP server — all data lives in this file
-  - Editing is possible (changes stay in memory; use Save As to export)
+  - storageMode is 'download': edits are stored in memory, export via Save As
 -->
 <html lang="en">
 <head>
@@ -30,49 +28,8 @@
     document.addEventListener('DOMContentLoaded', function() {
 
         window.ftInstance = FrameTrail.init({
-            target:  'body',
-            startID: '',        // empty → show overview/gallery on launch
-
-            config: {
-                theme:            '',
-                alwaysForceLogin: false,
-                allowCaching:     false
-            },
-            users: {},
-
-            resources: [{
-                label: 'Inline resources',
-                type:  'frametrail',
-                data: {
-                    'video-bbb': {
-                        name:        'Big Buck Bunny (MP4)',
-                        type:        'video',
-                        src:         'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-                        thumb:       '',
-                        licenseType: 'cc-by',
-                        attributes:  {},
-                        tags:        []
-                    },
-                    'video-ep': {
-                        name:        'Elephant Dream (MP4)',
-                        type:        'video',
-                        src:         'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-                        thumb:       '',
-                        licenseType: 'cc-by',
-                        attributes:  {},
-                        tags:        []
-                    },
-                    'video-ted': {
-                        name:        'For Bigger Blazes (MP4)',
-                        type:        'video',
-                        src:         'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-                        thumb:       '',
-                        licenseType: 'cc-by',
-                        attributes:  {},
-                        tags:        []
-                    }
-                }
-            }],
+            target: 'body',
+            // startID omitted → show overview/gallery on launch
 
             contents: [
                 {
@@ -89,14 +46,13 @@
                         config: {
                             layoutArea:  { areaTop: [], areaBottom: [], areaLeft: [], areaRight: [] },
                             hidden:      false,
-                            slidingMode: 'overlay',
-                            theme:       ''
+                            slidingMode: 'overlay'
                         },
                         clips: [{
-                            resourceId: 'video-bbb',
-                            duration:   596,
-                            start:      0,
-                            end:        596
+                            src:      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+                            duration: 596,
+                            start:    0,
+                            end:      596
                         }],
                         contents:     [],
                         subtitles:    {},
@@ -119,14 +75,13 @@
                         config: {
                             layoutArea:  { areaTop: [], areaBottom: [], areaLeft: [], areaRight: [] },
                             hidden:      false,
-                            slidingMode: 'overlay',
-                            theme:       ''
+                            slidingMode: 'overlay'
                         },
                         clips: [{
-                            resourceId: 'video-ep',
-                            duration:   654,
-                            start:      0,
-                            end:        654
+                            src:      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+                            duration: 654,
+                            start:    0,
+                            end:      654
                         }],
                         contents:     [],
                         subtitles:    {},
@@ -149,14 +104,13 @@
                         config: {
                             layoutArea:  { areaTop: [], areaBottom: [], areaLeft: [], areaRight: [] },
                             hidden:      false,
-                            slidingMode: 'overlay',
-                            theme:       ''
+                            slidingMode: 'overlay'
                         },
                         clips: [{
-                            resourceId: 'video-ted',
-                            duration:   15,
-                            start:      0,
-                            end:        15
+                            src:      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+                            duration: 15,
+                            start:    0,
+                            end:      15
                         }],
                         contents:     [],
                         subtitles:    {},

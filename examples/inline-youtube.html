@@ -11,11 +11,9 @@
   - storageMode is 'download': edits are stored in memory and can be exported
     via Save As — nothing persists past a page reload unless you export the JSON
 
-  First time you click the Edit button, you'll be asked for your name (stored in
-  localStorage for future visits).
-
-  To use your own video: change 'src' in the resources object to your YouTube video ID.
-  The duration (in seconds) in the clips array should match the video length.
+  For the clip src, use the YouTube embed URL (https://www.youtube.com/embed/ID).
+  This lets FrameTrail detect videoType='youtube' and build the correct iframe.
+  The same URL goes in the resource data so YouTube resources can be used as overlays.
 -->
 <html lang="en">
 <head>
@@ -43,10 +41,8 @@
                 allowCaching:     false
             },
 
-            // No users file needed — download mode manages user identity via localStorage
-            users: {},
-
-            // The video resource, defined inline
+            // Resource pool — used when attaching YouTube videos as overlays/annotations.
+            // src must be the YouTube embed URL so FrameTrail can render it correctly.
             resources: [{
                 label: 'Inline resources',
                 type:  'frametrail',
@@ -54,7 +50,7 @@
                     'yt-bbb': {
                         name:        'Big Buck Bunny (YouTube)',
                         type:        'youtube',
-                        src:         'YE7VzlLtp-4',   // YouTube video ID
+                        src:         'https://www.youtube.com/embed/YE7VzlLtp-4',
                         thumb:       '',
                         licenseType: 'cc-by',
                         attributes:  {},
@@ -82,12 +78,14 @@
                         theme:       ''
                     },
                     clips: [{
-                        resourceId: 'yt-bbb',
-                        duration:   596,     // 9:56 — update this to match your video
-                        start:      0,
-                        end:        596
+                        // Use src (not resourceId) so FrameTrail detects videoType='youtube'.
+                        // Any YouTube URL format works: embed, watch, or youtu.be short link.
+                        src:      'https://www.youtube.com/embed/YE7VzlLtp-4',
+                        duration: 596,   // 9:56 — update this to match your video
+                        start:    0,
+                        end:      596
                     }],
-                    contents:     [],        // overlays (W3C annotation format)
+                    contents:     [],    // overlays (W3C annotation format)
                     subtitles:    {},
                     globalEvents: { onReady: '', onPlay: '', onPause: '', onEnded: '' },
                     customCSS:    ''

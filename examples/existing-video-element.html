@@ -1,20 +1,17 @@
 <!DOCTYPE html>
 <!--
-  EXAMPLE: Existing video element — Scenario A
-  ─────────────────────────────────────────────
+  EXAMPLE: Existing video element — shorthand Scenario A
+  ───────────────────────────────────────────────────────
   Requirements: None. Works in any modern browser without a server.
-  (Annotations file must be reachable — use a local server if loading from disk.)
 
   Demonstrates:
-  - Passing a reference to an existing <video> element via the `videoElement` option
+  - Passing a reference to an existing <video> element via `videoElement`
   - No `target` div needed — FrameTrail inserts a wrapper automatically before the video
-  - Annotations loaded from a URL via `annotations` option
-  - Overview mode is skipped automatically (single-video mode)
+  - The <video> keeps its original position in the document
 
-  The <video> keeps its original position in the document; FrameTrail wraps and
-  adopts it, removing browser-native controls and rendering its own player UI.
+  The browser adopts the video, removes its native controls, and renders the FrameTrail UI.
 
-  Replace VIDEO_URL and ANNOTATIONS_URL with real values.
+  Replace the src and ANNOTATIONS_URL with real values.
 -->
 <html lang="en">
 <head>
@@ -32,8 +29,7 @@
 <body>
 
     <!--
-      This is the existing <video> element already present in the page.
-      FrameTrail will wrap and adopt it — no manual container div required.
+      Existing <video> element already in the page.
       Do NOT include the `controls` attribute; FrameTrail renders its own.
     -->
     <video id="my-video"
@@ -44,23 +40,13 @@
     <script>
     document.addEventListener('DOMContentLoaded', function() {
 
-        var ANNOTATIONS_URL = '';  // URL to a W3C annotations JSON file, or '' for none
-
         window.ftInstance = FrameTrail.init({
 
-            // Point at the existing video element — no `target` needed.
-            // FrameTrail creates a wrapper div before it and uses that as the target.
+            // Point at the existing video element — no `target` div needed.
             videoElement: '#my-video',
 
-            // Optional: load annotations from a URL or pass an inline array.
-            // Can be a single URL string or an array of URLs / inline annotation objects.
-            annotations: ANNOTATIONS_URL || [],
-
-            config: {
-                theme:            '',
-                alwaysForceLogin: false,
-                allowCaching:     false
-            }
+            // Optional: annotations from a URL string, array of URLs, or inline W3C objects.
+            annotations: '' // e.g. 'annotations.json' or []
 
         }, 'PlayerLauncher');
 

@@ -7,14 +7,14 @@
   Demonstrates:
   - Mounting the player in a specific <div> instead of <body>
   - Opening a specific hypervideo directly (skipping the overview)
-  - Overriding the config theme inline while loading everything else from the server
+  - Overriding one config value inline while loading everything else from the server
 
   The `dataPath` and `server` init options tell FrameTrail where _data/ and
-  _server/ live relative to the page, so this file can live in examples/ without
-  needing to copy the server files.
+  _server/ live relative to this page, so it can live in examples/ without
+  needing to copy any server files.
 
   To run: serve the parent directory with Apache+PHP, open this file in a browser,
-  and replace 'your-hypervideo-id' below with a real ID from your _data/hypervideos/ folder.
+  and replace 'your-hypervideo-id' with a real ID from your _data/hypervideos/ folder.
 -->
 <html lang="en">
 <head>
@@ -36,25 +36,13 @@
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         window.ftInstance = FrameTrail.init({
-            // Mount in a specific element instead of <body>
-            target:   '#player-container',
+            target:  '#player-container',
+            startID: 'your-hypervideo-id',
 
-            // Open this hypervideo directly — skip the overview grid.
-            // Remove startID (or set it to null) to show the overview instead.
-            startID:  'your-hypervideo-id',
+            // Override a single config value; all other config comes from _data/config.json.
+            // Set config: null (or omit it) to use the server config entirely.
+            config: { theme: 'bright' },
 
-            // Override just the theme; all other config comes from the server's _data/config.json.
-            // Set config: null to use the server config entirely.
-            config:   { theme: 'bright' },
-
-            // Load resources from the standard server location
-            resources: [{
-                label: 'Resources',
-                data:  '../_data/resources/_index.json',
-                type:  'frametrail'
-            }],
-
-            // Tell FrameTrail where _data/ and _server/ live (one directory up).
             dataPath: '../_data/',
             server:   '../_server/'
         }, 'PlayerLauncher');

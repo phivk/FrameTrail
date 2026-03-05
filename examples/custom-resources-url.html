@@ -7,18 +7,16 @@
   Demonstrates:
   - Loading the resource index from a custom URL instead of _data/resources/_index.json
   - Merging resources from multiple sources (e.g., a local pool + a shared library)
-  - Resources can come from any URL that returns a valid FrameTrail resource index JSON
+  - Resources from any URL that returns a valid FrameTrail resource index JSON are merged
 
-  The resource index format expected at the URL:
+  Expected resource index format at the URL:
   {
     "resources": {
-      "resource-id": { "name": "...", "type": "youtube", "src": "...", ... },
-      ...
+      "resource-id": { "name": "...", "type": "youtube", "src": "...", ... }
     }
   }
 
-  Replace the URL below with your actual shared resource endpoint.
-  Replace 'your-hypervideo-id' with a real ID from your _data folder.
+  Replace the shared library URL and 'your-hypervideo-id' with real values.
 -->
 <html lang="en">
 <head>
@@ -42,18 +40,16 @@
         window.ftInstance = FrameTrail.init({
             target:  '#player',
             startID: 'your-hypervideo-id',
-            config:  null,
 
             resources: [
-                // Load the local resource pool
+                // Load the local resource pool from the server
                 {
                     label: 'Local Resources',
                     data:  '../_data/resources/_index.json',
                     type:  'frametrail'
                 },
-                // Also merge in a shared resource library from another server or CDN.
-                // Both sets are merged — local resources take precedence on ID collision
-                // since Object.assign processes them left to right.
+                // Merge in a shared resource library from another server or CDN.
+                // Both sets are merged — entries from earlier sources take precedence on ID collision.
                 {
                     label: 'Shared Library',
                     data:  'https://your-shared-server.example.com/resources/_index.json',
@@ -61,7 +57,6 @@
                 }
             ],
 
-            // Tell FrameTrail where _data/ and _server/ live (one directory up).
             dataPath: '../_data/',
             server:   '../_server/'
         }, 'PlayerLauncher');

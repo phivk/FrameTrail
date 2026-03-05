@@ -6,13 +6,12 @@
   (file://) or served from any static web server.
 
   Demonstrates:
-  - Using a remote HTTPS video URL directly as a resource (no upload needed)
-  - The video is referenced by URL — FrameTrail streams it via the browser's
-    native <video> element, so any URL the browser can play works here
-  - Works the same as inline-youtube.html but for direct video files
+  - All data (config, resources, hypervideo) passed inline via init options
+  - No _data folder, no PHP server needed
+  - storageMode is 'download': edits are stored in memory, export via Save As
 
-  Replace VIDEO_URL with any publicly accessible .mp4 / .webm / .m3u8 URL.
-  Replace VIDEO_DURATION_SECONDS with the actual duration of the video.
+  The clip uses `src` directly with the video URL. Any publicly accessible
+  .mp4 / .webm / .m3u8 URL works. Replace VIDEO_URL and VIDEO_DURATION_SECONDS.
 -->
 <html lang="en">
 <head>
@@ -37,29 +36,6 @@
             target:  'body',
             startID: '0',
 
-            config: {
-                theme:            '',
-                alwaysForceLogin: false,
-                allowCaching:     false
-            },
-            users: {},
-
-            resources: [{
-                label: 'Inline resources',
-                type:  'frametrail',
-                data: {
-                    'mp4-video': {
-                        name:        'Big Buck Bunny (MP4)',
-                        type:        'video',
-                        src:         VIDEO_URL,
-                        thumb:       '',
-                        licenseType: 'cc-by',
-                        attributes:  {},
-                        tags:        []
-                    }
-                }
-            }],
-
             contents: [{
                 hypervideo: {
                     meta: {
@@ -74,14 +50,13 @@
                     config: {
                         layoutArea:  { areaTop: [], areaBottom: [], areaLeft: [], areaRight: [] },
                         hidden:      false,
-                        slidingMode: 'overlay',
-                        theme:       ''
+                        slidingMode: 'overlay'
                     },
                     clips: [{
-                        resourceId: 'mp4-video',
-                        duration:   VIDEO_DURATION_SECONDS,
-                        start:      0,
-                        end:        VIDEO_DURATION_SECONDS
+                        src:      VIDEO_URL,
+                        duration: VIDEO_DURATION_SECONDS,
+                        start:    0,
+                        end:      VIDEO_DURATION_SECONDS
                     }],
                     contents:     [],
                     subtitles:    {},

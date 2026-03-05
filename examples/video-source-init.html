@@ -3,16 +3,14 @@
   EXAMPLE: Video source shorthand — Scenario B
   ─────────────────────────────────────────────
   Requirements: None. Works in any modern browser without a server.
-  (Annotation files must be reachable — use a local server if loading from disk.)
 
   Demonstrates:
   - Using `videoSource` to point at a video URL without building the full `contents` schema
   - Using an explicit `target` div as the player container
   - Passing inline W3C annotation objects via the `annotations` option
-  - Overview mode is skipped automatically (single-video mode)
 
-  Use this when you want a player container div in your layout but don't have an
-  existing <video> element — FrameTrail creates one inside the target.
+  Use this when you have a container div but no pre-existing <video> element —
+  FrameTrail creates one inside the target. Overview mode is skipped automatically.
 
   Replace VIDEO_URL with a real video URL.
 -->
@@ -25,13 +23,12 @@
     <!-- <script src="https://cdn.jsdelivr.net/npm/@frametrail/frametrail/frametrail.min.js"></script> -->
     <script src="../build/frametrail.min.js"></script>
     <style>
-        body             { margin: 0; background: #111; }
+        body              { margin: 0; background: #111; }
         #player-container { width: 100vw; height: 100vh; }
     </style>
 </head>
 <body>
 
-    <!-- Explicit container: FrameTrail builds the full player UI inside this div -->
     <div id="player-container"></div>
 
     <script>
@@ -40,33 +37,33 @@
         var VIDEO_URL = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
 
         // Inline annotation objects (W3C Web Annotation format with FrameTrail extensions).
-        // Replace with real annotations or point at a URL file via `annotations: 'path/to/file.json'`.
+        // Can also be a URL string: annotations: 'path/to/annotations.json'
         var INLINE_ANNOTATIONS = [
             {
                 '@context': [
                     'http://www.w3.org/ns/anno.jsonld',
                     { 'frametrail': 'http://frametrail.org/ns/' }
                 ],
-                'type':           'Annotation',
+                'type':            'Annotation',
                 'frametrail:type': 'Annotation',
-                'creator': { 'nickname': 'Demo', 'type': 'Person', 'id': 'demo' },
-                'created': '2024-01-01T00:00:00Z',
+                'creator':  { 'nickname': 'Demo', 'type': 'Person', 'id': 'demo' },
+                'created':  '2024-01-01T00:00:00Z',
                 'target': {
-                    'type': 'Video',
+                    'type':   'Video',
                     'source': VIDEO_URL,
                     'selector': {
-                        'type':        'FragmentSelector',
-                        'conformsTo':  'http://www.w3.org/TR/media-frags/',
-                        'value':       't=10,20'
+                        'type':       'FragmentSelector',
+                        'conformsTo': 'http://www.w3.org/TR/media-frags/',
+                        'value':      't=10,20'
                     }
                 },
                 'body': {
-                    'type':                'TextualBody',
-                    'frametrail:type':     'text',
-                    'format':              'text/html',
-                    'value':               '<p>This annotation appears from <strong>10 s</strong> to <strong>20 s</strong>.</p>',
-                    'frametrail:name':     'Demo annotation',
-                    'frametrail:thumb':    null,
+                    'type':                  'TextualBody',
+                    'frametrail:type':       'text',
+                    'format':                'text/html',
+                    'value':                 '<p>This annotation appears from <strong>10 s</strong> to <strong>20 s</strong>.</p>',
+                    'frametrail:name':       'Demo annotation',
+                    'frametrail:thumb':      null,
                     'frametrail:resourceId': null,
                     'frametrail:attributes': {}
                 },
@@ -75,22 +72,9 @@
         ];
 
         window.ftInstance = FrameTrail.init({
-
-            // Explicit container div
-            target: '#player-container',
-
-            // Video URL shorthand — no full `contents` schema needed
+            target:      '#player-container',
             videoSource: VIDEO_URL,
-
-            // Inline annotation objects or a URL string: 'path/to/annotations.json'
-            annotations: INLINE_ANNOTATIONS,
-
-            config: {
-                theme:            '',
-                alwaysForceLogin: false,
-                allowCaching:     false
-            }
-
+            annotations: INLINE_ANNOTATIONS
         }, 'PlayerLauncher');
 
     });
