@@ -74,7 +74,7 @@ No server, no file system access required. FrameTrail automatically falls back t
 
 **How it works:**
 
-The `StorageAdapterDownload` holds all data in memory. Hypervideo data is passed via init options at startup (see [Inline on a Page](#inline-on-a-page) below). Viewing is always available. For editing, a login dialog prompts for a display name (guest mode — no account needed). The Save button is disabled (no persistent target); use **Save As** to export a JSON snapshot that can be reloaded later.
+The `StorageAdapterDownload` holds all data in memory. Hypervideo data is passed via init options at startup (see [Inline on a Page](#inline-on-a-page) below). Viewing is always available. For editing, a login dialog prompts for a display name (guest mode — no account needed). The Save button is disabled (no persistent target); use **Save As** to export your work.
 
 **Limitations:**
 - No persistence — changes are lost on page reload unless exported via Save As
@@ -82,7 +82,15 @@ The `StorageAdapterDownload` holds all data in memory. Hypervideo data is passed
 
 ### Save As / Export
 
-In server and local modes, Save As is also available as a supplemental export tool — useful for archiving or migrating content between instances.
+The Save As dialog is available in all storage modes and offers two scopes:
+
+**Current Hypervideo**
+- **JSON** — exports a flat `hypervideo.json` matching the server on-disk format; can be reloaded via the `contents` init option
+- **HTML** — generates a self-contained `.html` file with hypervideo data embedded inline and FrameTrail loaded from the jsDelivr CDN; opens in any browser with no server required. An optional *Resource base URL* field prefixes uploaded resource file paths so they resolve correctly (e.g. `https://example.com/_data/`)
+
+**All Data**
+- Downloads a ZIP containing all hypervideos, the resources index, and config as JSON files
+- **Include media files** (requires PHP server) — triggers a full server-side ZIP via the `dataExport` endpoint, including all uploaded media files from `_data/`; `users.json` is excluded
 
 ## Player Initialization
 
