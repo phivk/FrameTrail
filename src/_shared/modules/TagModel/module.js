@@ -15,7 +15,9 @@
  FrameTrail.defineModule('TagModel', function(FrameTrail){
 
     function _serverPost(body) {
-        return fetch('_server/ajaxServer.php', {
+        var serverURL = FrameTrail.module('RouteNavigation').resolveServerURL('ajaxServer.php');
+        if (!serverURL) return Promise.reject(new Error('No server configured'));
+        return fetch(serverURL, {
             method: 'POST',
             cache: (config.allowCaching) ? 'default' : 'no-cache',
             body: body
@@ -53,7 +55,7 @@
 
         }
 
-        if (FrameTrail.getState('storageMode') === 'local' || FrameTrail.getState('storageMode') === 'download') {
+        if (['local', 'download', 'static'].indexOf(FrameTrail.getState('storageMode')) !== -1) {
             var adapter = FrameTrail.module('StorageManager').getAdapter();
             adapter.readJSON('tagdefinitions.json').then(function(data) {
                 tags = data;
@@ -66,7 +68,9 @@
             return;
         }
 
-        var tagUrl = typeof tagInitOptions === 'string' ? tagInitOptions : '_data/tagdefinitions.json';
+        var tagUrl = typeof tagInitOptions === 'string'
+            ? tagInitOptions
+            : FrameTrail.module('RouteNavigation').resolveDataURL('tagdefinitions.json');
         fetch(tagUrl, { cache: (config.allowCaching) ? 'default' : 'no-cache' })
             .then(function(r) {
                 if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -102,7 +106,7 @@
 
     function setTag (tagname, language, label, description, success, fail) {
 
-        if (FrameTrail.getState('storageMode') === 'local' || FrameTrail.getState('storageMode') === 'download') {
+        if (['local', 'download', 'static'].indexOf(FrameTrail.getState('storageMode')) !== -1) {
             var adapter = FrameTrail.module('StorageManager').getAdapter();
             adapter.readJSON('tagdefinitions.json').catch(function() { return {}; }).then(function(data) {
                 if (!data[tagname]) { data[tagname] = {}; }
@@ -122,7 +126,7 @@
 
     function deleteLang (tagname, language, success, fail) {
 
-        if (FrameTrail.getState('storageMode') === 'local' || FrameTrail.getState('storageMode') === 'download') {
+        if (['local', 'download', 'static'].indexOf(FrameTrail.getState('storageMode')) !== -1) {
             var adapter = FrameTrail.module('StorageManager').getAdapter();
             adapter.readJSON('tagdefinitions.json').catch(function() { return {}; }).then(function(data) {
                 if (data[tagname]) {
@@ -144,7 +148,7 @@
 
     function deleteTag (tagname, success, fail) {
 
-        if (FrameTrail.getState('storageMode') === 'local' || FrameTrail.getState('storageMode') === 'download') {
+        if (['local', 'download', 'static'].indexOf(FrameTrail.getState('storageMode')) !== -1) {
             var adapter = FrameTrail.module('StorageManager').getAdapter();
             adapter.readJSON('tagdefinitions.json').catch(function() { return {}; }).then(function(data) {
                 delete data[tagname];

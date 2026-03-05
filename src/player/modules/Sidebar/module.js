@@ -15,7 +15,9 @@
 FrameTrail.defineModule('Sidebar', function(FrameTrail){
 
     function _serverPost(body) {
-        return fetch('_server/ajaxServer.php', { method: 'POST', body: body }).then(function(r) { return r.json(); });
+        var serverURL = FrameTrail.module('RouteNavigation').resolveServerURL('ajaxServer.php');
+        if (!serverURL) return Promise.reject(new Error('No server configured'));
+        return fetch(serverURL, { method: 'POST', body: body }).then(function(r) { return r.json(); });
     }
 
     var labels = FrameTrail.module('Localization').labels;

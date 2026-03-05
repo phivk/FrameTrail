@@ -344,7 +344,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
             queueItem.status = 'uploading';
             updateQueueUI();
 
-            var isLocal = (FrameTrail.getState('storageMode') === 'local');
+            var isLocal = (['local', 'static'].indexOf(FrameTrail.getState('storageMode')) !== -1);
             var uploadFn = isLocal ? uploadSingleFileLocally : uploadSingleFile;
 
             uploadFn(queueItem.file, queueItem.type, queueItem.thumb, function(success, error) {
@@ -493,7 +493,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
     function uploadResource(successCallback, onlyVideo) {
         FrameTrail.module('UserManagement').ensureAuthenticated(function(){
 
-            var isLocalMode = (FrameTrail.getState('storageMode') === 'local');
+            var isLocalMode = (['local', 'static'].indexOf(FrameTrail.getState('storageMode')) !== -1);
 
             function showUploadDialog() {
 
@@ -794,7 +794,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                                 uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = false;
                             });
                         } else {
-                            fetch('_server/ajaxServer.php', {
+                            fetch(FrameTrail.module('RouteNavigation').resolveServerURL('ajaxServer.php'), {
                                 method: 'POST',
                                 body: new URLSearchParams({ a: 'fileUpload', type: 'url', name: resourceName, attributes: JSON.stringify(urlObj) })
                             })
@@ -867,7 +867,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                             mapParams.append('boundingBox[]', uploadDialog.querySelector('input.BB2').value);
                             mapParams.append('boundingBox[]', uploadDialog.querySelector('input.BB3').value);
                             mapParams.append('boundingBox[]', uploadDialog.querySelector('input.BB4').value);
-                            fetch('_server/ajaxServer.php', { method: 'POST', body: mapParams })
+                            fetch(FrameTrail.module('RouteNavigation').resolveServerURL('ajaxServer.php'), { method: 'POST', body: mapParams })
                             .then(function(r) { return r.json(); })
                             .then(function(resp) {
                                 if (resp.code === 0) {
@@ -993,7 +993,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                             });
                         } else {
                             // Server mode: PHP downloads, optimizes, generates thumbnail, stores locally
-                            fetch('_server/ajaxServer.php', {
+                            fetch(FrameTrail.module('RouteNavigation').resolveServerURL('ajaxServer.php'), {
                                 method: 'POST',
                                 body: new URLSearchParams({
                                     a: 'fileDownloadFromUrl',
@@ -1093,7 +1093,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                 showUploadDialog();
             } else {
                 // Server mode: fetch capabilities with a single request
-                fetch('_server/ajaxServer.php?a=fileGetCapabilities')
+                fetch(FrameTrail.module('RouteNavigation').resolveServerURL('ajaxServer.php') + '?a=fileGetCapabilities')
                     .then(function(r) { return r.json(); })
                     .then(function(resp) {
                         if (resp && resp.code === 0) {
@@ -1587,8 +1587,8 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
             if (previewController) { previewController.abort(); }
             previewController = new AbortController();
 
-            if ((resourceType == 'webpage' || resourceType == 'wikipedia') && FrameTrail.getState('storageMode') !== 'local') {
-                fetch('_server/ajaxServer.php', {
+            if ((resourceType == 'webpage' || resourceType == 'wikipedia') && FrameTrail.module('RouteNavigation').hasServer()) {
+                fetch(FrameTrail.module('RouteNavigation').resolveServerURL('ajaxServer.php'), {
                     method: 'POST',
                     cache: 'no-cache',
                     signal: previewController.signal,
@@ -1753,7 +1753,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
             return;
         }
 
-        fetch('_server/ajaxServer.php', {
+        fetch(FrameTrail.module('RouteNavigation').resolveServerURL('ajaxServer.php'), {
             method: 'POST',
             cache: 'no-cache',
             body: new URLSearchParams({ a: 'fileDelete', resourcesID: resourceID })
@@ -1956,7 +1956,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
         var params = new URLSearchParams({ a: 'fileGetByFilter', key: key, condition: condition });
         (Array.isArray(values) ? values : [values]).forEach(function(v) { params.append('values[]', v); });
 
-        fetch('_server/ajaxServer.php', {
+        fetch(FrameTrail.module('RouteNavigation').resolveServerURL('ajaxServer.php'), {
             method: 'POST',
             cache: 'no-cache',
             body: params
@@ -2131,7 +2131,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
             return;
         }
 
-        fetch('_server/ajaxServer.php', {
+        fetch(FrameTrail.module('RouteNavigation').resolveServerURL('ajaxServer.php'), {
             method: 'POST',
             cache: 'no-cache',
             body: new URLSearchParams({

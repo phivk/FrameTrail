@@ -38,6 +38,8 @@
      *   data-frametrail-annotations  — URL of a W3C annotations JSON file
      *   data-frametrail-language     — language code; maps to config.defaultLanguage
      *   data-frametrail-config       — inline JSON config object
+     *   data-frametrail-datapath     — base URL for _data/ (maps to dataPath option)
+     *   data-frametrail-server       — base URL for _server/ (maps to server option)
      *
      * @method autoInit
      * @param {Element|Document} [scope]  Optional root element to search within (default: document)
@@ -62,7 +64,9 @@
                 _init({
                     videoElement: video,
                     annotations:  annotations,
-                    config:       config
+                    config:       config,
+                    dataPath:     video.getAttribute('data-frametrail-datapath') || null,
+                    server:       video.getAttribute('data-frametrail-server')   || null
                 });
             })(videos[i]);
         }
@@ -151,14 +155,15 @@
                 contentTargets:     options.contentTargets || {},
                 contents:           options.contents,
                 startID:            options.startID,
-                resources:          options.resources || [],
+                resources:          options.resources !== undefined ? options.resources : null,
                 tagdefinitions:     options.tagdefinitions,
                 config:             options.config,
                 users:              options.users,
                 videoSource:        options.videoSource  || null,
                 videoElement:       options.videoElement || null,
                 annotations:        options.annotations  || null,
-                serverPath:         options.serverPath   || '',
+                dataPath:           options.dataPath     || null,
+                server:             options.server       || null,
 
                 loggedIn:           false,
                 username:           '',
@@ -171,8 +176,8 @@
                 unsavedChanges:     false
             };
 
-            // serverPath is stored in state; Database._ajax() applies it when prefixing
-            // relative _server/ and _data/ fetch URLs (see Database module).
+            // dataPath and server are stored in state. RouteNavigation.resolveDataURL()
+            // and resolveServerURL() use them when building fetch URLs (see RouteNavigation module).
 
             if (appName) {
                 _initModule(appName);

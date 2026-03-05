@@ -259,7 +259,7 @@ FrameTrail.changeState('editMode', true);
 | `target` | String/Element | CSS selector or DOM element for mount point |
 | `editMode` | Boolean/String | `false`, `'overlays'`, `'annotations'`, etc. |
 | `viewMode` | String | `'video'`, `'overview'`, `'resources'` |
-| `storageMode` | String | `'server'`, `'local'`, `'needsFolder'`, `'download'` |
+| `storageMode` | String | `'server'`, `'local'`, `'needsFolder'`, `'download'`, `'static'` |
 | `loggedIn` | Boolean | User authentication status |
 | `username` | String | Current user's name |
 | `fullscreen` | Boolean | Fullscreen state |
@@ -270,7 +270,8 @@ FrameTrail.changeState('editMode', true);
 | `videoElement` | String/Element | Selector or ref to an existing `<video>` to adopt (shorthand API) |
 | `videoSource` | String | Video URL to use when creating a new `<video>` (shorthand API) |
 | `annotations` | String/Array | URL string or array of W3C annotation URLs / inline objects (shorthand API) |
-| `serverPath` | String | Prefix prepended to all internal `_server/` and `_data/` AJAX URLs |
+| `dataPath` | String\|null | Base URL for the `_data/` directory (e.g. `'../_data/'`). `null` = auto-detect. |
+| `server` | String\|null | Base URL for the `_server/` PHP directory (e.g. `'../_server/'`). `null` = auto-detect or no server. |
 
 ### Reactive Updates
 
@@ -515,13 +516,15 @@ FrameTrail.init({
     tagdefinitions: null,           // Tag definitions (loaded from server if null)
     // Language is configured via config.defaultLanguage (see config option above)
 
-    // ── Server path ───────────────────────────────────────────────────────────
-    serverPath:     '',             // Prefix for all internal _server/ and _data/
-                                    // AJAX URLs. Use when FrameTrail is loaded from
-                                    // a subdirectory or a remote origin.
-                                    // Examples:
-                                    //   serverPath: '../'              (one level up)
-                                    //   serverPath: 'https://api.example.com/'
+    // ── Data / server paths ───────────────────────────────────────────────────
+    dataPath:       null,           // Base URL for the _data/ directory. null = auto-detect.
+                                    // Caller must include the trailing slash and directory name.
+                                    //   dataPath: '../_data/'          (one level up)
+                                    //   dataPath: 'https://cdn.example.com/project/_data/'
+    server:         null,           // Base URL for the _server/ PHP directory. null = auto-detect.
+                                    // Omit entirely for CDN/static hosting (no PHP backend).
+                                    //   server: '../_server/'          (one level up)
+                                    //   server: 'https://api.example.com/ft/_server/'
 
     // ── Advanced ──────────────────────────────────────────────────────────────
     contentTargets: {}              // Custom DOM targets for content views
@@ -600,25 +603,40 @@ In all three shorthand scenarios:
 - `startID` is set to `'0'` automatically — the overview is skipped
 - Overview mode is never shown (Titlebar hides the toggle when only one video is present)
 
-### `serverPath` option
+### `dataPath` and `server` options
 
-When FrameTrail is loaded from a subdirectory (e.g. `examples/`) or a different origin from the PHP backend, pass `serverPath` so that internal AJAX calls resolve correctly:
+Use these when FrameTrail is loaded from a subdirectory (e.g. `examples/`) or when the data and PHP backend live at different origins. Both options take a **full base URL including the directory name** and a trailing slash.
 
 ```javascript
-// FrameTrail installed at site root; page served from /examples/
+// Page in examples/, FrameTrail installed at parent directory
 FrameTrail.init({
-    serverPath: '../',
+    dataPath: '../_data/',
+    server:   '../_server/',
     // … other options …
 }, 'PlayerLauncher');
 
-// FrameTrail backend on a separate server (requires CORS headers on the remote server)
+// PHP backend on a separate server (the remote server must send CORS headers)
 FrameTrail.init({
-    serverPath: 'https://api.example.com/frametrail/',
+    dataPath: 'https://cdn.example.com/project/_data/',
+    server:   'https://api.example.com/ft/_server/',
+    // … other options …
+}, 'PlayerLauncher');
+
+// Static / CDN hosting — data served from a CDN, no PHP backend
+// storageMode becomes 'static': read-only from CDN, in-memory edits, Save As export
+FrameTrail.init({
+    dataPath: 'https://cdn.example.com/project/_data/',
+    // server omitted → no PHP; read-only viewer + in-memory annotation editing
     // … other options …
 }, 'PlayerLauncher');
 ```
 
-`serverPath` is prepended to any relative URL that starts with `_server/` or `_data/`. Absolute URLs (starting with `http://` or `https://`) are never modified.
+When both are omitted, StorageManager auto-detects: it probes `_server/ajaxServer.php` on HTTP(S) (server mode if found, local-folder mode if not), or falls back to the File System Access API on `file://`.
+
+Resolver helpers (available on the `RouteNavigation` module) provide the resolved URLs throughout the codebase:
+- `resolveDataURL(relativePath)` — prepends `dataPath` (or `'_data/'` as default)
+- `resolveServerURL(relativePath)` — prepends `server`; returns `null` if no server configured
+- `hasServer()` — returns `true` when a `server` is configured
 
 ### Multiple Instances
 

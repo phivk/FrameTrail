@@ -171,6 +171,7 @@ JS_FILES=(
     "_shared/frametrail-core/storage/StorageAdapterServer.js"
     "_shared/frametrail-core/storage/StorageAdapterLocal.js"
     "_shared/frametrail-core/storage/StorageAdapterDownload.js"
+    "_shared/frametrail-core/storage/StorageAdapterStatic.js"
     "_shared/modules/StorageManager/module.js"
 
     # Shared modules

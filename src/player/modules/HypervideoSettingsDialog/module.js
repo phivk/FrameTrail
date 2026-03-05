@@ -14,7 +14,9 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
     var labels = FrameTrail.module('Localization').labels;
 
     function _serverPost(body) {
-        return fetch('_server/ajaxServer.php', { method: 'POST', body: body }).then(function(r) { return r.json(); });
+        var serverURL = FrameTrail.module('RouteNavigation').resolveServerURL('ajaxServer.php');
+        if (!serverURL) return Promise.reject(new Error('No server configured'));
+        return fetch(serverURL, { method: 'POST', body: body }).then(function(r) { return r.json(); });
     }
 
     /**
@@ -660,8 +662,7 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
             formData.set('hypervideoID', thisID);
             formData.set('src', JSON.stringify(FrameTrail.module("Database").convertToDatabaseFormat(thisID), null, 4));
 
-            fetch('_server/ajaxServer.php', { method: 'POST', body: formData })
-            .then(function(r) { return r.json(); })
+            _serverPost(formData)
             .then(function(response) {
                 switch(response['code']) {
                     case 0:
@@ -673,10 +674,7 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
                         }
 
                         if (sourceWasChanged && newSourcePath !== null) {
-                            fetch('_server/ajaxServer.php', {
-                                method: 'POST',
-                                body: new URLSearchParams({ a: 'updateAnnotationSources', hypervideoID: thisID, newSourcePath: newSourcePath })
-                            })
+                            _serverPost(new URLSearchParams({ a: 'updateAnnotationSources', hypervideoID: thisID, newSourcePath: newSourcePath }))
                             .then(function() { completeUpdate(); })
                             .catch(function() { completeUpdate(); });
                         } else {

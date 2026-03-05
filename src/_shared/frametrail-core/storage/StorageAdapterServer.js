@@ -18,10 +18,22 @@
 
 class StorageAdapterServer extends StorageAdapter {
 
+    /**
+     * @param {String} serverBase  Base URL for the PHP server dir, e.g. '_server/' or 'https://api.example.com/ft/_server/'
+     * @param {String} dataBase    Base URL for the data dir, e.g. '_data/' or 'https://cdn.example.com/project/_data/'
+     */
+    constructor(serverBase, dataBase) {
+        super();
+        this._serverBase = serverBase || '_server/';
+        this._dataBase   = dataBase   || '_data/';
+    }
+
     get type() { return 'server'; }
     get displayName() { return 'FrameTrail Server'; }
     get canSave() {
-        return FrameTrail.getState('loggedIn');
+        // Note: StorageManager.canSave() special-cases 'server' and does not call this getter.
+        // It is kept for completeness but should not be relied on.
+        return true;
     }
 
     async init() {
@@ -30,7 +42,7 @@ class StorageAdapterServer extends StorageAdapter {
         }
 
         // Verify PHP backend is reachable
-        var resp = await fetch('_server/ajaxServer.php', {
+        var resp = await fetch(this._serverBase + 'ajaxServer.php', {
             method: 'POST',
             cache: 'no-cache',
             body: new URLSearchParams({ a: 'userCheckLogin' })
@@ -40,14 +52,14 @@ class StorageAdapterServer extends StorageAdapter {
     }
 
     async readJSON(path) {
-        var resp = await fetch('_data/' + path, { cache: 'no-cache' });
+        var resp = await fetch(this._dataBase + path, { cache: 'no-cache' });
         if (!resp.ok) throw new Error('File not found: ' + path);
         return resp.json();
     }
 
     async writeJSON(path, data) {
         var action = this._getActionForPath(path, data);
-        var resp = await fetch('_server/ajaxServer.php', {
+        var resp = await fetch(this._serverBase + 'ajaxServer.php', {
             method: 'POST',
             body: new URLSearchParams(action.params)
         });

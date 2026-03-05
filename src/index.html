@@ -144,6 +144,7 @@
         <script type="text/javascript" src="_shared/frametrail-core/storage/StorageAdapterServer.js"></script>
         <script type="text/javascript" src="_shared/frametrail-core/storage/StorageAdapterLocal.js"></script>
         <script type="text/javascript" src="_shared/frametrail-core/storage/StorageAdapterDownload.js"></script>
+        <script type="text/javascript" src="_shared/frametrail-core/storage/StorageAdapterStatic.js"></script>
         <script type="text/javascript" src="_shared/modules/StorageManager/module.js"></script>
 
         <script type="text/javascript" src="_shared/modules/Database/module.js"></script>
@@ -186,8 +187,9 @@
 
             document.addEventListener('DOMContentLoaded', async function() {
 
-                // Check Setup — await before init so no requests are aborted mid-flight
-                // TODO move to php server
+                // Check Setup — runs before FrameTrail.init() so RouteNavigation is not yet available.
+                // This file is the default self-hosted entry point; '_server/' is always correct here.
+                // Custom embeds using dataPath/server should omit or handle this check themselves.
                 if (document.location.host) {
                     try {
                         const r   = await fetch('_server/ajaxServer.php', {

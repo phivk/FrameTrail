@@ -152,7 +152,9 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 
 
     function _serverPost(body) {
-        return fetch('_server/ajaxServer.php', { method: 'POST', body: body })
+        var serverURL = FrameTrail.module('RouteNavigation').resolveServerURL('ajaxServer.php');
+        if (!serverURL) return Promise.reject(new Error('No server configured'));
+        return fetch(serverURL, { method: 'POST', body: body })
             .then(function(r) { return r.json(); });
     }
     FTTabs(domElement.querySelector('.userTabs'), {
@@ -227,11 +229,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
         domElement.querySelector('.userDataContainer').style.display = 'none';
 
 
-        fetch('_server/ajaxServer.php', {
-            method: 'POST',
-            body: new URLSearchParams({ a: 'userGet' })
-        })
-        .then(function(r) { return r.json(); })
+        _serverPost(new URLSearchParams({ a: 'userGet' }))
         .then(function(data) {
 
             if (!data || !data.response) {
@@ -255,11 +253,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
     domElement.querySelector('#user_change_user').addEventListener('change', function(evt) {
 
         var selectedUserID = evt.target.value;
-        fetch('_server/ajaxServer.php', {
-            method: 'POST',
-            body: new URLSearchParams({ a: 'userGet', userID: selectedUserID })
-        })
-        .then(function(r) { return r.json(); })
+        _serverPost(new URLSearchParams({ a: 'userGet', userID: selectedUserID }))
         .then(function(ret) {
             domElement.querySelector('#user_change_name').value = ret['response']['name'];
             domElement.querySelector('#user_change_mail').value = ret['response']['mail'];
@@ -281,7 +275,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
 
     domElement.querySelector('.administrationFormRefresh').addEventListener('click', refreshAdministrationForm);
 
-    if (FrameTrail.module('RouteNavigation').environment.server &&
+    if (FrameTrail.module('RouteNavigation').hasServer() &&
         !FrameTrail.getState('videoElement') &&
         !FrameTrail.getState('videoSource') &&
         !FrameTrail.getState('users')) {
@@ -363,7 +357,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
         
         // Fallback: load config.json as text to prevent XML parsing errors,
         // then manually parse JSON.
-        fetch('_data/config.json', { cache: 'no-cache' })
+        fetch(FrameTrail.module('RouteNavigation').resolveDataURL('config.json'), { cache: 'no-cache' })
             .then(function(r) { return r.text(); })
             .then(function(textData) {
                 try {
@@ -583,10 +577,10 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
             return;
         }
 
-        // In local/download mode without guest mode active, user is not yet identified.
+        // In local/download/static mode without guest mode active, user is not yet identified.
         // Also applies when storageMode is not yet set but shorthand API options
         // indicate that the Download adapter will be used (videoElement / videoSource).
-        if (storageMode === 'local' || storageMode === 'download' ||
+        if (storageMode === 'local' || storageMode === 'download' || storageMode === 'static' ||
             FrameTrail.getState('videoElement') || FrameTrail.getState('videoSource')) {
             window.setTimeout(function() {
                 callback.call(window, false);
@@ -594,7 +588,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
             return;
         }
 
-        if (!FrameTrail.module('RouteNavigation').environment.server || FrameTrail.getState('users')) {
+        if (!FrameTrail.module('RouteNavigation').hasServer() || FrameTrail.getState('users')) {
             window.setTimeout(function() {
                 FrameTrail.changeState({
                     editMode: false,
@@ -608,11 +602,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
             return;
         }
 
-        fetch('_server/ajaxServer.php', {
-            method: 'POST',
-            body: new URLSearchParams({ a: 'userCheckLogin' })
-        })
-        .then(function(r) { return r.json(); })
+        _serverPost(new URLSearchParams({ a: 'userCheckLogin' }))
         .then(function(response) {
             switch(response.code){
 
@@ -756,11 +746,7 @@ FrameTrail.defineModule('UserManagement', function(FrameTrail){
             return;
         }
 
-        fetch('_server/ajaxServer.php', {
-            method: 'POST',
-            body: new URLSearchParams({ a: 'userLogout' })
-        })
-        .then(function(r) { return r.json(); })
+        _serverPost(new URLSearchParams({ a: 'userLogout' }))
         .then(function(data) {
 
             if (userID != '') {

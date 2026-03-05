@@ -166,27 +166,41 @@ All instances created by `autoInit()` are accessible via `FrameTrail.instances[]
 
 See [examples/](../examples/) for runnable HTML files for each pattern.
 
-### `serverPath` option — loading from a subdirectory or remote origin
+### `dataPath` and `server` options — subdirectory or remote origin
 
-When your page lives in a subdirectory of the FrameTrail installation (e.g. `examples/`) or on a different host, pass `serverPath` so that FrameTrail's internal AJAX calls resolve correctly without needing a `<base href>` on the page:
+When your page lives in a subdirectory of the FrameTrail installation (e.g. `examples/`) or on a different host, pass `dataPath` and `server` so that FrameTrail's internal requests resolve correctly without needing a `<base href>` on the page. Both take a **full base URL including the directory name** with a trailing slash.
 
 ```javascript
 // Page is in examples/, FrameTrail root is one level up
 FrameTrail.init({
-    serverPath: '../',
+    dataPath: '../_data/',
+    server:   '../_server/',
     startID: 'your-hypervideo-id',
     // …
 }, 'PlayerLauncher');
 
 // FrameTrail backend on a separate server (the remote server must send CORS headers)
 FrameTrail.init({
-    serverPath: 'https://frametrail.example.com/',
+    dataPath: 'https://frametrail.example.com/_data/',
+    server:   'https://frametrail.example.com/_server/',
     startID: 'your-hypervideo-id',
     // …
 }, 'PlayerLauncher');
 ```
 
-`serverPath` is prepended to any relative URL starting with `_server/` or `_data/`. Absolute URLs are passed through unchanged.
+### Static CDN Hosting (read-only, no PHP)
+
+FrameTrail can serve hypervideo data from a static CDN without any PHP backend. Specify `dataPath` pointing to the CDN and omit `server`. The `storageMode` becomes `'static'`: data is read from the CDN, edits are stored in memory, and users can export their changes via Save As.
+
+```javascript
+FrameTrail.init({
+    dataPath: 'https://cdn.example.com/project/_data/',
+    // server omitted → no PHP backend, viewer + in-memory editing only
+    startID: 'your-hypervideo-id',
+}, 'PlayerLauncher');
+```
+
+**CORS requirement:** The CDN must send `Access-Control-Allow-Origin: *` (or your page's origin) for the JSON files under `_data/`. File uploads and user management are unavailable in static mode.
 
 ### Inline on a Page (full data, no server)
 

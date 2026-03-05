@@ -30,6 +30,40 @@ FrameTrail.defineModule('RouteNavigation', function(FrameTrail){
 
 
     /**
+     * Return the base URL for the data directory.
+     * Uses the `dataPath` init option when provided; falls back to `'_data/'`.
+     * @method resolveDataURL
+     * @param {String} relativePath  Path relative to the data root (e.g. 'config.json')
+     * @return {String}
+     */
+    function resolveDataURL(relativePath) {
+        var dataPath = FrameTrail.getState('dataPath') || '_data/';
+        return dataPath + relativePath;
+    }
+
+    /**
+     * Return the full URL for a server-side endpoint.
+     * Uses the `server` init option; returns null when no server is configured.
+     * @method resolveServerURL
+     * @param {String} relativePath  Path relative to the server root (e.g. 'ajaxServer.php')
+     * @return {String|null}
+     */
+    function resolveServerURL(relativePath) {
+        var server = FrameTrail.getState('server');
+        if (!server) return null;
+        return server + relativePath;
+    }
+
+    /**
+     * Return true when a PHP server is configured and reachable.
+     * @method hasServer
+     * @return {Boolean}
+     */
+    function hasServer() {
+        return !!FrameTrail.getState('server');
+    }
+
+    /**
      * I return a complete path (or URL) for a resource file based on the src attribute of a resource object.
      * @method getResourceURL
      * @param {String} src
@@ -59,7 +93,7 @@ FrameTrail.defineModule('RouteNavigation', function(FrameTrail){
                 }
             }
 
-            return '_data/resources/' + src;
+            return resolveDataURL('resources/' + src);
 
         }
 
@@ -308,7 +342,10 @@ FrameTrail.defineModule('RouteNavigation', function(FrameTrail){
          */
         clearHashTime: clearHashTime,
 
-        getResourceURL: getResourceURL
+        getResourceURL:   getResourceURL,
+        resolveDataURL:   resolveDataURL,
+        resolveServerURL: resolveServerURL,
+        hasServer:        hasServer
 
 
     };

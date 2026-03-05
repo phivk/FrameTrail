@@ -17,17 +17,22 @@ FrameTrail.defineModule('StorageManager', function(FrameTrail) {
 
     var _currentAdapter = null,
         _serverAdapter = null,
+        _staticAdapter = null,
         _localAdapter = null,
         _downloadAdapter = null,
         _initialized = false;
 
 
     /**
-     * Initialize storage system. Determines the default adapter based on environment.
+     * Initialize storage system. Determines the default adapter based on environment
+     * and the `dataPath` / `server` init options.
      *
-     * - If on HTTP(S) and PHP server responds: use server adapter
-     * - If on file:// or no PHP: try to restore a local folder handle
-     * - If no handle: signal 'needsFolder' (caller must prompt user)
+     * Decision order:
+     *   1. Shorthand API (videoElement/videoSource) → download (in-memory)
+     *   2. `server` option provided → probe PHP at that URL → server mode
+     *   3. `server` omitted + `dataPath` provided → static mode (CDN, in-memory edits)
+     *   4. Neither provided + HTTP(S) → auto-detect PHP at '_server/' → server or local
+     *   5. file:// → try to restore local folder handle
      *
      * @method init
      * @return {Promise<StorageAdapter>}
@@ -37,13 +42,14 @@ FrameTrail.defineModule('StorageManager', function(FrameTrail) {
             return Promise.resolve(_currentAdapter);
         }
 
-        _serverAdapter = new StorageAdapterServer();
-        _localAdapter = new StorageAdapterLocal();
+        _localAdapter    = new StorageAdapterLocal();
         _downloadAdapter = new StorageAdapterDownload();
 
-        // When using the simple shorthand API (videoElement or videoSource), all
-        // content is provided inline — no server probe or folder prompt needed.
-        // Go straight to the Download adapter (in-memory, no persistence).
+        var serverOption   = FrameTrail.getState('server');
+        var dataPathOption = FrameTrail.getState('dataPath');
+        var onHTTP         = FrameTrail.module('RouteNavigation').environment.server;
+
+        // 1. Shorthand API — inline content, no server or folder needed
         if (FrameTrail.getState('videoElement') || FrameTrail.getState('videoSource')) {
             _currentAdapter = _downloadAdapter;
             FrameTrail.changeState('storageMode', 'download');
@@ -51,23 +57,55 @@ FrameTrail.defineModule('StorageManager', function(FrameTrail) {
             return Promise.resolve(_currentAdapter);
         }
 
-        var hasServer = FrameTrail.module('RouteNavigation').environment.server;
-
-        if (hasServer) {
-            // On HTTP(S) — try server adapter
+        // 2. Explicit server option — probe PHP at the provided URL
+        if (serverOption !== null) {
+            var dataBase = dataPathOption || '_data/';
+            _serverAdapter = new StorageAdapterServer(serverOption, dataBase);
             return _serverAdapter.init().then(function() {
                 _currentAdapter = _serverAdapter;
                 FrameTrail.changeState('storageMode', 'server');
                 _initialized = true;
                 return _currentAdapter;
             }).catch(function() {
-                // PHP not reachable — try local folder
                 return _tryLocal();
             });
-        } else {
-            // On file:// — try to restore local handle
-            return _tryLocal();
         }
+
+        // 3. No server + explicit dataPath — static / CDN mode (in-memory edits)
+        if (dataPathOption !== null) {
+            _staticAdapter  = new StorageAdapterStatic(dataPathOption);
+            _currentAdapter = _staticAdapter;
+            return _staticAdapter.init().then(function() {
+                FrameTrail.changeState('storageMode', 'static');
+                _initialized = true;
+                return _currentAdapter;
+            }).catch(function() {
+                // CDN not reachable — fall back to download
+                _currentAdapter = _downloadAdapter;
+                FrameTrail.changeState('storageMode', 'download');
+                _initialized = true;
+                return _currentAdapter;
+            });
+        }
+
+        // 4. Auto-detect: try PHP at the default relative location
+        if (onHTTP) {
+            _serverAdapter = new StorageAdapterServer('_server/', '_data/');
+            return _serverAdapter.init().then(function() {
+                _currentAdapter = _serverAdapter;
+                // Set state so resolvers (resolveServerURL / resolveDataURL) work correctly
+                FrameTrail.changeState('server',   '_server/');
+                FrameTrail.changeState('dataPath', '_data/');
+                FrameTrail.changeState('storageMode', 'server');
+                _initialized = true;
+                return _currentAdapter;
+            }).catch(function() {
+                return _tryLocal();
+            });
+        }
+
+        // 5. file:// — try to restore a local folder handle
+        return _tryLocal();
     }
 
 
@@ -171,7 +209,7 @@ FrameTrail.defineModule('StorageManager', function(FrameTrail) {
      * @return {Promise<StorageAdapterServer>}
      */
     function switchToServer() {
-        if (!FrameTrail.module('RouteNavigation').environment.server) {
+        if (!FrameTrail.module('RouteNavigation').hasServer()) {
             return Promise.reject(new Error('No server available'));
         }
         _currentAdapter = _serverAdapter;
@@ -202,7 +240,7 @@ FrameTrail.defineModule('StorageManager', function(FrameTrail) {
      * @return {Boolean}
      */
     function canSaveToServer() {
-        return FrameTrail.module('RouteNavigation').environment.server &&
+        return FrameTrail.module('RouteNavigation').hasServer() &&
                FrameTrail.getState('loggedIn') &&
                !FrameTrail.module('UserManagement').isGuestMode();
     }
@@ -244,19 +282,29 @@ FrameTrail.defineModule('StorageManager', function(FrameTrail) {
     }
 
 
+    /**
+     * @method getStaticAdapter
+     * @return {StorageAdapterStatic|null}
+     */
+    function getStaticAdapter() {
+        return _staticAdapter;
+    }
+
+
     return {
         init:               init,
         getAdapter:         getAdapter,
         getServerAdapter:   getServerAdapter,
+        getStaticAdapter:   getStaticAdapter,
         getLocalAdapter:    getLocalAdapter,
         getDownloadAdapter: getDownloadAdapter,
         switchToLocal:      switchToLocal,
-        switchToServer:      switchToServer,
-        canSave:             canSave,
-        canSaveToServer:     canSaveToServer,
-        canSaveToLocal:      canSaveToLocal,
-        getCurrentUserInfo:  getCurrentUserInfo,
-        getFolderName:       getFolderName
+        switchToServer:     switchToServer,
+        canSave:            canSave,
+        canSaveToServer:    canSaveToServer,
+        canSaveToLocal:     canSaveToLocal,
+        getCurrentUserInfo: getCurrentUserInfo,
+        getFolderName:      getFolderName
     };
 
 });

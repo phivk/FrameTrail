@@ -9,9 +9,9 @@
   - Opening a specific hypervideo directly (skipping the overview)
   - Overriding the config theme inline while loading everything else from the server
 
-  The `serverPath: '../'` init option makes all FrameTrail internal AJAX calls
-  (_server/, _data/) resolve to the FrameTrail installation root, so this file
-  can live in examples/ without needing to copy the server files.
+  The `dataPath` and `server` init options tell FrameTrail where _data/ and
+  _server/ live relative to the page, so this file can live in examples/ without
+  needing to copy the server files.
 
   To run: serve the parent directory with Apache+PHP, open this file in a browser,
   and replace 'your-hypervideo-id' below with a real ID from your _data/hypervideos/ folder.
@@ -54,9 +54,9 @@
                 type:  'frametrail'
             }],
 
-            // Tell FrameTrail that _server/ and _data/ are one directory up.
-            // This makes all internal AJAX calls resolve correctly from examples/.
-            serverPath: '../'
+            // Tell FrameTrail where _data/ and _server/ live (one directory up).
+            dataPath: '../_data/',
+            server:   '../_server/'
         }, 'PlayerLauncher');
     });
     </script>

@@ -391,7 +391,7 @@ function myCustomFunction($param1, $param2) {
 ### Call from JavaScript
 
 ```javascript
-// Via the FrameTrail Database module (preferred — handles serverPath automatically)
+// Via the FrameTrail Database module (preferred — uses resolveServerURL automatically)
 FrameTrail.module('Database').ajax('myCustomAction', {
     param1: 'value1',
     param2: 'value2'

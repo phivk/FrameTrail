@@ -42,7 +42,10 @@
 
 
     /**
-     * Private fetch-based AJAX helper replacing $.ajax().done().fail().
+     * Private fetch-based AJAX helper. Delegates to the current storage adapter for
+     * relative `_data/` GET requests; uses resolveServerURL() for `_server/` POST
+     * requests; passes absolute URLs through as-is.
+     *
      * @param {Object}   opts          – url, type ('GET'|'POST'), data (plain obj), dataType ('json'|'text')
      * @param {Function} done          – called with parsed response on success
      * @param {Function} [fail]        – called with Error on network/HTTP failure
@@ -50,24 +53,45 @@
     function _ajax(opts, done, fail) {
         var cachePolicy = (config.allowCaching) ? 'default' : 'no-cache';
         var method      = (opts.type || 'GET').toUpperCase();
-        var fetchOpts   = { cache: cachePolicy };
         var url         = opts.url;
+        var RouteNav    = FrameTrail.module('RouteNavigation');
 
-        // Prepend serverPath (e.g. '../') to relative _server/ and _data/ URLs when
-        // FrameTrail is loaded from a subdirectory (replaces the old $.ajaxPrefilter).
-        var serverPath = FrameTrail.getState('serverPath');
-        if (serverPath && typeof url === 'string' && /^(_server|_data)\//.test(url)) {
-            url = serverPath + url;
+        if (method === 'GET') {
+            if (/^_data\//.test(url)) {
+                // Delegate to the current storage adapter — adapter handles base URL resolution
+                var path    = url.replace(/^_data\//, '');
+                var adapter = FrameTrail.module('StorageManager').getAdapter();
+                if (adapter) {
+                    adapter.readJSON(path)
+                        .then(done)
+                        .catch(function(err) { if (fail) fail(err); });
+                    return;
+                }
+            }
+            // Absolute URL (user-provided resource URL, oEmbed, etc.) — direct fetch
+            fetch(url, { cache: cachePolicy })
+                .then(function(r) {
+                    if (!r.ok) throw new Error('HTTP ' + r.status);
+                    return (opts.dataType === 'text') ? r.text() : r.json();
+                })
+                .then(done)
+                .catch(function(err) { if (fail) fail(err); });
+            return;
         }
 
-        if (method === 'POST') {
-            fetchOpts.method = 'POST';
-            fetchOpts.body   = new URLSearchParams(opts.data || {});
+        // POST — resolve server URL
+        if (/^_server\//.test(url)) {
+            var serverURL = RouteNav.resolveServerURL(url.replace(/^_server\//, ''));
+            if (!serverURL) {
+                if (fail) fail(new Error('No server configured'));
+                return;
+            }
+            url = serverURL;
         }
 
-        fetch(url, fetchOpts)
-            .then(function (r) {
-                if (!r.ok) { throw new Error('HTTP ' + r.status); }
+        fetch(url, { method: 'POST', cache: cachePolicy, body: new URLSearchParams(opts.data || {}) })
+            .then(function(r) {
+                if (!r.ok) throw new Error('HTTP ' + r.status);
                 return (opts.dataType === 'text') ? r.text() : r.json();
             })
             .then(done)
@@ -257,8 +281,24 @@
             return;
         }
 
-        var initOptionsResources = FrameTrail.getState('resources'),
-            countdown = initOptionsResources.length;
+        var initOptionsResources = FrameTrail.getState('resources');
+
+        // null means "load default index from dataPath" (same as local/server mode default)
+        if (initOptionsResources === null) {
+            var adapter = FrameTrail.module('StorageManager').getAdapter();
+            adapter.readJSON('resources/_index.json')
+                .then(function(data) {
+                    resources = data.resources || {};
+                    success.call(this);
+                })
+                .catch(function() {
+                    resources = {};
+                    success.call(this);
+                });
+            return;
+        }
+
+        var countdown = initOptionsResources.length;
 
         if (countdown === 0) {
             return success.call(this);
@@ -340,9 +380,10 @@
                     success.call(this);
                 });
 
-        } else if (FrameTrail.getState('storageMode') === 'download') {
+        } else if (FrameTrail.getState('storageMode') === 'download' ||
+                   FrameTrail.getState('storageMode') === 'static') {
 
-            // Download mode: no users file — start empty
+            // Download / static mode: no users file — start empty
             users = {};
             success.call(this);
 
@@ -409,7 +450,9 @@
 
         if (!initOptionsHypervideoData) {
 
-            loadHypervideoData_FrametrailServer('_data/hypervideos/', success, fail);
+            loadHypervideoData_FrametrailServer(
+                FrameTrail.module('RouteNavigation').resolveDataURL('hypervideos/'), success, fail
+            );
 
         } else if (typeof initOptionsHypervideoData === 'string') {
 

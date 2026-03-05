@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 FrameTrail is an open hypervideo environment for creating, annotating, and remixing interactive videos. It's a client-side JavaScript application with an optional PHP backend that uses **JSON files instead of a database** for all data storage. The entire system is portable — copy the `_data` directory between servers and everything works.
 
-FrameTrail can run in three modes: with a PHP server (full multi-user), with the File System Access API for local editing in Chrome/Edge (no server needed), or in-memory using the Download adapter (view + edit + export, no persistence — works everywhere but requires data to be passed via init options).
+FrameTrail can run in four modes: with a PHP server (full multi-user), with the File System Access API for local editing in Chrome/Edge (no server needed), in-memory using the Download adapter (view + edit + export, no persistence — works everywhere but requires data to be passed via init options), or in static/CDN mode (read from a static host + in-memory edits + Save As export, no PHP backend needed).
 
 ## Repository Structure
 
@@ -130,6 +130,7 @@ _data/
 - `'local'` — File System Access API active, data read/written via `StorageAdapterLocal` to a user-selected folder
 - `'needsFolder'` — File System Access API supported but no folder selected yet; launcher prompts user to pick a `_data` directory
 - `'download'` — No persistent storage available (Firefox/Safari, or any browser without File System Access API and no PHP); `StorageAdapterDownload` is used, which stores data in memory and lets users export/download it. Viewing and editing work; `canSave` is `false` (no persistent target); changes are exported via Save As. Data persists only until page reload.
+- `'static'` — CDN/static hosting mode (no PHP backend). `StorageAdapterStatic` reads JSON from a CDN base URL (`dataPath` init option) and inherits in-memory write + Save As export from `StorageAdapterDownload`. Used when `dataPath` is set but `server` is omitted.
 
 ### Application Modes
 
@@ -141,7 +142,9 @@ _data/
 **State variables:**
 - `editMode` (true/false) — Whether user is editing
 - `viewMode` ('video'/'overview') — Current view type
-- `storageMode` ('server'/'local'/'needsFolder'/'noStorage') — Active storage backend
+- `storageMode` ('server'/'local'/'needsFolder'/'download'/'static') — Active storage backend
+- `dataPath` (string|null) — Base URL for `_data/` directory; `null` = auto-detect
+- `server` (string|null) — Base URL for `_server/` PHP directory; `null` = auto-detect or no server
 - `slidePosition` ('middle'/'bottom'/'top') — Layout positioning
 - `sidebarOpen` (true/false) — Sidebar visibility
 - `fullscreen` (true/false) — Fullscreen mode
