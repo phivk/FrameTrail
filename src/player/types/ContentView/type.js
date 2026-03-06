@@ -1284,7 +1284,7 @@ FrameTrail.defineType(
                         var midTime = (item.startTime + item.endTime) / 2 - offsetIn;
                         var desired = scale * midTime - item.width / 2;
 
-                        if (desired >= prevDesiredRight) {
+                        if (groups.length === 0 || desired >= prevDesiredRight) {
                             groups.push({ items: [item], left: Math.max(0, desired) });
                         } else {
                             groups[groups.length - 1].items.push(item);
