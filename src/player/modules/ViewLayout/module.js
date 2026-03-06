@@ -473,28 +473,49 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
 
         var _lmWrapper = document.createElement('div');
         _lmWrapper.innerHTML = '<div class="layoutManagerContainer">' +
-            '    <div class="layoutManagerMain">' +
-            '        <div class="layoutManager">' +
-            '            <div data-area="areaTop" class="layoutArea">' +
-            '                <div class="layoutAreaTabs"></div>' +
-            '                <div class="layoutAreaContent"></div>' +
-            '            </div>' +
-            '            <div class="playerWrapper">' +
-            '                <div data-area="areaLeft" class="layoutArea">' +
+            '    <div class="layoutManagerOptions">' +
+            '        <div class="message active mb-0">'+ labels['MessageLayoutManagerDropContentViews'] +'</div>' +
+            '        <div class="contentViewTemplate" data-type="TimedContent" data-size="medium">' +
+            '            <div class="contentViewOptionThumb"></div>' +
+            '            <div class="contentViewTemplateLabel"><span class="icon-docs">'+ labels['GenericAnnotationCollection'] +'</span></div>' +
+            '        </div>' +
+            '        <div class="contentViewTemplate" data-type="CustomHTML" data-size="medium">' +
+            '            <div class="contentViewOptionThumb"></div>' +
+            '            <div class="contentViewTemplateLabel"><span class="icon-file-code">'+ labels['GenericCustomHTML'] +'</span></div>' +
+            '        </div>' +
+            '        <div class="contentViewTemplate" data-type="Transcript" data-size="large">' +
+            '            <div class="contentViewOptionThumb"></div>' +
+            '            <div class="contentViewTemplateLabel"><span class="icon-doc-text">'+ labels['GenericTextTranscript'] +'</span></div>' +
+            '        </div>' +
+            '        <div class="contentViewTemplate" data-type="Timelines" data-size="large">' +
+            '            <div class="contentViewOptionThumb"></div>' +
+            '            <div class="contentViewTemplateLabel"><span class="icon-doc-text">'+ labels['GenericTimelines'] +'</span></div>' +
+            '        </div>' +
+            '    </div>' +
+            '    <div class="layoutManagerBody">' +
+            '        <div class="layoutManagerMain">' +
+            '            <div class="layoutManager">' +
+            '                <div data-area="areaTop" class="layoutArea">' +
             '                    <div class="layoutAreaTabs"></div>' +
             '                    <div class="layoutAreaContent"></div>' +
             '                </div>' +
-            '                <div class="playerArea">' +
-            '                    <span class="icon-play-1"></span>' +
+            '                <div class="playerWrapper">' +
+            '                    <div data-area="areaLeft" class="layoutArea">' +
+            '                        <div class="layoutAreaTabs"></div>' +
+            '                        <div class="layoutAreaContent"></div>' +
+            '                    </div>' +
+            '                    <div class="playerArea">' +
+            '                        <span class="icon-play-1"></span>' +
+            '                    </div>' +
+            '                    <div data-area="areaRight" class="layoutArea">' +
+            '                        <div class="layoutAreaTabs"></div>' +
+            '                        <div class="layoutAreaContent"></div>' +
+            '                    </div>' +
             '                </div>' +
-            '                <div data-area="areaRight" class="layoutArea">' +
+            '                <div data-area="areaBottom" class="layoutArea">' +
             '                    <div class="layoutAreaTabs"></div>' +
             '                    <div class="layoutAreaContent"></div>' +
             '                </div>' +
-            '            </div>' +
-            '            <div data-area="areaBottom" class="layoutArea">' +
-            '                <div class="layoutAreaTabs"></div>' +
-            '                <div class="layoutAreaContent"></div>' +
             '            </div>' +
             '        </div>' +
             '        <div class="layoutManagerThemePanel">' +
@@ -556,26 +577,335 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
             '                        <div class="secondary-fg-color"></div>' +
             '                    </div>' +
             '                </div>' +
+            '                <div class="themeItem" data-theme="navy">' +
+            '                    <div class="themeName">Navy</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="studio">' +
+            '                    <div class="themeName">Studio</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="violet">' +
+            '                    <div class="themeName">Violet</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="midnight">' +
+            '                    <div class="themeName">Midnight</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="slate">' +
+            '                    <div class="themeName">Slate</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="plum">' +
+            '                    <div class="themeName">Plum</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="crimson">' +
+            '                    <div class="themeName">Crimson</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="ocean">' +
+            '                    <div class="themeName">Ocean</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="forest">' +
+            '                    <div class="themeName">Forest</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="emerald">' +
+            '                    <div class="themeName">Emerald</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="coral">' +
+            '                    <div class="themeName">Coral</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="sunset">' +
+            '                    <div class="themeName">Sunset</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="coffee">' +
+            '                    <div class="themeName">Coffee</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="mocha">' +
+            '                    <div class="themeName">Mocha</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="sand">' +
+            '                    <div class="themeName">Sand</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="rose">' +
+            '                    <div class="themeName">Rose</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="arctic">' +
+            '                    <div class="themeName">Arctic</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="sage">' +
+            '                    <div class="themeName">Sage</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="mint">' +
+            '                    <div class="themeName">Mint</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="sky">' +
+            '                    <div class="themeName">Sky</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="lavender">' +
+            '                    <div class="themeName">Lavender</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="peach">' +
+            '                    <div class="themeName">Peach</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="blush">' +
+            '                    <div class="themeName">Blush</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="lemon">' +
+            '                    <div class="themeName">Lemon</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="turquoise">' +
+            '                    <div class="themeName">Turquoise</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="river">' +
+            '                    <div class="themeName">River</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="grape">' +
+            '                    <div class="themeName">Grape</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="tangerine">' +
+            '                    <div class="themeName">Tangerine</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="tomato">' +
+            '                    <div class="themeName">Tomato</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="steel">' +
+            '                    <div class="themeName">Steel</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="dusk">' +
+            '                    <div class="themeName">Dusk</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="lagoon">' +
+            '                    <div class="themeName">Lagoon</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="carbon">' +
+            '                    <div class="themeName">Carbon</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="obsidian">' +
+            '                    <div class="themeName">Obsidian</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="nordic">' +
+            '                    <div class="themeName">Nordic</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="jungle">' +
+            '                    <div class="themeName">Jungle</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="parchment">' +
+            '                    <div class="themeName">Parchment</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="eclipse">' +
+            '                    <div class="themeName">Eclipse</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="terra">' +
+            '                    <div class="themeName">Terra</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="aurora">' +
+            '                    <div class="themeName">Aurora</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="neon">' +
+            '                    <div class="themeName">Neon</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
             '            </div>' +
-            '        </div>' +
-            '    </div>' +
-            '    <div class="layoutManagerOptions">' +
-            '        <div class="message active">'+ labels['MessageLayoutManagerDropContentViews'] +'</div>' +
-            '        <div class="contentViewTemplate" data-type="TimedContent" data-size="medium">' +
-            '            <div class="contentViewOptionThumb"></div>' +
-            '            <div class="contentViewTemplateLabel"><span class="icon-docs">'+ labels['GenericAnnotationCollection'] +'</span></div>' +
-            '        </div>' +
-            '        <div class="contentViewTemplate" data-type="CustomHTML" data-size="medium">' +
-            '            <div class="contentViewOptionThumb"></div>' +
-            '            <div class="contentViewTemplateLabel"><span class="icon-file-code">'+ labels['GenericCustomHTML'] +'</span></div>' +
-            '        </div>' +
-            '        <div class="contentViewTemplate" data-type="Transcript" data-size="large">' +
-            '            <div class="contentViewOptionThumb"></div>' +
-            '            <div class="contentViewTemplateLabel"><span class="icon-doc-text">'+ labels['GenericTextTranscript'] +'</span></div>' +
-            '        </div>' +
-            '        <div class="contentViewTemplate" data-type="Timelines" data-size="large">' +
-            '            <div class="contentViewOptionThumb"></div>' +
-            '            <div class="contentViewTemplateLabel"><span class="icon-doc-text">'+ labels['GenericTimelines'] +'</span></div>' +
             '        </div>' +
             '    </div>' +
             '</div>';

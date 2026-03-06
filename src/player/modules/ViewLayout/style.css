@@ -189,20 +189,65 @@
     box-sizing: border-box;
 }
 
-.layoutManagerContainer .layoutManagerMain, .layoutManagerContainer .layoutManagerOptions {
-    height: 100%;
-}
-
-.layoutManagerContainer .layoutManagerMain [class^="icon-"]::before,
-.layoutManagerContainer .layoutManagerOptions [class^="icon-"]::before,
- {
+.layoutManagerContainer [class^="icon-"]::before {
     font-size: 19px;
 }
 
+.layoutManagerContainer {
+    display: flex;
+    flex-direction: column;
+}
+
+.layoutManagerContainer .layoutManagerOptions {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    background: #fff;
+}
+
+.layoutManagerContainer .layoutManagerOptions .message {
+    flex: 0 0 auto;
+    position: relative;
+    width: 147px;
+    height: 94px;
+    margin-right: 8px;
+}
+
+.layoutManagerContainer .layoutManagerOptions .message:after {
+    position: absolute;
+    content: "";
+    top: 50%;
+    margin-top: -14px;
+    right: -7px;
+    border-top: 14px solid transparent;
+    border-bottom: 14px solid transparent;
+    border-left: 6px solid #FF9919;
+}
+
+.layoutManagerContainer .layoutManagerOptions .contentViewTemplate, body > .contentViewTemplate {
+    background: var(--primary-bg-color);
+    flex: 0 0 auto;
+    cursor: move;
+    border: 1px solid #999;
+    position: relative;
+    overflow: hidden;
+}
+
+.layoutManagerContainer .layoutManagerBody {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: row;
+    min-height: 0;
+}
+
 .layoutManagerContainer .layoutManagerMain {
-    float: left;
-    width: calc(100% - 176px);
-    margin-right: 10px;
+    flex: 1 1 auto;
+    min-width: 0;
     display: flex;
     flex-direction: column;
 }
@@ -229,39 +274,6 @@
     color: var(--primary-bg-color);
 }
 
-.layoutManagerContainer .layoutManagerOptions {
-    float: right;
-    width: 163px;
-    padding: 10px;
-    overflow-x: hidden;
-    overflow-y: auto;
-    background: #fff;
-}
-
-.layoutManagerContainer .layoutManagerOptions .message {
-    position: relative;
-}
-
-.layoutManagerContainer .layoutManagerOptions .message:after {
-    position: absolute;
-    content: "";
-    top: 50%;
-    margin-top: -14px;
-    left: -7px;
-    border-top: 14px solid transparent;
-    border-bottom: 14px solid transparent;
-    border-right: 6px solid #FF9919;
-}
-
-.layoutManagerContainer .layoutManagerOptions .contentViewTemplate, body > .contentViewTemplate {
-    background: var(--primary-bg-color);
-    margin-bottom: 10px;
-    cursor: move;
-    border: 1px solid #999;
-    position: relative;
-    overflow: hidden;
-}
-
 body > .contentViewTemplate {
     outline: 1px solid var(--primary-bg-color);
     color: var(--primary-fg-color);
@@ -269,6 +281,7 @@ body > .contentViewTemplate {
 
 .layoutManagerContainer .contentViewTemplate .contentViewOptionThumb {
     height: 60px;
+    width: 140px;
     position: relative;
     overflow: hidden;
     background: var(--primary-bg-color);
@@ -427,34 +440,46 @@ body > .contentViewTemplate {
 *******************/
 
 .layoutManagerThemePanel {
-    padding: 10px 0 0 0;
-    flex: 0 0 auto;
+    flex: 0 0 163px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #fff;
 }
 
 .layoutManagerThemePanel .themeContainer {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
+    flex-direction: column;
+    flex-wrap: nowrap;
     gap: 0px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1 1 auto;
+    padding: 10px;
 }
 
 .layoutManagerThemePanel .themeContainer .message {
-    height: 49px;
-    width: 90px;
-    margin-bottom: 0px;
-    margin-right: 20px;
-    position: relative
+    flex: 0 0 auto;
+    margin-bottom: 10px;
+    position: relative;
 }
 
 .layoutManagerThemePanel .themeContainer .message::after {
     position: absolute;
     content: "";
-    top: 50%;
-    margin-top: -14px;
-    right: -7px;
-    border-top: 14px solid transparent;
-    border-bottom: 14px solid transparent;
-    border-left: 6px solid #FF9919;
+    left: 50%;
+    margin-left: -14px;
+    bottom: -7px;
+    border-left: 14px solid transparent;
+    border-right: 14px solid transparent;
+    border-top: 6px solid #FF9919;
+}
+
+.layoutManagerThemePanel .themeContainer .themeItem {
+    float: none;
+    display: block;
+    width: auto;
+    flex: 0 0 auto;
 }
 
 /*******************
