@@ -365,20 +365,84 @@ body > .contentViewTemplate {
     align-self: stretch;
     min-height: 100%;
     margin: 0 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.layoutManager .playerWrapper .playerArea .schematicVideoArea {
+    flex: 1 1 auto;
+    position: relative;
     background-color: var(--video-background-color);
 }
 
-.layoutManager .playerWrapper .playerArea .icon-play-1 {
+.layoutManager .playerWrapper .playerArea .schematicVideoArea .icon-play-1 {
     position: absolute;
     top: 50%;
     left: 50%;
     margin-left: -42px;
     margin-top: -31px;
     color: var(--secondary-fg-color);
+    pointer-events: none;
 }
 
-.layoutManager .playerWrapper .playerArea .icon-play-1::before {
+.layoutManager .playerWrapper .playerArea .schematicVideoArea .icon-play-1::before {
     font-size: 60px !important;
+}
+
+.layoutManager .playerWrapper .playerArea .schematicPlayerProgress {
+    flex: 0 0 4px;
+    background-color: var(--semi-transparent-fg-color);
+    position: relative;
+}
+
+.layoutManager .playerWrapper .playerArea .schematicPlayerProgressFill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 35%;
+    height: 100%;
+    background-color: var(--primary-fg-color);
+}
+
+.layoutManager .playerWrapper .playerArea .schematicControls {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 8px;
+    background-color: var(--secondary-bg-color);
+}
+
+.layoutManager .playerWrapper .playerArea .schematicControlsLeft {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.layoutManager .playerWrapper .playerArea .schematicControlsLeft .icon-play-1::before {
+    font-size: 20px !important;
+}
+
+.layoutManager .playerWrapper .playerArea .schematicTimeBar {
+    width: 40px;
+    height: 6px;
+    border-radius: 3px;
+    background-color: var(--secondary-fg-color);
+    opacity: 0.4;
+}
+
+.layoutManager .playerWrapper .playerArea .schematicControlsRight {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.layoutManager .playerWrapper .playerArea .schematicControlDot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background-color: var(--secondary-fg-color);
+    opacity: 0.4;
 }
 
 /* SIZES */

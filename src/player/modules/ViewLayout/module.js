@@ -505,7 +505,23 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
             '                        <div class="layoutAreaContent"></div>' +
             '                    </div>' +
             '                    <div class="playerArea">' +
-            '                        <span class="icon-play-1"></span>' +
+            '                        <div class="schematicVideoArea">' +
+            '                            <span class="icon-play-1"></span>' +
+            '                        </div>' +
+            '                        <div class="schematicPlayerProgress">' +
+            '                            <div class="schematicPlayerProgressFill"></div>' +
+            '                        </div>' +
+            '                        <div class="schematicControls">' +
+            '                            <div class="schematicControlsLeft">' +
+            '                                <span class="icon-play-1"></span>' +
+            '                                <div class="schematicTimeBar"></div>' +
+            '                            </div>' +
+            '                            <div class="schematicControlsRight">' +
+            '                                <div class="schematicControlDot"></div>' +
+            '                                <div class="schematicControlDot"></div>' +
+            '                                <div class="schematicControlDot"></div>' +
+            '                            </div>' +
+            '                        </div>' +
             '                    </div>' +
             '                    <div data-area="areaRight" class="layoutArea">' +
             '                        <div class="layoutAreaTabs"></div>' +
