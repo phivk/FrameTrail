@@ -329,17 +329,32 @@ var title = labels['MyModuleTitle'];
 Edit `src/_shared/styles/variables.css`:
 
 ```css
-.frametrail-body[data-frametrail-theme="mytheme"] .mainContainer,
-.frametrail-body[data-frametrail-theme="mytheme"] .loadingScreen,
-.frametrail-body[data-frametrail-theme="mytheme"] .userLoginOverlay,
-.frametrail-body[data-frametrail-theme="mytheme"] .titlebar:not(.editActive),
-.themeItem[data-theme="mytheme"],
-.frametrail-body[data-frametrail-theme="mytheme"] .layoutManager {
-    --primary-bg-color: #your-color;
-    --secondary-bg-color: rgba(r, g, b, 0.6);
-    --primary-fg-color: #your-text-color;
-    --highlight-color: #your-highlight;
-    /* ... see existing themes for full list of variables */
+.frametrail-body[data-frametrail-theme="mytheme"] :is(
+    .mainContainer:not([data-edit-mode="settings"], [data-edit-mode="overlays"], [data-edit-mode="codesnippets"], [data-edit-mode="annotations"]),
+    .loadingScreen,
+    .userLoginOverlay,
+    .titlebar:not(.editActive),
+    .layoutManager
+),
+.themeItem[data-theme="mytheme"] {
+    /* Required: the 4 core colors */
+    --primary-bg-color: #your-bg;
+    --secondary-bg-color: rgba(r, g, b, .6);  /* keep semi-transparent */
+    --primary-fg-color: #your-text;
+    --secondary-fg-color: #your-secondary-text;
+
+    /*
+     * These are computed automatically from the 4 above — override only if needed:
+     *   --semi-transparent-bg-color       (primary-bg at 80%)
+     *   --semi-transparent-fg-color       (primary-fg at 30%)
+     *   --semi-transparent-fg-highlight-color  (primary-fg at 40%)
+     *
+     * These defaults are shared across all built-in themes — override if needed:
+     *   --annotation-preview-bg-color: rgba(100, 100, 100, .2)
+     *   --highlight-color: #D8D3AD
+     *   --tooltip-bg-color: #D8D3AD
+     *   --video-background-color: #000
+     */
 }
 ```
 

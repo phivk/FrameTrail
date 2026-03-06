@@ -445,25 +445,39 @@ index.html#hypervideo=abc123&t=30.5
 
 ### CSS Custom Properties (Theming)
 
-Themes are defined in `src/_shared/styles/variables.css`:
+Themes are defined in `src/_shared/styles/variables.css` using two scoping layers.
+
+**Layer 1 — base selector:** Variables are declared on `.frametrail-body` plus a list of detached elements (`body > .ft-dialog`, drag clones, popups, etc.) that are appended directly to `<body>` and therefore outside the DOM tree. This ensures consistent defaults everywhere. The base block also declares `color-mix()` derivations for the three semi-transparent variants so custom themes need only set 4 core variables:
 
 ```css
-.frametrail-body {
+.frametrail-body, .ft-dialog, /* ... */ {
     --primary-bg-color: rgba(47, 50, 58, 1);
-    --primary-fg-color: rgba(255, 255, 255, 1);
     --secondary-bg-color: rgba(73, 76, 81, .6);
-    --highlight-color: #D8D3AD;
+    --primary-fg-color: rgba(255, 255, 255, 1);
+    --secondary-fg-color: rgba(220, 220, 220, 1);
+
+    --semi-transparent-bg-color: rgba(47, 50, 58, .8); /* fallback */
+    --semi-transparent-bg-color: color-mix(in srgb, var(--primary-bg-color) 80%, transparent);
+    /* ... similar for --semi-transparent-fg-color and --semi-transparent-fg-highlight-color */
 }
 ```
 
-Themes are applied via `data-frametrail-theme` attribute:
+**Layer 2 — per-theme selectors:** Each theme targets the sub-contexts that should be themed (main content, loading screen, login overlay, titlebar, layout manager). Edit modes like `annotations`, `overlays`, and `codesnippets` are excluded so the editor UI falls back to the default theme's known-good contrast:
 
 ```css
-.frametrail-body[data-frametrail-theme="bright"] {
+.frametrail-body[data-frametrail-theme="bright"] :is(
+    .mainContainer:not([data-edit-mode="settings"], [data-edit-mode="overlays"],
+                        [data-edit-mode="codesnippets"], [data-edit-mode="annotations"]),
+    .loadingScreen, .userLoginOverlay, .titlebar:not(.editActive), .layoutManager
+),
+.themeItem[data-theme="bright"] {
     --primary-bg-color: rgba(255, 255, 255, 1);
     --primary-fg-color: rgba(80, 80, 80, 1);
+    /* ... only variables that differ from base or computed defaults */
 }
 ```
+
+Themes are activated by setting `data-frametrail-theme` on `.frametrail-body`.
 
 ### CSS Organization
 
