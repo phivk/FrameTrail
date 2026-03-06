@@ -529,14 +529,6 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
             '                        <div class="secondary-fg-color"></div>' +
             '                    </div>' +
             '                </div>' +
-            '                <div class="themeItem" data-theme="dark">' +
-            '                    <div class="themeName">Dark</div>' +
-            '                    <div class="themeColorContainer">' +
-            '                        <div class="primary-fg-color"></div>' +
-            '                        <div class="secondary-bg-color"></div>' +
-            '                        <div class="secondary-fg-color"></div>' +
-            '                    </div>' +
-            '                </div>' +
             '                <div class="themeItem" data-theme="bright">' +
             '                    <div class="themeName">Bright</div>' +
             '                    <div class="themeColorContainer">' +
@@ -545,40 +537,16 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
             '                        <div class="secondary-fg-color"></div>' +
             '                    </div>' +
             '                </div>' +
-            '                <div class="themeItem" data-theme="blue">' +
-            '                    <div class="themeName">Blue</div>' +
+            '                <div class="themeItem" data-theme="steel">' +
+            '                    <div class="themeName">Steel</div>' +
             '                    <div class="themeColorContainer">' +
             '                        <div class="primary-fg-color"></div>' +
             '                        <div class="secondary-bg-color"></div>' +
             '                        <div class="secondary-fg-color"></div>' +
             '                    </div>' +
             '                </div>' +
-            '                <div class="themeItem" data-theme="green">' +
-            '                    <div class="themeName">Green</div>' +
-            '                    <div class="themeColorContainer">' +
-            '                        <div class="primary-fg-color"></div>' +
-            '                        <div class="secondary-bg-color"></div>' +
-            '                        <div class="secondary-fg-color"></div>' +
-            '                    </div>' +
-            '                </div>' +
-            '                <div class="themeItem" data-theme="orange">' +
-            '                    <div class="themeName">Orange</div>' +
-            '                    <div class="themeColorContainer">' +
-            '                        <div class="primary-fg-color"></div>' +
-            '                        <div class="secondary-bg-color"></div>' +
-            '                        <div class="secondary-fg-color"></div>' +
-            '                    </div>' +
-            '                </div>' +
-            '                <div class="themeItem" data-theme="grey">' +
-            '                    <div class="themeName">Grey</div>' +
-            '                    <div class="themeColorContainer">' +
-            '                        <div class="primary-fg-color"></div>' +
-            '                        <div class="secondary-bg-color"></div>' +
-            '                        <div class="secondary-fg-color"></div>' +
-            '                    </div>' +
-            '                </div>' +
-            '                <div class="themeItem" data-theme="navy">' +
-            '                    <div class="themeName">Navy</div>' +
+            '                <div class="themeItem" data-theme="slate">' +
+            '                    <div class="themeName">Slate</div>' +
             '                    <div class="themeColorContainer">' +
             '                        <div class="primary-fg-color"></div>' +
             '                        <div class="secondary-bg-color"></div>' +
@@ -593,8 +561,96 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
             '                        <div class="secondary-fg-color"></div>' +
             '                    </div>' +
             '                </div>' +
-            '                <div class="themeItem" data-theme="violet">' +
-            '                    <div class="themeName">Violet</div>' +
+            '                <div class="themeItem" data-theme="lagoon">' +
+            '                    <div class="themeName">Lagoon</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="dusk">' +
+            '                    <div class="themeName">Dusk</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="nordic">' +
+            '                    <div class="themeName">Nordic</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="obsidian">' +
+            '                    <div class="themeName">Obsidian</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="jungle">' +
+            '                    <div class="themeName">Jungle</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="carbon">' +
+            '                    <div class="themeName">Carbon</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="aurora">' +
+            '                    <div class="themeName">Aurora</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="terra">' +
+            '                    <div class="themeName">Terra</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="eclipse">' +
+            '                    <div class="themeName">Eclipse</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="parchment">' +
+            '                    <div class="themeName">Parchment</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="neon">' +
+            '                    <div class="themeName">Neon</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="dark">' +
+            '                    <div class="themeName">Dark</div>' +
             '                    <div class="themeColorContainer">' +
             '                        <div class="primary-fg-color"></div>' +
             '                        <div class="secondary-bg-color"></div>' +
@@ -609,8 +665,24 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
             '                        <div class="secondary-fg-color"></div>' +
             '                    </div>' +
             '                </div>' +
-            '                <div class="themeItem" data-theme="slate">' +
-            '                    <div class="themeName">Slate</div>' +
+            '                <div class="themeItem" data-theme="navy">' +
+            '                    <div class="themeName">Navy</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="blue">' +
+            '                    <div class="themeName">Blue</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="grey">' +
+            '                    <div class="themeName">Grey</div>' +
             '                    <div class="themeColorContainer">' +
             '                        <div class="primary-fg-color"></div>' +
             '                        <div class="secondary-bg-color"></div>' +
@@ -657,8 +729,24 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
             '                        <div class="secondary-fg-color"></div>' +
             '                    </div>' +
             '                </div>' +
+            '                <div class="themeItem" data-theme="green">' +
+            '                    <div class="themeName">Green</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
             '                <div class="themeItem" data-theme="coral">' +
             '                    <div class="themeName">Coral</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="violet">' +
+            '                    <div class="themeName">Violet</div>' +
             '                    <div class="themeColorContainer">' +
             '                        <div class="primary-fg-color"></div>' +
             '                        <div class="secondary-bg-color"></div>' +
@@ -777,14 +865,6 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
             '                        <div class="secondary-fg-color"></div>' +
             '                    </div>' +
             '                </div>' +
-            '                <div class="themeItem" data-theme="river">' +
-            '                    <div class="themeName">River</div>' +
-            '                    <div class="themeColorContainer">' +
-            '                        <div class="primary-fg-color"></div>' +
-            '                        <div class="secondary-bg-color"></div>' +
-            '                        <div class="secondary-fg-color"></div>' +
-            '                    </div>' +
-            '                </div>' +
             '                <div class="themeItem" data-theme="grape">' +
             '                    <div class="themeName">Grape</div>' +
             '                    <div class="themeColorContainer">' +
@@ -809,96 +889,8 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
             '                        <div class="secondary-fg-color"></div>' +
             '                    </div>' +
             '                </div>' +
-            '                <div class="themeItem" data-theme="steel">' +
-            '                    <div class="themeName">Steel</div>' +
-            '                    <div class="themeColorContainer">' +
-            '                        <div class="primary-fg-color"></div>' +
-            '                        <div class="secondary-bg-color"></div>' +
-            '                        <div class="secondary-fg-color"></div>' +
-            '                    </div>' +
-            '                </div>' +
-            '                <div class="themeItem" data-theme="dusk">' +
-            '                    <div class="themeName">Dusk</div>' +
-            '                    <div class="themeColorContainer">' +
-            '                        <div class="primary-fg-color"></div>' +
-            '                        <div class="secondary-bg-color"></div>' +
-            '                        <div class="secondary-fg-color"></div>' +
-            '                    </div>' +
-            '                </div>' +
-            '                <div class="themeItem" data-theme="lagoon">' +
-            '                    <div class="themeName">Lagoon</div>' +
-            '                    <div class="themeColorContainer">' +
-            '                        <div class="primary-fg-color"></div>' +
-            '                        <div class="secondary-bg-color"></div>' +
-            '                        <div class="secondary-fg-color"></div>' +
-            '                    </div>' +
-            '                </div>' +
-            '                <div class="themeItem" data-theme="carbon">' +
-            '                    <div class="themeName">Carbon</div>' +
-            '                    <div class="themeColorContainer">' +
-            '                        <div class="primary-fg-color"></div>' +
-            '                        <div class="secondary-bg-color"></div>' +
-            '                        <div class="secondary-fg-color"></div>' +
-            '                    </div>' +
-            '                </div>' +
-            '                <div class="themeItem" data-theme="obsidian">' +
-            '                    <div class="themeName">Obsidian</div>' +
-            '                    <div class="themeColorContainer">' +
-            '                        <div class="primary-fg-color"></div>' +
-            '                        <div class="secondary-bg-color"></div>' +
-            '                        <div class="secondary-fg-color"></div>' +
-            '                    </div>' +
-            '                </div>' +
-            '                <div class="themeItem" data-theme="nordic">' +
-            '                    <div class="themeName">Nordic</div>' +
-            '                    <div class="themeColorContainer">' +
-            '                        <div class="primary-fg-color"></div>' +
-            '                        <div class="secondary-bg-color"></div>' +
-            '                        <div class="secondary-fg-color"></div>' +
-            '                    </div>' +
-            '                </div>' +
-            '                <div class="themeItem" data-theme="jungle">' +
-            '                    <div class="themeName">Jungle</div>' +
-            '                    <div class="themeColorContainer">' +
-            '                        <div class="primary-fg-color"></div>' +
-            '                        <div class="secondary-bg-color"></div>' +
-            '                        <div class="secondary-fg-color"></div>' +
-            '                    </div>' +
-            '                </div>' +
-            '                <div class="themeItem" data-theme="parchment">' +
-            '                    <div class="themeName">Parchment</div>' +
-            '                    <div class="themeColorContainer">' +
-            '                        <div class="primary-fg-color"></div>' +
-            '                        <div class="secondary-bg-color"></div>' +
-            '                        <div class="secondary-fg-color"></div>' +
-            '                    </div>' +
-            '                </div>' +
-            '                <div class="themeItem" data-theme="eclipse">' +
-            '                    <div class="themeName">Eclipse</div>' +
-            '                    <div class="themeColorContainer">' +
-            '                        <div class="primary-fg-color"></div>' +
-            '                        <div class="secondary-bg-color"></div>' +
-            '                        <div class="secondary-fg-color"></div>' +
-            '                    </div>' +
-            '                </div>' +
-            '                <div class="themeItem" data-theme="terra">' +
-            '                    <div class="themeName">Terra</div>' +
-            '                    <div class="themeColorContainer">' +
-            '                        <div class="primary-fg-color"></div>' +
-            '                        <div class="secondary-bg-color"></div>' +
-            '                        <div class="secondary-fg-color"></div>' +
-            '                    </div>' +
-            '                </div>' +
-            '                <div class="themeItem" data-theme="aurora">' +
-            '                    <div class="themeName">Aurora</div>' +
-            '                    <div class="themeColorContainer">' +
-            '                        <div class="primary-fg-color"></div>' +
-            '                        <div class="secondary-bg-color"></div>' +
-            '                        <div class="secondary-fg-color"></div>' +
-            '                    </div>' +
-            '                </div>' +
-            '                <div class="themeItem" data-theme="neon">' +
-            '                    <div class="themeName">Neon</div>' +
+            '                <div class="themeItem" data-theme="orange">' +
+            '                    <div class="themeName">Orange</div>' +
             '                    <div class="themeColorContainer">' +
             '                        <div class="primary-fg-color"></div>' +
             '                        <div class="secondary-bg-color"></div>' +

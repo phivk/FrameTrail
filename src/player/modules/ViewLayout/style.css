@@ -204,7 +204,7 @@
     flex-direction: row;
     align-items: center;
     gap: 10px;
-    padding: 10px;
+    padding: 10px 10px 20px 10px;
     overflow-x: auto;
     overflow-y: hidden;
     background: #fff;
@@ -445,6 +445,7 @@ body > .contentViewTemplate {
     flex-direction: column;
     overflow: hidden;
     background: #fff;
+    margin-left: 10px;
 }
 
 .layoutManagerThemePanel .themeContainer {

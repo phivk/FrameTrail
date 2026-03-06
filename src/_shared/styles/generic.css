@@ -584,13 +584,14 @@ input:checked + .slider:before {
 
 .themeItem {
     float: left;
-    width: 93px;
-    height: 40px;
+    width: 88px;
+    height: 57px;
     padding: 4px 8px;
     margin: 6px;
     background: var(--primary-bg-color);
     color: var(--primary-fg-color);
-    border: 1px solid var(--secondary-fg-color);
+    border: 4px solid #fff;
+    outline: 1px solid #dfdfdf;
     cursor: pointer;
     transition-property: height;
     transition-duration: 40ms;
@@ -599,7 +600,6 @@ input:checked + .slider:before {
 
 .themeItem.active, .themeItem:hover {
     outline: 4px solid #F90;
-    border: 2px solid #fff;
 }
 
 .themeItem .themeColorContainer {
