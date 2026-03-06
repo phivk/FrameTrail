@@ -91,14 +91,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(111, 123, 129, 0.4);
-    background: -moz-radial-gradient(center, ellipse cover, rgba(86,94,110,0) 0%, rgba(86,94,110,0.7) 100%);
-    background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%,rgba(86,94,110,0)), color-stop(100%,rgba(86,94,110,0.7)));
-    background: -webkit-radial-gradient(center, ellipse cover, rgba(86,94,110,0) 0%,rgba(86,94,110,0.7) 100%);
-    background: -o-radial-gradient(center, ellipse cover, rgba(86,94,110,0) 0%,rgba(86,94,110,0.7) 100%);
-    background: -ms-radial-gradient(center, ellipse cover, rgba(86,94,110,0) 0%,rgba(86,94,110,0.7) 100%);
-    background: radial-gradient(ellipse at center, rgba(86,94,110,0) 0%,rgba(86,94,110,0.7) 100%);
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00565e6e', endColorstr='#b3565e6e',GradientType=1 );
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, .5) 100%);
 }
 
 .resourceThumb .resourceOverlay .resourceIcon {
@@ -114,8 +107,8 @@
 
 .resourceThumb .resourceOverlay .resourceIcon [class^="icon-"]::before, .resourceThumb .resourceOverlay .resourceIcon [class*=" icon-"]::before {
     font-size: 20px;
-    color: var(--primary-fg-color);
-    text-shadow: 0px 0px 2px var(--secondary-bg-color);
+    color: var(--thumb-icon-color);
+    text-shadow: var(--thumb-icon-shadow);
 }
 
 
@@ -129,16 +122,14 @@ body > .resourceThumb:not(.resourceAnimationDiv) .resourceTitle {
     left: 0;
     width: 100%;
     max-height: 50px;
-    background-color: var(--semi-transparent-bg-color);
+    background-color: var(--thumb-title-bg);
     font-size: 13px;
     padding: 6px 5px 3px 5px;
     overflow: hidden;
-    color: var(--primary-fg-color);
-    text-shadow: 1px 1px 2px var(--primary-bg-color);
+    color: var(--thumb-title-color);
+    text-shadow: var(--thumb-title-shadow);
     word-wrap: break-word;
     hyphens: auto;
-    -moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box;
     box-sizing: border-box;
 }
 

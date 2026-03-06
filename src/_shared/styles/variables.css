@@ -35,6 +35,16 @@ body > .contentViewPreview,
     --highlight-color: #D8D3AD;
     --tooltip-bg-color: #D8D3AD;
     --video-background-color: #000;
+
+    /* Thumbnail image overlays — intentionally theme-independent.
+       These elements sit on top of arbitrary background images (thumbnails can
+       be anything — dark, bright, colourful). They must stay readable in every
+       theme without relying on the theme's fg/bg colours. */
+    --thumb-title-bg: rgba(0, 0, 0, .58);
+    --thumb-title-color: rgba(255, 255, 255, .93);
+    --thumb-title-shadow: 1px 1px 3px rgba(0, 0, 0, .9);
+    --thumb-icon-color: rgba(255, 255, 255, .9);
+    --thumb-icon-shadow: 0px 0px 4px rgba(0, 0, 0, .9);
 }
 
 .frametrail-body[data-frametrail-theme="dark"] :is(
