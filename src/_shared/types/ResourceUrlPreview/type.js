@@ -87,6 +87,7 @@ FrameTrail.defineType(
                     var container = document.createElement('div');
                     container.className = 'resourceDetail resourceUrlPreview';
                     container.dataset.type = data.type;
+                    if (attrs.originalType) { container.dataset.originalType = attrs.originalType; }
 
                     // oEmbed HTML stored at creation time → render the embed
                     if (attrs.html && attrs.originalType) {
@@ -164,9 +165,11 @@ FrameTrail.defineType(
                             'background-image: url('+ FrameTrail.module('RouteNavigation').getResourceURL(this.resourceData.thumb) +');' : '' );
 
                     var tagList = (this.resourceData.tags ? this.resourceData.tags.join(' ') : '');
+                    var originalTypeAttr = (this.resourceData.attributes && this.resourceData.attributes.originalType)
+                        ? ' data-original-type="'+ this.resourceData.attributes.originalType +'"' : '';
 
                     var _thumbWrapper = document.createElement('div');
-                    _thumbWrapper.innerHTML = '<div class="resourceThumb '+ tagList +'" data-license-type="'+ this.resourceData.licenseType +'" data-resourceID="'+ trueID +'" data-type="'+ this.resourceData.type +'" style="'+ thumbBackground +'">'
+                    _thumbWrapper.innerHTML = '<div class="resourceThumb '+ tagList +'" data-license-type="'+ this.resourceData.licenseType +'" data-resourceID="'+ trueID +'" data-type="'+ this.resourceData.type +'"'+ originalTypeAttr +' style="'+ thumbBackground +'">'
                         + '<div class="resourceOverlay"><div class="resourceIcon"><span class="icon-link-ext"></span></div></div>'
                         + '<div class="resourceTitle">'+ this.resourceData.name +'</div>'
                         + '</div>';

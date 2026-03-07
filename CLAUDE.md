@@ -323,6 +323,25 @@ git push origin v2.0.0
 - Default user roles and permissions
 - Custom labels for UI elements
 
+## Overlay Scaling Mechanism
+
+Overlays containing text-like content are scaled so they always render at a comfortable reading width regardless of how small the overlay is on screen. This is a **JS-driven transform**, not a CSS media query or container query.
+
+**How it works (`src/player/types/Overlay/type.js` → `scaleOverlayElement()`):**
+
+1. Called by `rescaleOverlays()` in `OverlaysController` whenever the video/overlay container resizes (triggered from `ViewVideo.adjustHypervideo()`).
+2. Applies only to these types: `wikipedia`, `webpage`, `text`, `quiz`, `mastodon`, `urlpreview`.
+3. Logic:
+   - `scaleBase` = 400px (800px for `text`)
+   - If the overlay wrapper is **wider** than `scaleBase`, scaling is reset (no transform applied — content fills normally)
+   - Otherwise: `scale = wrapperWidth / scaleBase`, then the `.resourceDetail` is set to `width: scaleBase`, `height: wrapperHeight * (1/scale)`, and `transform: translate(-50%, -50%) scale(scale)` — so the content always *renders* at 400px wide but is visually scaled down to fit
+4. The `text` type uses the full overlay container width as the reference instead of the wrapper.
+
+**CSS complement (`ResourceWebpage/style.css`):**
+The iframe inside a webpage overlay gets an additional static zoom-out via `width/height: 133%` + `transform: scale(0.75)` so that the full-width iframe content fits within the 400px rendered container. This is layered on top of the JS scaling, not a replacement for it.
+
+**To add scaling to a new type:** add its `data.type` string to the condition at the top of `scaleOverlayElement()`. Do NOT use CSS container queries or static CSS transforms as a substitute — the JS mechanism is the authoritative approach.
+
 ## Localization
 
 **Language Files:** `src/_shared/modules/Localization/locale/`

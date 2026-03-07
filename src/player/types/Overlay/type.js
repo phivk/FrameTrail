@@ -341,7 +341,7 @@ FrameTrail.defineType(
                 */
                 scaleOverlayElement: function() {
 
-                    if (this.data.type == 'wikipedia' || this.data.type == 'webpage' || this.data.type == 'text' || this.data.type == 'quiz' || this.data.type == 'bluesky' || this.data.type == 'mastodon') {
+                    if (this.data.type == 'wikipedia' || this.data.type == 'webpage' || this.data.type == 'text' || this.data.type == 'quiz' || this.data.type == 'mastodon' || this.data.type == 'urlpreview') {
 
                         var elementToScale = this.overlayElement ? this.overlayElement.querySelector('.resourceDetail') : null,
                             wrapperElement = this.overlayElement,

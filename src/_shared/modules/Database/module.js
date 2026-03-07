@@ -777,6 +777,7 @@
                             "type": contentItem.body['frametrail:type'],
                             "src":    contentItem.body.source
                                    || contentItem.body.value,
+                            "thumb": contentItem.body['frametrail:thumb'] || null,
                             "start": _parseTimeStart(contentItem.target.selector.value),
                             "end": _parseTimeEnd(contentItem.target.selector.value),
                             "startOffset": (contentItem.body.selector && contentItem.body.selector.value)

@@ -1,3 +1,37 @@
-.resourceDetail.resourceUrlPreview {
-    height: 100%;
+.resourceDetail[data-type="urlpreview"] {
+    box-sizing: border-box;
+    padding: 10px;
+    background: var(--primary-bg-color);
+    color: var(--primary-fg-color);
+}
+
+.resourceDetail[data-type="urlpreview"] a {
+    color: var(--primary-fg-color);
+}
+
+.resourceDetail[data-type="urlpreview"] .bluesky-embed {
+    position: relative;
+    padding: 11px 14px 14px 20px;
+}
+
+.resourceDetail[data-type="urlpreview"] .bluesky-embed::before,
+.resourceDetail[data-type="urlpreview"] .bluesky-embed::after {
+    content: '\201C';
+    font-size: 4em;
+    line-height: 1;
+    color: var(--primary-fg-color);
+    opacity: 0.2;
+    position: absolute;
+    pointer-events: none;
+}
+
+.resourceDetail[data-type="urlpreview"] .bluesky-embed::before {
+    top: -6px;
+    left: -5px;
+}
+
+.resourceDetail[data-type="urlpreview"] .bluesky-embed::after {
+    content: '\201D';
+    bottom: 0;
+    right: 0;
 }
