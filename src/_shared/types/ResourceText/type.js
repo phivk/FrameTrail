@@ -419,7 +419,6 @@ FrameTrail.defineType(
                         [{ 'font': activeFonts }],
                         [{ 'size': activeFontSizes }],
                         ['bold', 'italic', 'underline'],
-                        [{ 'color': [] }],
                         [{ 'list': 'ordered' }, { 'list': 'bullet' }],
                         [{ 'indent': '-1' }, { 'indent': '+1' }],
                         [{ 'align': [] }]
@@ -439,6 +438,30 @@ FrameTrail.defineType(
                         if (item.dataset.value) item.style.fontFamily = item.dataset.value;
                     });
 
+                    // Add hex color input to the toolbar
+                    var qlToolbar = visualEditorWrapper.querySelector('.ql-toolbar');
+                    if (qlToolbar) {
+                        var hexSpan = document.createElement('span');
+                        hexSpan.className = 'ql-formats';
+                        var colorHexInput = document.createElement('input');
+                        colorHexInput.type = 'color';
+                        colorHexInput.title = 'Custom color (hex)';
+                        colorHexInput.className = 'ql-color-hex';
+                        colorHexInput.style.cssText = 'width:26px;height:26px;padding:0;border:none;cursor:pointer;background:none;';
+                        hexSpan.appendChild(colorHexInput);
+                        qlToolbar.appendChild(hexSpan);
+                        var savedQuillRange = null;
+                        colorHexInput.addEventListener('mousedown', function() {
+                            savedQuillRange = window.quillEditor.getSelection();
+                        });
+                        colorHexInput.addEventListener('input', function() {
+                            if (savedQuillRange) {
+                                window.quillEditor.setSelection(savedQuillRange);
+                            }
+                            window.quillEditor.format('color', colorHexInput.value, 'user');
+                        });
+                    }
+
                     // Set initial content — text is stored HTML-escaped, so decode first
                     // (same unescape pattern as renderContent)
                     var quillInitHelper = document.createElement('div');
@@ -446,6 +469,16 @@ FrameTrail.defineType(
                     window.quillEditor.clipboard.dangerouslyPasteHTML(
                         quillInitHelper.textContent || ''
                     );
+
+                    // Quill → CodeMirror 6 sync
+                    // Sync color picker to current selection's color
+                    window.quillEditor.on('selection-change', function(range) {
+                        if (!range) { return; }
+                        var format = window.quillEditor.getFormat(range);
+                        if (typeof format.color === 'string') {
+                            colorHexInput.value = format.color;
+                        }
+                    });
 
                     // Quill → CodeMirror 6 sync
                     window.quillEditor.on('text-change', function(delta, oldDelta, source) {
