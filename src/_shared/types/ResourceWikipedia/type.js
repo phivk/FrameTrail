@@ -70,38 +70,45 @@ FrameTrail.defineType(
 
                     var thumbSrc = '';
                     if (data.thumb) {
-                        if (/^(https?:)?\/\//.test(data.thumb)) {
-                            thumbSrc = data.thumb;
-                        } else {
-                            thumbSrc = FrameTrail.module('RouteNavigation').getResourceURL(data.thumb);
-                        }
+                        thumbSrc = /^(https?:)?\/\//.test(data.thumb)
+                            ? data.thumb
+                            : FrameTrail.module('RouteNavigation').getResourceURL(data.thumb);
                     }
-                    var thumbStyle = thumbSrc ? 'background-image: url(\'' + thumbSrc + '\')' : '';
 
                     var extractHtml = data.attributes.extract_html || '<p>' + (data.attributes.extract || '') + '</p>';
                     var description = data.attributes.description || '';
 
-                    var _detailWrapper = document.createElement('div');
-                    _detailWrapper.innerHTML =
-                            '<div class="resourceDetail resourceWikipediaCard" data-type="'+ data.type +'" dir="'+ dir +'" lang="'+ lang +'">'
-                        +   '    <div class="wikiCardHeader">'
-                        +   '        <span class="icon-wikipedia-w wikiCardLogo"></span>'
-                        +   '        <span class="wikiCardTitle">'+ (data.name || '') +'</span>'
-                        +   (description ? '        <span class="wikiCardDescription">'+ description +'</span>' : '')
-                        +   '    </div>'
-                        +   (thumbSrc ?
-                            '    <div class="wikiCardThumb" style="'+ thumbStyle +'">'
-                        +   '    </div>' : '')
-                        +   '    <div class="wikiCardExtract">'
-                        +   '        '+ extractHtml
-                        +   '    </div>'
-                        +   '    <div class="wikiCardFooter">'
-                        +   '        <a href="'+ articleUrl +'" target="_blank" rel="noopener" class="wikiCardLink">'
-                        +   '            <span class="icon-link-ext"></span> '+ this.labels['ResourceOpenInNewTab']
-                        +   '        </a>'
-                        +   '    </div>'
-                        +   '</div>';
-                    var resourceDetail = _detailWrapper.firstElementChild;
+                    var card = document.createElement('div');
+                    card.className = 'resourceCard';
+
+                    var cardHtml = '<div class="resourceCardHeader">'
+                        + '<span class="resourceCardTypeIcon"><span class="icon-wikipedia-w"></span></span>'
+                        + '<div class="resourceCardMeta">'
+                        + '<div class="resourceCardTitle">' + (data.name || '') + '</div>'
+                        + (description ? '<div class="resourceCardSubtitle">' + description + '</div>' : '')
+                        + '</div>'
+                        + '</div>';
+
+                    if (thumbSrc) {
+                        cardHtml += '<div class="resourceCardThumb"><img src="' + thumbSrc + '" alt=""></div>';
+                    }
+
+                    cardHtml += '<div class="resourceCardContent" dir="' + dir + '" lang="' + lang + '">'
+                        + extractHtml
+                        + '</div>';
+
+                    cardHtml += '<div class="resourceCardFooter">'
+                        + '<a href="' + articleUrl + '" target="_blank" rel="noopener">'
+                        + '<span class="icon-link-ext"></span> ' + this.labels['ResourceOpenInNewTab']
+                        + '</a>'
+                        + '</div>';
+
+                    card.innerHTML = cardHtml;
+
+                    var resourceDetail = document.createElement('div');
+                    resourceDetail.className = 'resourceDetail resourceWikipediaCard';
+                    resourceDetail.dataset.type = data.type;
+                    resourceDetail.appendChild(card);
 
                     return resourceDetail;
 

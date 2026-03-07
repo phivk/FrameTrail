@@ -14,9 +14,61 @@
 
 FrameTrail.defineType(
 
-    'ResourceUrlPreview',
+    'ResourceUrlpreview',
 
     function (FrameTrail) {
+
+        // Track which platform embed scripts have been injected (per page load)
+        var _platformScriptInjected = {};
+
+        function _platformIconClass(originalType) {
+            var icons = {
+                'flickr':     'icon-picture',
+                'slideshare': 'icon-link-ext',
+                'default':    'icon-link-ext'
+            };
+            return icons[originalType] || icons['default'];
+        }
+
+        function _loadPlatformScript(originalType, container) {
+            var alreadyInjected = _platformScriptInjected[originalType];
+            if (alreadyInjected) {
+                // Script already injected — trigger re-processing if API available
+                if (originalType === 'xtwitter' && window.twttr && window.twttr.widgets) {
+                    window.twttr.widgets.load(container);
+                }
+                return;
+            }
+            _platformScriptInjected[originalType] = true;
+
+            var scriptUrl = null;
+            var onLoad = null;
+
+            if (originalType === 'xtwitter') {
+                scriptUrl = 'https://platform.twitter.com/widgets.js';
+                onLoad = function() {
+                    if (window.twttr && window.twttr.widgets) {
+                        window.twttr.widgets.load(container);
+                    }
+                };
+            } else if (originalType === 'tiktok') {
+                scriptUrl = 'https://www.tiktok.com/embed.js';
+            } else if (originalType === 'reddit') {
+                scriptUrl = 'https://embed.reddit.com/widgets.js';
+            } else if (originalType === 'flickr') {
+                scriptUrl = 'https://embedr.flickr.com/assets/client-code.js';
+            }
+            // bluesky, slideshare: no extra script needed
+
+            if (scriptUrl) {
+                var tag = document.createElement('script');
+                tag.src = scriptUrl;
+                tag.async = true;
+                if (onLoad) { tag.addEventListener('load', onLoad); }
+                document.head.appendChild(tag);
+            }
+        }
+
         return {
             parent: 'Resource',
             constructor: function(resourceData){
@@ -29,51 +81,71 @@ FrameTrail.defineType(
                 renderContent: function() {
 
                     var data = this.resourceData;
+                    var attrs = data.attributes || {};
                     var src = data.src.replace(/^\/\//, 'https://');
 
-                    var domain = '';
-                    try {
-                        domain = new URL(src).hostname.replace('www.', '');
-                    } catch(e) {
-                        domain = src;
+                    var container = document.createElement('div');
+                    container.className = 'resourceDetail resourceUrlPreview';
+                    container.dataset.type = data.type;
+
+                    // oEmbed HTML stored at creation time → render the embed
+                    if (attrs.html && attrs.originalType) {
+                        container.innerHTML = attrs.html;
+                        _loadPlatformScript(attrs.originalType, container);
+                        return container;
                     }
 
-                    var platformIcons = {
-                        'instagram': 'icon-link-ext',
-                        'facebook': 'icon-link-ext',
-                        'xtwitter': 'icon-link-ext',
-                        'tiktok': 'icon-link-ext',
-                        'mastodon': 'icon-link-ext',
-                        'spotify': 'icon-music',
-                        'reddit': 'icon-link-ext',
-                        'default': 'icon-link-ext'
-                    };
-                    var iconClass = platformIcons[data.attributes.originalType] || platformIcons['default'];
+                    // Flickr direct photo URL → render as image
+                    if (attrs.originalType === 'flickr' && attrs.photoUrl) {
+                        var img = document.createElement('img');
+                        img.src = attrs.photoUrl;
+                        img.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;background:#000';
+                        container.appendChild(img);
+                        return container;
+                    }
 
-                    var thumbStyle = data.thumb ? 'background-image: url(' + data.thumb.replace(/^\/\//, 'https://') + ')' : '';
+                    // Generic card fallback
+                    var domain = '';
+                    try { domain = new URL(src).hostname.replace(/^www\./, ''); } catch(e) { domain = src; }
 
-                    var _detailWrapper = document.createElement('div');
-                    _detailWrapper.innerHTML =
-                            '<div class="resourceDetail resourceUrlPreview" data-type="'+ data.type +'">'
-                        +   '    <div class="urlPreviewCard">'
-                        +   '        <div class="urlPreviewThumb" style="' + thumbStyle + '">'
-                        +   '            <div class="urlPreviewIcon"><span class="' + iconClass + '"></span></div>'
-                        +   '        </div>'
-                        +   '        <div class="urlPreviewContent">'
-                        +   '            <div class="urlPreviewTitle">' + (data.name || 'View Content') + '</div>'
-                        +   '            <div class="urlPreviewDescription">' + (data.attributes.description || '') + '</div>'
-                        +   '            <div class="urlPreviewMeta">'
-                        +   '                <span class="urlPreviewDomain">' + domain + '</span>'
-                        +   '            </div>'
-                        +   '            <a href="' + src + '" target="_blank" rel="noopener" class="urlPreviewLink">'
-                        +   '                <span class="icon-link-ext"></span> Open Link'
-                        +   '            </a>'
-                        +   '        </div>'
-                        +   '    </div>'
-                        +   '</div>';
-                    var resourceDetail = _detailWrapper.firstElementChild;
+                    var thumbSrc = '';
+                    if (data.thumb) {
+                        thumbSrc = /^(https?:)?\/\//.test(data.thumb)
+                            ? data.thumb.replace(/^\/\//, 'https://')
+                            : FrameTrail.module('RouteNavigation').getResourceURL(data.thumb);
+                    }
 
-                    return resourceDetail;
+                    var iconClass = _platformIconClass(attrs.originalType);
+
+                    var card = document.createElement('div');
+                    card.className = 'resourceCard';
+                    if (attrs.originalType) { card.dataset.originalType = attrs.originalType; }
+
+                    var cardHtml = '<div class="resourceCardHeader">'
+                        + '<span class="resourceCardTypeIcon"><span class="' + iconClass + '"></span></span>'
+                        + '<div class="resourceCardMeta">'
+                        + '<div class="resourceCardTitle">' + (data.name || domain || 'View Content') + '</div>'
+                        + '<div class="resourceCardSubtitle">' + domain + '</div>'
+                        + '</div>'
+                        + '</div>';
+
+                    if (thumbSrc) {
+                        cardHtml += '<div class="resourceCardThumb"><img src="' + thumbSrc + '" alt=""></div>';
+                    }
+
+                    if (attrs.description) {
+                        cardHtml += '<div class="resourceCardContent"><p>' + attrs.description + '</p></div>';
+                    }
+
+                    cardHtml += '<div class="resourceCardFooter">'
+                        + '<a href="' + src + '" target="_blank" rel="noopener">'
+                        + '<span class="icon-link-ext"></span> ' + this.labels['ResourceOpenInNewTab']
+                        + '</a>'
+                        + '</div>';
+
+                    card.innerHTML = cardHtml;
+                    container.appendChild(card);
+                    return container;
 
                 },
 

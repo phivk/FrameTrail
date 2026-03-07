@@ -55,19 +55,41 @@ FrameTrail.defineType(
 
                         var thumbSource = '';
                         if (this.resourceData.thumb) {
-                            if (/^(https?:)?\/\//.test(this.resourceData.thumb)) {
-                                thumbSource = this.resourceData.thumb.replace(/^\/\//, 'https://');
-                            } else {
-                                thumbSource = FrameTrail.module('RouteNavigation').getResourceURL(this.resourceData.thumb);
-                            }
+                            thumbSource = /^(https?:)?\/\//.test(this.resourceData.thumb)
+                                ? this.resourceData.thumb.replace(/^\/\//, 'https://')
+                                : FrameTrail.module('RouteNavigation').getResourceURL(this.resourceData.thumb);
                         }
 
-                        var _fbWrapper = document.createElement('div');
-                        _fbWrapper.innerHTML = '<div class="embedFallback">'
-                            + '<div class="resourceDetailPreviewTitle">'+ this.resourceData.name +'</div>'
-                            + '<img class="resourceDetailPreviewThumb" src="'+ thumbSource +'"/>'
+                        var domain = '';
+                        try { domain = new URL(iFrameSource).hostname.replace(/^www\./, ''); } catch(e) { domain = ''; }
+
+                        var card = document.createElement('div');
+                        card.className = 'resourceCard';
+
+                        var cardHtml = '<div class="resourceCardHeader">'
+                            + '<span class="resourceCardTypeIcon"><span class="icon-window"></span></span>'
+                            + '<div class="resourceCardMeta">'
+                            + '<div class="resourceCardTitle">' + (this.resourceData.name || domain || '') + '</div>'
+                            + '<div class="resourceCardSubtitle">' + domain + '</div>'
+                            + '</div>'
                             + '</div>';
-                        resourceDetail.append(_fbWrapper.firstElementChild);
+
+                        if (thumbSource) {
+                            cardHtml += '<div class="resourceCardThumb"><img src="' + thumbSource + '" alt=""></div>';
+                        }
+
+                        if (this.resourceData.attributes.description) {
+                            cardHtml += '<div class="resourceCardContent"><p>' + this.resourceData.attributes.description + '</p></div>';
+                        }
+
+                        cardHtml += '<div class="resourceCardFooter">'
+                            + '<a href="' + iFrameSource + '" target="_blank" rel="noopener">'
+                            + '<span class="icon-link-ext"></span> ' + this.labels['ResourceOpenInNewTab']
+                            + '</a>'
+                            + '</div>';
+
+                        card.innerHTML = cardHtml;
+                        resourceDetail.appendChild(card);
                         resourceDetail.insertAdjacentHTML('beforeend', '<div class="resourceOptions"><div class="resourceButtons">'+ downloadButton +'</div></div>');
 
                         if (this.resourceData.start) {

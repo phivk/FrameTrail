@@ -152,9 +152,22 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 
 
 
+    // Domains that actively block meaningful metadata (CDN-locked images, login walls, generic titles).
+    // These URLs cannot be embedded AND produce no useful preview, so we block adding them entirely.
+    var EMBED_BLOCKLIST = ['instagram.com', 'facebook.com', 'fb.com', 'threads.net', 'linkedin.com'];
+
+    function isEmbedBlocklisted(url) {
+        try {
+            var hostname = new URL(url).hostname.replace(/^www\./, '');
+            return EMBED_BLOCKLIST.some(function(domain) {
+                return hostname === domain || hostname.slice(-(domain.length + 1)) === '.' + domain;
+            });
+        } catch(e) { return false; }
+    }
+
     //Check for valid URL
     var previewTimeout = null;
-    ['change', 'paste', 'keyup'].forEach(function(ev) {
+    ['input'].forEach(function(ev) {
         document.addEventListener(ev, function(evt) {
             if (!evt.target.matches || !evt.target.matches('#resourceInputTabURL input')) { return; }
             clearTimeout(previewTimeout);
@@ -521,7 +534,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                                             + '            <input type="text" name="url" placeholder="URL" class="resourceInput">'
                                             + '            <input type="hidden" name="thumbnail" class="resourceInput">'
                                             + '            <input type="hidden" name="embed" class="resourceInput">'
-                                            + '            <div class="corsWarning message warning">'+ labels['MessageEmbedNotAllowed'] +'</div>'
+                                            + '            <div class="corsWarning message error">'+ labels['MessageEmbedNotAllowed'] +'</div>'
                                             + '            <div class="resourceURLPreview"></div>'
                                             + '        </div>'
                                         )
@@ -727,7 +740,8 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                                 buttons[0].text = labels['ResourceAddNew'] || 'Add Resource';
                                 uploadDialogCtrl.setButtons(buttons);
                                 var hasUrl = uploadDialog.querySelector('.resourceInput[name="url"]').value.length > 3;
-                                uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = !hasUrl;
+                                var embedForbidden = uploadDialog.querySelector('.resourceInput[name="embed"]').value === 'forbidden';
+                                uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = !hasUrl || embedForbidden;
                             } else if (tabType === 'file') {
                                 uploadDialog.querySelector('.nameInputContainer').style.display = 'none';
                                 var hasQueue = uploadQueue.length > 0;
@@ -790,6 +804,18 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                                 if (!urlObj.attributes) { urlObj.attributes = {}; }
                                 Object.assign(urlObj.attributes, _wikiAttrs);
                             } catch(e) {}
+                        }
+
+                        // If embed is forbidden and the URL is not on the blocklist, save as urlpreview instead
+                        if (uploadDialog.querySelector('.resourceInput[name="embed"]').value === 'forbidden'
+                                && !isEmbedBlocklisted(uploadDialog.querySelector('.resourceInput[name="url"]').value)) {
+                            urlObj.type = 'urlpreview';
+                            if (!urlObj.attributes) { urlObj.attributes = {}; }
+                            delete urlObj.attributes.embed;
+                            var _descAttrInput = uploadDialog.querySelector('.resourceInput[name="urlpreviewAttributes"]');
+                            if (_descAttrInput && _descAttrInput.value) {
+                                try { Object.assign(urlObj.attributes, JSON.parse(_descAttrInput.value)); } catch(e) {}
+                            }
                         }
 
                         uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = true;
@@ -1334,7 +1360,8 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                     var res = /bsky\.app\/profile\/([\w.:-]+)\/post\/([\w]+)/.exec(src);
                     if (res !== null) {
                         var fullUrl = "https://bsky.app/profile/" + res[1] + "/post/" + res[2];
-                        var r = createResource(fullUrl, "bluesky", name);
+                        var r = createResource(fullUrl, "urlpreview", name);
+                        r.attributes.originalType = 'bluesky';
                         var _bskyData = syncGetJSON("_server/ajaxServer.php?a=oembedProxy&url=" + encodeURIComponent("https://embed.bsky.app/oembed?url=" + encodeURIComponent(fullUrl)));
                         if (_bskyData) {
                             if (_bskyData.html) {
@@ -1375,14 +1402,12 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                     // X/Twitter
                     var res = /(?:twitter\.com|x\.com)\/([a-zA-Z0-9_]+)\/status\/(\d+)/.exec(src);
                     if (res !== null) {
-                        var r = createResource(src, "xtwitter", name);
+                        var r = createResource(src, "urlpreview", name);
+                        r.attributes.originalType = 'xtwitter';
                         var _twData = syncGetJSON("https://publish.twitter.com/oembed?url=" + encodeURIComponent(src) + "&omit_script=true");
                         if (_twData) {
                             if (_twData.html) r.attributes.html = _twData.html;
                             if (_twData.author_name && (!r.name || r.name.length < 3)) r.name = _twData.author_name + "'s post";
-                        } else {
-                            r.type = 'urlpreview';
-                            r.attributes.originalType = 'xtwitter';
                         }
                         return r;
                     }
@@ -1392,15 +1417,13 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                     // TikTok
                     var res = /tiktok\.com\/@([a-zA-Z0-9_.]+)\/video\/(\d+)/.exec(src);
                     if (res !== null) {
-                        var r = createResource(src, "tiktok", name);
+                        var r = createResource(src, "urlpreview", name);
+                        r.attributes.originalType = 'tiktok';
                         var _ttData = syncGetJSON("https://www.tiktok.com/oembed?url=" + encodeURIComponent(src));
                         if (_ttData) {
                             if (_ttData.html) r.attributes.html = _ttData.html;
                             if (_ttData.thumbnail_url) r.thumb = _ttData.thumbnail_url;
                             if (_ttData.title && (!r.name || r.name.length < 3)) r.name = _ttData.title;
-                        } else {
-                            r.type = 'urlpreview';
-                            r.attributes.originalType = 'tiktok';
                         }
                         return r;
                     }
@@ -1449,15 +1472,13 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                     // SlideShare
                     var res = /slideshare\.net\/([^\/]+)\/([^\/\?]+)/.exec(src);
                     if (res !== null) {
-                        var r = createResource(src, "slideshare", name);
+                        var r = createResource(src, "urlpreview", name);
+                        r.attributes.originalType = 'slideshare';
                         var _ssData = syncGetJSON("https://www.slideshare.net/api/oembed/2?url=" + encodeURIComponent(src) + "&format=json");
                         if (_ssData) {
                             if (_ssData.html) r.attributes.html = _ssData.html;
                             if (_ssData.thumbnail) r.thumb = _ssData.thumbnail;
                             if (_ssData.title && (!r.name || r.name.length < 3)) r.name = _ssData.title;
-                        } else {
-                            r.type = 'urlpreview';
-                            r.attributes.originalType = 'slideshare';
                         }
                         return r;
                     }
@@ -1467,14 +1488,12 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                     // Reddit
                     var res = /reddit\.com\/r\/([^\/]+)\/comments\/([a-zA-Z0-9]+)/.exec(src);
                     if (res !== null) {
-                        var r = createResource(src, "reddit", name);
+                        var r = createResource(src, "urlpreview", name);
+                        r.attributes.originalType = 'reddit';
                         var _rdData = syncGetJSON("https://www.reddit.com/oembed?url=" + encodeURIComponent(src));
                         if (_rdData) {
                             if (_rdData.html) r.attributes.html = _rdData.html;
                             if (_rdData.author_name && (!r.name || r.name.length < 3)) r.name = _rdData.author_name + "'s post";
-                        } else {
-                            r.type = 'urlpreview';
-                            r.attributes.originalType = 'reddit';
                         }
                         return r;
                     }
@@ -1490,7 +1509,8 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                     for (var i in flickr_patterns) {
                         var res = flickr_patterns[i].exec(src);
                         if (res !== null) {
-                            var r = createResource(src, "flickr", name);
+                            var r = createResource(src, "urlpreview", name);
+                            r.attributes.originalType = 'flickr';
                             var _flData = syncGetJSON("https://www.flickr.com/services/oembed/?url=" + encodeURIComponent(src) + "&format=json");
                             if (_flData) {
                                 if (_flData.type === 'photo') {
@@ -1500,38 +1520,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                                     r.attributes.html = _flData.html;
                                 }
                                 if (_flData.title && (!r.name || r.name.length < 3)) r.name = _flData.title;
-                            } else {
-                                r.type = 'urlpreview';
-                                r.attributes.originalType = 'flickr';
                             }
-                            return r;
-                        }
-                    }
-                    return null;
-                },
-                function (src, name) {
-                    // Instagram (always URL preview - no open embedding)
-                    var res = /instagram\.com\/(p|reel|tv)\/([a-zA-Z0-9_-]+)/.exec(src);
-                    if (res !== null) {
-                        var r = createResource(src, "urlpreview", name);
-                        r.attributes.originalType = 'instagram';
-                        return r;
-                    }
-                    return null;
-                },
-                function (src, name) {
-                    // Facebook (always URL preview - no open embedding)
-                    var fb_patterns = [
-                        /facebook\.com\/([^\/]+)\/posts\/([a-zA-Z0-9]+)/,
-                        /facebook\.com\/([^\/]+)\/videos\/([a-zA-Z0-9]+)/,
-                        /facebook\.com\/watch\/\?v=(\d+)/,
-                        /fb\.watch\/([a-zA-Z0-9_-]+)/
-                    ];
-                    for (var i in fb_patterns) {
-                        var res = fb_patterns[i].exec(src);
-                        if (res !== null) {
-                            var r = createResource(src, "urlpreview", name);
-                            r.attributes.originalType = 'facebook';
                             return r;
                         }
                     }
@@ -1554,7 +1543,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                 if (newResource !== null) {
                     if (currentUploadDialog) {
                         var _msgEl = currentUploadDialog.querySelector('.resourceInputMessage');
-                        if (_msgEl) { _msgEl.className = 'resourceInputMessage message active success'; _msgEl.textContent = labels['MessageURLValid'] +': '+ newResource.type; }
+                        if (_msgEl) { _msgEl.className = 'resourceInputMessage message'; _msgEl.textContent = ''; }
                     }
                     if (!skipPreview) { renderWebsitePreview(uriValue, newResource.type, newResource); }
                     return newResource;
@@ -1592,7 +1581,15 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
         currentUploadDialog.querySelector('.resourceInput[name="embed"]').value = '';
         var _wikiAttrInput = currentUploadDialog.querySelector('.resourceInput[name="wikiAttributes"]');
         if (_wikiAttrInput) { _wikiAttrInput.value = ''; }
-        currentUploadDialog.querySelector('#resourceInputTabURL .corsWarning').classList.remove('active');
+        var _descAttrInput = currentUploadDialog.querySelector('.resourceInput[name="urlpreviewAttributes"]');
+        if (_descAttrInput) { _descAttrInput.value = ''; }
+        var _corsEl = currentUploadDialog.querySelector('#resourceInputTabURL .corsWarning');
+        if (_corsEl) {
+            _corsEl.className = 'corsWarning message error';
+            _corsEl.textContent = labels['MessageEmbedNotAllowed'];
+        }
+        var _confirmBtn = currentUploadDialogCtrl && currentUploadDialogCtrl.widget().querySelector('.newResourceConfirm');
+        if (_confirmBtn) { _confirmBtn.disabled = false; }
 
         currentUploadDialog.querySelector('#resourceInputTabURL .resourceURLPreview').insertAdjacentHTML('beforeend', '<div class="workingSpinner dark"></div>');
 
@@ -1643,7 +1640,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                             });
                         }
 
-                        renderResourcePreviewElement(resourceType, data.urlInfo.title, data.urlInfo.image, data.urlInfo.description, data.embed);
+                        renderResourcePreviewElement(uriValue, resourceType, data.urlInfo.title, data.urlInfo.image, data.urlInfo.description, data.embed);
                     } else if (data.code == 1) {
                         console.log(data.string);
                     }
@@ -1651,7 +1648,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                 })
                 .catch(function() { /* aborted or network error — ignore */ });
             } else {
-                renderResourcePreviewElement(resourceType, resourceObj.name, resourceObj.description, resourceObj.thumb);
+                renderResourcePreviewElement(uriValue, resourceType, resourceObj.name, resourceObj.thumb, resourceObj.description);
             }
             
 
@@ -1664,6 +1661,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
     /**
      * I render the actual preview element
      * @method renderResourcePreviewElement
+     * @param {String} uriValue
      * @param {String} resourceType
      * @param {String} resourceTitle
      * @param {String} resourceThumb
@@ -1671,13 +1669,13 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
      * @param {String} embed (optional)
      * @return
      */
-    function renderResourcePreviewElement(resourceType, resourceTitle, resourceThumb, resourceDescription, embed) {
+    function renderResourcePreviewElement(uriValue, resourceType, resourceTitle, resourceThumb, resourceDescription, embed) {
         if (!currentUploadDialog) return;
         currentUploadDialog.querySelector('.resourceInput[name="thumbnail"]').value = resourceThumb || '';
         currentUploadDialog.querySelector('.resourceInput[name="embed"]').value = embed || '';
 
         var _nameInput = currentUploadDialog.querySelector('.resourceNameInput');
-        if (_nameInput.value.length < 3 && resourceTitle != 'YouTube') {
+        if (resourceTitle) {
             _nameInput.value = resourceTitle;
             _nameInput.dispatchEvent(new Event('input', { bubbles: true }));
         }
@@ -1696,10 +1694,30 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
         currentUploadDialog.querySelectorAll('#resourceInputTabURL .resourceURLPreview .resourceThumb').forEach(function(el) { el.remove(); });
         currentUploadDialog.querySelector('#resourceInputTabURL .resourceURLPreview').appendChild(previewElem);
 
+        // Store description for urlpreview fallback (picked up in submitURL)
+        var _descInput = currentUploadDialog.querySelector('.resourceInput[name="urlpreviewAttributes"]');
+        if (!_descInput) {
+            _descInput = document.createElement('input');
+            _descInput.type = 'hidden';
+            _descInput.className = 'resourceInput';
+            _descInput.name = 'urlpreviewAttributes';
+            currentUploadDialog.querySelector('#resourceInputTabURL').appendChild(_descInput);
+        }
+        _descInput.value = resourceDescription ? JSON.stringify({ description: resourceDescription }) : '';
+
+        var _corsEl = currentUploadDialog.querySelector('#resourceInputTabURL .corsWarning');
+        var _confirmBtn = currentUploadDialogCtrl && currentUploadDialogCtrl.widget().querySelector('.newResourceConfirm');
         if (embed && embed == 'forbidden') {
-            currentUploadDialog.querySelector('#resourceInputTabURL .corsWarning').classList.add('active');
+            if (isEmbedBlocklisted(uriValue)) {
+                if (_corsEl) { _corsEl.className = 'corsWarning message error active'; _corsEl.textContent = labels['MessageEmbedNotAllowed']; }
+                if (_confirmBtn) { _confirmBtn.disabled = true; }
+            } else {
+                if (_corsEl) { _corsEl.className = 'corsWarning message warning active'; _corsEl.textContent = labels['MessageEmbedForbiddenPreviewOnly']; }
+                if (_confirmBtn) { _confirmBtn.disabled = false; }
+            }
         } else {
-            currentUploadDialog.querySelector('#resourceInputTabURL .corsWarning').classList.remove('active');
+            if (_corsEl) { _corsEl.className = 'corsWarning message error'; _corsEl.textContent = labels['MessageEmbedNotAllowed']; }
+            if (_confirmBtn) { _confirmBtn.disabled = false; }
         }
 
         var _spinner = currentUploadDialog.querySelector('#resourceInputTabURL .resourceURLPreview .workingSpinner');

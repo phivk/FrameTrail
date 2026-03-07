@@ -875,19 +875,25 @@ function fileGetUrlInfo($url) {
     ]);
     $headers = get_headers($url, 1);
 
+    $embedForbidden = false;
+
     if (isset($headers["X-Frame-Options"])) {
-        if (is_array($headers["X-Frame-Options"])) {
-            end($headers["X-Frame-Options"]);
-            $xFrameResult = current($headers["X-Frame-Options"]);
-            reset($headers["X-Frame-Options"]);
-        } else {
-            $xFrameResult = $headers["X-Frame-Options"];
+        $xfo = is_array($headers["X-Frame-Options"]) ? end($headers["X-Frame-Options"]) : $headers["X-Frame-Options"];
+        $xfo = strtolower((string)$xfo);
+        if ($xfo === 'sameorigin' || $xfo === 'deny') {
+            $embedForbidden = true;
         }
     }
 
-    $xFrameResult = strtolower((string)$xFrameResult);
+    if (!$embedForbidden && isset($headers["Content-Security-Policy"])) {
+        $csp = is_array($headers["Content-Security-Policy"]) ? implode(' ', $headers["Content-Security-Policy"]) : $headers["Content-Security-Policy"];
+        // If frame-ancestors is present and not set to *, embedding is restricted to specific origins
+        if (preg_match('/frame-ancestors\s+([^;]+)/i', $csp, $m) && trim($m[1]) !== '*') {
+            $embedForbidden = true;
+        }
+    }
 
-    if ( $xFrameResult == 'sameorigin' || $xFrameResult == 'deny' || $siteInfo["status"] == "error" ) {
+    if ($embedForbidden || $siteInfo["status"] == "error") {
         $return["embed"] = "forbidden";
     } else {
         $return["embed"] = "allowed";

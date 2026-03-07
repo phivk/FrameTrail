@@ -162,6 +162,7 @@ window.FrameTrail_L10n['fr'] = {
     "MessageDeleteHypervideoReEnter": "Veuillez coller / ressaisir le nom de l'Hypervideo",
     "MessageDragAnnotationsIntoTimeline": "Ci-dessous vous voyez des annotations d'autres utilisateurs. Vous pouvez faire glisser leurs annotations dans votre propre timeline d'annotations.",
     "MessageDropFilesHere": "Déposer les fichiers ici",
+    "MessageEmbedForbiddenPreviewOnly": "Ce site n'autorise pas l'intégration. Il sera enregistré comme carte de prévisualisation avec un lien.",
     "MessageEmbedNotAllowed": "Le propriétaire du site n'autorise pas l'intégration de cette URL dans d'autres pages (Politique de même origine). Elle ne peut donc pas être affichée dans FrameTrail.",
     "MessageEmptyVideoSetDuration": "Une vidéo vide nécessite une durée. Veuillez définir une durée (min. 4 secondes) :",
     "MessageEventHandlerContainsErrors": "Le gestionnaire d'événements contient des erreurs",

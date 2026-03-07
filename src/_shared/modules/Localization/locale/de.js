@@ -162,6 +162,7 @@ window.FrameTrail_L10n['de'] = {
     "MessageDeleteHypervideoReEnter": "Bitte Hypervideo Namen kopieren / einfügen",
     "MessageDragAnnotationsIntoTimeline": "Unten siehst du Annotationen, die andere Nutzer:innen hinzugefügt haben. Du kannst sie per Drag & Drop in deine eigene Annotations-Timeline ziehen.",
     "MessageDropFilesHere": "Dateien hier ablegen",
+    "MessageEmbedForbiddenPreviewOnly": "Diese Seite erlaubt kein Einbetten. Sie wird als Vorschau-Karte mit Link gespeichert.",
     "MessageEmbedNotAllowed": "Diese Seite erlaubt das Einbetten in andere Seiten nicht (Same Origin Policy). Dies bedeutet die Seite kann nicht direkt in FrameTrail angezeigt werden.",
     "MessageEmptyVideoSetDuration": "Ein leeres Video benötigt eine Dauer. Bitte lege eine Dauer (min. 4 Sekunden) fest:",
     "MessageEventHandlerContainsErrors": "Event Handler enthält Fehler",
