@@ -943,6 +943,16 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
                     var rect = el.getBoundingClientRect();
                     dragClone = el.cloneNode(true);
                     dragClone.style.cssText = 'position:fixed;z-index:1000;pointer-events:none;width:' + rect.width + 'px;left:' + rect.left + 'px;top:' + rect.top + 'px;';
+                    // Copy theme CSS variables from the themed layoutManager so the clone renders correctly
+                    var lm = domElement.querySelector('.layoutManager');
+                    if (lm) {
+                        var cs = getComputedStyle(lm);
+                        ['--primary-bg-color','--primary-fg-color','--secondary-bg-color','--secondary-fg-color',
+                         '--video-background-color','--semi-transparent-fg-color','--semi-transparent-fg-highlight-color'].forEach(function(v) {
+                            var val = cs.getPropertyValue(v).trim();
+                            if (val) { dragClone.style.setProperty(v, val); }
+                        });
+                    }
                     document.body.appendChild(dragClone);
                 },
                 move: function(e) {
@@ -952,7 +962,7 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
                         dragClone.style.top  = (parseFloat(dragClone.style.top)  + e.dy) + 'px';
                     }
                 },
-                end: function(e) {
+                end: function() {
                     if (dragClone) { dragClone.remove(); dragClone = null; }
                 }
             }

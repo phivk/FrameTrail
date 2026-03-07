@@ -277,9 +277,13 @@
 body > .contentViewTemplate {
     outline: 1px solid var(--primary-bg-color);
     color: var(--primary-fg-color);
+    width: 140px !important;
+    height: 90px !important;
+    overflow: hidden;
 }
 
-.layoutManagerContainer .contentViewTemplate .contentViewOptionThumb {
+.layoutManagerContainer .contentViewTemplate .contentViewOptionThumb,
+body > .contentViewTemplate .contentViewOptionThumb {
     height: 60px;
     width: 140px;
     position: relative;
@@ -287,12 +291,17 @@ body > .contentViewTemplate {
     background: var(--primary-bg-color);
 }
 
-.layoutManagerContainer .contentViewTemplate .contentViewTemplateLabel {
+.layoutManagerContainer .contentViewTemplate .contentViewTemplateLabel,
+body > .contentViewTemplate .contentViewTemplateLabel {
     padding: 5px 6px;
     font-size: 13px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.contentViewTemplate [class^="icon-"]::before {
+    font-size: 19px !important;
 }
 
 /* Layout Areas */
