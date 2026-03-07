@@ -725,7 +725,7 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     width: 1920px;
     height: 1080px;
     aspect-ratio: 16 / 9;
-    background: #101010;
+    background: var(--video-background-color);
     filter: none;
     transition-property: filter;
     transition-duration: 1s;
