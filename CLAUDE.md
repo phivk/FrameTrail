@@ -28,7 +28,7 @@ FrameTrail/
 │   │   │   ├── _templateModule.js  # Module boilerplate template
 │   │   │   └── _templateType.js    # Type boilerplate template
 │   │   ├── modules/                # 12 shared modules
-│   │   ├── types/                  # 29 resource type definitions
+│   │   ├── types/                  # 22 resource type definitions
 │   │   ├── styles/                 # Global CSS (variables, generic, webfont)
 │   │   └── fonts/                  # Webfonts (woff2 only)
 │   ├── player/
@@ -181,7 +181,7 @@ _data/
 
 ### Resource Types
 
-All 29 resource types inherit from the base `Resource` type in `src/_shared/types/Resource/`:
+All 22 resource types inherit from the base `Resource` type in `src/_shared/types/Resource/`:
 
 | Type | Description |
 |------|-------------|
@@ -203,15 +203,9 @@ All 29 resource types inherit from the base `Resource` type in `src/_shared/type
 | ResourceQuiz | Interactive quiz |
 | ResourceHotspot | Clickable hotspot |
 | ResourceEntity | Linked data entity |
-| ResourceXTwitter | X/Twitter embeds |
-| ResourceBluesky | Bluesky embeds |
 | ResourceMastodon | Mastodon embeds |
-| ResourceTiktok | TikTok embeds |
-| ResourceReddit | Reddit embeds |
-| ResourceFlickr | Flickr embeds |
 | ResourceCodepen | CodePen embeds |
 | ResourceFigma | Figma embeds |
-| ResourceSlideshare | SlideShare embeds |
 | ResourceUrlPreview | URL preview cards |
 
 ## Development

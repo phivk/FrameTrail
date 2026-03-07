@@ -212,15 +212,9 @@ Resource (abstract base)
 ├── ResourceQuiz
 ├── ResourceHotspot
 ├── ResourceEntity
-├── ResourceXTwitter
-├── ResourceBluesky
 ├── ResourceMastodon
-├── ResourceTiktok
-├── ResourceReddit
-├── ResourceFlickr
 ├── ResourceCodepen
 ├── ResourceFigma
-├── ResourceSlideshare
 └── ResourceUrlPreview
 
 Overlay          (video overlay with position + time range)

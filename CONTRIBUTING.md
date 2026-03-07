@@ -76,7 +76,7 @@ FrameTrail/
 │   │   │   ├── StorageManager/    # Storage mode selection
 │   │   │   ├── UserManagement/    # Login, registration
 │   │   │   └── ...                # 12 modules total
-│   │   ├── types/                 # Resource type definitions (29 types)
+│   │   ├── types/                 # Resource type definitions (22 types)
 │   │   │   ├── Resource/          # Base type (abstract)
 │   │   │   ├── ResourceVideo/     # HTML5 video
 │   │   │   ├── ResourceYoutube/   # YouTube embed
