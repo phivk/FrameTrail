@@ -43,8 +43,7 @@ FrameTrail.defineModule('InteractionController', function(FrameTrail){
             "37": interfaceLeft,
             "39": interfaceRight,
 
-            "32": spaceKey,
-            "88": xKey
+            "32": spaceKey
 
 
         },
@@ -389,28 +388,6 @@ FrameTrail.defineModule('InteractionController', function(FrameTrail){
     };
 
 
-
-    /**
-     * When the "x" key is pressed, I change the xKey state so other modules can listen to the change
-     *
-     * @method xKey
-     */
-    function xKey(evt) {
-
-        FrameTrail.changeState('xKey', true);
-
-        function _xKeyUpOnce(evt) {
-            if ( evt.keyCode == '88' ) {
-                FrameTrail.changeState('xKey', false);
-            }
-            document.removeEventListener('keyup', _xKeyUpOnce);
-        }
-        document.addEventListener('keyup', _xKeyUpOnce);
-
-        evt.preventDefault();
-        evt.stopPropagation();
-
-    };
 
     function initActivityCheck() {
         

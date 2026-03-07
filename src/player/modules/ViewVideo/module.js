@@ -1325,56 +1325,6 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
 
 
     /**
-     * Toggles the visibility of a vertical grid based on the positions of all timeline items
-     * in each category (Overlays, Annotations). This grid is used to allow snapping
-     * items to positions of other timeline items.
-     *
-     * @method toggleGrid
-     * @param {Boolean} visible
-     */
-    function toggleGrid(visible) {
-
-        if ( !FrameTrail.getState('editMode') || FrameTrail.getState('editMode') == 'preview' ) {
-            return;
-        }
-
-        var _gt = document.querySelector(FrameTrail.getState('target'));
-        var _allItems = Array.from(_gt.querySelectorAll('.timelineElement'));
-        var timelineItems = _allItems.filter(function(el) { return !el.classList.contains('ui-draggable'); });
-        var draggableElements = _allItems.filter(function(el) { return el.classList.contains('ui-draggableable'); });
-        var GridContainer = document.createElement('div');
-        GridContainer.className = 'gridContainer';
-        GridContainer.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 3';
-
-
-        if ( visible ) {
-
-            for (var i = 0; i < timelineItems.length; i++) { // vertical grid lines
-
-                var _gl1 = document.createElement('div');
-                _gl1.className = 'gridline';
-                _gl1.style.cssText = 'position: absolute; top: 0; left: ' + timelineItems[i].offsetLeft + 'px; width: 1px; height: 100%; background-color: #ff9900';
-                GridContainer.appendChild(_gl1);
-
-                var _gl2 = document.createElement('div');
-                _gl2.className = 'gridline';
-                _gl2.style.cssText = 'position: absolute; top: 0; left: ' + (timelineItems[i].offsetLeft + timelineItems[i].offsetWidth) + 'px; width: 1px; height: 100%; background-color: #ff9900';
-                GridContainer.appendChild(_gl2);
-
-            }
-
-            PlayerProgress.appendChild(GridContainer);
-
-        } else {
-
-            var _gc = PlayerProgress.querySelector('.gridContainer');
-            if (_gc) { _gc.remove(); }
-
-        }
-
-    };
-
-    /**
      * Toggles the visibility of the working (loading) indicator.
      *
      * @method toggleVideoWorking
@@ -1543,7 +1493,6 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
             viewMode:        toggleViewMode,
             editMode:        toggleEditMode,
             slidePosition:   changeSlidePosition,
-            xKey:            toggleGrid,
             videoWorking:    toggleVideoWorking,
             userActive:      toggleUserActive,
             livestream:      toggleLivestream,
