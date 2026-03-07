@@ -102,6 +102,11 @@ switch($_REQUEST["a"]) {
         $return = fileGetUrlInfo($_REQUEST["url"]);
         break;
 
+    case "fileGetWikipediaInfo":
+        include_once("files.php");
+        $return = fileGetWikipediaInfo($_REQUEST["url"]);
+        break;
+
 
     /*#########################################
      ############ Hypervideo Handling

@@ -104,7 +104,22 @@ function fileUpload($type, $name, $description="", $attributes, $files, $lat, $l
             $newResource["src"] = $urlAttr["src"];
             $newResource["type"] = $urlAttr["type"];
             $newResource["attributes"] = $urlAttr["attributes"];
-            $newResource["thumb"] = $urlAttr["thumb"];
+            // For webpage/urlpreview/wikipedia: download and cache thumbnail locally
+            if (in_array($urlAttr["type"], ['webpage', 'urlpreview', 'wikipedia'])
+                && !empty($urlAttr["thumb"])
+                && filter_var($urlAttr["thumb"], FILTER_VALIDATE_URL)) {
+
+                $cachedThumb = downloadAndCacheThumbnail($urlAttr["thumb"], $name);
+                if (!isset($cachedThumb['error'])) {
+                    $newResource["thumb"] = $cachedThumb['thumb'];
+                } else {
+                    // Download failed — store external URL as fallback
+                    $newResource["thumb"] = $urlAttr["thumb"];
+                    error_log('FrameTrail: Thumb cache failed (' . $cachedThumb['error'] . '), keeping external URL');
+                }
+            } else {
+                $newResource["thumb"] = $urlAttr["thumb"];
+            }
             if (!empty($urlAttr["licenseType"])) {
                 $newResource["licenseType"] = $urlAttr["licenseType"];
             }
@@ -671,8 +686,185 @@ function fileGetByFilter($key,$condition,$values) {
  * 0       =   Success. URL info successfully retrieved
  * 1       =   failed.
  */
+/**
+ * Download an image from a URL and save it as a local thumbnail.
+ * Uses the same generateThumbnail() pipeline as direct uploads.
+ *
+ * @param string $imageUrl     Full URL to the image
+ * @param string $resourceName Resource display name (for filename generation)
+ * @return array ['thumb' => localFilename] on success, ['error' => message] on failure
+ */
+function downloadAndCacheThumbnail($imageUrl, $resourceName) {
+    global $conf;
+
+    if (!extension_loaded('gd')) {
+        return ['error' => 'GD library not available'];
+    }
+
+    if (empty($imageUrl) || !filter_var($imageUrl, FILTER_VALIDATE_URL)) {
+        return ['error' => 'Invalid image URL'];
+    }
+
+    $scheme = parse_url($imageUrl, PHP_URL_SCHEME);
+    if (!in_array($scheme, ['http', 'https'])) {
+        return ['error' => 'Invalid URL scheme'];
+    }
+
+    $ch = curl_init($imageUrl);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+    curl_setopt($ch, CURLOPT_USERAGENT, 'FrameTrail/1.0');
+    curl_setopt($ch, CURLOPT_MAXFILESIZE, 10 * 1024 * 1024);
+
+    $imageData = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($imageData === false || $httpCode !== 200) {
+        return ['error' => 'Failed to download image (HTTP ' . $httpCode . ')'];
+    }
+
+    $tempPath = tempnam(sys_get_temp_dir(), 'ft_thumb_');
+    file_put_contents($tempPath, $imageData);
+
+    $imageInfo = @getimagesize($tempPath);
+    if (!$imageInfo || !in_array($imageInfo['mime'], ['image/jpeg', 'image/png', 'image/gif', 'image/webp'])) {
+        unlink($tempPath);
+        return ['error' => 'Not a valid image'];
+    }
+
+    if ($imageInfo[0] < 32 || $imageInfo[1] < 32) {
+        unlink($tempPath);
+        return ['error' => 'Image too small'];
+    }
+
+    $cTime = time();
+    $userId = isset($_SESSION["ohv"]["user"]["id"]) ? $_SESSION["ohv"]["user"]["id"] : 'system';
+    $safeName = sanitize($resourceName);
+    $thumbFilename = substr($userId . "_" . $cTime . "_thumb_" . $safeName, 0, 90) . ".png";
+    $thumbPath = $conf["dir"]["data"] . "/resources/" . $thumbFilename;
+
+    $result = generateThumbnail($tempPath, $thumbPath);
+    unlink($tempPath);
+
+    if (isset($result['error'])) {
+        return ['error' => 'Thumbnail generation failed: ' . $result['error']];
+    }
+
+    error_log('FrameTrail: Cached URL thumbnail locally: ' . $thumbFilename);
+    return ['thumb' => $thumbFilename];
+}
+
+
+/**
+ * Fetch article summary from the Wikipedia REST API.
+ * Parses language and title from the URL automatically.
+ *
+ * @param string $url  Wikipedia article URL (any language)
+ * @return array
+ *
+ * Return codes:
+ * 0  Success — urlInfo contains title, extract, image, description, articleUrl, lang
+ * 1  Failed — URL not recognized or API error
+ */
+function fileGetWikipediaInfo($url) {
+    // Parse language and title from URL
+    // Handles: https://en.wikipedia.org/wiki/Albert_Einstein
+    //          https://de.wikipedia.org/wiki/Albert_Einstein
+    //          https://en.m.wikipedia.org/wiki/Albert_Einstein (mobile)
+    if (!preg_match('#^https?://([a-z]{2,3})\.(?:m\.)?wikipedia\.org/wiki/(.+?)(?:\#.*)?$#i', $url, $matches)) {
+        return [
+            "status" => "error",
+            "code" => 1,
+            "string" => "Not a valid Wikipedia URL",
+            "urlInfo" => false
+        ];
+    }
+
+    $lang = strtolower($matches[1]);
+    $title = $matches[2];
+
+    // Call Wikipedia REST API
+    $apiUrl = "https://{$lang}.wikipedia.org/api/rest_v1/page/summary/" . rawurlencode($title);
+
+    $ch = curl_init($apiUrl);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+    // Wikipedia API requires a meaningful User-Agent
+    curl_setopt($ch, CURLOPT_USERAGENT, 'FrameTrail/1.4 (https://github.com/OpenHypervideo/FrameTrail; code@frametrail.org;)');
+    // Request JSON response
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Accept: application/json']);
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($response === false || $httpCode !== 200) {
+        return [
+            "status" => "error",
+            "code" => 1,
+            "string" => "Wikipedia API request failed (HTTP " . $httpCode . ")",
+            "urlInfo" => false
+        ];
+    }
+
+    $data = json_decode($response, true);
+    if (!$data || empty($data['title'])) {
+        return [
+            "status" => "error",
+            "code" => 1,
+            "string" => "Failed to parse Wikipedia API response",
+            "urlInfo" => false
+        ];
+    }
+
+    // Build result
+    $urlInfo = [
+        "title"        => $data['title'],
+        "description"  => isset($data['description']) ? $data['description'] : '',
+        "extract"      => isset($data['extract']) ? $data['extract'] : '',
+        "extract_html" => isset($data['extract_html']) ? $data['extract_html'] : '',
+        "image"        => null,
+        "articleUrl"   => isset($data['content_urls']['desktop']['page'])
+                            ? $data['content_urls']['desktop']['page']
+                            : $url,
+        "mobileUrl"    => isset($data['content_urls']['mobile']['page'])
+                            ? $data['content_urls']['mobile']['page']
+                            : null,
+        "lang"         => $lang,
+        "dir"          => isset($data['dir']) ? $data['dir'] : 'ltr'
+    ];
+
+    // Prefer thumbnail over originalimage (thumbnail is pre-sized, faster to download)
+    if (!empty($data['thumbnail']['source'])) {
+        $urlInfo['image'] = $data['thumbnail']['source'];
+    } elseif (!empty($data['originalimage']['source'])) {
+        $urlInfo['image'] = $data['originalimage']['source'];
+    }
+
+    return [
+        "status" => "success",
+        "code" => 0,
+        "string" => "see result",
+        "urlInfo" => $urlInfo,
+        "embed" => "allowed"
+    ];
+}
+
+
 function fileGetUrlInfo($url) {
-    
+
+    // Route Wikipedia URLs to dedicated API handler
+    if (preg_match('#^https?://[a-z]{2,3}\.(?:m\.)?wikipedia\.org/wiki/#i', $url)) {
+        return fileGetWikipediaInfo($url);
+    }
+
     $siteInfo = OpenGraph::fetch($url);
 
     stream_context_set_default( [

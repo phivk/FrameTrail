@@ -154,17 +154,61 @@ class OpenGraph implements Iterator
                 }
             }
         }
+        // === FALLBACK: Largest apple-touch-icon (>=120px, or any if none have sizes) ===
         if (!isset($page->_values['image'])) {
             $domxpath = new DOMXPath($doc);
-            $elements = $domxpath->query("//link[@rel='apple-touch-icon'][last()]");
-            if ($elements->length > 0) {
-                $domattr = $elements->item(0)->attributes->getNamedItem('href');
-                if ($domattr) {
-                    $page->_values['image'] = $domattr->value;
-                    $page->_values['image_src'] = $domattr->value;
+            $icons = $domxpath->query("//link[@rel='apple-touch-icon']");
+            $bestSize = 0;
+            $bestHref = null;
+            foreach ($icons as $icon) {
+                $href = $icon->attributes->getNamedItem('href');
+                $sizes = $icon->attributes->getNamedItem('sizes');
+                $size = $sizes ? (int)explode('x', strtolower($sizes->value))[0] : 1;
+                if ($href && $size >= $bestSize) {
+                    $bestSize = $size;
+                    $bestHref = $href->value;
+                }
+            }
+            if ($bestHref && $bestSize >= 120) {
+                $page->_values['image'] = $bestHref;
+            }
+        }
+
+        // === FALLBACK: twitter:image ===
+        if (!isset($page->_values['image'])) {
+            foreach ($tags AS $tag) {
+                if ($tag->hasAttribute('name') &&
+                    in_array($tag->getAttribute('name'), ['twitter:image', 'twitter:image:src'])) {
+                    $page->_values['image'] = $tag->getAttribute('content');
+                    break;
+                }
+                if ($tag->hasAttribute('property') &&
+                    in_array($tag->getAttribute('property'), ['twitter:image', 'twitter:image:src'])) {
+                    $page->_values['image'] = $tag->getAttribute('content');
+                    break;
                 }
             }
         }
+
+        // === FALLBACK: First significant <img> in page body ===
+        if (!isset($page->_values['image'])) {
+            $domxpath = new DOMXPath($doc);
+            $images = $domxpath->query("//img[@src]");
+            foreach ($images as $img) {
+                $src = $img->attributes->getNamedItem('src');
+                if (!$src) continue;
+                $imgSrc = $src->value;
+                if (preg_match('/(logo|icon|badge|button|avatar|sprite|tracking|pixel|spacer|blank)/i', $imgSrc)) continue;
+                $w = $img->attributes->getNamedItem('width');
+                if ($w && (int)$w->value < 200) continue;
+                $h = $img->attributes->getNamedItem('height');
+                if ($h && (int)$h->value < 100) continue;
+                if (strpos($imgSrc, 'data:') === 0) continue;
+                $page->_values['image'] = $imgSrc;
+                break;
+            }
+        }
+
         // Final fallback to use first image in the page (not working reliably)
         /*
         if (!isset($page->_values['image'])) {

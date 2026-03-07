@@ -772,7 +772,8 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                         var urlObj = checkResourceInput(
                             uploadDialog.querySelector('.resourceInput[name="url"]').value,
                             resourceName,
-                            uploadDialog.querySelector('.resourceInput[name="thumbnail"]').value
+                            uploadDialog.querySelector('.resourceInput[name="thumbnail"]').value,
+                            true
                         );
                         if (!urlObj || !urlObj.src) {
                             uploadDialog.querySelectorAll('.message.error').forEach(function(el) { el.remove(); });
@@ -780,6 +781,17 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                             return;
                         }
                         urlObj.name = resourceName;
+
+                        // Merge Wikipedia API attributes stored during preview
+                        var _wikiAttrInput = uploadDialog.querySelector('.resourceInput[name="wikiAttributes"]');
+                        if (_wikiAttrInput && _wikiAttrInput.value) {
+                            try {
+                                var _wikiAttrs = JSON.parse(_wikiAttrInput.value);
+                                if (!urlObj.attributes) { urlObj.attributes = {}; }
+                                Object.assign(urlObj.attributes, _wikiAttrs);
+                            } catch(e) {}
+                        }
+
                         uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = true;
 
                         if (isLocalMode) {
@@ -1152,7 +1164,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
      * @param {String} thumbValue
      * @return
      */
-    function checkResourceInput(uriValue, nameValue, thumbValue) {
+    function checkResourceInput(uriValue, nameValue, thumbValue, skipPreview) {
 
         if ( uriValue.length > 3 ) {
 
@@ -1544,7 +1556,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                         var _msgEl = currentUploadDialog.querySelector('.resourceInputMessage');
                         if (_msgEl) { _msgEl.className = 'resourceInputMessage message active success'; _msgEl.textContent = labels['MessageURLValid'] +': '+ newResource.type; }
                     }
-                    renderWebsitePreview(uriValue, newResource.type, newResource);
+                    if (!skipPreview) { renderWebsitePreview(uriValue, newResource.type, newResource); }
                     return newResource;
                     break;
                 } else {
@@ -1578,6 +1590,8 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
         currentUploadDialog.querySelector('#resourceInputTabURL .resourceURLPreview').innerHTML = '';
         currentUploadDialog.querySelector('.resourceInput[name="thumbnail"]').value = '';
         currentUploadDialog.querySelector('.resourceInput[name="embed"]').value = '';
+        var _wikiAttrInput = currentUploadDialog.querySelector('.resourceInput[name="wikiAttributes"]');
+        if (_wikiAttrInput) { _wikiAttrInput.value = ''; }
         currentUploadDialog.querySelector('#resourceInputTabURL .corsWarning').classList.remove('active');
 
         currentUploadDialog.querySelector('#resourceInputTabURL .resourceURLPreview').insertAdjacentHTML('beforeend', '<div class="workingSpinner dark"></div>');
@@ -1608,6 +1622,27 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                         if (!data.urlInfo.description) {
                             data.urlInfo.description = '';
                         }
+
+                        // Store Wikipedia API data in a hidden input so submitURL() can pick it up
+                        if (resourceType == 'wikipedia' && data.urlInfo && currentUploadDialog) {
+                            var _wikiInput = currentUploadDialog.querySelector('.resourceInput[name="wikiAttributes"]');
+                            if (!_wikiInput) {
+                                _wikiInput = document.createElement('input');
+                                _wikiInput.type = 'hidden';
+                                _wikiInput.className = 'resourceInput';
+                                _wikiInput.name = 'wikiAttributes';
+                                currentUploadDialog.querySelector('#resourceInputTabURL').appendChild(_wikiInput);
+                            }
+                            _wikiInput.value = JSON.stringify({
+                                extract:      data.urlInfo.extract      || '',
+                                extract_html: data.urlInfo.extract_html || '',
+                                description:  data.urlInfo.description  || '',
+                                articleUrl:   data.urlInfo.articleUrl   || '',
+                                wikiLang:     data.urlInfo.lang         || '',
+                                dir:          data.urlInfo.dir          || 'ltr'
+                            });
+                        }
+
                         renderResourcePreviewElement(resourceType, data.urlInfo.title, data.urlInfo.image, data.urlInfo.description, data.embed);
                     } else if (data.code == 1) {
                         console.log(data.string);

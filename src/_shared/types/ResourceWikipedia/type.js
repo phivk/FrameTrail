@@ -44,18 +44,64 @@ FrameTrail.defineType(
                  */
                 renderContent: function() {
 
-                    var splitUri = this.resourceData.src.split('://'),
-                        mobileUri = 'https://' + splitUri[1].substr(0, 3) + 'm.' + splitUri[1].substr(3),
-                        hash = (mobileUri.indexOf('#') != -1) ? '' : '#section_0';
+                    var data = this.resourceData;
+                    var src = data.src.replace(/^\/\//, 'https://');
 
-                    var _wrapper = document.createElement('div');
-                    _wrapper.innerHTML = '<iframe class="resourceDetail" data-type="'+ this.resourceData.type +'" src="'
-                        +    mobileUri
-                        +    hash
-                        +    '" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen>'
-                        +    '</iframe>';
-                    var resourceDetail = _wrapper.firstElementChild;
-                    resourceDetail.addEventListener('error', function() { return true; });
+                    // Legacy fallback: if no API data stored, use the old iframe approach
+                    if (!data.attributes || !data.attributes.extract) {
+                        var splitUri = src.split('://'),
+                            mobileUri = 'https://' + splitUri[1].substr(0, 3) + 'm.' + splitUri[1].substr(3),
+                            hash = (mobileUri.indexOf('#') != -1) ? '' : '#section_0';
+
+                        var _wrapper = document.createElement('div');
+                        _wrapper.innerHTML = '<iframe class="resourceDetail" data-type="'+ data.type +'" src="'
+                            +    mobileUri + hash
+                            +    '" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen>'
+                            +    '</iframe>';
+                        var resourceDetail = _wrapper.firstElementChild;
+                        resourceDetail.addEventListener('error', function() { return true; });
+                        return resourceDetail;
+                    }
+
+                    // Rich card rendering
+                    var articleUrl = data.attributes.articleUrl || src;
+                    var dir = data.attributes.dir || 'ltr';
+                    var lang = data.attributes.wikiLang || 'en';
+
+                    var thumbSrc = '';
+                    if (data.thumb) {
+                        if (/^(https?:)?\/\//.test(data.thumb)) {
+                            thumbSrc = data.thumb;
+                        } else {
+                            thumbSrc = FrameTrail.module('RouteNavigation').getResourceURL(data.thumb);
+                        }
+                    }
+                    var thumbStyle = thumbSrc ? 'background-image: url(\'' + thumbSrc + '\')' : '';
+
+                    var extractHtml = data.attributes.extract_html || '<p>' + (data.attributes.extract || '') + '</p>';
+                    var description = data.attributes.description || '';
+
+                    var _detailWrapper = document.createElement('div');
+                    _detailWrapper.innerHTML =
+                            '<div class="resourceDetail resourceWikipediaCard" data-type="'+ data.type +'" dir="'+ dir +'" lang="'+ lang +'">'
+                        +   '    <div class="wikiCardHeader">'
+                        +   '        <span class="icon-wikipedia-w wikiCardLogo"></span>'
+                        +   '        <span class="wikiCardTitle">'+ (data.name || '') +'</span>'
+                        +   (description ? '        <span class="wikiCardDescription">'+ description +'</span>' : '')
+                        +   '    </div>'
+                        +   (thumbSrc ?
+                            '    <div class="wikiCardThumb" style="'+ thumbStyle +'">'
+                        +   '    </div>' : '')
+                        +   '    <div class="wikiCardExtract">'
+                        +   '        '+ extractHtml
+                        +   '    </div>'
+                        +   '    <div class="wikiCardFooter">'
+                        +   '        <a href="'+ articleUrl +'" target="_blank" rel="noopener" class="wikiCardLink">'
+                        +   '            <span class="icon-link-ext"></span> '+ this.labels['ResourceOpenInNewTab']
+                        +   '        </a>'
+                        +   '    </div>'
+                        +   '</div>';
+                    var resourceDetail = _detailWrapper.firstElementChild;
 
                     return resourceDetail;
 

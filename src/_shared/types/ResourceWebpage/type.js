@@ -53,7 +53,14 @@ FrameTrail.defineType(
 
                     if (this.resourceData.attributes.embed && this.resourceData.attributes.embed == 'forbidden') {
 
-                        var thumbSource = (this.resourceData.thumb) ? this.resourceData.thumb.replace(/^\/\//, 'https://') : '';
+                        var thumbSource = '';
+                        if (this.resourceData.thumb) {
+                            if (/^(https?:)?\/\//.test(this.resourceData.thumb)) {
+                                thumbSource = this.resourceData.thumb.replace(/^\/\//, 'https://');
+                            } else {
+                                thumbSource = FrameTrail.module('RouteNavigation').getResourceURL(this.resourceData.thumb);
+                            }
+                        }
 
                         var _fbWrapper = document.createElement('div');
                         _fbWrapper.innerHTML = '<div class="embedFallback">'
