@@ -313,6 +313,15 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
             });
         })();
 
+        // Handle upload new video resource button
+        EditHypervideoForm.querySelector('.uploadNewVideoResource').addEventListener('click', function() {
+            FrameTrail.module('ResourceManager').uploadResource(function() {
+                var videoList = EditHypervideoForm.querySelector('.videoResourceList');
+                videoList.innerHTML = '';
+                FrameTrail.module('ResourceManager').renderList(videoList, true, 'type', 'contains', ['video', 'youtube', 'vimeo']);
+            }, true);
+        });
+
         // Handle video resource selection
         EditHypervideoForm.addEventListener('click', function(evt) {
             var _thumb = evt.target.closest('.videoResourceList .resourceThumb');
