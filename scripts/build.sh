@@ -228,6 +228,14 @@ for f in "${JS_FILES[@]}"; do
 done
 
 # ──────────────────────────────────────────────
+#  Inject version into built JS
+# ──────────────────────────────────────────────
+
+echo "Injecting version ${NPM_VERSION} into JS..."
+sed -i.bak "s|__FRAMETRAIL_VERSION__|${NPM_VERSION}|g" "$BUILD_DIR/frametrail.js"
+rm -f "$BUILD_DIR/frametrail.js.bak"
+
+# ──────────────────────────────────────────────
 #  Inline woff2 font files into CSS as base64
 # ──────────────────────────────────────────────
 #  The source CSS references fonts via relative url()

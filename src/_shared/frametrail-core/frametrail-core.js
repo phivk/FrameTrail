@@ -8,6 +8,8 @@
         instances    = [];
 
     window.FrameTrail = {
+        version:        '__FRAMETRAIL_VERSION__',
+
         defineModule:   _defineModule,
         defineType:     _defineType,
         init:           _init,

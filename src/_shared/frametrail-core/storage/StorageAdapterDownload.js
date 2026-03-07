@@ -68,7 +68,10 @@ class StorageAdapterDownload extends StorageAdapter {
         var hvName   = (Database.hypervideos[hypervideoID] && Database.hypervideos[hypervideoID].name) || 'hypervideo';
         var filename = hvName.replace(/[^a-z0-9]/gi, '_').substring(0, 50) + '.html';
 
-        var cdnBase = 'https://cdn.jsdelivr.net/npm/@frametrail/frametrail/';
+        var version = (window.FrameTrail && window.FrameTrail.version && window.FrameTrail.version !== '__FRAMETRAIL_VERSION__')
+            ? '@' + window.FrameTrail.version
+            : '';
+        var cdnBase = 'https://cdn.jsdelivr.net/npm/@frametrail/frametrail' + version + '/';
 
         var initOptions = {
             target:   'body',
