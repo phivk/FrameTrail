@@ -3,15 +3,23 @@
     padding: 10px;
     background: var(--primary-bg-color);
     color: var(--primary-fg-color);
+    display: flex;
+    align-items: center;
 }
 
 .resourceDetail[data-type="urlpreview"] a {
     color: var(--primary-fg-color);
 }
 
+.resourceDetail[data-type="urlpreview"][data-original-type="bluesky"] {
+    background: transparent;
+    padding: 0px;
+}
+
 .resourceDetail[data-type="urlpreview"] .bluesky-embed {
+    background: var(--primary-bg-color);
     position: relative;
-    padding: 11px 14px 14px 20px;
+    padding: 16px 16px 16px 25px;
 }
 
 .resourceDetail[data-type="urlpreview"] .bluesky-embed::before,
@@ -20,18 +28,18 @@
     font-size: 4em;
     line-height: 1;
     color: var(--primary-fg-color);
-    opacity: 0.2;
+    opacity: 0.3;
     position: absolute;
     pointer-events: none;
 }
 
 .resourceDetail[data-type="urlpreview"] .bluesky-embed::before {
-    top: -6px;
-    left: -5px;
+    top: -1px;
+    left: 2px;
 }
 
 .resourceDetail[data-type="urlpreview"] .bluesky-embed::after {
     content: '\201D';
-    bottom: 0;
-    right: 0;
+    bottom: -15px;
+    right: 3px;
 }
