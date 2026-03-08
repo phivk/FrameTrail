@@ -540,7 +540,8 @@
 }
 
 .contentViewEditingUI .iconInputRow .iconPreview {
-    border: 2px solid var(--semi-transparent-bg-color);
+    border: var(--input-border-width) solid var(--semi-transparent-bg-color);
+    border-radius: var(--input-border-radius) 0 0 var(--input-border-radius);
     border-right: none;
     background: var(--primary-fg-color);
     color: var(--primary-bg-color);
@@ -556,6 +557,7 @@
     flex: 1;
     min-width: 0;
     margin: 0;
+    border-radius: 0 var(--input-border-radius) var(--input-border-radius) 0;
 }
 
 .contentViewEditingUI .existingSubtitlesItem {

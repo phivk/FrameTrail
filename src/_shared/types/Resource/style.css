@@ -247,7 +247,7 @@ body > .resourceThumb:not(.resourceAnimationDiv) .resourceTitle {
 }
 
 .editPropertiesContainer input[type="number"] {
-    border: 2px solid var(--primary-bg-color);
+    border: var(--input-border-width) solid var(--primary-bg-color);
     background: var(--primary-fg-color);
     margin: 0px 2px 0px 2px;
     padding: 0;

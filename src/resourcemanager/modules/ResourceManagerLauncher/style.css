@@ -12,48 +12,6 @@ body.frametrail-body {
     position: relative;
 }
 
-/*
-.titlebar {
-    background: var(--primary-bg-color);
-    font-weight: 200;
-    height: 40px;
-    padding: 0px;
-    width: 100%;
-    text-align: center;
-    color: var(--primary-fg-color);
-    line-height: 38px;
-}
-
-.titlebar button {
-    float: right;
-    background-color: transparent;
-    border: medium none;
-    cursor: pointer;
-    height: 40px;
-    width: 40px;
-    font-size: 19px;
-    color: var(--primary-fg-color);
-    display: none;
-}
-
-.titlebar.editActive, .titlebar.editActive button {
-    background: var(--secondary-fg-color);
-    color: var(--primary-bg-color);
-}
-
-.mainContainer {
-    width: 100%;
-    background: var(--primary-bg-color);
-    color: var(--primary-fg-color);
-}
-
-.mainContainer.editActive {
-    border-top: 1px solid rgba(73, 76, 81, .6);
-    background-color: var(--primary-fg-color);
-    color: var(--primary-bg-color);
-}
-*/
-
 .mainContainer .resourceManagerContent {
     background: var(--secondary-bg-color);
     height: 100%;

@@ -322,6 +322,20 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
             });
         });
 
+        // Handle edit button clicks in videoResourceList
+        EditHypervideoForm.querySelector('.videoResourceList').addEventListener('click', function(e) {
+            var editBtn = e.target.closest('.resourceEditButton');
+            if (!editBtn) { return; }
+            e.stopPropagation();
+            var resourceID = editBtn.getAttribute('data-resource-id');
+            var resourceData = FrameTrail.module('Database').resources[resourceID];
+            FrameTrail.module('ResourceManager').openEditDialog(resourceID, resourceData, function() {
+                var videoList = EditHypervideoForm.querySelector('.videoResourceList');
+                videoList.innerHTML = '';
+                FrameTrail.module('ResourceManager').renderList(videoList, true, 'type', 'contains', ['video', 'youtube', 'vimeo']);
+            });
+        });
+
         // Handle video resource selection
         EditHypervideoForm.addEventListener('click', function(evt) {
             var _thumb = evt.target.closest('.videoResourceList .resourceThumb');

@@ -113,9 +113,10 @@ button, input[type="submit"], input[type="button"], .button {
     border: none;
     font-size: 14px;
     text-align: left;
-    padding: 4px 6px;
+    padding: 4px 10px;
     background-color: transparent;
-    border: 2px solid var(--primary-bg-color);
+    border: var(--input-border-width) solid var(--primary-bg-color);
+    border-radius: var(--input-border-radius);
     color: var(--primary-bg-color);
 }
 
@@ -156,8 +157,9 @@ input[type="text"], input[type="password"], textarea, input[type="number"], inpu
     font-family: TitilliumWeb,"Helvetica Neue",Helvetica,Arial,sans-serif;
     font-size: 14px;
     margin: 4px 8px 4px 0;
-    padding: 3px 5px;
-    border: 2px solid var(--semi-transparent-bg-color);
+    padding: 4px 5px;
+    border: var(--input-border-width) solid var(--semi-transparent-bg-color);
+    border-radius: var(--input-border-radius);
     background: var(--primary-fg-color);
     color: var(--primary-bg-color);
 }
@@ -169,7 +171,8 @@ input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
 input[type="color"] {
     cursor: pointer;
     width: 100%;
-    border: 2px solid var(--primary-bg-color);
+    border: 1px solid var(--primary-bg-color);
+    border-radius: var(--input-border-radius);
     background: var(--primary-fg-color);
 }
 
@@ -1276,7 +1279,8 @@ input:checked + .slider:before {
     width: 100%;
     box-sizing: border-box;
     padding: 4px 30px 4px 10px;
-    border: 2px solid var(--primary-bg-color);
+    border: var(--input-border-width) solid var(--primary-bg-color);
+    border-radius: var(--input-border-radius);
     background-color: var(--primary-fg-color);
     cursor: pointer;
     font-family: inherit;

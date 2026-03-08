@@ -567,7 +567,25 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
 
             });
 
-        })
+        });
+
+        // Handle edit button clicks in videoResourceList
+        newDialog.querySelector('.videoResourceList').addEventListener('click', function(e) {
+            var editBtn = e.target.closest('.resourceEditButton');
+            if (!editBtn) { return; }
+            e.stopPropagation();
+            var resourceID = editBtn.getAttribute('data-resource-id');
+            var resourceData = FrameTrail.module('Database').resources[resourceID];
+            FrameTrail.module('ResourceManager').openEditDialog(resourceID, resourceData, function() {
+                var videoResourceList = newDialog.querySelector('.videoResourceList');
+                videoResourceList.innerHTML = '';
+                FrameTrail.module('ResourceManager').renderList(videoResourceList, true,
+                    'type',
+                    'contains',
+                    ['video', 'youtube', 'vimeo']
+                );
+            });
+        });
 
 
         newDialogCtrl = Dialog({

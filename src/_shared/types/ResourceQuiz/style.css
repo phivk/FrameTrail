@@ -13,9 +13,10 @@
 
 .overlayElement .resourceDetail[data-type="quiz"] {
     padding: 3px 8px 8px 8px;
-    color: #000;
-    background: rgba(255,255,255,.9);
+    background: var(--primary-bg-color);
     font-size: 24px;
+    color: var(--primary-fg-color);
+    border-radius: 4px;
 }
 
 .resourceDetail[data-type="quiz"] .resourceDetailQuizQuestion {
@@ -33,6 +34,13 @@
     width: 100%;
     flex: 1;
     margin-top: 10px;
+    color: var(--primary-fg-color);
+    background-color: var(--secondary-bg-color);
+    border: 2px solid transparent;
+}
+
+.resourceDetail[data-type="quiz"] .resourceQuizAnswersContainer button:hover {
+    border-color: var(--primary-fg-color);
 }
 
 .resourceDetail[data-type="quiz"] .resourceQuizAnswersContainer button.wrong,
