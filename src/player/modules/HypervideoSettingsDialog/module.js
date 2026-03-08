@@ -319,7 +319,7 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
                 var videoList = EditHypervideoForm.querySelector('.videoResourceList');
                 videoList.innerHTML = '';
                 FrameTrail.module('ResourceManager').renderList(videoList, true, 'type', 'contains', ['video', 'youtube', 'vimeo']);
-            }, true);
+            });
         });
 
         // Handle video resource selection

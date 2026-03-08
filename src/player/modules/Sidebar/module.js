@@ -565,7 +565,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                     ['video', 'youtube', 'vimeo']
                 );
 
-            }, true);
+            });
 
         })
 
