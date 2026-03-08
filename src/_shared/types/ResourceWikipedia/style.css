@@ -1,5 +1,6 @@
 .resourceDetail[data-type="wikipedia"] {
     padding: 10px;
+    box-sizing: border-box;
     background: var(--primary-bg-color);
     color: var(--primary-fg-color);
 }
