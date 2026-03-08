@@ -82,13 +82,18 @@
     bottom: 0;
     width: 100%;
     height: auto;
-    background-color: var(--secondary-bg-color);
+    background-color: var(--primary-bg-color);
     text-align: center;
     padding: 6px 5px 3px 5px;
     color: var(--primary-fg-color);
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
     box-sizing: border-box;
+    opacity: .8;
+}
+
+.hypervideoThumb:hover .hypervideoTitle {
+    opacity: 1;
 }
 
 .hypervideoThumb.ui-draggable-dragging {
