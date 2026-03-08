@@ -63,6 +63,7 @@
     margin-right: 0px;
     cursor: pointer;
     transition: all 0.2s ease;
+    border-radius: 0px;
 }
 
 .viewResources .resourcesControls .viewToggle.active {
