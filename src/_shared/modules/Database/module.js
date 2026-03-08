@@ -162,7 +162,7 @@
                     })(),
             "src": (function () {
                         if (item.body["frametrail:type"] === 'location') { return null; }
-                        return (['codesnippet', 'text', 'quiz', 'entity', 'webpage', 'wikipedia'].indexOf(item.body["frametrail:type"]) >= 0)
+                        return (['codesnippet', 'text', 'quiz', 'entity', 'webpage', 'wikipedia', 'urlpreview'].indexOf(item.body["frametrail:type"]) >= 0)
                                 ? item.body.value
                                 : item.body.source;
                     })(),
