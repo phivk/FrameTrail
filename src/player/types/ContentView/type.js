@@ -574,9 +574,9 @@ FrameTrail.defineType(
                         var firstActiveElement = container.querySelector(activeSelector);
                         if (!firstActiveElement) { return; }
                         var activeElementPosition = firstActiveElement.offsetTop;
-                        if ( activeElementPosition < container.clientHeight/2 + container.scrollTop
-                            || activeElementPosition > container.clientHeight/2 + container.scrollTop ) {
-                            container.scrollTop = activeElementPosition + container.scrollTop - container.clientHeight/2;
+                        var center = container.scrollTop + container.clientHeight / 2;
+                        if ( activeElementPosition < center || activeElementPosition > center ) {
+                            container.scrollTop = activeElementPosition - container.clientHeight / 2;
                         }
                     }
 
