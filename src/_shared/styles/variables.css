@@ -67,8 +67,7 @@ body > .contentViewPreview,
     --video-background-color: var(--secondary-bg-color);
 }
 
-/* ── Steel: white bg with flat Wet Asphalt (#34495E) pastel panels ── */
-.frametrail-body[data-frametrail-theme="steel"] :is(
+.frametrail-body[data-frametrail-theme="dark"] :is(
     .mainContainer:not([data-edit-mode="settings"], [data-edit-mode="overlays"], [data-edit-mode="codesnippets"], [data-edit-mode="annotations"]),
     .mainContainer[data-edit-mode] .hypervideoContainer,
     .loadingScreen,
@@ -76,15 +75,30 @@ body > .contentViewPreview,
     .titlebar:not(.editActive),
     .layoutManager
 ),
-.themeItem[data-theme="steel"] {
-    --primary-bg-color: rgba(255, 255, 255, 1);
-    --secondary-bg-color: rgba(178, 192, 208, .6);
-    --primary-fg-color: rgba(22, 38, 58, 1);
-    --secondary-fg-color: rgba(52, 78, 108, 1);
-    --annotation-preview-bg-color: rgba(178, 192, 208, .3);
-    --video-background-color: var(--secondary-bg-color);
-    --semi-transparent-fg-color: rgba(22, 38, 58, .3);
-    --semi-transparent-fg-highlight-color: rgba(22, 38, 58, .4);
+.themeItem[data-theme="dark"] {
+    --primary-bg-color: rgba(0, 0, 0, 1);
+    --secondary-bg-color: rgba(50, 50, 50, .6);
+    --secondary-fg-color: rgba(210, 210, 210, 1);
+    /* semi-transparent-bg cannot be derived: 50,50,50 base ≠ primary-bg 0,0,0 */
+    --semi-transparent-bg-color: rgba(50, 50, 50, .8);
+}
+
+/* ── Midnight: near-black GitHub-dark inspired ── */
+.frametrail-body[data-frametrail-theme="midnight"] :is(
+    .mainContainer:not([data-edit-mode="settings"], [data-edit-mode="overlays"], [data-edit-mode="codesnippets"], [data-edit-mode="annotations"]),
+    .mainContainer[data-edit-mode] .hypervideoContainer,
+    .loadingScreen,
+    .userLoginOverlay,
+    .titlebar:not(.editActive),
+    .layoutManager
+),
+.themeItem[data-theme="midnight"] {
+    --primary-bg-color: rgba(13, 17, 23, 1);
+    --secondary-bg-color: rgba(22, 27, 34, .6);
+    --primary-fg-color: rgba(230, 237, 243, 1);
+    --secondary-fg-color: rgba(139, 148, 158, 1);
+    /* semi-transparent-bg: use slightly lighter base to stay visible on pure-black */
+    --semi-transparent-bg-color: rgba(22, 27, 34, .8);
 }
 
 /* ── Slate: Tailwind slate-800/200, enterprise-professional ── */
@@ -333,40 +347,6 @@ body > .contentViewPreview,
     /* semi-transparent-fg: neon base, reduced opacity */
     --semi-transparent-fg-color: rgba(0, 255, 180, .3);
     --semi-transparent-fg-highlight-color: rgba(0, 255, 180, .4);
-}
-
-.frametrail-body[data-frametrail-theme="dark"] :is(
-    .mainContainer:not([data-edit-mode="settings"], [data-edit-mode="overlays"], [data-edit-mode="codesnippets"], [data-edit-mode="annotations"]),
-    .mainContainer[data-edit-mode] .hypervideoContainer,
-    .loadingScreen,
-    .userLoginOverlay,
-    .titlebar:not(.editActive),
-    .layoutManager
-),
-.themeItem[data-theme="dark"] {
-    --primary-bg-color: rgba(0, 0, 0, 1);
-    --secondary-bg-color: rgba(50, 50, 50, .6);
-    --secondary-fg-color: rgba(210, 210, 210, 1);
-    /* semi-transparent-bg cannot be derived: 50,50,50 base ≠ primary-bg 0,0,0 */
-    --semi-transparent-bg-color: rgba(50, 50, 50, .8);
-}
-
-/* ── Midnight: near-black GitHub-dark inspired ── */
-.frametrail-body[data-frametrail-theme="midnight"] :is(
-    .mainContainer:not([data-edit-mode="settings"], [data-edit-mode="overlays"], [data-edit-mode="codesnippets"], [data-edit-mode="annotations"]),
-    .mainContainer[data-edit-mode] .hypervideoContainer,
-    .loadingScreen,
-    .userLoginOverlay,
-    .titlebar:not(.editActive),
-    .layoutManager
-),
-.themeItem[data-theme="midnight"] {
-    --primary-bg-color: rgba(13, 17, 23, 1);
-    --secondary-bg-color: rgba(22, 27, 34, .6);
-    --primary-fg-color: rgba(230, 237, 243, 1);
-    --secondary-fg-color: rgba(139, 148, 158, 1);
-    /* semi-transparent-bg: use slightly lighter base to stay visible on pure-black */
-    --semi-transparent-bg-color: rgba(22, 27, 34, .8);
 }
 
 /* ── Inspiration 1: deep navy-indigo (German podcast app) ── */
@@ -733,6 +713,26 @@ body > .contentViewPreview,
     --video-background-color: var(--secondary-bg-color);
     --semi-transparent-fg-color: rgba(15, 60, 110, .3);
     --semi-transparent-fg-highlight-color: rgba(15, 60, 110, .4);
+}
+
+/* ── Steel: white bg with flat Wet Asphalt (#34495E) pastel panels ── */
+.frametrail-body[data-frametrail-theme="steel"] :is(
+    .mainContainer:not([data-edit-mode="settings"], [data-edit-mode="overlays"], [data-edit-mode="codesnippets"], [data-edit-mode="annotations"]),
+    .mainContainer[data-edit-mode] .hypervideoContainer,
+    .loadingScreen,
+    .userLoginOverlay,
+    .titlebar:not(.editActive),
+    .layoutManager
+),
+.themeItem[data-theme="steel"] {
+    --primary-bg-color: rgba(255, 255, 255, 1);
+    --secondary-bg-color: rgba(178, 192, 208, .6);
+    --primary-fg-color: rgba(22, 38, 58, 1);
+    --secondary-fg-color: rgba(52, 78, 108, 1);
+    --annotation-preview-bg-color: rgba(178, 192, 208, .3);
+    --video-background-color: var(--secondary-bg-color);
+    --semi-transparent-fg-color: rgba(22, 38, 58, .3);
+    --semi-transparent-fg-highlight-color: rgba(22, 38, 58, .4);
 }
 
 /* ── Lavender: white bg with lavender pastel panels ── */
