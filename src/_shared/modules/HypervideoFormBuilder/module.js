@@ -73,16 +73,14 @@ FrameTrail.defineModule('HypervideoFormBuilder', function(FrameTrail){
                  + '    <div class="column-3">'
                  + '        <label for="name">'+ labels['SettingsHypervideoName'] +'</label>'
                  + '        <input type="text" name="name" placeholder="'+ labels['SettingsHypervideoName'] +'" value="'+ name +'"><br>'
-                 + '        <input type="checkbox" name="config[autohideControls]" id="autohideControls" '+ (autohideControls ? 'checked' : '') +'>'
-                 + '        <label for="autohideControls">'+ labels['SettingsAutohideControls'] +'</label>'
+                 + '        <div class="checkboxRow"><label class="switch"><input type="checkbox" name="config[autohideControls]" id="autohideControls" '+ (autohideControls ? 'checked' : '') +'><span class="slider round"></span></label><label for="autohideControls">'+ labels['SettingsAutohideControls'] +'</label></div>'
                  + '    </div>'
                  // Column 2: Subtitles
                  + '    <div class="column-9">'
                  + '        <div class="subtitlesSettingsWrapper">'
                  + '            <div>'+ labels['GenericSubtitles'] +' ('+ labels['MessageSubtitlesAlsoUsedForInteractiveTranscripts'] +')</div>'
                  + '            <button class="subtitlesPlus" type="button">'+ labels['GenericAdd'] +' <span class="icon-plus"></span></button>'
-                 + '            <input type="checkbox" name="config[captionsVisible]" id="captionsVisible" value="true" '+ (captionsVisible ? 'checked' : '') +'>'
-                 + '            <label for="captionsVisible">'+ labels['SettingsSubtitlesShowByDefault'] +'</label>';
+                 + '            <div class="checkboxRow"><label class="switch"><input type="checkbox" name="config[captionsVisible]" id="captionsVisible" value="true" '+ (captionsVisible ? 'checked' : '') +'><span class="slider round"></span></label><label for="captionsVisible">'+ labels['SettingsSubtitlesShowByDefault'] +'</label></div>';
 
         if (showExistingSubtitles) {
             html += '            <div class="existingSubtitlesContainer"></div>';
