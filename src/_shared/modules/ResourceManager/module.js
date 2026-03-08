@@ -284,7 +284,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                 var blobUrl = URL.createObjectURL(file);
                 var img = new Image();
                 img.onload = function() {
-                    var maxW = 350;
+                    var maxW = 600;
                     var w = Math.min(img.naturalWidth, maxW);
                     var h = Math.round(img.naturalHeight * (w / img.naturalWidth));
                     var canvas = document.createElement('canvas');
@@ -307,7 +307,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                     video.currentTime = video.duration / 2;
                 });
                 video.addEventListener('seeked', function() {
-                    var maxW = 400;
+                    var maxW = 600;
                     var vw = video.videoWidth || maxW;
                     var vh = video.videoHeight || 225;
                     var w = Math.min(vw, maxW);
@@ -1799,6 +1799,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                 deleteTasks.push(adapter.writeJSON('resources/_index.json', indexData));
                 return Promise.all(deleteTasks);
             }).then(function() {
+                delete FrameTrail.module('Database').resources[resourceID];
                 successCallback();
             }).catch(function(err) {
                 cancelCallback({ code: 1, string: err.message });
@@ -1815,6 +1816,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
         .then(function(data) {
 
             if (data.code === 0) {
+                delete FrameTrail.module('Database').resources[resourceID];
                 successCallback();
             } else {
                 cancelCallback(data);

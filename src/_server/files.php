@@ -1188,7 +1188,7 @@ function optimizeImage($sourcePath, $destPath, $maxWidth = 1920, $quality = 85) 
 
 /**
  * Generate thumbnail for an image
- * - Scales to max 350px wide, height auto (maintains aspect ratio)
+ * - Scales to max 600px wide, height auto (maintains aspect ratio)
  * - Saves as PNG to preserve transparency
  *
  * @param string $sourcePath Path to source image
@@ -1235,8 +1235,8 @@ function generateThumbnail($sourcePath, $thumbPath) {
     $sourceWidth = imagesx($sourceImage);
     $sourceHeight = imagesy($sourceImage);
 
-    // Scale to max 350px wide, height auto (maintains aspect ratio)
-    $maxWidth = 350;
+    // Scale to max 600px wide, height auto (maintains aspect ratio)
+    $maxWidth = 600;
     $newWidth = min($sourceWidth, $maxWidth);
     $newHeight = (int)($sourceHeight * ($newWidth / $sourceWidth));
 
@@ -1306,10 +1306,10 @@ function generateVideoThumbnail($videoPath, $thumbPath) {
     // -ss: seek to time position
     // -i: input file
     // -vframes 1: extract only 1 frame
-    // -vf scale: scale to max 400px width, height auto (maintains aspect ratio)
+    // -vf scale: scale to max 600px width, height auto (maintains aspect ratio)
     // Client-side draws video on canvas maintaining aspect ratio, no black bars
     $command = sprintf(
-        '%s -ss %f -i %s -vframes 1 -vf "scale=\'min(400,iw)\':-2" %s 2>&1',
+        '%s -ss %f -i %s -vframes 1 -vf "scale=\'min(600,iw)\':-2" %s 2>&1',
         escapeshellcmd($ffmpegPath),
         $timeOffset,
         escapeshellarg($videoPath),
