@@ -403,7 +403,7 @@ body > .resourceThumb:not(.resourceAnimationDiv) .resourceTitle {
     font-size: 18px;
     line-height: 1;
     margin-top: 2px;
-    opacity: 0.5;
+    opacity: 0.8;
 }
 
 .resourceDetail .resourceCard .resourceCardTypeIcon [class^="icon-"]::before,
@@ -426,11 +426,8 @@ body > .resourceThumb:not(.resourceAnimationDiv) .resourceTitle {
 }
 
 .resourceDetail .resourceCard .resourceCardSubtitle {
-    opacity: 0.6;
+    opacity: 0.8;
     margin-top: 2px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .resourceDetail .resourceCard .resourceCardThumb {
@@ -452,7 +449,7 @@ body > .resourceThumb:not(.resourceAnimationDiv) .resourceTitle {
     padding: 4px 0px;
     overflow-y: auto;
     line-height: 1.5;
-    opacity: 0.8;
+    opacity: 1;
     min-height: 70px;
 }
 
@@ -463,13 +460,14 @@ body > .resourceThumb:not(.resourceAnimationDiv) .resourceTitle {
 .resourceDetail .resourceCard .resourceCardFooter {
     flex-shrink: 0;
     padding: 5px 0 0 0;
-    border-top: 1px solid rgba(0, 0, 0, 0.12);
+    margin-top: 8px;
+    border-top: 1px solid var(--secondary-fg-color);
 }
 
 .resourceDetail .resourceCard .resourceCardFooter a {
     color: var(--primary-fg-color);
     text-decoration: none;
-    opacity: 0.6;
+    opacity: 0.8;
 }
 
 .resourceDetail .resourceCard .resourceCardFooter a:hover {
@@ -513,6 +511,14 @@ body > .resourceThumb:not(.resourceAnimationDiv) .resourceTitle {
     .resourceCard:has(.resourceCardThumb) .resourceCardFooter {
         grid-column: 1 / 3;
         grid-row: 3;
+    }
+}
+
+/* Shrink thumb image when the overlay is narrow */
+@container (max-width: 400px) {
+    .resourceDetail .resourceCard .resourceCardThumb img {
+        width: 60%;
+        margin: 0 auto;
     }
 }
 
