@@ -62,7 +62,8 @@
                 var path    = url.replace(/^_data\//, '');
                 var adapter = FrameTrail.module('StorageManager').getAdapter();
                 if (adapter) {
-                    adapter.readJSON(path)
+                    var readMethod = (opts.dataType === 'text') ? 'readText' : 'readJSON';
+                    adapter[readMethod](path)
                         .then(done)
                         .catch(function(err) { if (fail) fail(err); });
                     return;

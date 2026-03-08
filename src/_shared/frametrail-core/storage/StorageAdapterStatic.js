@@ -50,6 +50,12 @@ class StorageAdapterStatic extends StorageAdapterDownload {
         return resp.json();
     }
 
+    async readText(path) {
+        var resp = await fetch(this._cdnBase + path, { cache: 'no-cache' });
+        if (!resp.ok) throw new Error('File not found: ' + path);
+        return resp.text();
+    }
+
     // writeJSON, exists, createDirectory, showDownloadDialog, _performDownload
     // are all inherited from StorageAdapterDownload (in-memory storage + Save As export).
 

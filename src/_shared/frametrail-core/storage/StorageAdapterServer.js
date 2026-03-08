@@ -57,6 +57,12 @@ class StorageAdapterServer extends StorageAdapter {
         return resp.json();
     }
 
+    async readText(path) {
+        var resp = await fetch(this._dataBase + path, { cache: 'no-cache' });
+        if (!resp.ok) throw new Error('File not found: ' + path);
+        return resp.text();
+    }
+
     async writeJSON(path, data) {
         var action = this._getActionForPath(path, data);
         var resp = await fetch(this._serverBase + 'ajaxServer.php', {

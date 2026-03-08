@@ -35,6 +35,13 @@ class StorageAdapter {
     async readJSON(path) { throw new Error('Not implemented'); }
 
     /**
+     * Read a raw text file from storage (e.g. VTT subtitles, CSS).
+     * @param {String} path - Relative path
+     * @return {Promise<String>} Raw text content
+     */
+    async readText(path) { throw new Error('Not implemented'); }
+
+    /**
      * Check if a file exists in storage.
      * @param {String} path - Relative path
      * @return {Promise<Boolean>}

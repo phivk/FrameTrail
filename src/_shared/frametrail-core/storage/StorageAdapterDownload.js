@@ -43,6 +43,13 @@ class StorageAdapterDownload extends StorageAdapter {
         throw new Error('File not in memory: ' + path);
     }
 
+    async readText(path) {
+        if (this._data[path]) {
+            return this._data[path];
+        }
+        throw new Error('File not in memory: ' + path);
+    }
+
     async writeJSON(path, data) {
         this._data[path] = data;
     }
