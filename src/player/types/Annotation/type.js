@@ -1155,6 +1155,8 @@ FrameTrail.defineType(
 
 
                     this._activeStateInContentView.push(contentView);
+
+                    contentView.scaleDetailElements();
                 },
 
 

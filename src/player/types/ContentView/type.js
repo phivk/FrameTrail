@@ -1186,6 +1186,8 @@ FrameTrail.defineType(
 
                             if (!elementToScale) { return; }
 
+                            if (referenceWidth === 0) { return; }
+
                             if (referenceWidth >= scaleBase) {
                                 elementToScale.style.top = '0';
                                 elementToScale.style.left = '0';
