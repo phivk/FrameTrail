@@ -1227,7 +1227,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                             var timeCode = /t=([0-9]*)/.exec(src),
                                 tcString = (timeCode) ? '?start=' + timeCode[1] : '';
                             return createResource("https://www.youtube.com/embed/" + res[1] + tcString,
-                                                   "youtube", name, "https://img.youtube.com/vi/" + res[1] + "/2.jpg");
+                                                   "youtube", name, "https://img.youtube.com/vi/" + res[1] + "/hqdefault.jpg");
                         }
                     }
                     return null;
