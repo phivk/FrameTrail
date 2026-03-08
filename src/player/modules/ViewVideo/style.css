@@ -79,7 +79,28 @@
     z-index: 3;
 }
 
-body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, body.userinactive .mainContainer:not(.editActive) .playerContainer .playerProgress {
+/* Autohide: overlay controls on top of the video so no empty space remains.
+   Active in player mode and preview mode, but not in real edit modes. */
+body.autohideControls .mainContainer:not([data-edit-mode="overlays"]):not([data-edit-mode="annotations"]):not([data-edit-mode="codesnippets"]):not([data-edit-mode="layout"]) .playerContainer .controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    transition: visibility 0.4s, opacity 0.4s;
+}
+
+body.autohideControls .mainContainer:not([data-edit-mode="overlays"]):not([data-edit-mode="annotations"]):not([data-edit-mode="codesnippets"]):not([data-edit-mode="layout"]) .playerContainer .playerProgress {
+    position: absolute;
+    bottom: 40px;
+    left: 0;
+    right: 0;
+    width: 100%;
+    transition: visibility 0.4s, opacity 0.4s;
+}
+
+body.userinactive .mainContainer:not([data-edit-mode="overlays"]):not([data-edit-mode="annotations"]):not([data-edit-mode="codesnippets"]):not([data-edit-mode="layout"]) .playerContainer .controls,
+body.userinactive .mainContainer:not([data-edit-mode="overlays"]):not([data-edit-mode="annotations"]):not([data-edit-mode="codesnippets"]):not([data-edit-mode="layout"]) .playerContainer .playerProgress {
     display: block;
     visibility: hidden;
     opacity: 0;
@@ -98,6 +119,15 @@ body.userinactive .mainContainer:not(.editActive) .playerContainer .controls, bo
     pointer-events: all;
     overflow: visible;
     cursor: pointer;
+}
+
+.playerContainer .playerProgress::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    bottom: -10px;
+    left: 0;
+    right: 0;
 }
 
 .playerContainer.livestream .playerProgress {

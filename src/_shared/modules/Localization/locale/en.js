@@ -271,6 +271,7 @@ window.FrameTrail_L10n['en'] = {
     "SettingsFilterByTags": "Filter by tags",
     "SettingsFilterByTypes": "Filter by types (eg. \"Image\")",
     "SettingsFilterByUsers": "Filter by users",
+    "SettingsAutohideControls": "Auto-hide controls when inactive",
     "SettingsGlobalCSS": "Global CSS",
     "SettingsHTMLEditor": "HTML Editor",
     "SettingsHiddenFromOtherUsers": "Hidden from other users?",

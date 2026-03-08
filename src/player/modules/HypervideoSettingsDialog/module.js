@@ -250,6 +250,7 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
         var sourceChangeConfirmed = false;
 
         var captionsVisible = hypervideo.config && hypervideo.config.captionsVisible && hypervideo.config.captionsVisible.toString() === 'true';
+        var autohideControls = hypervideo.config && hypervideo.config.autohideControls && hypervideo.config.autohideControls.toString() === 'true';
 
         var _efw = document.createElement('div');
         _efw.innerHTML = '<form method="POST" class="editHypervideoForm">'
@@ -258,6 +259,7 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
                                 description: hypervideo.description || '',
                                 hidden: hypervideo.hidden && hypervideo.hidden.toString() === "true",
                                 captionsVisible: captionsVisible,
+                                autohideControls: autohideControls,
                                 showExistingSubtitles: true
                             })
                         + '    <hr>'
@@ -396,7 +398,7 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
             
             if (DatabaseEntry.config) {
                 for (var configKey in DatabaseEntry.config) {
-                    if (configKey === 'layoutArea' || configKey === 'theme' || configKey === 'captionsVisible') { continue; }
+                    if (configKey === 'layoutArea' || configKey === 'theme' || configKey === 'captionsVisible' || configKey === 'autohideControls') { continue; }
                     var newConfigVal = (EditHypervideoForm.querySelector('input[data-configkey="' + configKey + '"]') || {value: undefined}).value;
                     newConfigVal = (newConfigVal === 'true')
                                     ? true
@@ -410,6 +412,13 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
                 var captionsCheckbox = EditHypervideoForm.querySelector('input[name="config[captionsVisible]"]');
                 if (captionsCheckbox) {
                     DatabaseEntry.config.captionsVisible = captionsCheckbox.checked;
+                }
+                var autohideCheckbox = EditHypervideoForm.querySelector('input[name="config[autohideControls]"]');
+                if (autohideCheckbox) {
+                    DatabaseEntry.config.autohideControls = autohideCheckbox.checked;
+                    if (thisID == FrameTrail.module('RouteNavigation').hypervideoID) {
+                        FrameTrail.changeState('hv_config_autohideControls', autohideCheckbox.checked);
+                    }
                 }
             }
 

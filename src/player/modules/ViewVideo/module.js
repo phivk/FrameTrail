@@ -1097,6 +1097,13 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      */
     function toggleConfig_autohideControls(newState, oldState) {
 
+        if (newState) {
+            document.body.classList.add('autohideControls');
+        } else {
+            document.body.classList.remove('autohideControls');
+            document.body.classList.remove('userinactive');
+        }
+
     };
 
 

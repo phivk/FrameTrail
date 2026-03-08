@@ -57,6 +57,7 @@ FrameTrail.defineModule('HypervideoFormBuilder', function(FrameTrail){
      *   description: '',
      *   hidden: false,
      *   captionsVisible: false,
+     *   autohideControls: false,
      *   showExistingSubtitles: false
      * }
      * @return {String} HTML string
@@ -68,6 +69,7 @@ FrameTrail.defineModule('HypervideoFormBuilder', function(FrameTrail){
         var description = options.description || '';
         var hidden = options.hidden || false;
         var captionsVisible = options.captionsVisible || false;
+        var autohideControls = options.autohideControls || false;
         var showExistingSubtitles = options.showExistingSubtitles || false;
 
         var html = '<div class="layoutRow">'
@@ -76,7 +78,9 @@ FrameTrail.defineModule('HypervideoFormBuilder', function(FrameTrail){
                  + '        <label for="name">'+ labels['SettingsHypervideoName'] +'</label>'
                  + '        <input type="text" name="name" placeholder="'+ labels['SettingsHypervideoName'] +'" value="'+ name +'"><br>'
                  + '        <input type="checkbox" name="hidden" id="hypervideo_hidden" value="hidden" '+ (hidden ? 'checked' : '') +'>'
-                 + '        <label for="hypervideo_hidden">'+ labels['SettingsHiddenFromOtherUsers'] +'</label>'
+                 + '        <label for="hypervideo_hidden">'+ labels['SettingsHiddenFromOtherUsers'] +'</label><br>'
+                 + '        <input type="checkbox" name="config[autohideControls]" id="autohideControls" '+ (autohideControls ? 'checked' : '') +'>'
+                 + '        <label for="autohideControls">'+ labels['SettingsAutohideControls'] +'</label>'
                  + '    </div>'
                  // Column 2: Description
                  + '    <div class="column-3">'
