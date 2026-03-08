@@ -122,6 +122,10 @@
     color: var(--primary-bg-color);
 }
 
+.editPropertiesContainer .visualEditorWrapper .ql-toolbar .ql-formats {
+    margin-right: 10px;
+}
+
 .ql-snow .ql-picker-options {
     background: var(--primary-fg-color);
     max-height: 200px;

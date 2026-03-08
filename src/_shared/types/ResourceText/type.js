@@ -418,7 +418,7 @@ FrameTrail.defineType(
                     var toolbarOptions = [
                         [{ 'font': activeFonts }],
                         [{ 'size': activeFontSizes }],
-                        ['bold', 'italic', 'underline'],
+                        ['bold', 'italic', 'underline', 'link'],
                         [{ 'list': 'ordered' }, { 'list': 'bullet' }],
                         [{ 'indent': '-1' }, { 'indent': '+1' }],
                         [{ 'align': [] }]
