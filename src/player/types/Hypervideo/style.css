@@ -70,7 +70,7 @@
     margin-left: -20px;
     margin-top: -24px;
     color: var(--primary-fg-color);
-    text-shadow: 1px 1px 3px var(--primary-bg-color);
+    text-shadow: 0px 0px 10px var(--primary-bg-color);
 }
 
 .hypervideoThumb.activeHypervideo .hypervideoIcon [class^="icon-"]::before, .hypervideoThumb.activeHypervideo .hypervideoIcon [class*=" icon-"]::before {
@@ -82,20 +82,14 @@
     bottom: 0;
     width: 100%;
     height: auto;
-    background-color: var(--semi-transparent-bg-color);
+    background-color: var(--secondary-bg-color);
     text-align: center;
     padding: 6px 5px 3px 5px;
     color: var(--primary-fg-color);
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
     box-sizing: border-box;
-    opacity: .8;
 }
-
-.hypervideoThumb:hover .hypervideoTitle {
-    opacity: 1;
-}
-
 
 .hypervideoThumb.ui-draggable-dragging {
     outline: 1px solid #FF9919;
