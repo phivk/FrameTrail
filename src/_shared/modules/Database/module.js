@@ -90,7 +90,15 @@
             url = serverURL;
         }
 
-        fetch(url, { method: 'POST', cache: cachePolicy, body: new URLSearchParams(opts.data || {}) })
+        // Include dataPath in all POST requests so the PHP backend resolves the
+        // correct _data directory.
+        var postData = opts.data || {};
+        var adapter  = FrameTrail.module('StorageManager').getAdapter();
+        if (adapter && adapter.dataPathAbsolute) {
+            postData.dataPath = adapter.dataPathAbsolute;
+        }
+
+        fetch(url, { method: 'POST', cache: cachePolicy, body: new URLSearchParams(postData) })
             .then(function(r) {
                 if (!r.ok) throw new Error('HTTP ' + r.status);
                 return (opts.dataType === 'text') ? r.text() : r.json();
@@ -180,9 +188,10 @@
         };
 
         if (annotation.type === 'location') {
-            annotation.attributes.lat         = parseFloat(item.body['frametrail:attributes'].lat);
-            annotation.attributes.lon         = parseFloat(item.body['frametrail:attributes'].lon);
-            annotation.attributes.boundingBox = item.body['frametrail:attributes'].boundingBox;
+            var locAttrs = item.body['frametrail:attributes'] || {};
+            annotation.attributes.lat         = parseFloat(locAttrs.lat         !== undefined ? locAttrs.lat         : item.body['frametrail:lat']);
+            annotation.attributes.lon         = parseFloat(locAttrs.lon         !== undefined ? locAttrs.lon         : item.body['frametrail:long']);
+            annotation.attributes.boundingBox = locAttrs.boundingBox !== undefined ? locAttrs.boundingBox : (item.body['frametrail:boundingBox'] || '');
         }
 
         if (annotation.type === 'video') {

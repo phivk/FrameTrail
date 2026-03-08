@@ -464,11 +464,15 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
     function uploadSingleFile(file, type, thumbDataUrl, callback) {
         var fileName = file.name.replace(/\.[^/.]+$/, ''); // Remove extension
 
+        var adapter = FrameTrail.module('StorageManager').getAdapter();
+        var dataPath = (adapter && adapter.dataPathAbsolute) ? adapter.dataPathAbsolute : '';
+
         var formData = new FormData();
         formData.append('a', 'fileUpload');
         formData.append('name', fileName);
         formData.append('type', type);
         formData.append('file', file); // Unified field — PHP auto-detects type from MIME
+        formData.append('dataPath', dataPath);
 
         if (thumbDataUrl) {
             formData.append('thumb', thumbDataUrl);
@@ -832,9 +836,11 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                                 uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = false;
                             });
                         } else {
+                            var adapter = FrameTrail.module('StorageManager').getAdapter();
+                            var dataPath = (adapter && adapter.dataPathAbsolute) ? adapter.dataPathAbsolute : '';
                             fetch(FrameTrail.module('RouteNavigation').resolveServerURL('ajaxServer.php'), {
                                 method: 'POST',
-                                body: new URLSearchParams({ a: 'fileUpload', type: 'url', name: resourceName, attributes: JSON.stringify(urlObj) })
+                                body: new URLSearchParams({ a: 'fileUpload', type: 'url', name: resourceName, attributes: JSON.stringify(urlObj), dataPath: dataPath })
                             })
                             .then(function(r) { return r.json(); })
                             .then(function(resp) {
@@ -897,9 +903,11 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                                 uploadDialogCtrl.widget().querySelector('.newResourceConfirm').disabled = false;
                             });
                         } else {
+                            var adapter = FrameTrail.module('StorageManager').getAdapter();
+                            var dataPath = (adapter && adapter.dataPathAbsolute) ? adapter.dataPathAbsolute : '';
                             var mapParams = new URLSearchParams({
                                 a: 'fileUpload', type: 'map', name: resourceName,
-                                lat: lat, lon: lon
+                                lat: lat, lon: lon, dataPath: dataPath
                             });
                             mapParams.append('boundingBox[]', uploadDialog.querySelector('input.BB1').value);
                             mapParams.append('boundingBox[]', uploadDialog.querySelector('input.BB2').value);
@@ -1031,6 +1039,8 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                             });
                         } else {
                             // Server mode: PHP downloads, optimizes, generates thumbnail, stores locally
+                            var adapter = FrameTrail.module('StorageManager').getAdapter();
+                            var dataPath = (adapter && adapter.dataPathAbsolute) ? adapter.dataPathAbsolute : '';
                             fetch(FrameTrail.module('RouteNavigation').resolveServerURL('ajaxServer.php'), {
                                 method: 'POST',
                                 body: new URLSearchParams({
@@ -1038,7 +1048,8 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                                     url: item.url,
                                     name: itemName,
                                     licenseType: itemLicense,
-                                    licenseAttribution: itemAttribution
+                                    licenseAttribution: itemAttribution,
+                                    dataPath: dataPath
                                 })
                             })
                             .then(function(r) { return r.json(); })
@@ -1131,7 +1142,9 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                 showUploadDialog();
             } else {
                 // Server mode: fetch capabilities with a single request
-                fetch(FrameTrail.module('RouteNavigation').resolveServerURL('ajaxServer.php') + '?a=fileGetCapabilities')
+                var adapter = FrameTrail.module('StorageManager').getAdapter();
+                var dataPath = (adapter && adapter.dataPathAbsolute) ? adapter.dataPathAbsolute : '';
+                fetch(FrameTrail.module('RouteNavigation').resolveServerURL('ajaxServer.php') + '?a=fileGetCapabilities&dataPath=' + encodeURIComponent(dataPath))
                     .then(function(r) { return r.json(); })
                     .then(function(resp) {
                         if (resp && resp.code === 0) {
@@ -1599,11 +1612,13 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
             previewController = new AbortController();
 
             if ((resourceType == 'webpage' || resourceType == 'wikipedia') && FrameTrail.module('RouteNavigation').hasServer()) {
+                var adapter = FrameTrail.module('StorageManager').getAdapter();
+                var dataPath = (adapter && adapter.dataPathAbsolute) ? adapter.dataPathAbsolute : '';
                 fetch(FrameTrail.module('RouteNavigation').resolveServerURL('ajaxServer.php'), {
                     method: 'POST',
                     cache: 'no-cache',
                     signal: previewController.signal,
-                    body: new URLSearchParams({ a: 'fileGetUrlInfo', url: uriValue })
+                    body: new URLSearchParams({ a: 'fileGetUrlInfo', url: uriValue, dataPath: dataPath })
                 })
                 .then(function(r) { return r.json(); })
                 .then(function(data) {
@@ -1807,10 +1822,12 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
             return;
         }
 
+        var adapter = FrameTrail.module('StorageManager').getAdapter();
+        var dataPath = (adapter && adapter.dataPathAbsolute) ? adapter.dataPathAbsolute : '';
         fetch(FrameTrail.module('RouteNavigation').resolveServerURL('ajaxServer.php'), {
             method: 'POST',
             cache: 'no-cache',
-            body: new URLSearchParams({ a: 'fileDelete', resourcesID: resourceID })
+            body: new URLSearchParams({ a: 'fileDelete', resourcesID: resourceID, dataPath: dataPath })
         })
         .then(function(r) { return r.json(); })
         .then(function(data) {
@@ -2008,7 +2025,9 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 
         // Build POST body: send array values as separate values[] entries so PHP receives a proper array
         // (URLSearchParams.toString() on an array joins with commas, breaking PHP's array detection)
-        var params = new URLSearchParams({ a: 'fileGetByFilter', key: key, condition: condition });
+        var adapter = FrameTrail.module('StorageManager').getAdapter();
+        var dataPath = (adapter && adapter.dataPathAbsolute) ? adapter.dataPathAbsolute : '';
+        var params = new URLSearchParams({ a: 'fileGetByFilter', key: key, condition: condition, dataPath: dataPath });
         (Array.isArray(values) ? values : [values]).forEach(function(v) { params.append('values[]', v); });
 
         fetch(FrameTrail.module('RouteNavigation').resolveServerURL('ajaxServer.php'), {
@@ -2186,6 +2205,8 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
             return;
         }
 
+        var adapter = FrameTrail.module('StorageManager').getAdapter();
+        var dataPath = (adapter && adapter.dataPathAbsolute) ? adapter.dataPathAbsolute : '';
         fetch(FrameTrail.module('RouteNavigation').resolveServerURL('ajaxServer.php'), {
             method: 'POST',
             cache: 'no-cache',
@@ -2194,7 +2215,8 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
                 resourcesID: resourceID,
                 name: updateData.name,
                 licenseType: updateData.licenseType,
-                licenseAttribution: updateData.licenseAttribution
+                licenseAttribution: updateData.licenseAttribution,
+                dataPath: dataPath
             })
         })
         .then(function(r) { return r.json(); })

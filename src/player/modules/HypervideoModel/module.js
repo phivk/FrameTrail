@@ -1174,8 +1174,10 @@
                 var includeMedia = saveAsDialog.querySelector('[name="includeMedia"]').checked;
                 if (includeMedia) {
                     var serverUrl = FrameTrail.getState('server') || '_server/';
+                    var adapter = FrameTrail.module('StorageManager').getAdapter();
+                    var dpParam = (adapter && adapter.dataPathAbsolute) ? '&dataPath=' + encodeURIComponent(adapter.dataPathAbsolute) : '';
                     var a = document.createElement('a');
-                    a.href = serverUrl + 'ajaxServer.php?a=dataExport';
+                    a.href = serverUrl + 'ajaxServer.php?a=dataExport' + dpParam;
                     a.download = 'frametrail-data-export.zip';
                     a.click();
                 } else {

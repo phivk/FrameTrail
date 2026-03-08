@@ -12,9 +12,30 @@ session_set_cookie_params([
 ]);
 session_start();
 
-// Directories
+// Directories — default data path (sibling of _server/)
 $conf["dir"]["data"] = "../_data";
-$conf["dir"]["projects"] = $conf["dir"]["data"]."/projects";
+
+// Allow the client to specify a custom data directory via the `dataPath` request parameter.
+// The resolved path must be within the server root (parent of _server/) to prevent
+// directory traversal. This is the sandbox boundary.
+$_serverRoot = realpath(dirname(__DIR__));  // parent of _server/, e.g. src/
+
+$_dataPathInput = !empty($_REQUEST["dataPath"]) ? $_REQUEST["dataPath"] : null;
+
+if ($_dataPathInput !== null && $_serverRoot !== false) {
+    // The client sends an absolute URL path (e.g. /_data-examples/hirmeos/_data/).
+    // Map it to a filesystem path via DOCUMENT_ROOT.
+    $_docRoot = !empty($_SERVER['DOCUMENT_ROOT']) ? $_SERVER['DOCUMENT_ROOT'] : dirname(__DIR__);
+    $_candidate = realpath($_docRoot . '/' . $_dataPathInput);
+
+    if ($_candidate !== false
+        && is_dir($_candidate)
+        && strpos($_candidate, $_serverRoot) === 0   // must be within sandbox
+        && file_exists($_candidate . '/config.json')  // must be a valid data dir
+    ) {
+        $conf["dir"]["data"] = $_candidate;
+    }
+}
 
 // JSON response flags
 $conf["settings"]["json_flags"] = JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;

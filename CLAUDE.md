@@ -36,7 +36,8 @@ FrameTrail/
 │   │   └── types/                  # Player types (Annotation, Overlay, etc.)
 │   ├── resourcemanager/
 │   │   └── modules/ResourceManagerLauncher/
-│   └── _server/                    # PHP backend
+│   ├── _server/                    # PHP backend
+│   └── _data-examples/             # Example data directories (each with _data/)
 ├── scripts/
 │   └── build.sh                    # Production build script
 ├── .github/workflows/
@@ -167,7 +168,7 @@ _data/
 
 ### Data Flow
 
-**Client → Server:** All requests go through `src/_server/ajaxServer.php` with `action` parameter (e.g., `userLogin`, `fileUpload`, `hypervideoAdd`, `annotationfileSave`)
+**Client → Server:** All requests go through `src/_server/ajaxServer.php` with `action` parameter (e.g., `userLogin`, `fileUpload`, `hypervideoAdd`, `annotationfileSave`). Every request includes the `dataPath` parameter (an absolute URL path) so the PHP backend resolves the correct `_data` directory.
 
 **Client → Local:** `StorageAdapterLocal` uses the File System Access API to read/write JSON files directly in the user's selected `_data` folder
 
@@ -315,6 +316,25 @@ git push origin v2.0.0
 **Key Configuration** (`src/_server/config.php`):
 - `$conf["dir"]["data"]` — Data directory location (default: `../_data`)
 - Session lifetime controlled by PHP `session.gc_maxlifetime`
+
+**Data Directory Resolution (`dataPath`):**
+
+The PHP backend supports a client-provided `dataPath` parameter to select which `_data` directory to use. This allows multiple data directories to coexist under the same server root (e.g. `src/_data-examples/*/`).
+
+Resolution order:
+1. Request parameter (`$_REQUEST["dataPath"]`) — sent by the client with every request
+2. Default: `../_data` (sibling of `_server/`, used when no `dataPath` is sent)
+
+Security: The resolved path must pass three checks:
+- `realpath()` must succeed (no dangling symlinks or non-existent paths)
+- Must be a directory within the **sandbox boundary** (`dirname(__DIR__)` = parent of `_server/`)
+- Must contain `config.json` (validates it's a real FrameTrail data directory)
+
+There is no session-based override — every request is validated independently. This allows multiple data directories to be used in parallel (e.g. in different browser tabs).
+
+**When adding new server actions:** The `dataPath` parameter is handled centrally in `config.php` — no per-action code needed. All PHP files that use `$conf["dir"]["data"]` automatically get the correct path.
+
+**When adding new client-side server calls:** Include `dataPath` in the POST body. For modules with a `_serverPost()` helper, this is automatic. For direct `fetch()` calls, get the value via `FrameTrail.module('StorageManager').getAdapter().dataPathAbsolute`.
 
 **Runtime Configuration** (`_data/config.json`):
 - Authentication settings

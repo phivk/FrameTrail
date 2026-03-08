@@ -26,10 +26,15 @@ class StorageAdapterServer extends StorageAdapter {
         super();
         this._serverBase = serverBase || '_server/';
         this._dataBase   = dataBase   || '_data/';
+        // Resolve the dataBase to an absolute URL path for the PHP backend.
+        // The server uses this to locate the correct _data directory on the filesystem.
+        this._dataPathAbsolute = new URL(this._dataBase, document.baseURI).pathname;
     }
 
     get type() { return 'server'; }
     get displayName() { return 'FrameTrail Server'; }
+    /** Absolute URL path to the data directory, sent to PHP with every request. */
+    get dataPathAbsolute() { return this._dataPathAbsolute; }
     get canSave() {
         // Note: StorageManager.canSave() special-cases 'server' and does not call this getter.
         // It is kept for completeness but should not be relied on.
@@ -45,7 +50,7 @@ class StorageAdapterServer extends StorageAdapter {
         var resp = await fetch(this._serverBase + 'ajaxServer.php', {
             method: 'POST',
             cache: 'no-cache',
-            body: new URLSearchParams({ a: 'userCheckLogin' })
+            body: new URLSearchParams({ a: 'userCheckLogin', dataPath: this._dataPathAbsolute })
         });
         if (!resp.ok) throw new Error('PHP server not reachable');
         return true;
@@ -65,6 +70,7 @@ class StorageAdapterServer extends StorageAdapter {
 
     async writeJSON(path, data) {
         var action = this._getActionForPath(path, data);
+        action.params.dataPath = this._dataPathAbsolute;
         var resp = await fetch(this._serverBase + 'ajaxServer.php', {
             method: 'POST',
             body: new URLSearchParams(action.params)

@@ -647,6 +647,8 @@ FrameTrail.init({
 
 When both are omitted, StorageManager auto-detects: it probes `_server/ajaxServer.php` on HTTP(S) (server mode if found, local-folder mode if not), or falls back to the File System Access API on `file://`.
 
+When `server` is provided, the PHP backend uses `dataPath` to resolve the correct `_data` directory on the filesystem. The client sends the resolved absolute URL path (via `StorageAdapterServer.dataPathAbsolute`) with every AJAX request. The server validates the path is within the sandbox boundary (parent of `_server/`) and locks it into the session at login time. All data directories must live under the same root as `_server/`.
+
 Resolver helpers (available on the `RouteNavigation` module) provide the resolved URLs throughout the codebase:
 - `resolveDataURL(relativePath)` — prepends `dataPath` (or `'_data/'` as default)
 - `resolveServerURL(relativePath)` — prepends `server`; returns `null` if no server configured

@@ -17,6 +17,8 @@
     function _serverPost(body) {
         var serverURL = FrameTrail.module('RouteNavigation').resolveServerURL('ajaxServer.php');
         if (!serverURL) return Promise.reject(new Error('No server configured'));
+        var adapter = FrameTrail.module('StorageManager').getAdapter();
+        if (adapter && adapter.dataPathAbsolute) body.append('dataPath', adapter.dataPathAbsolute);
         return fetch(serverURL, {
             method: 'POST',
             cache: (config.allowCaching) ? 'default' : 'no-cache',
