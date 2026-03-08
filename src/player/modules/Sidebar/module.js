@@ -100,7 +100,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
         var hypervideoData = {
             "meta": {
                 "name": newDialogCtrl.element.querySelector('input[name="name"]').value,
-                "description": newDialogCtrl.element.querySelector('textarea[name="description"]').value,
+                "description": "",
                 "thumb": (selectedResourcesID.length > 0) ? FrameTrail.module('Database').resources[parseInt(selectedResourcesID)].thumb : null,
                 "creator": userInfo.name || 'Local User',
                 "creatorId": userInfo.id || 'local',
@@ -114,7 +114,6 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                 "autohideControls": newDialogCtrl.element.querySelector('input[name="config[autohideControls]"]').checked,
                 "captionsVisible": newDialogCtrl.element.querySelector('input[name="config[captionsVisible]"]').checked,
                 "clipTimeVisible": false,
-                "hidden": newDialogCtrl.element.querySelector('input[name="hidden"]').checked,
                 "layoutArea": {
                     "areaTop": [],
                     "areaBottom": [],
@@ -244,7 +243,6 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
 
         var currentData = FrameTrail.module('Database').convertToDatabaseFormat(thisID);
         currentData.meta.name = forkDialogCtrl.element.querySelector('input[name="name"]').value;
-        currentData.meta.description = forkDialogCtrl.element.querySelector('textarea[name="description"]').value;
         currentData.meta.creator = userInfo.name || 'Local User';
         currentData.meta.creatorId = userInfo.id || 'local';
         currentData.meta.created = Date.now();
@@ -318,12 +316,11 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
     NewHypervideoButton.forEach(function(btn) { btn.addEventListener('click', function(evt) {
 
         var formBuilder = FrameTrail.module('HypervideoFormBuilder');
-        var defaultHidden = FrameTrail.module('Database').config.defaultHypervideoHidden.toString() === "true";
 
         var _ndw = document.createElement('div');
         _ndw.innerHTML = '<div class="newHypervideoDialog">'
                         + '    <form class="newHypervideoForm" method="post">'
-                        + formBuilder.generateSettingsRow({ hidden: defaultHidden })
+                        + formBuilder.generateSettingsRow({})
                         + '        <hr>'
                         + formBuilder.generateVideoSourceSection({ 
                               duration: 120,  // 2 minutes default
@@ -466,7 +463,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
             var hypervideoData = {
                 "meta": {
                     "name": newDialog.querySelector('input[name="name"]').value,
-                    "description": newDialog.querySelector('textarea[name="description"]').value,
+                    "description": "",
                     "thumb": (selectedResourcesID.length > 0) ? FrameTrail.module('Database').resources[parseInt(selectedResourcesID)].thumb : null,
                     "creator": FrameTrail.module('Database').users[FrameTrail.module('UserManagement').userID].name,
                     "creatorId": FrameTrail.module('UserManagement').userID,
@@ -480,7 +477,6 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                     "autohideControls": newDialog.querySelector('input[name="config[autohideControls]"]').checked,
                     "captionsVisible": newDialog.querySelector('input[name="config[captionsVisible]"]').checked,
                     "clipTimeVisible": false,
-                    "hidden": newDialog.querySelector('input[name="hidden"]').checked,
                     "layoutArea": {
                         "areaTop": [],
                         "areaBottom": [],
@@ -663,7 +659,6 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                          + '    <div class="message active">'+ labels['MessageForkHypervideo'] +'</div>'
                          + '    <form method="POST" class="forkHypervideoForm">'
                          + '        <input type="text" name="name" placeholder="" value="'+ thisHypervideo.name +'"><br>'
-                         + '        <textarea name="description" placeholder="">'+ thisHypervideo.description +'</textarea><br>'
                          + '        <div class="message error"></div>'
                          + '    </form>'
                          + '</div>';
@@ -676,7 +671,6 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
 
             var currentData = FrameTrail.module("Database").convertToDatabaseFormat(thisID);
             currentData.meta.name = forkDialog.querySelector('input[name="name"]').value;
-            currentData.meta.description = forkDialog.querySelector('textarea[name="description"]').value;
             currentData.meta.creator = FrameTrail.module('Database').users[FrameTrail.module('UserManagement').userID].name;
             currentData.meta.creatorId = FrameTrail.module('UserManagement').userID;
 

@@ -85,7 +85,6 @@ class StorageAdapterLocal extends StorageAdapter {
             'areaLeftVisible': false,
             'areaRightVisible': false,
             'theme': '',
-            'defaultHypervideoHidden': false,
             'userNeedsConfirmation': false,
             'allowUploads': false,
             'allowCaching': false

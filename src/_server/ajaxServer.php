@@ -421,7 +421,6 @@ switch($_REQUEST["a"]) {
                 "allowCollaboration"=> false,
                 "allowUploads"=> true,
                 "theme"=> "",
-                "defaultHypervideoHidden"=> false,
                 "userColorCollection"=> $tmpColors,
                 "videoFit"=> "contain",
                 "defaultLanguage"=> "en"

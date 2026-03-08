@@ -54,8 +54,6 @@ FrameTrail.defineModule('HypervideoFormBuilder', function(FrameTrail){
      * @method generateSettingsRow
      * @param {Object} options - {
      *   name: '',
-     *   description: '',
-     *   hidden: false,
      *   captionsVisible: false,
      *   autohideControls: false,
      *   showExistingSubtitles: false
@@ -66,29 +64,20 @@ FrameTrail.defineModule('HypervideoFormBuilder', function(FrameTrail){
         var labels = getLabels();
         options = options || {};
         var name = options.name || '';
-        var description = options.description || '';
-        var hidden = options.hidden || false;
         var captionsVisible = options.captionsVisible || false;
         var autohideControls = options.autohideControls || false;
         var showExistingSubtitles = options.showExistingSubtitles || false;
 
         var html = '<div class="layoutRow">'
-                 // Column 1: Name & Hidden
+                 // Column 1: Name & options
                  + '    <div class="column-3">'
                  + '        <label for="name">'+ labels['SettingsHypervideoName'] +'</label>'
                  + '        <input type="text" name="name" placeholder="'+ labels['SettingsHypervideoName'] +'" value="'+ name +'"><br>'
-                 + '        <input type="checkbox" name="hidden" id="hypervideo_hidden" value="hidden" '+ (hidden ? 'checked' : '') +'>'
-                 + '        <label for="hypervideo_hidden">'+ labels['SettingsHiddenFromOtherUsers'] +'</label><br>'
                  + '        <input type="checkbox" name="config[autohideControls]" id="autohideControls" '+ (autohideControls ? 'checked' : '') +'>'
                  + '        <label for="autohideControls">'+ labels['SettingsAutohideControls'] +'</label>'
                  + '    </div>'
-                 // Column 2: Description
-                 + '    <div class="column-3">'
-                 + '        <label for="description">'+ labels['GenericDescription'] +'</label>'
-                 + '        <textarea name="description" placeholder="'+ labels['GenericDescription'] +'">'+ description +'</textarea><br>'
-                 + '    </div>'
-                 // Column 3: Subtitles
-                 + '    <div class="column-6">'
+                 // Column 2: Subtitles
+                 + '    <div class="column-9">'
                  + '        <div class="subtitlesSettingsWrapper">'
                  + '            <div>'+ labels['GenericSubtitles'] +' ('+ labels['MessageSubtitlesAlsoUsedForInteractiveTranscripts'] +')</div>'
                  + '            <button class="subtitlesPlus" type="button">'+ labels['GenericAdd'] +' <span class="icon-plus"></span></button>'

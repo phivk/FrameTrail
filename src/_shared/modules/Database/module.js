@@ -489,7 +489,6 @@
                             "creatorId": hypervideoData.meta.creatorId,
                             "created": hypervideoData.meta.created,
                             "lastchanged": hypervideoData.meta.lastchanged,
-                            "hidden": hypervideoData.config.hidden,
                             "config": hypervideoData.config,
                             "mainAnnotation": null,
                             "annotationfiles": null,
@@ -576,7 +575,6 @@
                                 "clips": hypervideoData.clips,
                                 "hypervideoData": hypervideoData
                             };
-                            delete bufferedData[hypervideoID].config.hidden;
 
                             if (!--countdown) {
                                 next();
@@ -703,7 +701,6 @@
                                 "clips": hypervideoData.clips,
                                 "hypervideoData": hypervideoData
                             };
-                            delete bufferedData[hvID].config.hidden;
 
                             if (!--countdown) {
                                 hypervideos = bufferedData;

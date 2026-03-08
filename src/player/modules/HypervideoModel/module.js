@@ -28,7 +28,6 @@
         creatorId               = '',
         created                 = 0,
         lastchanged             = 0,
-        hidden                  = false,
 
         subtitleFiles           = [],
         subtitles               = [],
@@ -82,8 +81,6 @@
         creatorId      = hypervideo.creatorId;
         created        = hypervideo.created;
         lastchanged    = hypervideo.lastchanged;
-        hidden         = hypervideo.hidden;
-
         // Read in config of Hypervideo
         for (var key in hypervideo.config) {
 
@@ -1509,15 +1506,6 @@
          * @readOnly
          */
         get lastchanged()       { return lastchanged     },
-
-        /**
-         * Whether the hypervideo is hidden in overview mode.
-         * @type Boolean
-         * @attribute hidden
-         * @readOnly
-         */
-        get hidden()            { return hidden          },
-
 
         /**
          * Get or set the Array of subtitle files (if defined)

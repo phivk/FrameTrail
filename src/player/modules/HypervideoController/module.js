@@ -837,41 +837,12 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 
 
     /**
-     * I update the descriptions of the hypervideo, which is shown in the UI in the {{#crossLink "Sidebar"}}Sidebar{{/crossLink}}
+     * I update the title of the hypervideo in the titlebar.
      * @method updateDescriptions
      */
     function updateDescriptions() {
 
-        var created = new Date(HypervideoModel.created).toLocaleString('de-DE', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                }).replace(/\./g, '.'),
-
-            changed = new Date(HypervideoModel.lastchanged).toLocaleString('de-DE', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                }).replace(/\./g, '.');
-
-        FrameTrail.module('Sidebar').VideoDescription   = ( '<div>' + HypervideoModel.description + '</div>'
-                                                      + '<div class="descriptionLabel">'+ labels['GenericAuthor'] +'</div>'
-                                                      + '<div>' + HypervideoModel.creator + '</div>'
-                                                      + '<div class="descriptionDates">'
-                                                      + '    <div class="descriptionLabel">'+ labels['GenericCreated'] +'</div>'
-                                                      + '    <div>' + created + '</div>'
-                                                      + '    <div class="descriptionLabel">'+ labels['GenericLastChanged'] +'</div>'
-                                                      + '    <div>' + changed + '</div>'
-                                                      + '</div>'
-
-                                                    );
-
         FrameTrail.module('Titlebar').title = HypervideoModel.hypervideoName;
-
 
     };
 

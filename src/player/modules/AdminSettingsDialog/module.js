@@ -86,8 +86,6 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                             +   '        <label for="allowCollaboration" data-tooltip-left="'+ labels['MessageUserCollaboration'] +'">'+ labels['SettingsAllowCollaboration'] +'</label><br>'
                             +   '    </div>'
                             +   '    <div class="column-3">'
-                            +   '        <input type="checkbox" name="defaultHypervideoHidden" id="defaultHypervideoHidden" value="defaultHypervideoHidden" '+((configData.defaultHypervideoHidden && configData.defaultHypervideoHidden.toString() == "true") ? "checked" : "")+'>'
-                            +   '        <label for="defaultHypervideoHidden" data-tooltip-bottom-left="'+ labels['MessageNewHypervideoHidden'] +'">'+ labels['SettingsNewHypervideoHidden'] +'</label>'
                             +   '        <input type="checkbox" name="allowUploads" id="allowUploads" value="allowUploads" '+((configData.allowUploads && configData.allowUploads.toString() == "true") ? "checked" : "")+'>'
                             +   '        <label for="allowUploads" data-tooltip-left="'+ labels['MessageAllowFileUploads'] +'">'+ labels['SettingsAllowUploads'] +'</label>'
                             +   '    </div>'

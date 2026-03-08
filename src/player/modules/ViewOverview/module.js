@@ -67,11 +67,9 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
             owner = hypervideos[id].creatorId === FrameTrail.module('UserManagement').userID;
 
 
-            if ( !hypervideos[id].hidden || owner || admin ) {
+            hypervideo = FrameTrail.newObject('Hypervideo', hypervideos[id]);
 
-                hypervideo = FrameTrail.newObject('Hypervideo', hypervideos[id])
-
-                thumb = hypervideo.renderThumb();
+            thumb = hypervideo.renderThumb();
 
 
                 if ( (admin || owner) && editMode && FrameTrail.module('StorageManager').canSave() ) {
@@ -251,9 +249,6 @@ FrameTrail.defineModule('ViewOverview', function(FrameTrail){
                 });
 
                 OverviewList.append(thumb);
-
-            }
-
 
         }
 

@@ -256,8 +256,6 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
         _efw.innerHTML = '<form method="POST" class="editHypervideoForm">'
                         + formBuilder.generateSettingsRow({
                                 name: hypervideo.name || '',
-                                description: hypervideo.description || '',
-                                hidden: hypervideo.hidden && hypervideo.hidden.toString() === "true",
                                 captionsVisible: captionsVisible,
                                 autohideControls: autohideControls,
                                 showExistingSubtitles: true
@@ -393,8 +391,6 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
             var DatabaseEntry = FrameTrail.module('Database').hypervideos[thisID];
 
             DatabaseEntry.name = EditHypervideoForm.querySelector('input[name="name"]').value;
-            DatabaseEntry.description = EditHypervideoForm.querySelector('textarea[name="description"]').value;
-            DatabaseEntry.hidden = EditHypervideoForm.querySelector('input[name="hidden"]').checked;
             
             if (DatabaseEntry.config) {
                 for (var configKey in DatabaseEntry.config) {
