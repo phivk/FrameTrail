@@ -503,11 +503,9 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
                     if (thisID == FrameTrail.module('RouteNavigation').hypervideoID) {
                         FrameTrail.module('Database').hypervideo = FrameTrail.module('Database').hypervideos[thisID];
 
-                        var name = EditHypervideoForm.querySelector('input[name="name"]').value,
-                            description = EditHypervideoForm.querySelector('textarea[name="description"]').value;
+                        var name = EditHypervideoForm.querySelector('input[name="name"]').value;
 
                         FrameTrail.module('HypervideoModel').hypervideoName = name;
-                        FrameTrail.module('HypervideoModel').description = description;
 
                         FrameTrail.module('HypervideoController').updateDescriptions();
 
