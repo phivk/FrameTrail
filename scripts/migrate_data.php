@@ -665,13 +665,24 @@ function migrateResourceImage($resource, $oldResDir, $newResDir, $skipThumbs) {
 
     $resource['attributes'] = new stdClass();
 
-    // Check if src is a URL or local file
-    if (filter_var($src, FILTER_VALIDATE_URL)) {
-        // External URL — keep as-is, no file to copy
+    $isUrl = filter_var($src, FILTER_VALIDATE_URL);
+
+    if ($isUrl) {
+        // External URL — download and cache thumbnail
+        if (!$skipThumbs) {
+            $cached = downloadAndCacheThumbnail($src, $name, $newResDir, $creatorId, $timestamp);
+            if (!isset($cached['error'])) {
+                $resource['thumb'] = $cached['thumb'];
+                logInfo("Generated image thumbnail for '{$name}' (from URL)");
+            } else {
+                logWarn("Resource '{$name}' (image): thumbnail download failed: " . $cached['error']);
+                $resource['thumb'] = null;
+            }
+        }
         return $resource;
     }
 
-    // Copy image file
+    // Copy local image file
     $oldFile = $oldResDir . "/" . $src;
     $newFile = $newResDir . "/" . $src;
     if (file_exists($oldFile)) {
@@ -680,17 +691,20 @@ function migrateResourceImage($resource, $oldResDir, $newResDir, $skipThumbs) {
         logWarn("Resource '{$name}' (image): source file not found: $src");
     }
 
-    // Copy or generate thumbnail
+    // Always regenerate image thumbnails from source (old ones are too small)
     $oldThumb = $resource['thumb'];
-    if ($oldThumb && file_exists($oldResDir . "/" . $oldThumb)) {
-        copy($oldResDir . "/" . $oldThumb, $newResDir . "/" . $oldThumb);
-    } elseif (!$skipThumbs && file_exists($newFile)) {
+    if (!$skipThumbs && file_exists($newFile)) {
         $thumbFilename = substr($creatorId . "_" . $timestamp . "_thumb_" . sanitize($name), 0, 90) . ".png";
         $thumbResult = generateImageThumbnail($newFile, $newResDir . "/" . $thumbFilename);
         if (!isset($thumbResult['error'])) {
             $resource['thumb'] = $thumbFilename;
             logInfo("Generated image thumbnail for '{$name}'");
+        } elseif ($oldThumb && file_exists($oldResDir . "/" . $oldThumb)) {
+            // Fallback to old thumbnail if generation fails
+            copy($oldResDir . "/" . $oldThumb, $newResDir . "/" . $oldThumb);
         }
+    } elseif ($oldThumb && file_exists($oldResDir . "/" . $oldThumb)) {
+        copy($oldResDir . "/" . $oldThumb, $newResDir . "/" . $oldThumb);
     }
 
     return $resource;
@@ -1152,30 +1166,14 @@ function migrateHypervideos($srcDir, $outDir) {
         if (file_exists($oldHv . "/hypervideo.json")) {
             $hv = json_decode(file_get_contents($oldHv . "/hypervideo.json"), true);
 
-            // Ensure meta.thumb references a file that exists in the new resources dir.
-            // Strategy: first try to copy/keep the existing thumb; if that fails, use
-            // the clip's video resource thumbnail as fallback.
-            $oldResDir = $srcDir . "/resources";
+            // Point meta.thumb to the clip's video resource thumbnail (regenerated
+            // via ffmpeg during resource migration) instead of keeping the old tiny one.
             $newResDir = $outDir . "/resources";
 
-            if (!empty($hv['meta']['thumb'])) {
-                $thumbFile = $hv['meta']['thumb'];
-                $newThumbPath = $newResDir . "/" . $thumbFile;
-
-                if (!file_exists($newThumbPath)) {
-                    // Try to copy from old resources dir
-                    $oldThumbPath = $oldResDir . "/" . $thumbFile;
-                    if (file_exists($oldThumbPath)) {
-                        copy($oldThumbPath, $newThumbPath);
-                    } else {
-                        // Old file doesn't exist either — use clip's video resource thumb
-                        if (isset($hv['clips']) && !empty($hv['clips'])) {
-                            $clipResId = (string)$hv['clips'][0]['resourceId'];
-                            if (isset($migratedResources[$clipResId]) && !empty($migratedResources[$clipResId]['thumb'])) {
-                                $hv['meta']['thumb'] = $migratedResources[$clipResId]['thumb'];
-                            }
-                        }
-                    }
+            if (isset($hv['clips']) && !empty($hv['clips'])) {
+                $clipResId = (string)$hv['clips'][0]['resourceId'];
+                if (isset($migratedResources[$clipResId]) && !empty($migratedResources[$clipResId]['thumb'])) {
+                    $hv['meta']['thumb'] = $migratedResources[$clipResId]['thumb'];
                 }
             }
 
@@ -1254,15 +1252,6 @@ function migrateHypervideos($srcDir, $outDir) {
                 logWarn("Hypervideo '$id': subtitles directory exists but no .vtt files found");
             } else {
                 logInfo("Hypervideo '$id': copied " . count($subtitleFiles) . " subtitle file(s)");
-            }
-        }
-
-        // Copy any thumbnail files referenced in hypervideo.json meta.thumb
-        if (isset($hv) && !empty($hv['meta']['thumb'])) {
-            $thumbFile = $hv['meta']['thumb'];
-            // Thumb could be in the hypervideo dir or resources dir
-            if (file_exists($oldHv . "/" . $thumbFile)) {
-                copy($oldHv . "/" . $thumbFile, $newHv . "/" . $thumbFile);
             }
         }
 
@@ -1347,7 +1336,10 @@ function fixResources($outDir, $srcDir, $skipThumbs) {
 // Index HTML Generation
 // ============================================================================
 
-function generateIndexHtml($outDir, $buildRelPath) {
+function generateIndexHtml($outDir, $buildRelPath, $serverRelPath = null) {
+    $serverLine = $serverRelPath !== null
+        ? "\n                server:         '" . $serverRelPath . "',"
+        : '';
     $html = '<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1360,7 +1352,7 @@ function generateIndexHtml($outDir, $buildRelPath) {
     <script>
         document.addEventListener(\'DOMContentLoaded\', function() {
             window.myInstance = FrameTrail.init({
-                target:         \'body\',
+                target:         \'body\',' . $serverLine . '
                 dataPath:       \'./_data/\',
                 contentTargets: {},
                 contents:       null,
@@ -1609,6 +1601,23 @@ function writeReport($outDir, $srcDir) {
 }
 
 // ============================================================================
+// Path Helpers
+// ============================================================================
+
+/**
+ * Compute the relative path from an output directory to the repo-root build/ folder.
+ * The script is always run from the repo root, so we count the depth of $outDir
+ * and prepend the right number of '../' segments.
+ * e.g. '_data-migrated/hirmeos'       → '../../build/'   (depth 2)
+ *      'src/_data-examples/hirmeos'    → '../../../build/' (depth 3)
+ */
+function computeBuildRelPath($outDir) {
+    $normalized = trim(str_replace('\\', '/', $outDir), '/');
+    $depth = count(explode('/', $normalized));
+    return str_repeat('../', $depth) . 'build/';
+}
+
+// ============================================================================
 // Project Migration Orchestrator
 // ============================================================================
 
@@ -1702,17 +1711,15 @@ if ($isAll) {
     $action = $fixOnly ? "fix" : "migrate";
     fwrite(STDOUT, "Found " . count($dirs) . " project(s) to {$action}: " . implode(', ', $dirs) . "\n");
 
-    // Calculate relative path from output dirs to build/
-    // e.g., _data-migrated/hirmeos/ → ../../build/
-    $buildRelPath = '../../build/';
-
     foreach ($dirs as $dir) {
-        migrateProject($sourceBase . '/' . $dir, $outputBase . '/' . $dir, $skipThumbs, $fixOnly, $buildRelPath);
+        $outDir = $outputBase . '/' . $dir;
+        $buildRelPath = computeBuildRelPath($outDir);
+        migrateProject($sourceBase . '/' . $dir, $outDir, $skipThumbs, $fixOnly, $buildRelPath);
     }
 
     fwrite(STDOUT, "All projects {$action}d.\n");
 } else {
-    $buildRelPath = '../../build/';
+    $buildRelPath = computeBuildRelPath($outputDir);
     if (!migrateProject($sourceDir, $outputDir, $skipThumbs, $fixOnly, $buildRelPath)) {
         exit(1);
     }
