@@ -410,6 +410,7 @@
 }
 
 .layoutManager .layoutArea .contentViewPreview .contentViewOptions button {
+    padding: 4px 6px;
     color: var(--primary-fg-color);
     border-color: var(--primary-fg-color);
 }
