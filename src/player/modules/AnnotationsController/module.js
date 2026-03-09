@@ -1041,7 +1041,7 @@
             }
             exportFileName = exportFileName.replace(/[\s:]/g, '-').replace(/[|&;:$%@<>()+,]/g, '').replace(/__/g, '_').replace(/--/g, '-');
             var exportData = getAnnotationDataAsCSV(collectedAnnotationsPerAspectData[i].annotations);
-            var exportButtonString = '<a class="exportTimelineDataButton" title="'+ labels['MessageAnnotationExportAsCSV'] +'" download="'+ exportFileName +'.csv" href="'+ exportData +'">'+ labels['GenericExportData'] +'</a>';
+            var exportButtonString = '<a class="exportTimelineDataButton" title="'+ labels['MessageAnnotationExportAsCSV'] +'" download="'+ exportFileName +'.csv" href="'+ exportData +'">'+ labels['GenericExportData'] +' (CSV)</a>';
 
             var _utw = document.createElement('div');
             _utw.innerHTML = '<div class="userTimelineWrapper">'

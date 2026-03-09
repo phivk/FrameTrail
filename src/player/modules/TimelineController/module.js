@@ -924,15 +924,20 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
             case 'overlays':
                 return HypervideoModel.overlays || [];
             case 'annotations':
-                return HypervideoModel.annotations || [];
+                // Show only the current user's annotations (matches timeline display)
+                return FrameTrail.module('TagModel').getContentCollection(
+                    [],
+                    false,
+                    true,
+                    [FrameTrail.module('UserManagement').userID],
+                    '',
+                    []
+                );
             case 'codesnippets':
                 return HypervideoModel.codeSnippets || [];
             default:
-                return [].concat(
-                    HypervideoModel.overlays || [],
-                    HypervideoModel.annotations || [],
-                    HypervideoModel.codeSnippets || []
-                );
+                // Non-edit mode: only overlays are visible (timelines are hidden)
+                return HypervideoModel.overlays || [];
         }
     }
 

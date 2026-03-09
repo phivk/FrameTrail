@@ -202,7 +202,7 @@
 .timelineList .userTimelineWrapper {
     position: relative;
     z-index: 2;
-    margin-top: 0px;
+    margin-top: 4px;
     padding-bottom: 40px;
     clear: both;
 }
@@ -232,7 +232,7 @@
 }
 
 .timelineList .userTimelineWrapper:last-child {
-    padding-bottom: 30px;
+    padding-bottom: 40px;
 }
 
 .timelineList .userLabel {
