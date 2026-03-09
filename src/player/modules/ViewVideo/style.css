@@ -234,8 +234,8 @@ body.userinactive .mainContainer:not([data-edit-mode="overlays"]):not([data-edit
     position: relative;
     width: 100%;
     order: 0;
-    flex: 0 1 clamp(200px, calc(100vh * 0.6 - 40px), 1200px);
-    min-height: clamp(200px, calc(100vh * 0.6 - 40px), 1200px);
+    flex: 0 1 clamp(200px, calc(100vh * 0.6 - 40px), 450px);
+    min-height: clamp(200px, calc(100vh * 0.6 - 40px), 450px);
     align-self: auto;
     background: transparent;
     z-index: 2;
