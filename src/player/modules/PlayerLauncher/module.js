@@ -195,6 +195,7 @@
                         FrameTrail.module('TagModel').initTagModel(
 
                             function () {
+                                try {
 
                                 FrameTrail.module('InterfaceModal').setLoadingTitle(FrameTrail.module('Database').hypervideo.name);
 
@@ -230,11 +231,16 @@
 
                                 });
 
+                                } catch (e) {
+                                    console.error('FrameTrail init error:', e);
+                                    FrameTrail.module('InterfaceModal').showErrorMessage(labels['ErrorGeneric'] + ': ' + e.message);
+                                }
 
                             },
 
-                            function () {
-                                FrameTrail.module('InterfaceModal').showErrorMessage(labels['ErrorCouldNotInitTagModel']);
+                            function (errorMsg) {
+                                console.error('FrameTrail TagModel init error:', errorMsg);
+                                FrameTrail.module('InterfaceModal').showErrorMessage(errorMsg || labels['ErrorCouldNotInitTagModel']);
                             }
 
                         );

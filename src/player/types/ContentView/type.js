@@ -471,6 +471,7 @@ FrameTrail.defineType(
 
 
                 getDetailElementFromContentItem: function(contentItem) {
+                    if (!this.contentViewDetailsContainer) return null;
                     for (var i=0; i<contentItem.contentViewDetailElements.length; i++) {
                         if ( this.contentViewDetailsContainer.contains(contentItem.contentViewDetailElements[i]) ) {
                             return contentItem.contentViewDetailElements[i];
@@ -531,13 +532,15 @@ FrameTrail.defineType(
                     areaContainer.querySelector('.layoutAreaTabs').appendChild(contentViewTab);
                     areaContainer.querySelector('.layoutAreaContent').appendChild(contentViewContainer);
 
-                    // Append Details Containers
-                    var contentViewDetailsContainer = this.renderContentViewDetailsContainer(),
-                        areaDetailsContainer = this.getLayoutAreaDetailsContainer();
+                    // Append Details Containers (only for top/bottom areas)
+                    if (this.whichArea == 'top' || this.whichArea == 'bottom') {
+                        var contentViewDetailsContainer = this.renderContentViewDetailsContainer(),
+                            areaDetailsContainer = this.getLayoutAreaDetailsContainer();
 
-                    this.contentViewDetailsContainer = contentViewDetailsContainer;
+                        this.contentViewDetailsContainer = contentViewDetailsContainer;
 
-                    areaDetailsContainer.appendChild(contentViewDetailsContainer);
+                        areaDetailsContainer.appendChild(contentViewDetailsContainer);
+                    }
 
                     this.activateContentView();
 
@@ -551,7 +554,9 @@ FrameTrail.defineType(
                     //         this.myContainerView = $('<div>....</div>')
                     this.contentViewContainer.remove();
                     this.contentViewTab.remove();
-                    this.contentViewDetailsContainer.remove();
+                    if (this.contentViewDetailsContainer) {
+                        this.contentViewDetailsContainer.remove();
+                    }
 
                     if (this.contentViewPreviewElement) {
                         this.contentViewPreviewElement.remove();
@@ -1058,10 +1063,12 @@ FrameTrail.defineType(
                     });
                     self.contentViewContainer.classList.add('active');
 
-                    Array.from(self.contentViewDetailsContainer.parentElement.querySelectorAll('.contentViewDetailsContainer')).forEach(function(el) {
-                        if (el !== self.contentViewDetailsContainer) { el.classList.remove('active'); }
-                    });
-                    self.contentViewDetailsContainer.classList.add('active');
+                    if (self.contentViewDetailsContainer) {
+                        Array.from(self.contentViewDetailsContainer.parentElement.querySelectorAll('.contentViewDetailsContainer')).forEach(function(el) {
+                            if (el !== self.contentViewDetailsContainer) { el.classList.remove('active'); }
+                        });
+                        self.contentViewDetailsContainer.classList.add('active');
+                    }
 
                     if (FrameTrail.module('ViewVideo').shownDetails) {
                         FrameTrail.module('ViewVideo').shownDetails = null;

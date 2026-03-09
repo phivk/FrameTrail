@@ -23,7 +23,6 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
 
     var _dvv = document.createElement('div');
     _dvv.innerHTML = '<div class="viewVideo">'
-                        + '    <div class="areaLeftDetails layoutAreaDetails" data-area="areaLeft"></div>'
                         + '    <div class="slideArea">'
                         + '        <div class="areaTopDetails layoutAreaDetails" data-area="areaTop"></div>'
                         + '        <div class="areaTopContainer layoutArea" data-area="areaTop">'
@@ -112,7 +111,6 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
                         + '        </div>'
                         + '        <div class="areaBottomDetails layoutAreaDetails" data-area="areaBottom"></div>'
                         + '    </div>'
-                        + '    <div class="areaRightDetails layoutAreaDetails" data-area="areaRight"></div>'
                         + '    <div class="otherUsersContainer"></div>'
                         + '    <div class="hypervideoLayoutContainer"></div>'
                         + '</div>';
@@ -133,10 +131,8 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         AreaBottomDetails           = domElement.querySelector('.areaBottomDetails'),
         AreaBottomContainer         = domElement.querySelector('.areaBottomContainer'),
 
-        AreaLeftDetails             = domElement.querySelector('.areaLeftDetails'),
         AreaLeftContainer           = domElement.querySelector('.areaLeftContainer'),
 
-        AreaRightDetails            = domElement.querySelector('.areaRightDetails'),
         AreaRightContainer          = domElement.querySelector('.areaRightContainer'),
 
         AnnotationTimeline          = domElement.querySelector('.annotationTimeline'),
@@ -1651,24 +1647,12 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         get AreaBottomContainer()     { return AreaBottomContainer     },
 
         /**
-         * I contain the AreaLeftDetails element.
-         * @attribute AreaLeftDetails
-         * @type HTMLElement
-         */
-        get AreaLeftDetails() { return AreaLeftDetails    },
-        /**
          * I contain the AreaLeftContainer element.
          * @attribute AreaLeftContainer
          * @type HTMLElement
          */
         get AreaLeftContainer()     { return AreaLeftContainer     },
 
-        /**
-         * I contain the AreaRightDetails element.
-         * @attribute AreaRightDetails
-         * @type HTMLElement
-         */
-        get AreaRightDetails() { return AreaRightDetails    },
         /**
          * I contain the AreaRightContainer element.
          * @attribute AreaRightContainer

@@ -108,17 +108,6 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
 
     var configLayoutArea,
 
-        /*
-        areaTopContainer,
-        areaTopDetails,
-
-        areaBottomContainer,
-        areaBottomDetails,
-
-        areaLeftContainer,
-        areaRightContainer,
-        */
-
         contentViewsTop     = [],
         contentViewsBottom  = [],
         contentViewsLeft    = [],
@@ -134,15 +123,6 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
     function create() {
 
         configLayoutArea = FrameTrail.module('Database').hypervideo.config.layoutArea;
-
-        /*
-        areaTopContainer    = FrameTrail.module('ViewVideo').AreaTopContainer;
-        areaTopDetails      = FrameTrail.module('ViewVideo').AreaTopDetails;
-        areaBottomContainer = FrameTrail.module('ViewVideo').AreaBottomContainer;
-        areaBottomDetails   = FrameTrail.module('ViewVideo').AreaBottomDetails;
-        areaLeftContainer   = FrameTrail.module('ViewVideo').AreaLeftContainer;
-        areaRightContainer  = FrameTrail.module('ViewVideo').AreaRightContainer;
-        */
 
         for (var i in configLayoutArea.areaTop) {
             contentViewsTop.push(
