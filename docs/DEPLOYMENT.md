@@ -218,7 +218,7 @@ Pass all hypervideo and resource data directly via init options, bypassing the `
 FrameTrail.init({
     target: '#container',
     startID: '0',
-    config: { theme: 'dark' },
+    config: { defaultTheme: 'dark' },
     contents: [{
         hypervideo: {
             meta: { name: 'My Video', creator: 'Anonymous', creatorId: 'anon',
@@ -373,7 +373,7 @@ Runtime config is in `_data/config.json`:
 - `allowUploads` — Enable file uploads
 - `allowCollaboration` — Allow multiple users to annotate
 - `alwaysForceLogin` — Require login to view content
-- `theme` — Default color theme
+- `defaultTheme` — Default color theme
 
 ### File Permissions
 
