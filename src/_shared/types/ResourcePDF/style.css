@@ -15,7 +15,11 @@
 }
 
 .resourceThumb[data-type="pdf"] {
-    background-image: linear-gradient( 35deg, transparent 49.5%, rgba(0,0,0,0.25) 50%, transparent 50.5% ), linear-gradient( -35deg, transparent 49.5%, rgba(0,0,0,0.25) 50%, transparent 50.5% ), linear-gradient(#bdbdbd, #bdbdbd);
+    background-color: #fff;
+    background-image: linear-gradient(to bottom,#f8f8f8 0,#f8f8f8 6%,rgba(50, 50, 50, 0.34) 6%,rgba(50, 50, 50, 0.32) 13%,#f8f8f8 13%,#f8f8f8 18%,rgba(100,100,100,.45) 18%,rgba(100,100,100,.45) 22%,#f8f8f8 22%,#f8f8f8 26%,rgba(140,140,140,.3) 26%,rgba(140,140,140,.3) 27%,transparent 27%,transparent 100%),repeating-linear-gradient(to bottom,#f5f5f5 0,#f5f5f5 7px,rgba(70,70,70,.2) 7px,rgba(70,70,70,.2) 9px);
+    background-size: 78% 88%,81% 96%;
+    background-position: center 6%,center 6%;
+    background-repeat: no-repeat,no-repeat;
 }
 
 .resourceThumb[data-type="pdf"] .resourceTitle {

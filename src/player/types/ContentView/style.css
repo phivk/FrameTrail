@@ -280,7 +280,10 @@
 }
 
 .layoutArea .contentViewContainer .contentViewContents .transcriptContainer span:hover, .layoutArea .contentViewContainer .contentViewContents .transcriptContainer span.active {
-    opacity: 1;
+    background-color: var(--secondary-fg-color);
+    color: var(--primary-bg-color);
+    border-radius: 2px;
+    opacity: 0.8;
 }
 
 .layoutArea .contentViewContainer .contentViewContents .customhtmlContainer {
