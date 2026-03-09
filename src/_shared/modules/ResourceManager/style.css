@@ -21,6 +21,7 @@
     background-size: 24px auto;
     border: 2px solid var(--primary-bg-color);
     border-radius: 50%;
+    padding: 4px 6px;;
     height: 40px;
     width: 40px;
 }
