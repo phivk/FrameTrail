@@ -65,13 +65,14 @@ class OpenGraph implements Iterator
               throw new Exception(curl_error($curl), curl_errno($curl));
           }
 
+          $contentType = curl_getinfo($curl, CURLINFO_CONTENT_TYPE);
           curl_close($curl);
 
           if (!empty($response)) {
               $return["status"] = "success";
               $return["code"] = 0;
               $return["string"] = "see result";
-              $return["result"] = self::_parse($response, $URI);
+              $return["result"] = self::_parse($response, $URI, $contentType);
               return $return;
           } else {
               $return["status"] = "error";
@@ -100,7 +101,20 @@ class OpenGraph implements Iterator
    * @param $URI    URI to page to parse for Open Graph data
    * @return OpenGraph
    */
-    static private function _parse($HTML, $URI) {
+    static private function _parse($HTML, $URI, $contentType = '') {
+        // Detect charset from HTTP Content-Type header, then HTML meta tag, default to UTF-8
+        $charset = 'utf-8';
+        if ($contentType && preg_match('/charset=([^\s;]+)/i', $contentType, $m)) {
+            $charset = strtolower(trim($m[1], '"\''));
+        } elseif (preg_match('/<meta[^>]+charset=["\']?([^"\'\s;>]+)/i', $HTML, $m)) {
+            $charset = strtolower(trim($m[1], '"\''));
+        }
+        // Convert non-UTF-8 pages to UTF-8; ensure DOMDocument parses as UTF-8
+        if ($charset !== 'utf-8') {
+            $HTML = mb_convert_encoding($HTML, 'UTF-8', $charset);
+        }
+        $HTML = '<?xml encoding="UTF-8">' . $HTML;
+
         $old_libxml_error = libxml_use_internal_errors(true);
         $doc = new DOMDocument();
         $doc->loadHTML($HTML);
