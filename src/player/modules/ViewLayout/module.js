@@ -449,7 +449,7 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
             hypervideo = database.hypervideo,
             thisID     = FrameTrail.module('RouteNavigation').hypervideoID;
 
-        var currentTheme = hypervideo.config.theme || database.config.theme || 'default';
+        var currentTheme = hypervideo.config.theme || database.config.defaultTheme || 'default';
 
         var _lmWrapper = document.createElement('div');
         _lmWrapper.innerHTML = '<div class="layoutManagerContainer">' +
@@ -1079,7 +1079,7 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
         var newTheme = el.dataset.theme,
             oldTheme = hypervideo.config.theme || '';
 
-        if (newTheme === oldTheme || (!oldTheme && newTheme === (database.config.theme || 'default'))) {
+        if (newTheme === oldTheme || (!oldTheme && newTheme === (database.config.defaultTheme || 'default'))) {
             return;
         }
 
@@ -1099,9 +1099,9 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
                 description: labels['SidebarLayout'] + ' Theme',
                 undo: function() {
                     hypervideo.config.theme = prevTheme;
-                    document.querySelector(FrameTrail.getState('target')).setAttribute('data-frametrail-theme', prevTheme || database.config.theme || 'default');
+                    document.querySelector(FrameTrail.getState('target')).setAttribute('data-frametrail-theme', prevTheme || database.config.defaultTheme || 'default');
                     themePanel.querySelectorAll('.themeItem').forEach(function(item) { item.classList.remove('active'); });
-                    var prevItem = themePanel.querySelector('.themeItem[data-theme="'+ (prevTheme || database.config.theme || 'default') +'"]');
+                    var prevItem = themePanel.querySelector('.themeItem[data-theme="'+ (prevTheme || database.config.defaultTheme || 'default') +'"]');
                     if (prevItem) { prevItem.classList.add('active'); }
                     FrameTrail.module('HypervideoModel').newUnsavedChange('layout');
                 },

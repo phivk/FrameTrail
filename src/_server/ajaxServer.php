@@ -420,14 +420,14 @@ switch($_REQUEST["a"]) {
                 "alwaysForceLogin"=> false,
                 "allowCollaboration"=> false,
                 "allowUploads"=> true,
-                "theme"=> "",
+                "defaultTheme"=> "",
                 "userColorCollection"=> $tmpColors,
                 "videoFit"=> "contain",
                 "defaultLanguage"=> "en"
             );
             // Apply optional config overrides sent by the setup wizard
             $configOverrides = array("defaultUserRole", "userNeedsConfirmation",
-                                     "alwaysForceLogin", "allowUploads", "theme",
+                                     "alwaysForceLogin", "allowUploads", "defaultTheme",
                                      "defaultLanguage");
             foreach ($configOverrides as $key) {
                 if (isset($_REQUEST[$key])) {
@@ -435,7 +435,7 @@ switch($_REQUEST["a"]) {
                     if ($val === "true")  $val = true;
                     if ($val === "false") $val = false;
                     // Sanitize theme: allow only safe identifier characters
-                    if ($key === "theme") { $val = preg_replace('/[^a-z0-9_-]/', '', strtolower((string)$val)); }
+                    if ($key === "defaultTheme") { $val = preg_replace('/[^a-z0-9_-]/', '', strtolower((string)$val)); }
                     // Sanitize defaultLanguage: allow only 2-character lowercase codes
                     if ($key === "defaultLanguage") {
                         $val = preg_replace('/[^a-z]/', '', strtolower((string)$val));

@@ -259,7 +259,7 @@ window.FrameTrail_L10n['de'] = {
     "SettingsChooseVideo": "Video auswählen",
     "SettingsCodeSnippetAdd": "Code-Baustein auswählen",
     "SettingsCodeSnippetCustom": "Eigener Code-Baustein",
-    "SettingsColorTheme": "Farbschema",
+    "SettingsColorTheme": "Standard-Farbschema",
     "SettingsConfigurationOptions": "Erweiterte Einstellungen",
     "SettingsContentViewEdit": "Inhaltsbereich bearbeiten",
     "SettingsContentViewLarge": "Groß",

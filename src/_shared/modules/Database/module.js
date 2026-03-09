@@ -212,6 +212,11 @@
         if (typeof configInitOptions === 'object' && configInitOptions !== null) {
 
             config = configInitOptions;
+            // Migrate legacy "theme" key → "defaultTheme"
+            if (!config.defaultTheme && config.theme) {
+                config.defaultTheme = config.theme;
+                delete config.theme;
+            }
             FrameTrail.changeState('config', config);
 
             // Apply global theme only if no per-hypervideo theme is set
@@ -219,7 +224,7 @@
             if (!hvTheme) {
                 var _t = FrameTrail.getState('target');
                 var _themeEl = (typeof _t === 'string') ? document.querySelector(_t) : _t;
-                if (_themeEl) _themeEl.setAttribute('data-frametrail-theme', config.theme || '');
+                if (_themeEl) _themeEl.setAttribute('data-frametrail-theme', config.defaultTheme || '');
             }
 
             return success.call(this);
@@ -228,13 +233,18 @@
 
         function applyConfig(data) {
             config = data;
+            // Migrate legacy "theme" key → "defaultTheme"
+            if (!config.defaultTheme && config.theme) {
+                config.defaultTheme = config.theme;
+                delete config.theme;
+            }
             FrameTrail.changeState('config', config);
             // Apply global theme only if no per-hypervideo theme is set
             var hvTheme = hypervideo && hypervideo.config && hypervideo.config.theme;
             if (!hvTheme) {
                 var _t = FrameTrail.getState('target');
                 var _themeEl = (typeof _t === 'string') ? document.querySelector(_t) : _t;
-                if (_themeEl) _themeEl.setAttribute('data-frametrail-theme', config.theme || '');
+                if (_themeEl) _themeEl.setAttribute('data-frametrail-theme', config.defaultTheme || '');
             }
             success.call(this);
         }

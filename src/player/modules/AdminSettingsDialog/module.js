@@ -520,17 +520,17 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
         var ChangeThemeUI = _ctw.firstElementChild;
 
         ChangeThemeUI.querySelectorAll('.themeItem').forEach(function(item) {
-            if (database.config.theme == item.getAttribute('data-theme')) {
+            if (database.config.defaultTheme == item.getAttribute('data-theme')) {
                 item.classList.add('active');
             }
-            if (!database.config.theme && item.getAttribute('data-theme') == 'default') {
+            if (!database.config.defaultTheme && item.getAttribute('data-theme') == 'default') {
                 item.classList.add('active');
             }
         });
 
         adminTabs.querySelector('#ChangeTheme').appendChild(ChangeThemeUI);
 
-        var selectedThemeValue = database.config.theme || 'default';
+        var selectedThemeValue = database.config.defaultTheme || 'default';
         ChangeThemeUI.querySelectorAll('.themeItem').forEach(function(item) {
             item.addEventListener('click', function() {
                 ChangeThemeUI.querySelectorAll('.themeItem').forEach(function(t) { t.classList.remove('active'); });
@@ -961,7 +961,7 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                                 });
 
                                 // Apply global default theme
-                                database.config.theme = selectedThemeValue;
+                                database.config.defaultTheme = selectedThemeValue;
                                 // Only apply to current view if the hypervideo has no per-hypervideo theme
                                 var hvConfig = database.hypervideo && database.hypervideo.config;
                                 if (!hvConfig || !hvConfig.theme) {
@@ -993,7 +993,7 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                                             // Only revert theme on current view if hypervideo has no per-hypervideo theme
                                             var hvCfg = database.hypervideo && database.hypervideo.config;
                                             if (!hvCfg || !hvCfg.theme) {
-                                                document.querySelector(FrameTrail.getState('target')).setAttribute('data-frametrail-theme', initialConfig.theme || 'default');
+                                                document.querySelector(FrameTrail.getState('target')).setAttribute('data-frametrail-theme', initialConfig.defaultTheme || 'default');
                                             }
                                         }
                                         if (globalCSSChanged) {

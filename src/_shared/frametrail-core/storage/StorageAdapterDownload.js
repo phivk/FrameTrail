@@ -71,7 +71,7 @@ class StorageAdapterDownload extends StorageAdapter {
     _generateStandaloneHTML(hypervideoID, dataPath) {
         var Database = this._frameTrailInstance.module('Database');
         var hvData   = Database.convertToDatabaseFormat(hypervideoID);
-        var config   = Database.config || {};
+        var fullConfig = Database.config || {};
         var hvName   = (Database.hypervideos[hypervideoID] && Database.hypervideos[hypervideoID].name) || 'hypervideo';
         var filename = hvName.replace(/[^a-z0-9]/gi, '_').substring(0, 50) + '.html';
 
@@ -86,11 +86,17 @@ class StorageAdapterDownload extends StorageAdapter {
             contentItem.annotations = annotations;
         }
 
+        // Only include config properties relevant for standalone playback
+        var config = {};
+        if (fullConfig.defaultLanguage) config.defaultLanguage = fullConfig.defaultLanguage;
+
         var initOptions = {
             target:   'body',
-            config:   config,
             contents: [contentItem]
         };
+        if (Object.keys(config).length > 0) {
+            initOptions.config = config;
+        }
         if (dataPath) {
             initOptions.dataPath = dataPath;
         }

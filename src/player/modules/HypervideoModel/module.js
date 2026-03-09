@@ -94,7 +94,7 @@
         if (hvTheme) {
             document.querySelector(FrameTrail.getState('target')).setAttribute('data-frametrail-theme', hvTheme);
         } else {
-            var globalTheme = database.config.theme || '';
+            var globalTheme = database.config.defaultTheme || '';
             document.querySelector(FrameTrail.getState('target')).setAttribute('data-frametrail-theme', globalTheme);
         }
 
