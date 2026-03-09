@@ -47,7 +47,7 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
         UserSettingsButton      = domElement.querySelector('.userSettingsButton'),
         SharingWidget           = domElement.querySelector('.sharingWidget');
 
-    if (window.FrameTrail.instances.length >= 1) {
+    if (window.location.protocol === 'file:' || window.FrameTrail.instances.length > 1) {
         SharingWidget.style.display = 'none';
     }
 
