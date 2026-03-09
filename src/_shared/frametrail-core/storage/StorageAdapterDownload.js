@@ -80,10 +80,16 @@ class StorageAdapterDownload extends StorageAdapter {
             : '';
         var cdnBase = 'https://cdn.jsdelivr.net/npm/@frametrail/frametrail' + version + '/';
 
+        var annotations = Database.getAnnotationsW3C();
+        var contentItem = { hypervideo: hvData };
+        if (annotations.length > 0) {
+            contentItem.annotations = annotations;
+        }
+
         var initOptions = {
             target:   'body',
             config:   config,
-            contents: [{ hypervideo: hvData }]
+            contents: [contentItem]
         };
         if (dataPath) {
             initOptions.dataPath = dataPath;

@@ -1686,6 +1686,101 @@
      * @method saveAnnotations
      * @param {Function} callback
      */
+
+    /**
+     * Convert a normalized annotation object to W3C Web Annotation format.
+     * @private
+     */
+    function _annotationToW3C(annotationItem) {
+        return {
+            "@context": [
+                "http://www.w3.org/ns/anno.jsonld",
+                { "frametrail": "http://frametrail.org/ns/" }
+            ],
+            "creator": {
+                "nickname": annotationItem.creator,
+                "type": "Person",
+                "id": annotationItem.creatorId
+            },
+            "created": (new Date(annotationItem.created)).toString(),
+            "type": "Annotation",
+            "frametrail:type": "Annotation",
+            "frametrail:tags": annotationItem.tags || [],
+            "frametrail:uri": annotationItem.uri || null,
+            "target": {
+                "type": "Video",
+                "source": FrameTrail.module('HypervideoModel').sourcePath,
+                "selector": {
+                    "conformsTo": "http://www.w3.org/TR/media-frags/",
+                    "type": "FragmentSelector",
+                    "value": "t=" + annotationItem.start + "," + annotationItem.end
+                }
+            },
+            "body": {
+                "type": ({
+                    'image': 'Image',
+                    'video': 'Video',
+                    'location': 'Dataset',
+                    'wikipedia': 'Text',
+                    'text': 'TextualBody',
+                    'entity': 'Text',
+                    'quiz': 'TextualBody',
+                    'vimeo': 'Video',
+                    'webpage': 'Text',
+                    'youtube': 'Video'
+                })[annotationItem.type],
+                "frametrail:type": annotationItem.type,
+                "format": ({
+                    'image': 'image/' + (function () {
+                        try {
+                            return (annotationItem.src ? (/\.(\w{3,4})$/g.exec(annotationItem.src)[1]) : '*')
+                        } catch (_) {
+                            return '*';
+                        }
+                    })(),
+                    'video': 'video/mp4',
+                    'location': 'application/x-frametrail-location',
+                    'wikipedia': 'text/html',
+                    'text': 'text/html',
+                    'entity': 'text/html',
+                    'quiz': 'text/html',
+                    'vimeo': 'text/html',
+                    'webpage': 'text/html',
+                    'youtube': 'text/html'
+                })[annotationItem.type],
+                "source": (['codesnippet', 'text', 'quiz', 'entity', 'webpage', 'wikipedia'].indexOf(annotationItem.type) < 0)
+                    ? annotationItem.src : undefined,
+                "value": (['codesnippet', 'text', 'quiz', 'entity', 'webpage', 'wikipedia'].indexOf(annotationItem.type) >= 0)
+                    ? annotationItem.src : undefined,
+                "frametrail:name": annotationItem.name,
+                "frametrail:thumb": annotationItem.thumb,
+                "frametrail:licenseType": annotationItem.licenseType,
+                "frametrail:licenseAttribution": annotationItem.licenseAttribution,
+                "selector": (
+                    ['video', 'vimeo', 'youtube'].indexOf(annotationItem.type) >= 0
+                    && annotationItem.startOffset
+                    && annotationItem.endOffset
+                ) ? {
+                    "type": "FragmentSelector",
+                    "conformsTo": "http://www.w3.org/TR/media-frags/",
+                    "value": "t=" + annotationItem.startOffset + "," + annotationItem.endOffset
+                } : undefined,
+                "frametrail:resourceId": annotationItem.resourceId,
+                "frametrail:attributes": annotationItem.attributes
+            }
+        };
+    }
+
+    /**
+     * Return all current annotations serialized as W3C Web Annotation objects.
+     * Useful for embedding annotations in a standalone HTML export.
+     * @method getAnnotationsW3C
+     * @return {Array}
+     */
+    function getAnnotationsW3C() {
+        return annotations.map(_annotationToW3C);
+    }
+
     function saveAnnotations(callback) {
 
         var userID              = FrameTrail.module('UserManagement').userID,
@@ -1707,102 +1802,7 @@
                 continue;
             }
 
-            annotationsToSave.push({
-                "@context": [
-                    "http://www.w3.org/ns/anno.jsonld",
-                    {
-                        "frametrail": "http://frametrail.org/ns/"
-                    }
-                ],
-                "creator": {
-                    "nickname": annotationItem.creator,
-                    "type": "Person",
-                    "id": annotationItem.creatorId
-                },
-                "created": (new Date(annotationItem.created)).toString(),
-                "type": "Annotation",
-                "frametrail:type": "Annotation",
-                "frametrail:tags": annotationItem.tags || [],
-                "frametrail:uri": annotationItem.uri || null,
-                "target": {
-                    "type": "Video",
-                    "source": FrameTrail.module('HypervideoModel').sourcePath,
-                    "selector": {
-                        "conformsTo": "http://www.w3.org/TR/media-frags/",
-                        "type": "FragmentSelector",
-                        "value": "t=" + annotationItem.start + "," + annotationItem.end
-                    }
-                },
-                "body": {
-                    "type": ({
-                        'image': 'Image',
-                        'video': 'Video',
-                        'location': 'Dataset',
-                        'wikipedia': 'Text',
-                        'text': 'TextualBody',
-                        'entity': 'Text',
-                        'quiz': 'TextualBody',
-                        'vimeo': 'Video',
-                        'webpage': 'Text',
-                        'youtube': 'Video'
-                    })[annotationItem.type],
-                    "frametrail:type": annotationItem.type,
-                    "format": ({
-                        'image': 'image/' + (function () {
-                            try {
-                                return (annotationItem.src ? (/\.(\w{3,4})$/g.exec(annotationItem.src)[1]) : '*')
-                            } catch (_) {
-                                return '*';
-                            }
-                        })(),
-                        'video': 'video/mp4',
-                        'location': 'application/x-frametrail-location',
-                        'wikipedia': 'text/html',
-                        'text': 'text/html',
-                        'entity': 'text/html',
-                        'quiz': 'text/html',
-                        'vimeo': 'text/html',
-                        'webpage': 'text/html',
-                        'youtube': 'text/html'
-                    })[annotationItem.type],
-                    "source": (function () {
-                        if (['codesnippet', 'text', 'quiz', 'entity', 'webpage', 'wikipedia',].indexOf( annotationItem.type ) < 0) {
-                            return annotationItem.src
-                        }
-                        return undefined;
-                    })(),
-                    "value": (function () {
-                        if (['codesnippet', 'text', 'quiz', 'entity', 'webpage', 'wikipedia',].indexOf( annotationItem.type ) >= 0) {
-                            return annotationItem.src
-                        }
-                        return undefined;
-                    })(),
-                    "frametrail:name": annotationItem.name,
-                    "frametrail:thumb": annotationItem.thumb,
-                    "frametrail:licenseType": annotationItem.licenseType,
-                    "frametrail:licenseAttribution": annotationItem.licenseAttribution,
-                    "selector": (function () {
-                        if (   ['video', 'vimeo', 'youtube'].indexOf(annotationItem.type) >= 0
-                            && annotationItem.startOffset
-                            && annotationItem.endOffset
-                        ) {
-                            return {
-                                "type": "FragmentSelector",
-                                "conformsTo": "http://www.w3.org/TR/media-frags/",
-                                "value": "t=" + annotationItem.startOffset + "," + annotationItem.endOffset
-                            }
-                        } else {
-                            return undefined;
-                        }
-                    })(),
-                    "frametrail:resourceId": annotationItem.resourceId,
-                    "frametrail:attributes": annotationItem.attributes
-                }
-            });
-            if (annotationsToSave[annotationsToSave.length-1].body['frametrail:type'] === 'location') {
-                var annotationBody = annotationsToSave[annotationsToSave.length-1].body;
-                // do nothing
-            }
+            annotationsToSave.push(_annotationToW3C(annotationItem));
 
         }
 
@@ -2026,6 +2026,7 @@
 
         saveHypervideo:        saveHypervideo,
         saveAnnotations:       saveAnnotations,
+        getAnnotationsW3C:     getAnnotationsW3C,
         saveConfig:            saveConfig,
         saveGlobalCSS:         saveGlobalCSS,
 
