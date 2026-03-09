@@ -5,6 +5,13 @@
     overflow: visible;
 }
 
+.resourceDetail[data-type="hotspot"] .resourceContent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+}
+
 .hotspot-container {
     position: relative;
     width: 100%;

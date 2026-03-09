@@ -1,5 +1,6 @@
 .resourceDetail {
     container-type: inline-size;
+    isolation: isolate;
     position: absolute;
     top: 0;
     left: 0;
@@ -7,65 +8,102 @@
     height: 100%;
     overflow: hidden;
     background-size: 100% 100%;
+    display: flex;
+    flex-direction: column;
 }
 
-.resourceDetail .resourceOptions {
-    position: absolute;
-    bottom: 0px;
-    left: 0px;
+.resourceDetail .resourceContent {
+    flex: 1;
+    min-height: 0;
+    position: relative;
+}
+
+/* Default: iframes inside resourceContent fill the available area.
+   Type-specific rules (webpage, pdf, mastodon) override width/height for zoom scaling. */
+.resourceDetail .resourceContent iframe {
     width: 100%;
-    padding: 4px 1px 4px 14px;
-    color: var(--secondary-fg-color);
-    background: var(--primary-bg-color);
-    box-sizing: border-box;
-    opacity: 0.7;
+    height: 100%;
+    border: 0;
+}
+
+.resourceDetail .resourceButtons {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+}
+
+.overlayElement .resourceDetail .resourceButtons {
     display: none;
 }
 
-.resourcePreviewDialog .resourceDetail .resourceOptions, 
-.layoutArea[data-area="areaBottom"][data-size="large"] .resourceDetail .resourceOptions, 
-.layoutArea[data-area="areaTop"][data-size="large"] .resourceDetail .resourceOptions, 
-.layoutAreaDetails[data-area="areaTop"] .resourceDetail .resourceOptions, .layoutAreaDetails[data-area="areaBottom"] .resourceDetail .resourceOptions {
-    display: block;
+.resourceDetail .resourceButtons .button {
+    padding: 2px 4px;
+    border-color: transparent;
+    color: var(--primary-fg-color);
+    background: var(--secondary-bg-color);
+    margin: 2px;
 }
 
-.resourceDetail:hover .resourceOptions {
-    opacity: 0.85;
+.resourceDetail .resourceButtons .button:hover {
+    background: var(--primary-fg-color);
+    color: var(--primary-bg-color);
 }
 
-.resourceDetail .resourceOptions .licenseInformation {
-    float: left;
+.resourceDetail .resourceButtons .resourcePlayFromHereButton, 
+.resourceDetail .resourceButtons .button[download] {
+    display: none;
+}
+
+.resourcePreviewDialog .resourceDetail .resourceButtons .resourcePlayFromHereButton,
+.layoutArea[data-area="areaBottom"][data-size="large"] .resourceDetail .resourceButtons .resourcePlayFromHereButton,
+.layoutArea[data-area="areaTop"][data-size="large"] .resourceDetail .resourceButtons .resourcePlayFromHereButton,
+.layoutAreaDetails[data-area="areaTop"] .resourceDetail .resourceButtons .resourcePlayFromHereButton,
+.layoutAreaDetails[data-area="areaBottom"] .resourceDetail .resourceButtons .resourcePlayFromHereButton {
+    display: flex;
+}
+
+.resourcePreviewDialog .resourceDetail .resourceButtons .button[download] {
+    display: flex;
+}
+
+.resourceDetail .licenseInformation {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    box-sizing: border-box;
     line-height: 30px;
-    width: calc(100% - 70px);
+    opacity: 0.7;
 }
 
-.resourceDetail .resourceOptions .licenseInformation a {
+.resourceDetail:hover .licenseInformation {
+    opacity: 1;
+}
+
+.resourceDetail .licenseInformation:not(:empty) {
+    padding: 2px 8px;
+    background-color: var(--secondary-bg-color);
+    color: var(--primary-fg-color);
+}
+
+.overlayElement .resourceDetail .licenseInformation {
+    display: none;
+}
+
+.resourceDetail .licenseInformation a {
     border: 0;
     outline: 0;
     color: var(--primary-fg-color);
 }
 
-.resourceDetail .resourceOptions .licenseInformation a .cc-by-sa-bg-image {
+.resourceDetail .licenseInformation a .cc-by-sa-bg-image {
     display: inline-block;
     width: 50px;
     height: 30px;
     vertical-align: bottom;
-}
-
-.resourceDetail .resourceOptions .resourceButtons {
-    float: right;
-    line-height: 30px;
-}
-
-.resourceDetail .resourceOptions .resourceButtons .button {
-    padding: 2px 4px;
-    border-color: transparent;
-    color: var(--secondary-fg-color);
-}
-
-.resourceDetail .resourceOptions .resourceButtons .button:hover {
-    background: var(--primary-fg-color);
-    color: var(--primary-bg-color);
 }
 
 /* Resource Thumb */
@@ -381,7 +419,7 @@ body > .resourceThumb:not(.resourceAnimationDiv) .resourceTitle {
             ResourceWebpage (forbidden fallback)
    ===================================================== */
 
-.resourceDetail .resourceCard {
+.resourceDetail .resourceContent .resourceCard {
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -392,7 +430,7 @@ body > .resourceThumb:not(.resourceAnimationDiv) .resourceTitle {
     color: var(--primary-fg-color);
 }
 
-.resourceDetail .resourceCard .resourceCardHeader {
+.resourceDetail .resourceContent .resourceCard .resourceCardHeader {
     display: flex;
     align-items: flex-start;
     gap: 8px;
@@ -400,7 +438,7 @@ body > .resourceThumb:not(.resourceAnimationDiv) .resourceTitle {
     flex-shrink: 0;
 }
 
-.resourceDetail .resourceCard .resourceCardTypeIcon {
+.resourceDetail .resourceContent .resourceCard .resourceCardTypeIcon {
     flex-shrink: 0;
     width: 23px;
     font-size: 18px;
@@ -409,31 +447,33 @@ body > .resourceThumb:not(.resourceAnimationDiv) .resourceTitle {
     opacity: 0.8;
 }
 
-.resourceDetail .resourceCard .resourceCardTypeIcon [class^="icon-"]::before,
-.resourceDetail .resourceCard .resourceCardTypeIcon [class*=" icon-"]::before {
+.resourceDetail .resourceContent .resourceCard .resourceCardTypeIcon [class^="icon-"]::before,
+.resourceDetail .resourceContent .resourceCard .resourceCardTypeIcon [class*=" icon-"]::before {
     font-size: 18px;
     margin: 0;
     color: var(--primary-fg-color);
 }
 
-.resourceDetail .resourceCard .resourceCardMeta {
+.resourceDetail .resourceContent .resourceCard .resourceCardMeta {
     flex: 1;
     min-width: 0;
 }
 
-.resourceDetail .resourceCard .resourceCardTitle {
+.resourceDetail .resourceContent .resourceCard .resourceCardTitle {
     line-height: 1.3;
     font-size: 1.2em;
     word-break: break-word;
     hyphens: auto;
+    padding-right: 70px;
 }
 
-.resourceDetail .resourceCard .resourceCardSubtitle {
+.resourceDetail .resourceContent .resourceCard .resourceCardSubtitle {
     opacity: 0.8;
     margin-top: 2px;
+    padding-right: 70px;
 }
 
-.resourceDetail .resourceCard .resourceCardThumb {
+.resourceDetail .resourceContent .resourceCard .resourceCardThumb {
     flex-shrink: 0;
     width: 100%;
     padding: 2px;
@@ -441,13 +481,13 @@ body > .resourceThumb:not(.resourceAnimationDiv) .resourceTitle {
     background: var(--secondary-bg-color);
 }
 
-.resourceDetail .resourceCard .resourceCardThumb img {
+.resourceDetail .resourceContent .resourceCard .resourceCardThumb img {
     width: 100%;
     height: auto;
     display: block;
 }
 
-.resourceDetail .resourceCard .resourceCardContent {
+.resourceDetail .resourceContent .resourceCard .resourceCardContent {
     flex: 1;
     padding: 4px 0px;
     overflow-y: auto;
@@ -456,24 +496,24 @@ body > .resourceThumb:not(.resourceAnimationDiv) .resourceTitle {
     min-height: 70px;
 }
 
-.resourceDetail .resourceCard .resourceCardContent p:first-child {
+.resourceDetail .resourceContent .resourceCard .resourceCardContent p:first-child {
     margin-top: 0;
 }
 
-.resourceDetail .resourceCard .resourceCardFooter {
+.resourceDetail .resourceContent .resourceCard .resourceCardFooter {
     flex-shrink: 0;
     padding: 5px 0 0 0;
     margin-top: 8px;
     border-top: 1px solid var(--secondary-fg-color);
 }
 
-.resourceDetail .resourceCard .resourceCardFooter a {
+.resourceDetail .resourceContent .resourceCard .resourceCardFooter a {
     color: var(--primary-fg-color);
     text-decoration: none;
     opacity: 0.8;
 }
 
-.resourceDetail .resourceCard .resourceCardFooter a:hover {
+.resourceDetail .resourceContent .resourceCard .resourceCardFooter a:hover {
     opacity: 1;
     text-decoration: underline;
 }
@@ -519,7 +559,7 @@ body > .resourceThumb:not(.resourceAnimationDiv) .resourceTitle {
 
 /* Shrink thumb image when the overlay is narrow */
 @container (max-width: 400px) {
-    .resourceDetail .resourceCard .resourceCardThumb img {
+    .resourceDetail .resourceContent .resourceCard .resourceCardThumb img {
         width: 60%;
         margin: 0 auto;
     }

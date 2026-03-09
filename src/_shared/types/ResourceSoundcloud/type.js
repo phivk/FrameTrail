@@ -30,16 +30,21 @@ FrameTrail.defineType(
                     container.className = 'resourceDetail';
                     container.dataset.type = this.resourceData.type;
 
+                    var resourceContent = document.createElement('div');
+                    resourceContent.className = 'resourceContent';
+
                     if (this.resourceData.attributes.html) {
-                        container.innerHTML = this.resourceData.attributes.html;
+                        resourceContent.innerHTML = this.resourceData.attributes.html;
                     } else {
-                        container.innerHTML =
-                            '<iframe width="100%" height="166" scrolling="no" frameborder="no" '
+                        resourceContent.innerHTML =
+                            '<iframe scrolling="no" frameborder="no" '
                             + 'src="https://w.soundcloud.com/player/?url=' + encodeURIComponent(this.resourceData.src.replace(/^\/\//, 'https://'))
                             + '&color=%23ff5500&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false">'
                             + '</iframe>';
                     }
 
+                    container.appendChild(resourceContent);
+                    container.appendChild(this.buildResourceOptions({}));
                     return container;
 
                 },

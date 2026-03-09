@@ -1,8 +1,11 @@
 .resourceDetail[data-type="quiz"] {
     background-color: transparent;
+    color: var(--primary-fg-color);
+}
+
+.resourceDetail[data-type="quiz"] .resourceContent {
     padding: 10px;
     box-sizing: border-box;
-    color: var(--primary-fg-color);
     display: flex;
     flex-direction: column;
 }
@@ -11,7 +14,7 @@
     color: var(--primary-bg-color);
 }
 
-.overlayElement .resourceDetail[data-type="quiz"] {
+.overlayElement .resourceDetail[data-type="quiz"] .resourceContent {
     padding: 3px 8px 8px 8px;
     background: var(--primary-bg-color);
     font-size: 24px;

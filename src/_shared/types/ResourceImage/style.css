@@ -1,4 +1,4 @@
-.resourceDetail[data-type="image"] {
+.resourceDetail[data-type="image"] .resourceContent {
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-width: thin;

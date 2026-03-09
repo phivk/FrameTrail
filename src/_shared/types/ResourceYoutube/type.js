@@ -52,14 +52,23 @@ FrameTrail.defineType(
                         timecode = convertYoutubeTimeToSeconds(uriParts[1]);
                     }
 
-                    var _wrapper = document.createElement('div');
-                    _wrapper.innerHTML = '<iframe class="resourceDetail" data-type="'+ this.resourceData.type +'" '
-                        +   'frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen src="'
+                    var _iframeWrapper = document.createElement('div');
+                    _iframeWrapper.innerHTML = '<iframe frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen src="'
                         +   uri
                         +   '?enablejsapi=1&rel=0&theme=light&color=white&showinfo=0&modestbranding=1&autohide=1&start='+ timecode +'">'
                         +    '</iframe>';
-                    var resourceDetail = _wrapper.firstElementChild;
-                    resourceDetail.addEventListener('error', function() { return true; });
+                    var iframeEl = _iframeWrapper.firstElementChild;
+                    iframeEl.addEventListener('error', function() { return true; });
+
+                    var resourceDetail = document.createElement('div');
+                    resourceDetail.className = 'resourceDetail';
+                    resourceDetail.dataset.type = this.resourceData.type;
+
+                    var resourceContent = document.createElement('div');
+                    resourceContent.className = 'resourceContent';
+                    resourceContent.appendChild(iframeEl);
+                    resourceDetail.appendChild(resourceContent);
+                    resourceDetail.appendChild(this.buildResourceOptions({}));
 
                     return resourceDetail;
 

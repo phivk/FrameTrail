@@ -30,18 +30,22 @@ FrameTrail.defineType(
                     container.className = 'resourceDetail';
                     container.dataset.type = this.resourceData.type;
 
+                    var resourceContent = document.createElement('div');
+                    resourceContent.className = 'resourceContent';
+
                     if (this.resourceData.attributes.html) {
-                        container.innerHTML = this.resourceData.attributes.html;
+                        resourceContent.innerHTML = this.resourceData.attributes.html;
                     } else {
                         // Fallback: build embed iframe from URL
                         var embedUrl = this.resourceData.src.replace(/^\/\//, 'https://').replace('open.spotify.com/', 'open.spotify.com/embed/');
-                        container.innerHTML =
+                        resourceContent.innerHTML =
                             '<iframe src="' + embedUrl + '" '
-                            + 'style="width: 100%; height: 100%; border: none; border-radius: 12px;" '
                             + 'allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" '
                             + 'allowfullscreen></iframe>';
                     }
 
+                    container.appendChild(resourceContent);
+                    container.appendChild(this.buildResourceOptions({}));
                     return container;
 
                 },

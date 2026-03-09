@@ -45,20 +45,10 @@ FrameTrail.defineType(
                  */
                 renderContent: function() {
 
-                    var licenseType = (this.resourceData.licenseType && (this.resourceData.licenseType == 'CC-BY-SA' || this.resourceData.licenseType == 'CC-BY-SA-3.0')) ? '<a href="https://creativecommons.org/licenses/by-sa/3.0/" title="License: '+ this.resourceData.licenseType +'" target="_blank"><span class="cc-by-sa-bg-image"></span></a>' : this.resourceData.licenseType;
-                    var licenseString = (licenseType) ? licenseType +' - '+ this.resourceData.licenseAttribution : '';
-
-                    var downloadButton = '';
-                    if (this.resourceData.licenseType != 'Copyright') {
-                        downloadButton = '<a download class="button" href="'+ FrameTrail.module('RouteNavigation').getResourceURL(this.resourceData.src) +'" data-tooltip-bottom-right="'+ this.labels['GenericDownload'] +'"><span class="icon-download"></span></a>';
-                    }
-
                     var _wrapper = document.createElement('div');
                     _wrapper.innerHTML = '<div class="resourceDetail" data-type="'+ this.resourceData.type +'">'
+                        + '<div class="resourceContent">'
                         + '<video controls disablePictureInPicture></video>'
-                        + '<div class="resourceOptions">'
-                        + '    <div class="licenseInformation">'+ licenseString +'</div>'
-                        + '    <div class="resourceButtons">'+ downloadButton +'</div>'
                         + '</div>'
                         + '</div>';
                     var resourceDetailElement = _wrapper.firstElementChild;
@@ -100,17 +90,11 @@ FrameTrail.defineType(
                         });
                     }
 
-                    if (this.resourceData.start) {
-                        var jumpToTimeButton = document.createElement('button');
-                        jumpToTimeButton.className = 'button btn btn-sm';
-                        jumpToTimeButton.setAttribute('data-start', this.resourceData.start);
-                        jumpToTimeButton.setAttribute('data-end', this.resourceData.end);
-                        jumpToTimeButton.innerHTML = '<span class="icon-play-1"></span>';
-                        jumpToTimeButton.addEventListener('click', function(){
-                            FrameTrail.module('HypervideoController').currentTime = this.getAttribute('data-start');
-                        });
-                        resourceDetailElement.querySelector('.resourceButtons').append(jumpToTimeButton);
-                    }
+                    resourceDetailElement.appendChild(this.buildResourceOptions({
+                        downloadUrl: FrameTrail.module('RouteNavigation').getResourceURL(this.resourceData.src),
+                        licenseType: this.resourceData.licenseType,
+                        licenseAttribution: this.resourceData.licenseAttribution
+                    }));
 
                     return resourceDetailElement;
 

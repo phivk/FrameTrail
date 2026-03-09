@@ -48,13 +48,12 @@ FrameTrail.defineType(
 
                     var self = this;
 
-                    var licenseType = (this.resourceData.licenseType && (this.resourceData.licenseType == 'CC-BY-SA' || this.resourceData.licenseType == 'CC-BY-SA-3.0')) ? '<a href="https://creativecommons.org/licenses/by-sa/3.0/" title="License: '+ this.resourceData.licenseType +'" target="_blank"><span class="cc-by-sa-bg-image"></span></a>' : this.resourceData.licenseType;
-                    var licenseString = (licenseType) ? licenseType +' - '+ this.resourceData.licenseAttribution : '';
-
                     var _rdw = document.createElement('div');
-                    _rdw.innerHTML = '<div class="resourceDetail" data-type="'+ this.resourceData.type +'" style="width: 100%; height: 100%;">'
-                                        +  '    <div class="resourceQuizQuestion">'+ this.resourceData.attributes.question +'</div>'
-                                        +  '    <div class="resourceQuizAnswersContainer"></div>'
+                    _rdw.innerHTML = '<div class="resourceDetail" data-type="'+ this.resourceData.type +'">'
+                                        +  '    <div class="resourceContent">'
+                                        +  '        <div class="resourceQuizQuestion">'+ this.resourceData.attributes.question +'</div>'
+                                        +  '        <div class="resourceQuizAnswersContainer"></div>'
+                                        +  '    </div>'
                                         +  '</div>';
                     var resourceDetail = _rdw.firstElementChild;
 
@@ -154,7 +153,10 @@ FrameTrail.defineType(
                             }
                         }
                     });
-                    resourceDetail.insertAdjacentHTML('beforeend', '<div class="resourceOptions"><div class="licenseInformation">'+ licenseString +'</div><div class="resourceButtons"></div>');
+                    resourceDetail.appendChild(this.buildResourceOptions({
+                        licenseType: this.resourceData.licenseType,
+                        licenseAttribution: this.resourceData.licenseAttribution
+                    }));
 
                     return resourceDetail;
 

@@ -1,10 +1,16 @@
 .resourceDetail[data-type="urlpreview"] {
-    box-sizing: border-box;
-    padding: 10px;
     background: var(--primary-bg-color);
     color: var(--primary-fg-color);
     display: flex;
-    align-items: center;
+}
+
+.resourceDetail[data-type="urlpreview"] .resourceContent {
+    box-sizing: border-box;
+    padding: 10px;
+}
+
+.overlayElement .resourceDetail[data-type="urlpreview"] .resourceButtons {
+    display: flex;
 }
 
 .resourceDetail[data-type="urlpreview"] a {

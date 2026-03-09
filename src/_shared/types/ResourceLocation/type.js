@@ -108,8 +108,11 @@ FrameTrail.defineType(
                     var attrs = this.resourceData.attributes;
 
                     var _rdw = document.createElement('div');
-                    _rdw.innerHTML = '<div class="resourceDetail" data-type="'+ this.resourceData.type +'" style="width: 100%; height: 100%;"></div>';
+                    _rdw.innerHTML = '<div class="resourceDetail" data-type="'+ this.resourceData.type +'">'
+                                        + '<div class="resourceContent"></div>'
+                                        + '</div>';
                     var resourceDetail = _rdw.firstElementChild;
+                    var resourceContent = resourceDetail.querySelector('.resourceContent');
 
                     // Parse coordinates
                     var lat = parseFloat(attrs.lat);
@@ -142,7 +145,7 @@ FrameTrail.defineType(
                             mapOptions.tap = false;
                         }
 
-                        var map = L.map(resourceDetail, mapOptions);
+                        var map = L.map(resourceContent, mapOptions);
 
                         // Add tile layer
                         var tileOptions = {
@@ -169,7 +172,7 @@ FrameTrail.defineType(
                             map.fitBounds(bounds);
                         }
 
-                        // Store map reference for resize handling
+                        // Store map reference on resourceDetail for refreshMap compatibility
                         resourceDetail._leafletMap = map;
 
                         // Handle resize
@@ -177,6 +180,7 @@ FrameTrail.defineType(
 
                     }, 100);
 
+                    resourceDetail.appendChild(this.buildResourceOptions({}));
                     return resourceDetail;
 
                 },

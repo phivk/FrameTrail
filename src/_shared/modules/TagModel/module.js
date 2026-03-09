@@ -82,7 +82,7 @@
                 tags = data;
                 success();
             })
-            .catch(function(err) {
+            .catch(function() {
                 fail(labels['ErrorNoTagdefinitionsFile']);
             });
 

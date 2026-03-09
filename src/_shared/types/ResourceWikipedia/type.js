@@ -53,14 +53,25 @@ FrameTrail.defineType(
                             mobileUri = 'https://' + splitUri[1].substr(0, 3) + 'm.' + splitUri[1].substr(3),
                             hash = (mobileUri.indexOf('#') != -1) ? '' : '#section_0';
 
-                        var _wrapper = document.createElement('div');
-                        _wrapper.innerHTML = '<iframe class="resourceDetail" data-type="'+ data.type +'" src="'
+                        var legacyDetail = document.createElement('div');
+                        legacyDetail.className = 'resourceDetail';
+                        legacyDetail.dataset.type = data.type;
+
+                        var legacyContent = document.createElement('div');
+                        legacyContent.className = 'resourceContent';
+
+                        var _iframeWrapper = document.createElement('div');
+                        _iframeWrapper.innerHTML = '<iframe src="'
                             +    mobileUri + hash
                             +    '" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen>'
                             +    '</iframe>';
-                        var resourceDetail = _wrapper.firstElementChild;
-                        resourceDetail.addEventListener('error', function() { return true; });
-                        return resourceDetail;
+                        var legacyIframe = _iframeWrapper.firstElementChild;
+                        legacyIframe.addEventListener('error', function() { return true; });
+
+                        legacyContent.appendChild(legacyIframe);
+                        legacyDetail.appendChild(legacyContent);
+                        legacyDetail.appendChild(this.buildResourceOptions({ openInNewTabUrl: src }));
+                        return legacyDetail;
                     }
 
                     // Rich card rendering
@@ -97,18 +108,17 @@ FrameTrail.defineType(
                         + extractHtml
                         + '</div>';
 
-                    cardHtml += '<div class="resourceCardFooter">'
-                        + '<a href="' + articleUrl + '" target="_blank" rel="noopener">'
-                        + '<span class="icon-link-ext"></span> ' + this.labels['ResourceOpenInNewTab']
-                        + '</a>'
-                        + '</div>';
-
                     card.innerHTML = cardHtml;
 
                     var resourceDetail = document.createElement('div');
                     resourceDetail.className = 'resourceDetail resourceWikipediaCard';
                     resourceDetail.dataset.type = data.type;
-                    resourceDetail.appendChild(card);
+
+                    var resourceContent = document.createElement('div');
+                    resourceContent.className = 'resourceContent';
+                    resourceContent.appendChild(card);
+                    resourceDetail.appendChild(resourceContent);
+                    resourceDetail.appendChild(this.buildResourceOptions({ openInNewTabUrl: articleUrl }));
 
                     return resourceDetail;
 

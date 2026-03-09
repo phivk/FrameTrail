@@ -1,11 +1,8 @@
-.resourceDetail[data-type="mastodon"] {
-    position: absolute;
-    width: 100%;
-    height: 100%;
+.resourceDetail[data-type="mastodon"] .resourceContent {
     overflow-y: auto;
 }
 
-.resourceDetail[data-type="mastodon"] iframe {
+.resourceDetail[data-type="mastodon"] .resourceContent iframe {
     width: 133%;
     height: 133%;
     zoom: 0.75;

@@ -48,9 +48,6 @@ FrameTrail.defineType(
 
                     var self = this;
 
-                    var licenseType = (this.resourceData.licenseType && (this.resourceData.licenseType == 'CC-BY-SA' || this.resourceData.licenseType == 'CC-BY-SA-3.0')) ? '<a href="https://creativecommons.org/licenses/by-sa/3.0/" title="License: '+ this.resourceData.licenseType +'" target="_blank"><span class="cc-by-sa-bg-image"></span></a>' : this.resourceData.licenseType;
-                    var licenseString = (licenseType) ? licenseType +' - '+ this.resourceData.licenseAttribution : '';
-
                     var color = (this.resourceData.attributes && this.resourceData.attributes.color) ? this.resourceData.attributes.color : '#0096ff';
                     var linkUrl = (this.resourceData.attributes && this.resourceData.attributes.linkUrl) ? this.resourceData.attributes.linkUrl : '';
                     var borderWidth = (this.resourceData.attributes && this.resourceData.attributes.borderWidth !== undefined) ? this.resourceData.attributes.borderWidth : 5;
@@ -70,7 +67,7 @@ FrameTrail.defineType(
                     // Calculate border width - we'll set it as a CSS variable and update it
                     // Border width will be a percentage of the smaller dimension
                     var borderWidthValue = borderWidth > 0 ? borderWidth + '%' : '0';
-                    
+
                     // Always use an <a> tag (even when empty, to avoid element replacement during editing)
                     var elementAttrs = ' href="' + (linkUrl || '#') + '"';
                     if (linkUrl && (linkUrl.startsWith('http://') || linkUrl.startsWith('https://'))) {
@@ -78,11 +75,13 @@ FrameTrail.defineType(
                     }
 
                     var _rdw = document.createElement('div');
-                    _rdw.innerHTML = '<div class="resourceDetail" data-type="hotspot" style="width: 100%; height: 100%; position: relative; display: flex; align-items: center; justify-content: center;">'
-                                        +  '    <div class="hotspot-container">'
-                                        +  '        <div class="hotspot-square-wrapper">'
-                                        +  '            <a class="hotspot-element"' + elementAttrs + ' style="border-radius: ' + borderRadiusValue + '; border-color: ' + color + '; text-decoration: none; display: block;"></a>'
-                                        +  '            <div class="hotspot-pulse" style="border-color: ' + color + '; border-radius: ' + borderRadiusValue + ';"></div>'
+                    _rdw.innerHTML = '<div class="resourceDetail" data-type="hotspot">'
+                                        +  '    <div class="resourceContent">'
+                                        +  '        <div class="hotspot-container">'
+                                        +  '            <div class="hotspot-square-wrapper">'
+                                        +  '                <a class="hotspot-element"' + elementAttrs + ' style="border-radius: ' + borderRadiusValue + '; border-color: ' + color + '; text-decoration: none; display: block;"></a>'
+                                        +  '                <div class="hotspot-pulse" style="border-color: ' + color + '; border-radius: ' + borderRadiusValue + ';"></div>'
+                                        +  '            </div>'
                                         +  '        </div>'
                                         +  '    </div>'
                                         +  '</div>';
@@ -138,18 +137,10 @@ FrameTrail.defineType(
                         });
                     }
 
-                    resourceDetail.insertAdjacentHTML('beforeend', '<div class="resourceOptions"><div class="licenseInformation">'+ licenseString +'</div><div class="resourceButtons"></div>');
-
-                    if (this.resourceData.start) {
-                        var _jtbw = document.createElement('div');
-                        _jtbw.innerHTML = '<button class="button btn btn-sm" data-start="'+ this.resourceData.start +'" data-end="'+ this.resourceData.end +'"><span class="icon-play-1"></span></button>';
-                        var jumpToTimeButton = _jtbw.firstElementChild;
-                        jumpToTimeButton.addEventListener('click', function(){
-                            var time = this.dataset.start;
-                            FrameTrail.module('HypervideoController').currentTime = time;
-                        });
-                        resourceDetail.querySelector('.resourceButtons').appendChild(jumpToTimeButton);
-                    }
+                    resourceDetail.appendChild(this.buildResourceOptions({
+                        licenseType: this.resourceData.licenseType,
+                        licenseAttribution: this.resourceData.licenseAttribution
+                    }));
 
                     return resourceDetail;
 

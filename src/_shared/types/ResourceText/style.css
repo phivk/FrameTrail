@@ -1,15 +1,19 @@
 .resourceDetail[data-type="text"] {
     background-color: transparent;
+    color: var(--primary-fg-color);
+}
+
+.resourceDetail[data-type="text"] .resourceContent {
     padding: 10px;
     box-sizing: border-box;
-    color: var(--primary-fg-color);
+    overflow-y: auto;
 }
 
 .resourcePreviewDialog .resourceDetail[data-type="text"] {
     color: var(--primary-bg-color);
 }
 
-.overlayElement .resourceDetail[data-type="text"] {
+.overlayElement .resourceDetail[data-type="text"] .resourceContent {
     padding: 0px;
     color: #000;
 }

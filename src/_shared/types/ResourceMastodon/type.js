@@ -30,16 +30,21 @@ FrameTrail.defineType(
                     container.className = 'resourceDetail';
                     container.dataset.type = this.resourceData.type;
 
+                    var resourceContent = document.createElement('div');
+                    resourceContent.className = 'resourceContent';
+
                     if (this.resourceData.attributes.html) {
-                        container.innerHTML = this.resourceData.attributes.html;
+                        resourceContent.innerHTML = this.resourceData.attributes.html;
                     } else {
                         // Use resolved canonical embed URL for cross-instance posts, or append /embed to src
                         var embedUrl = this.resourceData.attributes.embedUrl || (this.resourceData.src.replace(/^\/\//, 'https://') + '/embed');
-                        container.innerHTML =
+                        resourceContent.innerHTML =
                             '<iframe src="' + embedUrl + '" class="mastodon-embed" '
                             + 'frameborder="0" allowfullscreen></iframe>';
                     }
 
+                    container.appendChild(resourceContent);
+                    container.appendChild(this.buildResourceOptions({}));
                     return container;
 
                 },

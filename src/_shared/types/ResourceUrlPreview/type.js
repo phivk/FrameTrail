@@ -24,8 +24,8 @@ FrameTrail.defineType(
         function _platformIconClass(originalType) {
             var icons = {
                 'flickr':     'icon-picture',
-                'slideshare': 'icon-link-ext',
-                'default':    'icon-link-ext'
+                'slideshare': 'icon-link',
+                'default':    'icon-link'
             };
             return icons[originalType] || icons['default'];
         }
@@ -82,17 +82,23 @@ FrameTrail.defineType(
 
                     var data = this.resourceData;
                     var attrs = data.attributes || {};
-                    var src = data.src.replace(/^\/\//, 'https://');
+                    var src = (data.src || '').replace(/^\/\//, 'https://');
 
                     var container = document.createElement('div');
                     container.className = 'resourceDetail resourceUrlPreview';
                     container.dataset.type = data.type;
                     if (attrs.originalType) { container.dataset.originalType = attrs.originalType; }
 
+                    var resourceContent = document.createElement('div');
+                    resourceContent.className = 'resourceContent';
+                    if (attrs.originalType) { resourceContent.dataset.originalType = attrs.originalType; }
+
                     // oEmbed HTML stored at creation time → render the embed
                     if (attrs.html && attrs.originalType) {
-                        container.innerHTML = attrs.html;
-                        _loadPlatformScript(attrs.originalType, container);
+                        resourceContent.innerHTML = attrs.html;
+                        _loadPlatformScript(attrs.originalType, resourceContent);
+                        container.appendChild(resourceContent);
+                        container.appendChild(this.buildResourceOptions({}));
                         return container;
                     }
 
@@ -101,7 +107,9 @@ FrameTrail.defineType(
                         var img = document.createElement('img');
                         img.src = attrs.photoUrl;
                         img.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;background:#000';
-                        container.appendChild(img);
+                        resourceContent.appendChild(img);
+                        container.appendChild(resourceContent);
+                        container.appendChild(this.buildResourceOptions({}));
                         return container;
                     }
 
@@ -138,14 +146,10 @@ FrameTrail.defineType(
                         cardHtml += '<div class="resourceCardContent"><p>' + attrs.description + '</p></div>';
                     }
 
-                    cardHtml += '<div class="resourceCardFooter">'
-                        + '<a href="' + src + '" target="_blank" rel="noopener">'
-                        + '<span class="icon-link-ext"></span> ' + this.labels['ResourceOpenInNewTab']
-                        + '</a>'
-                        + '</div>';
-
                     card.innerHTML = cardHtml;
-                    container.appendChild(card);
+                    resourceContent.appendChild(card);
+                    container.appendChild(resourceContent);
+                    container.appendChild(this.buildResourceOptions({ openInNewTabUrl: src }));
                     return container;
 
                 },

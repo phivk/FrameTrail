@@ -14,6 +14,10 @@
     transform-origin: 0 0;
 }
 
+.overlayElement .resourceDetail[data-type="webpage"] .resourceButtons {
+    display: flex;
+}
+
 .resourceThumb[data-type="webpage"] {
     background-image: linear-gradient( 35deg, transparent 49.5%, rgba(0,0,0,0.25) 50%, transparent 50.5% ), linear-gradient( -35deg, transparent 49.5%, rgba(0,0,0,0.25) 50%, transparent 50.5% ), linear-gradient(#bdbdbd, #bdbdbd);
 }

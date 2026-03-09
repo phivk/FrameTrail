@@ -215,6 +215,7 @@ window.FrameTrail_L10n['en'] = {
     "ResourceManager": "Resource Manager",
     "ResourceOpenInNewTab": "Open in New Tab",
     "ResourcePasteURL": "Paste URL",
+    "ResourcePlayFromHere": "Play from here",
     "ResourceTypeAudio": "Audio",
     "ResourceTypeImage": "Image",
     "ResourceTypeLocation": "Location",

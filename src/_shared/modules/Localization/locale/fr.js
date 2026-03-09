@@ -215,6 +215,7 @@ window.FrameTrail_L10n['fr'] = {
     "ResourceManager": "Gestionnaire de ressources",
     "ResourceOpenInNewTab": "Ouvrir dans un nouvel onglet",
     "ResourcePasteURL": "Coller l'URL",
+    "ResourcePlayFromHere": "Jouer à partir d'ici",
     "ResourceTypeAudio": "Audio",
     "ResourceTypeImage": "Image",
     "ResourceTypeLocation": "Carte",

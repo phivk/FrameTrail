@@ -42,14 +42,14 @@ FrameTrail.defineType(
                  */
                 renderContent: function() {
 
-                    var self = this;
-
-                    var iFrameSource = (this.resourceData.src.indexOf('//') != -1) ? this.resourceData.uri.replace(/^\/\//, 'https://') : FrameTrail.module('RouteNavigation').getResourceURL(this.resourceData.uri),
-                        downloadButton = '<a class="button" href="'+ iFrameSource +'" target="_blank">'+ this.labels['ResourceOpenInNewTab'] +'</a>';
+                    var iFrameSource = (this.resourceData.src.indexOf('//') != -1) ? this.resourceData.uri.replace(/^\/\//, 'https://') : FrameTrail.module('RouteNavigation').getResourceURL(this.resourceData.uri);
 
                     var resourceDetail = document.createElement('div');
                     resourceDetail.className = 'resourceDetail';
                     resourceDetail.dataset.type = this.resourceData.type;
+
+                    var resourceContent = document.createElement('div');
+                    resourceContent.className = 'resourceContent';
 
                     if (this.resourceData.attributes.embed && this.resourceData.attributes.embed == 'forbidden') {
 
@@ -67,20 +67,7 @@ FrameTrail.defineType(
                             + '<div class="resourceDetailPreviewTitle">'+ this.resourceData.name +'</div>'
                             + '<img class="resourceDetailPreviewThumb" src="'+ thumbSource +'"/>'
                             + '</div>';
-                        resourceDetail.append(_fbWrapper.firstElementChild);
-                        resourceDetail.insertAdjacentHTML('beforeend', '<div class="resourceOptions"><div class="resourceButtons">'+ downloadButton +'</div></div>');
-
-                        if (this.resourceData.start) {
-                            var jumpToTimeButton = document.createElement('button');
-                            jumpToTimeButton.className = 'button btn btn-sm';
-                            jumpToTimeButton.setAttribute('data-start', this.resourceData.start);
-                            jumpToTimeButton.setAttribute('data-end', this.resourceData.end);
-                            jumpToTimeButton.innerHTML = '<span class="icon-play-1"></span>';
-                            jumpToTimeButton.addEventListener('click', function(){
-                                FrameTrail.module('HypervideoController').currentTime = this.getAttribute('data-start');
-                            });
-                            resourceDetail.querySelector('.resourceButtons').append(jumpToTimeButton);
-                        }
+                        resourceContent.append(_fbWrapper.firstElementChild);
 
                     } else {
 
@@ -92,22 +79,14 @@ FrameTrail.defineType(
                         iFrame.addEventListener('error', function() { return true; });
                         iFrame.addEventListener('message', function() { return true; });
 
-                        resourceDetail.append(iFrame);
-                        resourceDetail.insertAdjacentHTML('beforeend', '<div class="resourceOptions"><div class="resourceButtons">'+ downloadButton +'</div></div>');
-
-                        if (this.resourceData.start) {
-                            var jumpToTimeButton = document.createElement('button');
-                            jumpToTimeButton.className = 'button btn btn-sm';
-                            jumpToTimeButton.setAttribute('data-start', this.resourceData.start);
-                            jumpToTimeButton.setAttribute('data-end', this.resourceData.end);
-                            jumpToTimeButton.innerHTML = '<span class="icon-play-1"></span>';
-                            jumpToTimeButton.addEventListener('click', function(){
-                                FrameTrail.module('HypervideoController').currentTime = this.getAttribute('data-start');
-                            });
-                            resourceDetail.querySelector('.resourceButtons').append(jumpToTimeButton);
-                        }
+                        resourceContent.appendChild(iFrame);
 
                     }
+
+                    resourceDetail.appendChild(resourceContent);
+                    resourceDetail.appendChild(this.buildResourceOptions({
+                        openInNewTabUrl: iFrameSource
+                    }));
 
                     return resourceDetail;
 

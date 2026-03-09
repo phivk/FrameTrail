@@ -26,14 +26,23 @@ FrameTrail.defineType(
 
                 renderContent: function() {
 
-                    var _wrapper = document.createElement('div');
-                    _wrapper.innerHTML = '<iframe class="resourceDetail" data-type="'+ this.resourceData.type +'" '
-                        +   'frameborder="0" allowfullscreen src="'
+                    var _iframeWrapper = document.createElement('div');
+                    _iframeWrapper.innerHTML = '<iframe frameborder="0" allowfullscreen src="'
                         +   this.resourceData.src.replace(/^\/\//, 'https://')
                         +   '&autoplay=false">'
                         +   '</iframe>';
-                    var resourceDetail = _wrapper.firstElementChild;
-                    resourceDetail.addEventListener('error', function() { return true; });
+                    var iframeEl = _iframeWrapper.firstElementChild;
+                    iframeEl.addEventListener('error', function() { return true; });
+
+                    var resourceDetail = document.createElement('div');
+                    resourceDetail.className = 'resourceDetail';
+                    resourceDetail.dataset.type = this.resourceData.type;
+
+                    var resourceContent = document.createElement('div');
+                    resourceContent.className = 'resourceContent';
+                    resourceContent.appendChild(iframeEl);
+                    resourceDetail.appendChild(resourceContent);
+                    resourceDetail.appendChild(this.buildResourceOptions({}));
 
                     return resourceDetail;
 

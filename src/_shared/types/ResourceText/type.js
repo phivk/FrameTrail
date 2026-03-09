@@ -48,12 +48,12 @@ FrameTrail.defineType(
 
                     var self = this;
 
-                    var licenseType = (this.resourceData.licenseType && (this.resourceData.licenseType == 'CC-BY-SA' || this.resourceData.licenseType == 'CC-BY-SA-3.0')) ? '<a href="https://creativecommons.org/licenses/by-sa/3.0/" title="License: '+ this.resourceData.licenseType +'" target="_blank"><span class="cc-by-sa-bg-image"></span></a>' : this.resourceData.licenseType;
-                    var licenseString = (licenseType) ? licenseType +' - '+ this.resourceData.licenseAttribution : '';
+                    var resourceDetail = document.createElement('div');
+                    resourceDetail.className = 'resourceDetail';
+                    resourceDetail.dataset.type = this.resourceData.type;
 
-                    var _rcw = document.createElement('div');
-                    _rcw.innerHTML = '<div class="resourceDetail" data-type="'+ this.resourceData.type +'" style="width: 100%; height: 100%;"></div>';
-                    var resourceDetail = _rcw.firstElementChild;
+                    var resourceContent = document.createElement('div');
+                    resourceContent.className = 'resourceContent';
 
                     var unescapeHelper = document.createElement('div');
                     // unescape string from json
@@ -61,20 +61,13 @@ FrameTrail.defineType(
                     var child = unescapeHelper.childNodes[0];
                     var unescapedString = child ? child.nodeValue : '';
 
-                    resourceDetail.innerHTML = unescapedString;
+                    resourceContent.innerHTML = unescapedString;
+                    resourceDetail.appendChild(resourceContent);
 
-                    resourceDetail.insertAdjacentHTML('beforeend', '<div class="resourceOptions"><div class="licenseInformation">'+ licenseString +'</div><div class="resourceButtons"></div>');
-
-                    if (this.resourceData.start) {
-                        var _btw = document.createElement('div');
-                        _btw.innerHTML = '<button class="button btn btn-sm" data-start="'+ this.resourceData.start +'" data-end="'+ this.resourceData.end +'"><span class="icon-play-1"></span></button>';
-                        var jumpToTimeButton = _btw.firstElementChild;
-                        jumpToTimeButton.addEventListener('click', function(){
-                            var time = this.dataset.start;
-                            FrameTrail.module('HypervideoController').currentTime = time;
-                        });
-                        resourceDetail.querySelector('.resourceButtons').appendChild(jumpToTimeButton);
-                    }
+                    resourceDetail.appendChild(this.buildResourceOptions({
+                        licenseType: this.resourceData.licenseType,
+                        licenseAttribution: this.resourceData.licenseAttribution
+                    }));
 
                     return resourceDetail;
 

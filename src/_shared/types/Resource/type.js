@@ -1244,6 +1244,80 @@ FrameTrail.defineType(
                  */
                 getDisplayLabel: function() {
                     return this.resourceData.name || this.resourceData.type || '';
+                },
+
+                /**
+                 * I build the shared .resourceOptions bar that appears below resource content.
+                 * Handles license info, Open in New Tab, download, and jump-to-time buttons.
+                 *
+                 * @method buildResourceOptions
+                 * @param {Object} opts  { openInNewTabUrl, downloadUrl, licenseType, licenseAttribution }
+                 * @return HTMLElement   .resourceOptions div
+                 */
+                buildResourceOptions: function(opts) {
+
+                    opts = opts || {};
+
+                    // Build license string
+                    var licenseString = '';
+                    if (opts.licenseType || opts.licenseAttribution) {
+                        var licenseDisplay = (opts.licenseType === 'CC-BY-SA' || opts.licenseType === 'CC-BY-SA-3.0')
+                            ? '<a href="https://creativecommons.org/licenses/by-sa/3.0/" title="License: ' + opts.licenseType + '" target="_blank"><span class="cc-by-sa-bg-image"></span></a>'
+                            : (opts.licenseType || '');
+                        var rawAttr = opts.licenseAttribution;
+                        licenseString = (rawAttr && rawAttr.indexOf('<') !== -1)
+                            ? rawAttr
+                            : (licenseDisplay ? licenseDisplay + (rawAttr ? ' - ' + rawAttr : '') : (rawAttr || ''));
+                    }
+
+                    var fragment = document.createDocumentFragment();
+
+                    var licenseDiv = document.createElement('div');
+                    licenseDiv.className = 'licenseInformation';
+                    licenseDiv.innerHTML = licenseString;
+                    fragment.appendChild(licenseDiv);
+
+                    var buttonsDiv = document.createElement('div');
+                    buttonsDiv.className = 'resourceButtons';
+
+                    if (opts.openInNewTabUrl) {
+                        var openLink = document.createElement('a');
+                        openLink.className = 'button';
+                        openLink.href = opts.openInNewTabUrl;
+                        openLink.target = '_blank';
+                        openLink.rel = 'noopener';
+                        openLink.setAttribute('data-tooltip-bottom-right', this.labels['ResourceOpenInNewTab']);
+                        openLink.innerHTML = '<span class="icon-link-ext"></span>';
+                        buttonsDiv.appendChild(openLink);
+                    }
+
+                    if (opts.downloadUrl && opts.licenseType !== 'Copyright') {
+                        var downloadLink = document.createElement('a');
+                        downloadLink.setAttribute('download', '');
+                        downloadLink.className = 'button';
+                        downloadLink.href = opts.downloadUrl;
+                        downloadLink.setAttribute('data-tooltip-bottom-right', this.labels['GenericDownload']);
+                        downloadLink.innerHTML = '<span class="icon-download"></span>';
+                        buttonsDiv.appendChild(downloadLink);
+                    }
+
+                    if (this.resourceData && this.resourceData.start) {
+                        var jumpButton = document.createElement('button');
+                        jumpButton.type = 'button';
+                        jumpButton.className = 'button btn btn-sm resourcePlayFromHereButton';
+                        jumpButton.setAttribute('data-start', this.resourceData.start);
+                        jumpButton.setAttribute('data-end', this.resourceData.end);
+                        jumpButton.setAttribute('data-tooltip-bottom-right', this.labels['ResourcePlayFromHere'] || 'Play from here');
+                        jumpButton.innerHTML = '<span class="icon-play-1"></span>';
+                        jumpButton.addEventListener('click', function() {
+                            FrameTrail.module('HypervideoController').currentTime = parseFloat(this.getAttribute('data-start'));
+                        });
+                        buttonsDiv.appendChild(jumpButton);
+                    }
+
+                    fragment.appendChild(buttonsDiv);
+                    return fragment;
+
                 }
 
 
