@@ -889,6 +889,13 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
             }
         } else {
             currentTime = videoElement.currentTime;
+
+            if (HypervideoModel.offsetOut && currentTime >= HypervideoModel.offsetOut) {
+                currentTime = HypervideoModel.offsetOut;
+                videoElement.currentTime = currentTime;
+                pause();
+            }
+
             updateProgressBar(currentTime - HypervideoModel.offsetIn);
 
             FrameTrail.triggerEvent('timeupdate', {});
