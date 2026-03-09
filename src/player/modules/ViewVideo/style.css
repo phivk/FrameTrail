@@ -749,6 +749,7 @@ body.userinactive .mainContainer:not([data-edit-mode="overlays"]):not([data-edit
 }
 
 .hypervideoContainer .videoContainer .hypervideo video.video {
+    display: block;
     transform: translate3d(0,0,0);
     backface-visibility: hidden;
     will-change: filter;
