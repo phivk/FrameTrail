@@ -275,8 +275,8 @@ body.userinactive .mainContainer:not([data-edit-mode="overlays"]):not([data-edit
 }
 
 .areaTopContainer[data-size="large"], .areaBottomContainer[data-size="large"] {
-    flex-basis: clamp(200px, calc(100vh * 0.6 - 40px), 1200px);
-    min-height: clamp(200px, calc(100vh * 0.6 - 40px), 1200px);
+    flex-basis: clamp(200px, calc(100vh * 0.6 - 40px), 400px);
+    min-height: clamp(200px, calc(100vh * 0.6 - 40px), 400px);
 }
 
 .areaLeftContainer, .areaRightContainer {
