@@ -1427,6 +1427,7 @@ FrameTrail.defineType(
                     // Slide to active Annotation Element
 
                     var activeAnnotations = [];
+                    var activeAnnotationIndices = [];
 
                     if (details) {
 
@@ -1443,14 +1444,23 @@ FrameTrail.defineType(
 
                             if ( self.contentCollection[idx].activeStateInContentView(self) ) {
                                 activeAnnotations.push(self.contentCollection[idx]);
+                                activeAnnotationIndices.push(idx);
                             }
                         }
 
                     }
 
                     if (activeAnnotations.length == 0) {
+                        self._lastActiveAnnotationIndices = [];
                         return;
                     }
+
+                    // Detect which annotations just became active
+                    var prevActiveIndices = self._lastActiveAnnotationIndices || [];
+                    var newlyActiveIndices = activeAnnotationIndices.filter(function(idx) {
+                        return prevActiveIndices.indexOf(idx) === -1;
+                    });
+                    self._lastActiveAnnotationIndices = activeAnnotationIndices;
 
                     var activeAnnotationElement = (details) ? activeAnnotations[0] : self.getContentViewElementFromContentItem(activeAnnotations[0]),
                         activeElementPosition   = { left: activeAnnotationElement.offsetLeft, top: activeAnnotationElement.offsetTop };
@@ -1472,23 +1482,21 @@ FrameTrail.defineType(
 
                             } else {
 
-                                // Playback path: page forward/back only when element leaves the viewport
-                                var currentLeft = parseFloat(sliderElement.style.left) || gap;
-                                var viewportW   = sliderParent.clientWidth;
-                                var pageStep    = viewportW / 3;
-                                var maxLeft     = -(widthOfSlider - viewportW);
-                                var visibleLeft = activeElementPosition.left + currentLeft;
-                                // Use the rightmost active annotation for the right-side check so that
-                                // a long annotation active from the start doesn't block scrolling to later elements
-                                var lastActiveElX = self.getContentViewElementFromContentItem(activeAnnotations[activeAnnotations.length - 1]) || activeAnnotationElement;
-                                var visibleRightEdge = lastActiveElX.offsetLeft + lastActiveElX.offsetWidth + currentLeft;
-
-                                if (visibleLeft < 0) {
-                                    sliderElement.style.left = Math.min(gap, currentLeft + pageStep) + 'px';
-                                } else if (visibleRightEdge > viewportW) {
-                                    sliderElement.style.left = Math.max(maxLeft, currentLeft - pageStep) + 'px';
+                                // Playback path: center on the first newly active annotation.
+                                // Only scroll when the active set changes to avoid oscillation
+                                // when multiple annotations are active simultaneously.
+                                if (newlyActiveIndices.length > 0) {
+                                    var newIdxInActive = activeAnnotationIndices.indexOf(newlyActiveIndices[0]);
+                                    var elToCenter = self.getContentViewElementFromContentItem(activeAnnotations[newIdxInActive]);
+                                    var leftOffset = -1 * (    elToCenter.offsetLeft
+                                                             - 1
+                                                             - sliderParent.clientWidth / 2
+                                                             + elToCenter.offsetWidth / 2
+                                                         );
+                                    sliderElement.style.left = Math.max(-(widthOfSlider - sliderParent.offsetWidth),
+                                                                   Math.min(gap, leftOffset)) + 'px';
                                 }
-                                // element is visible → don't touch scroll position
+                                // same active set → don't touch scroll position
 
                             }
 
@@ -1512,22 +1520,21 @@ FrameTrail.defineType(
 
                             } else {
 
-                                // Playback path: page up/down only when element leaves the viewport
-                                var currentTop = parseFloat(sliderElement.style.top) || gap;
-                                var viewportH  = sliderParent.clientHeight;
-                                var pageStep   = viewportH / 3;
-                                var maxTop     = -(heightOfSlider - viewportH);
-                                var visibleTop = activeElementPosition.top + currentTop;
-                                // Use the bottommost active annotation for the bottom-side check
-                                var lastActiveElY = self.getContentViewElementFromContentItem(activeAnnotations[activeAnnotations.length - 1]) || activeAnnotationElement;
-                                var visibleBottomEdge = lastActiveElY.offsetTop + lastActiveElY.offsetHeight + currentTop;
-
-                                if (visibleTop < 0) {
-                                    sliderElement.style.top = Math.min(gap, currentTop + pageStep) + 'px';
-                                } else if (visibleBottomEdge > viewportH) {
-                                    sliderElement.style.top = Math.max(maxTop, currentTop - pageStep) + 'px';
+                                // Playback path: center on the first newly active annotation.
+                                // Only scroll when the active set changes to avoid oscillation
+                                // when multiple annotations are active simultaneously.
+                                if (newlyActiveIndices.length > 0) {
+                                    var newIdxInActiveY = activeAnnotationIndices.indexOf(newlyActiveIndices[0]);
+                                    var elToCenterY = self.getContentViewElementFromContentItem(activeAnnotations[newIdxInActiveY]);
+                                    var topOffset = -1 * (    elToCenterY.offsetTop
+                                                            - 1
+                                                            - sliderParent.clientHeight / 2
+                                                            + elToCenterY.offsetHeight / 2
+                                                        );
+                                    sliderElement.style.top = Math.max(-(heightOfSlider - sliderParent.offsetHeight),
+                                                                  Math.min(gap, topOffset)) + 'px';
                                 }
-                                // element is visible → don't touch scroll position
+                                // same active set → don't touch scroll position
 
                             }
 
