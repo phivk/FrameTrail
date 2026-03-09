@@ -22,7 +22,10 @@
     display: none;
 }
 
-.resourcePreviewDialog .resourceDetail .resourceOptions {
+.resourcePreviewDialog .resourceDetail .resourceOptions, 
+.layoutArea[data-area="areaBottom"][data-size="large"] .resourceDetail .resourceOptions, 
+.layoutArea[data-area="areaTop"][data-size="large"] .resourceDetail .resourceOptions, 
+.layoutAreaDetails[data-area="areaTop"] .resourceDetail .resourceOptions, .layoutAreaDetails[data-area="areaBottom"] .resourceDetail .resourceOptions {
     display: block;
 }
 
