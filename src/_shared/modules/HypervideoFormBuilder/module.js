@@ -69,18 +69,23 @@ FrameTrail.defineModule('HypervideoFormBuilder', function(FrameTrail){
         var showExistingSubtitles = options.showExistingSubtitles || false;
 
         var html = '<div class="layoutRow">'
-                 // Column 1: Name & options
-                 + '    <div class="column-3">'
-                 + '        <label for="name">'+ labels['SettingsHypervideoName'] +'</label>'
-                 + '        <input type="text" name="name" placeholder="'+ labels['SettingsHypervideoName'] +'" value="'+ name +'"><br>'
+                 // Row 1: Name (full width)
+                 + '    <div class="column-12">'
+                 + '        <label for="name">'+ labels['GenericName'] +'</label>'
+                 + '        <input type="text" name="name" placeholder="'+ labels['SettingsHypervideoName'] +'" value="'+ name +'">'
+                 + '    </div>'
+                 + '</div>'
+                 + '<div class="layoutRow" style="margin-top: 7px;">'
+                 // Row 2, Column 1: Checkboxes
+                 + '    <div class="column-6">'
+                 + '        <div class="checkboxRow"><label class="switch"><input type="checkbox" name="config[captionsVisible]" id="captionsVisible" value="true" '+ (captionsVisible ? 'checked' : '') +'><span class="slider round"></span></label><label for="captionsVisible">'+ labels['SettingsSubtitlesShowByDefault'] +'</label></div>'
                  + '        <div class="checkboxRow"><label class="switch"><input type="checkbox" name="config[autohideControls]" id="autohideControls" '+ (autohideControls ? 'checked' : '') +'><span class="slider round"></span></label><label for="autohideControls">'+ labels['SettingsAutohideControls'] +'</label></div>'
                  + '    </div>'
-                 // Column 2: Subtitles
-                 + '    <div class="column-9">'
+                 // Row 2, Column 2: Subtitles settings (without checkboxRow)
+                 + '    <div class="column-6">'
                  + '        <div class="subtitlesSettingsWrapper">'
                  + '            <div>'+ labels['GenericSubtitles'] +' ('+ labels['MessageSubtitlesAlsoUsedForInteractiveTranscripts'] +')</div>'
-                 + '            <button class="subtitlesPlus" type="button">'+ labels['GenericAdd'] +' <span class="icon-plus"></span></button>'
-                 + '            <div class="checkboxRow"><label class="switch"><input type="checkbox" name="config[captionsVisible]" id="captionsVisible" value="true" '+ (captionsVisible ? 'checked' : '') +'><span class="slider round"></span></label><label for="captionsVisible">'+ labels['SettingsSubtitlesShowByDefault'] +'</label></div>';
+                 + '            <button class="subtitlesPlus" type="button">'+ labels['GenericAdd'] +' <span class="icon-plus"></span></button>';
 
         if (showExistingSubtitles) {
             html += '            <div class="existingSubtitlesContainer"></div>';
@@ -118,7 +123,7 @@ FrameTrail.defineModule('HypervideoFormBuilder', function(FrameTrail){
         var isEditMode = options.isEditMode || false;
 
         var html = '<div class="videoSourceSection">'
-                 + '    <div>'+ labels['SettingsVideoSource'] +'</div>'
+                 + '    <div class="message active mb-0">'+ labels['SettingsVideoSource'] +'</div>'
                  + '    <div class="videoSourceTabs">'
                  + '        <ul>'
                  + '            <li><a href="#ChooseVideo">'+ labels['SettingsChooseVideo'] +'</a></li>'
