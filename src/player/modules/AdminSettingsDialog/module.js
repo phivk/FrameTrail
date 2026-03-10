@@ -140,8 +140,8 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
         var _ctw = document.createElement('div');
         _ctw.innerHTML = '<div class="themeContainer">'
                             + '    <div class="message active">'+ labels['SettingsSelectColorTheme'] +'</div>'
-                            + '    <div class="themeItem" data-theme="default">'
-                            + '        <div class="themeName">'+ labels['GenericDefault'] +'</div>'
+                            + '    <div class="themeItem" data-theme="classic">'
+                            + '        <div class="themeName">Classic</div>'
                             + '        <div class="themeColorContainer">'
                             + '            <div class="primary-fg-color"></div>'
                             + '            <div class="secondary-bg-color"></div>'
@@ -523,14 +523,14 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
             if (database.config.defaultTheme == item.getAttribute('data-theme')) {
                 item.classList.add('active');
             }
-            if (!database.config.defaultTheme && item.getAttribute('data-theme') == 'default') {
+            if (!database.config.defaultTheme && item.getAttribute('data-theme') == 'classic') {
                 item.classList.add('active');
             }
         });
 
         adminTabs.querySelector('#ChangeTheme').appendChild(ChangeThemeUI);
 
-        var selectedThemeValue = database.config.defaultTheme || 'default';
+        var selectedThemeValue = database.config.defaultTheme || 'classic';
         ChangeThemeUI.querySelectorAll('.themeItem').forEach(function(item) {
             item.addEventListener('click', function() {
                 ChangeThemeUI.querySelectorAll('.themeItem').forEach(function(t) { t.classList.remove('active'); });
@@ -993,7 +993,7 @@ FrameTrail.defineModule('AdminSettingsDialog', function(FrameTrail){
                                             // Only revert theme on current view if hypervideo has no per-hypervideo theme
                                             var hvCfg = database.hypervideo && database.hypervideo.config;
                                             if (!hvCfg || !hvCfg.theme) {
-                                                document.querySelector(FrameTrail.getState('target')).setAttribute('data-frametrail-theme', initialConfig.defaultTheme || 'default');
+                                                document.querySelector(FrameTrail.getState('target')).setAttribute('data-frametrail-theme', initialConfig.defaultTheme || 'classic');
                                             }
                                         }
                                         if (globalCSSChanged) {

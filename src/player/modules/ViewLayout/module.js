@@ -449,7 +449,7 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
             hypervideo = database.hypervideo,
             thisID     = FrameTrail.module('RouteNavigation').hypervideoID;
 
-        var currentTheme = hypervideo.config.theme || database.config.defaultTheme || 'default';
+        var currentTheme = hypervideo.config.theme || database.config.defaultTheme || 'classic';
 
         var _lmWrapper = document.createElement('div');
         _lmWrapper.innerHTML = '<div class="layoutManagerContainer">' +
@@ -517,8 +517,16 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
             '        <div class="layoutManagerThemePanel">' +
             '            <div class="themeContainer">' +
             '                <div class="message active">'+ labels['SettingsSelectColorTheme'] +'</div>' +
-            '                <div class="themeItem" data-theme="default">' +
+            '                <div class="themeItem themeItemDefault" data-theme="'+ (database.config.defaultTheme || 'classic') +'">' +
             '                    <div class="themeName">'+ labels['GenericDefault'] +'</div>' +
+            '                    <div class="themeColorContainer">' +
+            '                        <div class="primary-fg-color"></div>' +
+            '                        <div class="secondary-bg-color"></div>' +
+            '                        <div class="secondary-fg-color"></div>' +
+            '                    </div>' +
+            '                </div>' +
+            '                <div class="themeItem" data-theme="classic">' +
+            '                    <div class="themeName">Classic</div>' +
             '                    <div class="themeColorContainer">' +
             '                        <div class="primary-fg-color"></div>' +
             '                        <div class="secondary-bg-color"></div>' +
@@ -1066,20 +1074,27 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
         // Theme selector
     var themePanel = domElement.querySelector('.layoutManagerThemePanel');
 
-    themePanel.querySelectorAll('.themeItem').forEach(function(item) {
-        if (currentTheme === item.dataset.theme) {
-            item.classList.add('active');
-        }
-    });
+    if (!hypervideo.config.theme) {
+        themePanel.querySelector('.themeItemDefault').classList.add('active');
+    } else {
+        themePanel.querySelectorAll('.themeItem:not(.themeItemDefault)').forEach(function(item) {
+            if (currentTheme === item.dataset.theme) {
+                item.classList.add('active');
+            }
+        });
+    }
 
     themePanel.addEventListener('click', function(evt) {
         var el = evt.target.closest('.themeItem');
         if (!el) { return; }
 
-        var newTheme = el.dataset.theme,
+        var isDefaultItem = el.classList.contains('themeItemDefault'),
+            newTheme = isDefaultItem ? '' : el.dataset.theme,
             oldTheme = hypervideo.config.theme || '';
 
-        if (newTheme === oldTheme || (!oldTheme && newTheme === (database.config.defaultTheme || 'default'))) {
+        var effectiveNew = newTheme || database.config.defaultTheme || 'classic';
+        var effectiveOld = oldTheme || database.config.defaultTheme || 'classic';
+        if (effectiveNew === effectiveOld) {
             return;
         }
 
@@ -1088,7 +1103,7 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
 
         // Apply theme immediately
         hypervideo.config.theme = newTheme;
-        document.querySelector(FrameTrail.getState('target')).setAttribute('data-frametrail-theme', newTheme);
+        document.querySelector(FrameTrail.getState('target')).setAttribute('data-frametrail-theme', effectiveNew);
 
         FrameTrail.module('HypervideoModel').newUnsavedChange('layout');
 
@@ -1099,17 +1114,23 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
                 description: labels['SidebarLayout'] + ' Theme',
                 undo: function() {
                     hypervideo.config.theme = prevTheme;
-                    document.querySelector(FrameTrail.getState('target')).setAttribute('data-frametrail-theme', prevTheme || database.config.defaultTheme || 'default');
+                    var effectivePrev = prevTheme || database.config.defaultTheme || 'classic';
+                    document.querySelector(FrameTrail.getState('target')).setAttribute('data-frametrail-theme', effectivePrev);
                     themePanel.querySelectorAll('.themeItem').forEach(function(item) { item.classList.remove('active'); });
-                    var prevItem = themePanel.querySelector('.themeItem[data-theme="'+ (prevTheme || database.config.defaultTheme || 'default') +'"]');
+                    var prevItem = prevTheme
+                        ? themePanel.querySelector('.themeItem:not(.themeItemDefault)[data-theme="'+ prevTheme +'"]')
+                        : themePanel.querySelector('.themeItemDefault');
                     if (prevItem) { prevItem.classList.add('active'); }
                     FrameTrail.module('HypervideoModel').newUnsavedChange('layout');
                 },
                 redo: function() {
                     hypervideo.config.theme = nextTheme;
-                    document.querySelector(FrameTrail.getState('target')).setAttribute('data-frametrail-theme', nextTheme);
+                    var effectiveNext = nextTheme || database.config.defaultTheme || 'classic';
+                    document.querySelector(FrameTrail.getState('target')).setAttribute('data-frametrail-theme', effectiveNext);
                     themePanel.querySelectorAll('.themeItem').forEach(function(item) { item.classList.remove('active'); });
-                    var nextItem = themePanel.querySelector('.themeItem[data-theme="'+ nextTheme +'"]');
+                    var nextItem = nextTheme
+                        ? themePanel.querySelector('.themeItem:not(.themeItemDefault)[data-theme="'+ nextTheme +'"]')
+                        : themePanel.querySelector('.themeItemDefault');
                     if (nextItem) { nextItem.classList.add('active'); }
                     FrameTrail.module('HypervideoModel').newUnsavedChange('layout');
                 }

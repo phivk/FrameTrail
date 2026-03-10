@@ -224,7 +224,7 @@
             if (!hvTheme) {
                 var _t = FrameTrail.getState('target');
                 var _themeEl = (typeof _t === 'string') ? document.querySelector(_t) : _t;
-                if (_themeEl) _themeEl.setAttribute('data-frametrail-theme', config.defaultTheme || '');
+                if (_themeEl) _themeEl.setAttribute('data-frametrail-theme', config.defaultTheme || 'classic');
             }
 
             return success.call(this);
@@ -252,7 +252,7 @@
             if (!hvTheme) {
                 var _t = FrameTrail.getState('target');
                 var _themeEl = (typeof _t === 'string') ? document.querySelector(_t) : _t;
-                if (_themeEl) _themeEl.setAttribute('data-frametrail-theme', config.defaultTheme || '');
+                if (_themeEl) _themeEl.setAttribute('data-frametrail-theme', config.defaultTheme || 'classic');
             }
             success.call(this);
         }
