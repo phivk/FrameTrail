@@ -1,26 +1,18 @@
 <!DOCTYPE html>
 <!--
-  EXAMPLE: Embed FrameTrail in a page (server mode)
-  ─────────────────────────────────────────────────
-  Requirements: Apache + PHP (FrameTrail installed and set up at the parent directory).
+  EXAMPLE: Embed FrameTrail in a page — mount in a specific <div>
+  ────────────────────────────────────────────────────────────────
+  Requirements: None. Works in any modern browser, including from file://.
 
   Demonstrates:
   - Mounting the player in a specific <div> instead of <body>
-  - Opening a specific hypervideo directly (skipping the overview)
-  - Overriding one config value inline while loading everything else from the server
-
-  The `dataPath` and `server` init options tell FrameTrail where _data/ and
-  _server/ live relative to this page, so it can live in examples/ without
-  needing to copy any server files.
-
-  To run: serve the parent directory with Apache+PHP, open this file in a browser,
-  and replace 'your-hypervideo-id' with a real ID from your _data/hypervideos/ folder.
+  - Overriding a config value (theme) via the init options
+  - storageMode is 'download': edits are stored in memory, export via Save As
 -->
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <title>FrameTrail – Embed in Page</title>
-    <link rel="shortcut icon" href="../favico.png">
     <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@frametrail/frametrail/frametrail.min.css"> -->
     <link rel="stylesheet" href="../build/frametrail.min.css">
     <!-- <script src="https://cdn.jsdelivr.net/npm/@frametrail/frametrail/frametrail.min.js"></script> -->
@@ -35,16 +27,64 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
+
+        var VIDEO_URL = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+
         window.ftInstance = FrameTrail.init({
             target:  '#player-container',
-            startID: 'your-hypervideo-id',
+            startID: '0',
 
-            // Override a single config value; all other config comes from _data/config.json.
-            // Set config: null (or omit it) to use the server config entirely.
+            // Override a config value — this is the feature being demonstrated.
             config: { theme: 'bright' },
 
-            dataPath: '../_data/',
-            server:   '../_server/'
+            contents: [{
+                hypervideo: {
+                    meta: {
+                        name:        'Big Buck Bunny',
+                        description: 'Open-source animated short — embedded in a div with bright theme',
+                        thumb:       '',
+                        creator:     'Demo',
+                        creatorId:   'demo',
+                        created:     1700000000000,
+                        lastchanged: 1700000000000
+                    },
+                    config: {
+                        layoutArea:  { areaTop: [], areaBottom: [], areaLeft: [], areaRight: [] },
+                        hidden:      false,
+                        slidingMode: 'overlay'
+                    },
+                    clips: [{
+                        src:      VIDEO_URL,
+                        duration: 596,
+                        start:    0,
+                        end:      596
+                    }],
+                    contents:     [],
+                    subtitles:    {},
+                    globalEvents: { onReady: '', onPlay: '', onPause: '', onEnded: '' },
+                    customCSS:    ''
+                },
+                annotations: [
+                    {
+                        '@context': [ 'http://www.w3.org/ns/anno.jsonld', { 'frametrail': 'http://frametrail.org/ns/' } ],
+                        'type': 'Annotation', 'frametrail:type': 'Annotation',
+                        'creator': { 'nickname': 'Demo', 'type': 'Person', 'id': 'demo' },
+                        'created': '2024-01-01T00:00:00Z',
+                        'target': { 'type': 'Video', 'source': VIDEO_URL, 'selector': { 'type': 'FragmentSelector', 'conformsTo': 'http://www.w3.org/TR/media-frags/', 'value': 't=10,25' } },
+                        'body': { 'type': 'TextualBody', 'frametrail:type': 'text', 'format': 'text/html', 'value': '<p>The opening scene establishes the pastoral landscape.</p>', 'frametrail:name': 'Opening scene', 'frametrail:thumb': null, 'frametrail:resourceId': null, 'frametrail:attributes': { 'text': '<p>The opening scene establishes the pastoral landscape.</p>' } },
+                        'frametrail:tags': []
+                    },
+                    {
+                        '@context': [ 'http://www.w3.org/ns/anno.jsonld', { 'frametrail': 'http://frametrail.org/ns/' } ],
+                        'type': 'Annotation', 'frametrail:type': 'Annotation',
+                        'creator': { 'nickname': 'Demo', 'type': 'Person', 'id': 'demo' },
+                        'created': '2024-01-01T00:01:00Z',
+                        'target': { 'type': 'Video', 'source': VIDEO_URL, 'selector': { 'type': 'FragmentSelector', 'conformsTo': 'http://www.w3.org/TR/media-frags/', 'value': 't=35,55' } },
+                        'body': { 'type': 'TextualBody', 'frametrail:type': 'text', 'format': 'text/html', 'value': '<p>The squirrels appear and begin tormenting the butterfly.</p>', 'frametrail:name': 'Antagonists introduced', 'frametrail:thumb': null, 'frametrail:resourceId': null, 'frametrail:attributes': { 'text': '<p>The squirrels appear and begin tormenting the butterfly.</p>' } },
+                        'frametrail:tags': []
+                    }
+                ]
+            }]
         }, 'PlayerLauncher');
     });
     </script>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<!--
+  EXAMPLE: Multi-user annotation timelines
+  ─────────────────────────────────────────
+  Requirements: None. Works in any modern browser, including from file://.
+
+  Demonstrates:
+  - Multiple users annotating the same video (10 users, ~100 annotations)
+  - A "Timelines" ContentView in the bottom layout area, grouping annotations by user
+  - Color-coded timeline rows via the `users` init option
+  - storageMode is 'download': edits are stored in memory, export via Save As
+-->
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>FrameTrail – Multi-User Timelines</title>
+    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@frametrail/frametrail/frametrail.min.css"> -->
+    <link rel="stylesheet" href="../build/frametrail.min.css">
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@frametrail/frametrail/frametrail.min.js"></script> -->
+    <script src="../build/frametrail.min.js"></script>
+    <style>
+        body { margin: 0; }
+    </style>
+</head>
+<body>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        var VIDEO_URL = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+
+        // Helper to build a W3C annotation object
+        function anno(userId, userName, start, end, title, text) {
+            return {
+                '@context': [ 'http://www.w3.org/ns/anno.jsonld', { 'frametrail': 'http://frametrail.org/ns/' } ],
+                'type': 'Annotation',
+                'frametrail:type': 'Annotation',
+                'creator': { 'nickname': userName, 'type': 'Person', 'id': userId },
+                'created': '2024-01-01T00:00:00Z',
+                'target': {
+                    'type': 'Video',
+                    'source': VIDEO_URL,
+                    'selector': {
+                        'type': 'FragmentSelector',
+                        'conformsTo': 'http://www.w3.org/TR/media-frags/',
+                        'value': 't=' + start + ',' + end
+                    }
+                },
+                'body': {
+                    'type': 'TextualBody',
+                    'frametrail:type': 'text',
+                    'format': 'text/html',
+                    'value': '<p>' + text + '</p>',
+                    'frametrail:name': title,
+                    'frametrail:thumb': null,
+                    'frametrail:resourceId': null,
+                    'frametrail:attributes': { 'text': '<p>' + text + '</p>' }
+                },
+                'frametrail:tags': []
+            };
+        }
+
+        // ── Annotations: 10 users × 8-12 annotations each, spread across 0-596s ──
+
+        var annotations = [
+            // ─── Alice (film analysis) ───
+            anno('alice', 'Alice', 0,    12,  'Title card',              'The Blender Foundation logo and title sequence set the tone for the short film.'),
+            anno('alice', 'Alice', 15,   38,  'Establishing shot',       'Wide aerial shot establishes the lush pastoral landscape — classic animated film opening.'),
+            anno('alice', 'Alice', 42,   68,  'Character introduction',  'Big Buck Bunny is introduced enjoying a peaceful day. His gentle nature is established through body language.'),
+            anno('alice', 'Alice', 90,  115,  'Inciting incident',       'The butterfly appears — a symbol of innocence that will drive the plot forward.'),
+            anno('alice', 'Alice', 130, 170,  'Antagonist reveal',       'Frank, the lead squirrel, is introduced. His aggressive posture contrasts with Bunny\'s gentleness.'),
+            anno('alice', 'Alice', 200, 240,  'Conflict escalation',     'The squirrels\' harassment of the butterfly pushes Bunny toward action.'),
+            anno('alice', 'Alice', 280, 310,  'Emotional turning point', 'Bunny\'s expression shifts from sadness to determination — the emotional core of the film.'),
+            anno('alice', 'Alice', 350, 400,  'Planning montage',        'Bunny gathers materials for his traps. The pacing accelerates, building anticipation.'),
+            anno('alice', 'Alice', 430, 480,  'Revenge sequence begins', 'The first trap is sprung. Physical comedy takes center stage.'),
+            anno('alice', 'Alice', 520, 590,  'Climactic resolution',    'Each squirrel meets their comedic fate. Justice is served with slapstick flair.'),
+
+            // ─── Bob (technical/cinematography) ───
+            anno('bob', 'Bob',   5,   30, 'Rendering quality',    'Impressive subsurface scattering on the grass blades — a major step up from Elephant\'s Dream.'),
+            anno('bob', 'Bob',  50,   72, 'Camera movement',      'Smooth crane shot descending into the meadow. The depth of field is beautifully handled.'),
+            anno('bob', 'Bob', 100,  135, 'Fur simulation',       'Bunny\'s fur rendering uses strand-based simulation — groundbreaking for open-source at the time.'),
+            anno('bob', 'Bob', 160,  185, 'Lighting design',      'The warm, diffused sunlight creates a fairy-tale atmosphere. Volumetric light rays through the trees.'),
+            anno('bob', 'Bob', 220,  248, 'Particle effects',     'Dust motes and floating seeds add life to the scene. Subtle but effective environmental storytelling.'),
+            anno('bob', 'Bob', 290,  340, 'Color grading',        'Notice the shift to cooler tones during the conflict — the color palette mirrors the emotional arc.'),
+            anno('bob', 'Bob', 370,  395, 'Physics simulation',   'The trap mechanisms use rigid body physics. Props react naturally to forces.'),
+            anno('bob', 'Bob', 440,  490, 'Motion blur',          'Excellent per-object motion blur on the fast-moving elements. Adds cinematic polish.'),
+            anno('bob', 'Bob', 530,  570, 'Compositing layers',   'Multiple render passes are composited — separate diffuse, specular, and ambient occlusion.'),
+
+            // ─── Carol (sound design notes) ───
+            anno('carol', 'Carol',   0,   18, 'Opening music',       'Orchestral score sets a whimsical tone. Strings and woodwinds evoke a pastoral setting.'),
+            anno('carol', 'Carol',  35,   55, 'Ambient sound',       'Layered bird calls, insect buzzing, and wind create a rich outdoor soundscape.'),
+            anno('carol', 'Carol',  75,  110, 'Character theme',     'Bunny\'s leitmotif — a gentle bassoon melody — plays during his introduction.'),
+            anno('carol', 'Carol', 140,  175, 'Comedic timing',      'The squirrels\' theme uses staccato pizzicato strings — mischievous and playful.'),
+            anno('carol', 'Carol', 195,  215, 'Sound effects',       'The butterfly wing flutter is a pitch-shifted recording of paper. Creative foley work.'),
+            anno('carol', 'Carol', 255,  295, 'Emotional underscore','The music drops to a minor key here, reflecting Bunny\'s sadness. Cello takes the lead.'),
+            anno('carol', 'Carol', 330,  370, 'Tension building',    'Percussion enters — tympani rolls and snare hits build anticipation for the revenge sequence.'),
+            anno('carol', 'Carol', 400,  435, 'Slapstick sounds',    'Classic cartoon sound effects: springs, bonks, and slide whistles. Homage to Looney Tunes.'),
+            anno('carol', 'Carol', 470,  510, 'Musical callback',    'Bunny\'s theme returns triumphant — now in a major key with full orchestration.'),
+            anno('carol', 'Carol', 550,  590, 'Resolution',          'The music winds down to a gentle conclusion. Birdsong returns, bookending the soundtrack.'),
+
+            // ─── Dave (educational/context) ───
+            anno('dave', 'Dave',   0,   25, 'About the project',  'Big Buck Bunny (2008) was the second open movie by the Blender Foundation, following Elephants Dream.'),
+            anno('dave', 'Dave',  60,  100, 'Production facts',    'Created in 6 months by a team of 7 artists at the Blender Institute in Amsterdam.'),
+            anno('dave', 'Dave', 150,  190, 'Technical milestone', 'First Blender film to use strand-based hair/fur rendering and advanced particle systems.'),
+            anno('dave', 'Dave', 230,  260, 'Open source',         'Entire production pipeline is open source — Blender for 3D, Inkscape for concepts, GIMP for textures.'),
+            anno('dave', 'Dave', 300,  350, 'License',             'Released under Creative Commons Attribution 3.0. Anyone can remix, share, and build upon it.'),
+            anno('dave', 'Dave', 380,  420, 'Cultural impact',     'Became a standard test video for streaming, codecs, and media players worldwide.'),
+            anno('dave', 'Dave', 450,  500, 'Blender evolution',   'The film pushed Blender\'s particle and physics systems forward, benefiting all users.'),
+            anno('dave', 'Dave', 540,  590, 'Legacy',              'Followed by Sintel (2010), Tears of Steel (2012), and many more open movies.'),
+
+            // ─── Eve (audience reactions/critique) ───
+            anno('eve', 'Eve',  10,   22, 'First impressions',    'Gorgeous visuals right from the start. The quality rivals commercial studio work.'),
+            anno('eve', 'Eve',  45,   75, 'Pacing observation',   'The slow opening works well — gives the audience time to appreciate the world building.'),
+            anno('eve', 'Eve', 105,  128, 'Character design',     'Bunny\'s expressive face is charming. The oversized eyes convey emotion effectively.'),
+            anno('eve', 'Eve', 155,  180, 'Villain design',       'The squirrels are delightfully obnoxious. Their small size vs Bunny creates good visual contrast.'),
+            anno('eve', 'Eve', 210,  265, 'Emotional engagement', 'The butterfly scene genuinely tugs at your heartstrings. Simple but effective storytelling.'),
+            anno('eve', 'Eve', 305,  325, 'Tone shift',           'The mood shift from pastoral calm to revenge comedy is handled smoothly.'),
+            anno('eve', 'Eve', 360,  410, 'Comedy assessment',    'The physical comedy is universally appealing — no dialogue needed, works across languages.'),
+            anno('eve', 'Eve', 445,  475, 'Slapstick quality',    'Each revenge gag escalates nicely. The timing is spot-on for animated comedy.'),
+            anno('eve', 'Eve', 500,  535, 'Satisfying conclusion', 'The payoff is earned. Bunny\'s victory feels justified after the setup.'),
+            anno('eve', 'Eve', 560,  593, 'Overall verdict',      'A remarkable achievement for open-source animation. Entertaining, polished, and technically impressive.'),
+
+            // ─── Frank (animation technique) ───
+            anno('frank', 'Frank',   8,   45, 'Walk cycle',           'The opening walk cycle is beautifully weighted — Bunny\'s mass is communicated through timing.'),
+            anno('frank', 'Frank',  70,   95, 'Squash and stretch',   'Subtle squash and stretch on the flower petals. Blender\'s lattice deformers at work.'),
+            anno('frank', 'Frank', 120,  155, 'Facial rigging',       'The blend shape system allows nuanced expressions — eyebrows, eyelids, and mouth all independent.'),
+            anno('frank', 'Frank', 185,  225, 'Secondary motion',     'Ears, tail, and belly jiggle follow through naturally. Great use of soft body simulation.'),
+            anno('frank', 'Frank', 265,  300, 'Posing principles',    'Strong silhouettes throughout. You can read every pose even in shadow — animation fundamentals.'),
+            anno('frank', 'Frank', 335,  365, 'Overlap and follow-through', 'The overlapping action on Bunny\'s ears during the jump is textbook Disney principle.'),
+            anno('frank', 'Frank', 405,  450, 'Timing and spacing',   'The trap sequences use exaggerated timing — fast snaps contrasted with slow anticipation holds.'),
+            anno('frank', 'Frank', 485,  530, 'Weight and balance',   'When Bunny lifts the log, the shift in center of gravity is convincingly animated.'),
+            anno('frank', 'Frank', 555,  590, 'Final pose',           'The closing pose communicates satisfaction and triumph. A strong end to the character arc.'),
+
+            // ─── Grace (comparative film studies) ───
+            anno('grace', 'Grace',   0,   35, 'Genre context',         'BBB sits in the tradition of Tex Avery\'s revenge cartoons — the underdog fights back.'),
+            anno('grace', 'Grace',  55,   85, 'Pixar influence',       'The environmental detail recalls A Bug\'s Life (1998). Both share the "insect-eye view" aesthetic.'),
+            anno('grace', 'Grace', 115,  160, 'Silent film roots',     'Like classic Chaplin, the humor is physical and universal — no subtitles needed.'),
+            anno('grace', 'Grace', 190,  230, 'Disney parallels',      'Bunny\'s design echoes Disney\'s gentle giants. Compare with Baloo from The Jungle Book.'),
+            anno('grace', 'Grace', 270,  320, 'Looney Tunes DNA',      'The trap sequence is pure Road Runner logic — elaborate setups, instant payoffs.'),
+            anno('grace', 'Grace', 345,  390, 'Open movie movement',   'BBB proved open-source tools could produce studio-quality results. A watershed moment.'),
+            anno('grace', 'Grace', 415,  460, 'Narrative economy',     'The entire three-act structure fits in under 10 minutes. Efficient visual storytelling.'),
+            anno('grace', 'Grace', 490,  545, 'Cultural reception',    'Over 100 million views across platforms. Used in countless technical demos and academic papers.'),
+            anno('grace', 'Grace', 570,  596, 'Lasting influence',     'Inspired a generation of open-source filmmakers and established a new production model.'),
+
+            // ─── Hiro (3D modeling notes) ───
+            anno('hiro', 'Hiro',  12,   50, 'Terrain modeling',    'The landscape uses displacement mapping on a subdivided plane — efficient and detailed.'),
+            anno('hiro', 'Hiro',  65,  105, 'Vegetation system',   'Grass and flowers are particle-instanced geometry. Thousands of blades with minimal overhead.'),
+            anno('hiro', 'Hiro', 130,  168, 'Character topology',  'Bunny\'s mesh has clean edge flow around the eyes and mouth — essential for good deformation.'),
+            anno('hiro', 'Hiro', 200,  250, 'Prop design',         'The tree stump uses sculpted detail with normal maps baked from a high-poly source.'),
+            anno('hiro', 'Hiro', 285,  330, 'Environment assets',  'Rocks, logs, and mushrooms are modular pieces, reused and scattered procedurally.'),
+            anno('hiro', 'Hiro', 355,  395, 'Trap mechanisms',     'The mechanical traps are rigged with constraints — pivots, levers, and springs modeled accurately.'),
+            anno('hiro', 'Hiro', 425,  470, 'LOD strategy',        'Background trees use billboard impostors at distance. Foreground trees are full geometry.'),
+            anno('hiro', 'Hiro', 505,  555, 'UV mapping',          'Consistent texel density across all assets. The UV layouts are clean and efficient.'),
+            anno('hiro', 'Hiro', 575,  596, 'Final scene assets',  'The closing shot reuses the opening environment with adjusted lighting — elegant bookend.'),
+
+            // ─── Iris (accessibility & UX) ───
+            anno('iris', 'Iris',   0,   20, 'Visual clarity',      'High contrast between character and background makes the action easy to follow at any screen size.'),
+            anno('iris', 'Iris',  40,   80, 'Color accessibility',  'The color palette works for most color vision deficiencies — Bunny\'s warm brown against cool greens.'),
+            anno('iris', 'Iris', 110,  145, 'Audio description',    'The purely visual storytelling means the film is inherently accessible without audio description.'),
+            anno('iris', 'Iris', 175,  215, 'Pacing for comprehension', 'Scene transitions are gradual, giving viewers time to process. No jarring cuts.'),
+            anno('iris', 'Iris', 245,  285, 'Non-verbal communication', 'All plot points conveyed through expression and action. Language barrier: zero.'),
+            anno('iris', 'Iris', 315,  360, 'Screen reader context',    'For a transcript, each scene has clear spatial and temporal markers — easy to describe.'),
+            anno('iris', 'Iris', 385,  430, 'Motion sensitivity',       'The camera is mostly steady. Quick movements are brief and have clear visual anchors.'),
+            anno('iris', 'Iris', 460,  510, 'Subtitle-free design',     'No dialogue means no subtitle synchronization issues. Universal viewing experience.'),
+            anno('iris', 'Iris', 540,  580, 'Cognitive load',           'Simple plot, clear cause-and-effect. Enjoyable without demanding sustained concentration.'),
+
+            // ─── Jay (production pipeline) ───
+            anno('jay', 'Jay',  20,   65, 'Pre-production',      'Storyboards were drawn in Inkscape and GIMP. The entire pre-production was open-source.'),
+            anno('jay', 'Jay',  80,  125, 'Blender version',     'Made with Blender 2.46. The particle system was overhauled specifically for this film.'),
+            anno('jay', 'Jay', 145,  195, 'Render farm',         'Rendered on a 14-node farm at the Blender Institute. Each frame took 5-20 minutes.'),
+            anno('jay', 'Jay', 225,  275, 'Compositing workflow', 'Blender\'s built-in compositor handled all post-processing — no external tools needed.'),
+            anno('jay', 'Jay', 305,  355, 'Version control',     'SVN was used for asset management. The full production files are publicly available.'),
+            anno('jay', 'Jay', 380,  435, 'Color management',    'Linear workflow with sRGB output. One of the first Blender projects to use proper color management.'),
+            anno('jay', 'Jay', 455,  515, 'Output format',       'Mastered at 1920x1080 (Full HD) — a high resolution choice for 2008 when 720p was standard.'),
+            anno('jay', 'Jay', 535,  585, 'Distribution',        'Released simultaneously on DVD, web download, and Bittorrent. Pioneered open distribution.'),
+            anno('jay', 'Jay', 160,  200, 'Team structure',      'Seven core artists with occasional community contributions. Small team, big output.')
+        ];
+
+        window.ftInstance = FrameTrail.init({
+            target:  'body',
+            startID: '0',
+            config:  { theme: 'bright' },
+
+            // User data for color-coded timeline rows
+            users: {
+                'alice': { name: 'Alice', color: '597081' },
+                'bob':   { name: 'Bob',   color: 'cd4436' },
+                'carol': { name: 'Carol', color: '0073a6' },
+                'dave':  { name: 'Dave',  color: '8b5180' },
+                'eve':   { name: 'Eve',   color: '339966' },
+                'frank': { name: 'Frank', color: '999933' },
+                'grace': { name: 'Grace', color: 'CC3399' },
+                'hiro':  { name: 'Hiro',  color: 'ae764d' },
+                'iris':  { name: 'Iris',  color: '16a09c' },
+                'jay':   { name: 'Jay',   color: 'cf910d' }
+            },
+
+            contents: [{
+                hypervideo: {
+                    meta: {
+                        name:        'Multi-User Timeline Demo',
+                        description: 'Big Buck Bunny annotated by 10 users with a Timelines ContentView',
+                        thumb:       '',
+                        creator:     'Demo',
+                        creatorId:   'demo',
+                        created:     1700000000000,
+                        lastchanged: 1700000000000
+                    },
+                    config: {
+                        layoutArea: {
+                            areaTop:    [],
+                            areaBottom: [{
+                                type:             'Timelines',
+                                name:             'All Annotations',
+                                contentSize:      'large',
+                                filterAspect:     'creatorId',
+                                zoomControls:     true,
+                                collectionFilter: { tags: [], types: [], users: [], text: '' }
+                            }],
+                            areaLeft:   [],
+                            areaRight:  []
+                        },
+                        hidden:      false,
+                        slidingMode: 'overlay'
+                    },
+                    clips: [{
+                        src:      VIDEO_URL,
+                        duration: 596,
+                        start:    0,
+                        end:      596
+                    }],
+                    contents:     [],
+                    subtitles:    {},
+                    globalEvents: { onReady: '', onPlay: '', onPause: '', onEnded: '' },
+                    customCSS:    ''
+                },
+                annotations: annotations
+            }]
+        }, 'PlayerLauncher');
+    });
+    </script>
+</body>
+</html>

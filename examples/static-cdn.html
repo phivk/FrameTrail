@@ -1,28 +1,23 @@
 <!DOCTYPE html>
 <!--
-  EXAMPLE: Static CDN hosting (no PHP backend)
-  ─────────────────────────────────────────────
-  Requirements: None. Works without any server-side PHP.
-  The _data/ directory must be reachable via HTTP(S) with CORS headers
-  (Access-Control-Allow-Origin: * or your page's origin).
+  EXAMPLE: Static hosting / CDN mode (no PHP backend)
+  ───────────────────────────────────────────────────
+  Requirements: HTTP serving from the repo root (fetch API cannot load from file://).
+  Serve the repo root, e.g.: python3 -m http.server 8080
 
   Demonstrates:
-  - Loading all hypervideo data from a CDN or static file host
-  - storageMode becomes 'static': read-only from CDN, in-memory edits, Save As export
+  - Loading all hypervideo data from a static dataPath URL (no PHP server)
+  - storageMode becomes 'static': read-only from the data source,
+    in-memory edits, Save As export
   - No user management or file uploads (no server= option)
-  - In-memory annotation editing: changes are saved locally until the user clicks Save As
 
-  To use:
-  1. Upload your _data/ directory to a CDN or static host with CORS enabled
-  2. Replace the dataPath URL below with your CDN base URL
-  3. Replace 'your-hypervideo-id' with a real ID from your _data/hypervideos/ folder
-  4. Open this file in any modern browser (no PHP needed)
+  This example points dataPath at the built-in slavin example data directory.
+  In production, you would point dataPath at a CDN or static host with CORS enabled.
 -->
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <title>FrameTrail – Static CDN</title>
-    <link rel="shortcut icon" href="../favico.png">
     <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@frametrail/frametrail/frametrail.min.css"> -->
     <link rel="stylesheet" href="../build/frametrail.min.css">
     <!-- <script src="https://cdn.jsdelivr.net/npm/@frametrail/frametrail/frametrail.min.js"></script> -->
@@ -36,15 +31,13 @@
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         window.ftInstance = FrameTrail.init({
-            // Base URL of your _data/ directory on the CDN.
-            // Must end with a slash. The CDN must serve CORS headers.
-            dataPath: 'https://cdn.example.com/your-project/_data/',
+            // Base URL of the _data/ directory.
+            // Here we use the built-in slavin example data from the repo.
+            // In production, point this at a CDN or static host with CORS headers.
+            dataPath: '../src/_data-examples/slavin/_data/',
 
             // No `server` option. StorageManager detects the combination of an
             // explicit dataPath + no server and sets storageMode to 'static'.
-
-            // Open a specific hypervideo directly (skips the overview).
-            startID: 'your-hypervideo-id',
         }, 'PlayerLauncher');
     });
     </script>

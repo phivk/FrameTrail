@@ -1,0 +1,31 @@
+{
+    "resources": {
+        "yt-bbb": {
+            "name": "Big Buck Bunny (YouTube)",
+            "type": "youtube",
+            "src": "https://www.youtube.com/embed/YE7VzlLtp-4",
+            "thumb": "",
+            "licenseType": "cc-by",
+            "attributes": {},
+            "tags": []
+        },
+        "yt-elephants-dream": {
+            "name": "Elephants Dream (YouTube)",
+            "type": "youtube",
+            "src": "https://www.youtube.com/embed/TLkA0RELQ1g",
+            "thumb": "",
+            "licenseType": "cc-by",
+            "attributes": {},
+            "tags": []
+        },
+        "img-blender-logo": {
+            "name": "Blender Foundation Logo",
+            "type": "image",
+            "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Blender_logo_no_text.svg/200px-Blender_logo_no_text.svg.png",
+            "thumb": "",
+            "licenseType": "cc-by-sa",
+            "attributes": { "description": "Logo of the Blender Foundation" },
+            "tags": []
+        }
+    }
+}

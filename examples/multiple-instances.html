@@ -1,21 +1,19 @@
 <!DOCTYPE html>
 <!--
-  EXAMPLE: Multiple FrameTrail instances on one page (server mode)
-  ───────────────────────────────────────────────────────────────
-  Requirements: Apache + PHP (FrameTrail installed and set up at the parent directory).
+  EXAMPLE: Multiple FrameTrail instances on one page
+  ──────────────────────────────────────────────────
+  Requirements: None. Works in any modern browser, including from file://.
 
   Demonstrates:
   - Two independent FrameTrail instances on the same page, each targeting their own div
   - Each instance has its own state, event listeners, and playback — they don't interfere
   - All active instances are accessible via FrameTrail.instances[]
-
-  Replace 'hypervideo-id-1' and 'hypervideo-id-2' with real IDs from your _data folder.
+  - storageMode is 'download': edits are stored in memory, export via Save As
 -->
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <title>FrameTrail – Multiple Instances</title>
-    <link rel="shortcut icon" href="../favico.png">
     <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@frametrail/frametrail/frametrail.min.css"> -->
     <link rel="stylesheet" href="../build/frametrail.min.css">
     <!-- <script src="https://cdn.jsdelivr.net/npm/@frametrail/frametrail/frametrail.min.js"></script> -->
@@ -32,20 +30,74 @@
     <script>
     document.addEventListener('DOMContentLoaded', function() {
 
-        // Instance A
+        // Instance A — Big Buck Bunny
         window.ftLeft = FrameTrail.init({
             target:  '#player-left',
-            startID: 'hypervideo-id-1',
-            dataPath: '../_data/',
-            server:   '../_server/'
+            startID: '0',
+            contents: [{
+                hypervideo: {
+                    meta: {
+                        name:        'Big Buck Bunny',
+                        description: 'Open-source animated short by Blender Foundation',
+                        thumb:       '',
+                        creator:     'Demo',
+                        creatorId:   'demo',
+                        created:     1700000000000,
+                        lastchanged: 1700000000000
+                    },
+                    config: {
+                        layoutArea:  { areaTop: [], areaBottom: [], areaLeft: [], areaRight: [] },
+                        hidden:      false,
+                        slidingMode: 'overlay'
+                    },
+                    clips: [{
+                        src:      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+                        duration: 596,
+                        start:    0,
+                        end:      596
+                    }],
+                    contents:     [],
+                    subtitles:    {},
+                    globalEvents: { onReady: '', onPlay: '', onPause: '', onEnded: '' },
+                    customCSS:    ''
+                },
+                annotations: []
+            }]
         }, 'PlayerLauncher');
 
-        // Instance B — completely independent state and modules
+        // Instance B — Elephants Dream (completely independent state and modules)
         window.ftRight = FrameTrail.init({
             target:  '#player-right',
-            startID: 'hypervideo-id-2',
-            dataPath: '../_data/',
-            server:   '../_server/'
+            startID: '0',
+            contents: [{
+                hypervideo: {
+                    meta: {
+                        name:        'Elephants Dream',
+                        description: 'First open Blender movie — a surreal animated journey',
+                        thumb:       '',
+                        creator:     'Demo',
+                        creatorId:   'demo',
+                        created:     1700000001000,
+                        lastchanged: 1700000001000
+                    },
+                    config: {
+                        layoutArea:  { areaTop: [], areaBottom: [], areaLeft: [], areaRight: [] },
+                        hidden:      false,
+                        slidingMode: 'overlay'
+                    },
+                    clips: [{
+                        src:      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+                        duration: 654,
+                        start:    0,
+                        end:      654
+                    }],
+                    contents:     [],
+                    subtitles:    {},
+                    globalEvents: { onReady: '', onPlay: '', onPause: '', onEnded: '' },
+                    customCSS:    ''
+                },
+                annotations: []
+            }]
         }, 'PlayerLauncher');
 
         // All instances are also accessible as an array:

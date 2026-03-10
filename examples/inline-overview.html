@@ -59,7 +59,26 @@
                         globalEvents: { onReady: '', onPlay: '', onPause: '', onEnded: '' },
                         customCSS:    ''
                     },
-                    annotations: []
+                    annotations: [
+                        {
+                            '@context': [ 'http://www.w3.org/ns/anno.jsonld', { 'frametrail': 'http://frametrail.org/ns/' } ],
+                            'type': 'Annotation', 'frametrail:type': 'Annotation',
+                            'creator': { 'nickname': 'Demo', 'type': 'Person', 'id': 'demo' },
+                            'created': '2024-01-01T00:00:00Z',
+                            'target': { 'type': 'Video', 'source': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', 'selector': { 'type': 'FragmentSelector', 'conformsTo': 'http://www.w3.org/TR/media-frags/', 'value': 't=10,25' } },
+                            'body': { 'type': 'TextualBody', 'frametrail:type': 'text', 'format': 'text/html', 'value': '<p>The opening scene establishes the pastoral landscape.</p>', 'frametrail:name': 'Opening scene', 'frametrail:thumb': null, 'frametrail:resourceId': null, 'frametrail:attributes': { 'text': '<p>The opening scene establishes the pastoral landscape.</p>' } },
+                            'frametrail:tags': []
+                        },
+                        {
+                            '@context': [ 'http://www.w3.org/ns/anno.jsonld', { 'frametrail': 'http://frametrail.org/ns/' } ],
+                            'type': 'Annotation', 'frametrail:type': 'Annotation',
+                            'creator': { 'nickname': 'Demo', 'type': 'Person', 'id': 'demo' },
+                            'created': '2024-01-01T00:01:00Z',
+                            'target': { 'type': 'Video', 'source': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', 'selector': { 'type': 'FragmentSelector', 'conformsTo': 'http://www.w3.org/TR/media-frags/', 'value': 't=35,55' } },
+                            'body': { 'type': 'TextualBody', 'frametrail:type': 'text', 'format': 'text/html', 'value': '<p>The squirrels appear and begin their mischief.</p>', 'frametrail:name': 'Antagonists introduced', 'frametrail:thumb': null, 'frametrail:resourceId': null, 'frametrail:attributes': { 'text': '<p>The squirrels appear and begin their mischief.</p>' } },
+                            'frametrail:tags': []
+                        }
+                    ]
                 },
                 {
                     hypervideo: {

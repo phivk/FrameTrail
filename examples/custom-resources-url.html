@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <!--
-  EXAMPLE: Resources from a custom URL (server mode)
-  ──────────────────────────────────────────────────
-  Requirements: Apache + PHP (FrameTrail installed and set up at the parent directory).
+  EXAMPLE: Resources from custom URLs — merging multiple sources
+  ──────────────────────────────────────────────────────────────
+  Requirements: HTTP serving (fetches JSON via fetch API — cannot load from file://).
+  Serve the repo root, e.g.: python3 -m http.server 8080
 
   Demonstrates:
-  - Loading the resource index from a custom URL instead of _data/resources/_index.json
-  - Merging resources from multiple sources (e.g., a local pool + a shared library)
-  - Resources from any URL that returns a valid FrameTrail resource index JSON are merged
+  - Loading resources from multiple sources and merging them
+  - One source is inline data, the other is a JSON file loaded by URL
+  - Resources from all sources are merged — entries from earlier sources
+    take precedence on ID collision
 
   Expected resource index format at the URL:
   {
@@ -15,14 +17,11 @@
       "resource-id": { "name": "...", "type": "youtube", "src": "...", ... }
     }
   }
-
-  Replace the shared library URL and 'your-hypervideo-id' with real values.
 -->
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <title>FrameTrail – Custom Resource URL</title>
-    <link rel="shortcut icon" href="../favico.png">
     <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@frametrail/frametrail/frametrail.min.css"> -->
     <link rel="stylesheet" href="../build/frametrail.min.css">
     <!-- <script src="https://cdn.jsdelivr.net/npm/@frametrail/frametrail/frametrail.min.js"></script> -->
@@ -37,28 +36,68 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
+
+        var VIDEO_URL = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+
         window.ftInstance = FrameTrail.init({
             target:  '#player',
-            startID: 'your-hypervideo-id',
+            startID: '0',
 
             resources: [
-                // Load the local resource pool from the server
+                // Source 1: Inline resource data (always available, no fetch needed)
                 {
-                    label: 'Local Resources',
-                    data:  '../_data/resources/_index.json',
-                    type:  'frametrail'
+                    label: 'Inline Resources',
+                    type:  'frametrail',
+                    data: {
+                        'img-bunny-poster': {
+                            name:        'Big Buck Bunny Poster',
+                            type:        'image',
+                            src:         'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Big_buck_bunny_poster_big.jpg/220px-Big_buck_bunny_poster_big.jpg',
+                            thumb:       '',
+                            licenseType: 'cc-by',
+                            attributes:  {},
+                            tags:        []
+                        }
+                    }
                 },
-                // Merge in a shared resource library from another server or CDN.
+                // Source 2: Loaded from a JSON file by URL (fetched at init time).
                 // Both sets are merged — entries from earlier sources take precedence on ID collision.
                 {
-                    label: 'Shared Library',
-                    data:  'https://your-shared-server.example.com/resources/_index.json',
+                    label: 'Shared Library (from JSON)',
+                    data:  'sample-resources.json',
                     type:  'frametrail'
                 }
             ],
 
-            dataPath: '../_data/',
-            server:   '../_server/'
+            contents: [{
+                hypervideo: {
+                    meta: {
+                        name:        'Big Buck Bunny',
+                        description: 'Demonstrates merging resources from inline data and a JSON URL',
+                        thumb:       '',
+                        creator:     'Demo',
+                        creatorId:   'demo',
+                        created:     1700000000000,
+                        lastchanged: 1700000000000
+                    },
+                    config: {
+                        layoutArea:  { areaTop: [], areaBottom: [], areaLeft: [], areaRight: [] },
+                        hidden:      false,
+                        slidingMode: 'overlay'
+                    },
+                    clips: [{
+                        src:      VIDEO_URL,
+                        duration: 596,
+                        start:    0,
+                        end:      596
+                    }],
+                    contents:     [],
+                    subtitles:    {},
+                    globalEvents: { onReady: '', onPlay: '', onPause: '', onEnded: '' },
+                    customCSS:    ''
+                },
+                annotations: []
+            }]
         }, 'PlayerLauncher');
     });
     </script>
