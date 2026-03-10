@@ -63,8 +63,42 @@ FrameTrail.defineType(
                     // Use position:fixed so viewport-relative coords work in both cases.
                     var dialogAncestor = elementOrigin.closest('dialog');
 
-                    var animationDiv = elementOrigin.cloneNode(true);
-                    animationDiv.classList.add('resourceAnimationDiv');
+                    // Detect list-view contexts where the thumb uses a ::before
+                    // pseudo-element for the thumbnail (ancestor-dependent CSS).
+                    // A clone would lose that context when appended to body,
+                    // so we build a clean element instead.
+                    var isListView = elementOrigin.closest('.view-list') ||
+                        (elementOrigin.closest('.collectionElement') &&
+                         elementOrigin.closest('[data-size="medium"]') &&
+                         (elementOrigin.closest('[data-area="areaLeft"]') || elementOrigin.closest('[data-area="areaRight"]')));
+
+                    var animationDiv;
+
+                    if (isListView) {
+                        // Build a minimal element with just the thumbnail image.
+                        // No clone = no inherited inline styles or children to fight.
+                        animationDiv = document.createElement('div');
+                        animationDiv.className = 'resourceThumb resourceAnimationDiv';
+                        var thumbBg = elementOrigin.style.getPropertyValue('--thumb-bg');
+                        if (thumbBg) {
+                            animationDiv.style.backgroundImage = thumbBg;
+                        }
+                        animationDiv.style.backgroundSize = 'cover';
+                        animationDiv.style.backgroundPosition = 'center top';
+                        animationDiv.style.backgroundRepeat = 'no-repeat';
+                        animationDiv.style.borderRadius = '3px';
+
+                        // Shrink origin rect to the visible ::before thumbnail area
+                        var beforeCs = window.getComputedStyle(elementOrigin, '::before');
+                        var beforeW = parseFloat(beforeCs.width);
+                        var beforeH = parseFloat(beforeCs.height);
+                        if (beforeW && beforeW < originWidth) originWidth = beforeW;
+                        if (beforeH && beforeH < originHeight) originHeight = beforeH;
+                    } else {
+                        animationDiv = elementOrigin.cloneNode(true);
+                        animationDiv.classList.add('resourceAnimationDiv');
+                    }
+
                     animationDiv.style.position = 'fixed';
                     animationDiv.style.top = originTop + 'px';
                     animationDiv.style.left = originLeft + 'px';

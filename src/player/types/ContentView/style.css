@@ -62,7 +62,7 @@
     bottom: 8px;
 }
 
-.layoutArea[data-area="areaTop"] .collectionElement .resourcePreviewButton, .layoutArea[data-area="areaBottom"] .collectionElement .resourcePreviewButton, .layoutArea[data-area="areaLeft"][data-size="small"] .collectionElement .resourcePreviewButton, .layoutArea[data-area="areaRight"][data-size="small"] .collectionElement .resourcePreviewButton {
+.layoutArea[data-area="areaTop"] .collectionElement .resourcePreviewButton, .layoutArea[data-area="areaBottom"] .collectionElement .resourcePreviewButton, .layoutArea[data-area="areaLeft"][data-size="small"] .collectionElement .resourcePreviewButton, .layoutArea[data-area="areaRight"][data-size="small"] .collectionElement .resourcePreviewButton, .layoutArea[data-area="areaLeft"][data-size="medium"] .collectionElement .resourcePreviewButton, .layoutArea[data-area="areaRight"][data-size="medium"] .collectionElement .resourcePreviewButton {
     display: none !important;
 }
 
@@ -212,15 +212,6 @@
 .layoutArea[data-area="areaRight"][data-size="medium"] .collectionElement .resourceThumb .resourceOverlay .resourceIcon {
     right: 8px;
     bottom: 10px;
-}
-
-.layoutArea[data-area="areaLeft"][data-size="medium"] .collectionElement .resourceThumb .resourcePreviewButton,
-.layoutArea[data-area="areaRight"][data-size="medium"] .collectionElement .resourceThumb .resourcePreviewButton {
-    position: absolute;
-    left: auto;
-    right: 6px;
-    bottom: calc(50% - 13px);
-    background-color: var(--secondary-bg-color);
 }
 
 .layoutArea[data-area="areaLeft"][data-size="medium"] .collectionElement .resourceThumb .resourceEditButton,

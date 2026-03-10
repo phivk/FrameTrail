@@ -394,7 +394,7 @@ FrameTrail.defineType(
 
                     if ( self.whichArea == 'left' || self.whichArea == 'right' ) {
                         collectionElement.addEventListener('click', function() {
-                            if ( self.contentViewData.contentSize == 'small' ) {
+                            if ( self.contentViewData.contentSize == 'small' || self.contentViewData.contentSize == 'medium' ) {
                                 var _btn = this.querySelector('.resourcePreviewButton');
                                 if (_btn) _btn.click();
 
