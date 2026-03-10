@@ -194,28 +194,43 @@
 /* List View - full width rows */
 .viewResources .resourcesList.view-list {
     grid-template-columns: 1fr;
-    gap: 10px;
+    gap: 2px;
 }
 .viewResources .resourcesList.view-list .resourceThumb {
     width: 100%;
     box-sizing: border-box;
     height: 80px;
+    margin-bottom: 8px !important;
     margin: 0;
     display: flex;
     align-items: center;
-    background-position: left center;
-    background-size: 120px 80px;
+    background-image: none !important;
+    padding-left: 120px;
+}
+
+.viewResources .resourcesList.view-list .resourceThumb::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 120px;
+    height: 80px;
+    background-image: var(--thumb-bg);
+    background-size: cover;
+    background-position: center top;
     background-repeat: no-repeat;
-    padding-left: 130px;
+    background-color: var(--primary-bg-color);
+    border-radius: 3px 0 0 3px;
 }
 
 .viewResources .resourcesList.view-list .resourceThumb .resourceTitle {
     flex: 1;
     text-align: left;
-    font-size: 14px;
-    padding: 8px;
+    font-size: 13px;
+    padding: 4px 8px;
     position: static;
     background: transparent;
+    max-height: none;
 }
 
 .viewResources .resourcesList.view-list .resourceThumb .resourceOverlay {
@@ -225,7 +240,12 @@
     height: 80px;
 }
 
-.viewResources .resourcesList.view-list .resourceThumb .resourcePreviewButton, 
+.viewResources .resourcesList.view-list .resourceThumb .resourceOverlay .resourceIcon {
+    right: 8px;
+    bottom: 10px;
+}
+
+.viewResources .resourcesList.view-list .resourceThumb .resourcePreviewButton,
 .viewResources .resourcesList.view-list .resourceThumb .resourceEditButton {
     position: static;
     margin-left: auto;

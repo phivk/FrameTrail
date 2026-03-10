@@ -38,7 +38,11 @@ FrameTrail.defineModule('RouteNavigation', function(FrameTrail){
      */
     function resolveDataURL(relativePath) {
         var dataPath = FrameTrail.getState('dataPath') || '_data/';
-        return dataPath + relativePath;
+        var url = dataPath + relativePath;
+        // Resolve to absolute URL so CSS custom properties (--thumb-bg)
+        // work correctly regardless of which stylesheet uses them
+        try { return new URL(url, document.baseURI).href; }
+        catch(e) { return url; }
     }
 
     /**

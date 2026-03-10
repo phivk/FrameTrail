@@ -90,7 +90,7 @@ FrameTrail.defineType(
                     var tagList = (this.resourceData.tags ? this.resourceData.tags.join(' ') : '');
                     
                     var _thumbWrapper = document.createElement('div');
-                    _thumbWrapper.innerHTML = '<div class="resourceThumb '+ tagList +'" data-license-type="'+ this.resourceData.licenseType +'" data-resourceID="'+ trueID +'" data-type="'+ this.resourceData.type +'" style="background-image:url('+ thumbUrl +');">'
+                    _thumbWrapper.innerHTML = '<div class="resourceThumb '+ tagList +'" data-license-type="'+ this.resourceData.licenseType +'" data-resourceID="'+ trueID +'" data-type="'+ this.resourceData.type +'" style="--thumb-bg:url('+ thumbUrl +'); background-image: var(--thumb-bg);">'
                         + '<div class="resourceOverlay"><div class="resourceIcon"><span class="icon-picture"></span></div></div>'
                         + '<div class="resourceTitle">'+ this.resourceData.name +'</div>'
                         + '</div>';

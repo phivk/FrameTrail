@@ -160,6 +160,73 @@
     height: 110px;
 }
 
+.layoutArea[data-area="areaLeft"][data-size="medium"] .collectionElement .resourceThumb,
+.layoutArea[data-area="areaRight"][data-size="medium"] .collectionElement .resourceThumb {
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    background-image: none !important;
+    padding-left: 160px;
+}
+
+.layoutArea[data-area="areaLeft"][data-size="medium"] .collectionElement .resourceThumb::before,
+.layoutArea[data-area="areaRight"][data-size="medium"] .collectionElement .resourceThumb::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 160px;
+    height: 100%;
+    background-image: var(--thumb-bg);
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+    background-color: var(--primary-bg-color);
+    border-radius: 3px 0 0 3px;
+}
+
+.layoutArea[data-area="areaLeft"][data-size="medium"] .collectionElement .resourceThumb .resourceTitle,
+.layoutArea[data-area="areaRight"][data-size="medium"] .collectionElement .resourceThumb .resourceTitle {
+    flex: 1;
+    text-align: left;
+    font-size: 13px;
+    padding: 4px 50px 4px 8px;
+    position: static;
+    background: transparent;
+    max-height: none;
+}
+
+.layoutArea[data-area="areaLeft"][data-size="medium"] .collectionElement .resourceThumb .resourceOverlay,
+.layoutArea[data-area="areaRight"][data-size="medium"] .collectionElement .resourceThumb .resourceOverlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 160px;
+    height: 100%;
+}
+
+.layoutArea[data-area="areaLeft"][data-size="medium"] .collectionElement .resourceThumb .resourceOverlay .resourceIcon,
+.layoutArea[data-area="areaRight"][data-size="medium"] .collectionElement .resourceThumb .resourceOverlay .resourceIcon {
+    right: 8px;
+    bottom: 10px;
+}
+
+.layoutArea[data-area="areaLeft"][data-size="medium"] .collectionElement .resourceThumb .resourcePreviewButton,
+.layoutArea[data-area="areaRight"][data-size="medium"] .collectionElement .resourceThumb .resourcePreviewButton {
+    position: absolute;
+    left: auto;
+    right: 6px;
+    bottom: calc(50% - 13px);
+}
+
+.layoutArea[data-area="areaLeft"][data-size="medium"] .collectionElement .resourceThumb .resourceEditButton,
+.layoutArea[data-area="areaRight"][data-size="medium"] .collectionElement .resourceThumb .resourceEditButton {
+    position: absolute;
+    left: auto;
+    right: 8px;
+    bottom: calc(50% - 13px);
+}
+
 .layoutArea[data-area="areaLeft"][data-size="large"] .collectionElement, .layoutArea[data-area="areaRight"][data-size="large"] .collectionElement {
     height: calc(100% - 8px);
 }

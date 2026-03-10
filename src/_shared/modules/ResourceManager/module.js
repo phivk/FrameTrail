@@ -1696,7 +1696,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
         }
 
         var previewTitle = (_nameInput.value.length > 3) ? _nameInput.value : resourceTitle;
-        var previewImageString = (resourceThumb) ? 'background-image:url('+ resourceThumb +')' : '';
+        var previewImageString = (resourceThumb) ? '--thumb-bg:url('+ resourceThumb +'); background-image: var(--thumb-bg)' : '';
 
         var _prevw = document.createElement('div');
         _prevw.innerHTML = '<div class="resourceThumb" data-type="'+ resourceType +'" style="'+ previewImageString +'">'
@@ -2271,7 +2271,7 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 
         var thumbSrc = resourceData.thumb || resourceData.src || '';
         var thumbUrl = thumbSrc ? FrameTrail.module('RouteNavigation').getResourceURL(thumbSrc) : '';
-        var thumbStyle = thumbUrl ? 'background-image:url(' + thumbUrl + ');' : '';
+        var thumbStyle = thumbUrl ? '--thumb-bg:url(' + thumbUrl + '); background-image: var(--thumb-bg);' : '';
 
         var content = document.createElement('div');
         content.className = 'resourceEditDialogContent';

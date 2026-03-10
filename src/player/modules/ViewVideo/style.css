@@ -290,13 +290,13 @@ body.userinactive .mainContainer:not([data-edit-mode="overlays"]):not([data-edit
 }
 
 .areaLeftContainer[data-size="medium"], .areaRightContainer[data-size="medium"] {
-    flex: 0 0 200px;
-    min-width: 200px;
+    flex: 0 0 500px;
+    min-width: 500px;
 }
 
 .areaLeftContainer[data-size="large"], .areaRightContainer[data-size="large"] {
-    flex: 0 0 400px;
-    min-width: 400px;
+    flex: 0 0 700px;
+    min-width: 700px;
 }
 
 .areaTopContainer.closed, .areaBottomContainer.closed {

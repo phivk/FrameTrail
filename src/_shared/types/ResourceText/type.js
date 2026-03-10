@@ -89,7 +89,7 @@ FrameTrail.defineType(
                         unescapedString;
 
                     var thumbBackground = (this.resourceData.thumb ?
-                            "background-image: url('"+ FrameTrail.module('RouteNavigation').getResourceURL(this.resourceData.thumb) +"');" : "" );
+                            "--thumb-bg: url('"+ FrameTrail.module('RouteNavigation').getResourceURL(this.resourceData.thumb) +"'); background-image: var(--thumb-bg);" : "" );
                     
                     var thumbLabel = this.labels['ResourceCustomTextHTML'];
                     if (this.resourceData.name && this.resourceData.name.length > 0) {

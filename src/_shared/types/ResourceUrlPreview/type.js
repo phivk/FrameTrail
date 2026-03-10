@@ -166,7 +166,7 @@ FrameTrail.defineType(
                     }
 
                     var thumbBackground = (this.resourceData.thumb ?
-                            'background-image: url('+ FrameTrail.module('RouteNavigation').getResourceURL(this.resourceData.thumb) +');' : '' );
+                            '--thumb-bg: url('+ FrameTrail.module('RouteNavigation').getResourceURL(this.resourceData.thumb) +'); background-image: var(--thumb-bg);' : '' );
 
                     var tagList = (this.resourceData.tags ? this.resourceData.tags.join(' ') : '');
                     var originalTypeAttr = (this.resourceData.attributes && this.resourceData.attributes.originalType)

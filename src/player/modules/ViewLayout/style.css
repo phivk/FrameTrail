@@ -483,8 +483,8 @@ body > .contentViewTemplate .contentViewTemplateLabel {
 }
 
 .layoutManager .layoutArea[data-area="areaLeft"][data-size="medium"], .layoutManager .layoutArea[data-area="areaRight"][data-size="medium"] {
-    flex: 0 0 190px;
-    min-width: 190px;
+    flex: 0 0 400px;
+    min-width: 400px;
 }
 
 .layoutManager .layoutArea[data-area="areaLeft"][data-size="large"], .layoutManager .layoutArea[data-area="areaRight"][data-size="large"] {
