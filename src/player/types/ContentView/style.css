@@ -167,7 +167,7 @@
     box-sizing: border-box;
     background-image: none !important;
     padding-left: 160px;
-    background-color: var(--primary-bg-color);
+    background-color: var(--thumb-title-bg);
 }
 
 .layoutArea[data-area="areaLeft"][data-size="medium"] .collectionElement .resourceThumb::before,
@@ -191,12 +191,12 @@
     flex: 1;
     text-align: left;
     font-size: 13px;
-    padding: 4px 50px 4px 8px;
+    padding: 4px 10px;
     position: static;
     background: transparent;
     max-height: none;
-    color: var(--primary-fg-color);
-    text-shadow: none;
+    color: var(--thumb-title-color);
+    text-shadow: var(--thumb-title-shadow);
 }
 
 .layoutArea[data-area="areaLeft"][data-size="medium"] .collectionElement .resourceThumb .resourceOverlay,
