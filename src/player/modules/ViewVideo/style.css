@@ -378,6 +378,7 @@ body.userinactive .mainContainer:not([data-edit-mode="overlays"]):not([data-edit
 .otherUsersContainer {
     display: none;
     width: 100%;
+    flex: 0 0 auto;
     max-height: 180px;
     padding-top: 10px;
     background: var(--primary-fg-color);

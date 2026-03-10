@@ -439,14 +439,10 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
         };
         wrapper.addEventListener('scroll', scrollHandler);
 
-        // Preview popup for compare timeline elements
-        var previewHandlers = setupPreviewPopup(wrapper, '.compareTimelineElement');
-
         var followerData = {
             wrapper: wrapper,
             scroller: scroller,
-            _scrollHandler: scrollHandler,
-            _previewHandlers: previewHandlers
+            _scrollHandler: scrollHandler
         };
 
         followerTimelines.push(followerData);
@@ -1020,6 +1016,7 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
         registerFollowerTimeline: registerFollowerTimeline,
 
         refreshMinimap:         refreshMinimap,
+        setupPreviewPopup:      setupPreviewPopup,
 
         /**
          * @attribute initialized

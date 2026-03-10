@@ -120,24 +120,28 @@
     top: 0px;
     width: 100%;
     background: var(--secondary-bg-color);
-    padding: 4px;
+    padding: 4px 8px;
     box-sizing: border-box;
-    height: 42px;
     z-index: 6;
     cursor: default;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.timelineList .zoomControlsWrapper button {
-    float: right;
+.timelineList .zoomControlsWrapper .timelineZoomControls {
+    display: flex;
+    gap: 4px;
+}
+
+.timelineList .zoomControlsWrapper .timelineZoomPreset {
+    padding: 3px 10px;
+    font-size: 11px;
+    min-width: 40px;
+    text-align: center;
+    color: #acacb3;
+}
+
+.timelineList .zoomControlsWrapper .timelineZoomPreset.active {
     color: var(--primary-fg-color);
-    border-color: var(--primary-fg-color);
-    margin-left: 4px;
-}
-
-.timelineList .zoomControlsWrapper button:last-child:after {
-    content: '';
-    display: block;
-    clear: both;
 }
 
 .timelineList .timelineZoomWrapper {
@@ -145,7 +149,7 @@
     margin: 0;
     overflow: auto;
     width: 100%;
-    height: calc(100% - 42px);
+    height: 100%;
     box-shadow: 0 0 2px 1px rgba(50,50,50,.6) inset;
 }
 

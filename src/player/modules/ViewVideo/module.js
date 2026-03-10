@@ -104,6 +104,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
                         + '                </div>'
                         + '            </div>'
                         + '            <div class="annotationTimeline timeline"></div>'
+                        + '            <div class="otherUsersContainer"></div>'
                         + '        </div>'
                         + '        <div class="areaBottomContainer layoutArea" data-area="areaBottom">'
                         + '            <div class="layoutAreaTabs"></div>'
@@ -111,7 +112,6 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
                         + '        </div>'
                         + '        <div class="areaBottomDetails layoutAreaDetails" data-area="areaBottom"></div>'
                         + '    </div>'
-                        + '    <div class="otherUsersContainer"></div>'
                         + '    <div class="hypervideoLayoutContainer"></div>'
                         + '</div>';
     var domElement = _dvv.firstElementChild,

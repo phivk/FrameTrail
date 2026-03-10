@@ -990,34 +990,35 @@
 
         if (zoomControls) {
 
+            var ZOOM_PRESETS = [1, 2, 4, 8];
+
             var zoomControlsWrapper = document.createElement('div');
             zoomControlsWrapper.className = 'zoomControlsWrapper';
-            var zoomMinus = document.createElement('button');
-            zoomMinus.className = 'button zoomMinus';
-            zoomMinus.innerHTML = '<span class="icon-zoom-out"></span>';
-            var zoomPlus = document.createElement('button');
-            zoomPlus.className = 'button zoomPlus';
-            zoomPlus.innerHTML = '<span class="icon-zoom-in"></span>';
-            
-            zoomMinus.addEventListener('click', function() {
-                var currentZoomLevel = parseFloat(this.parentElement.parentElement.dataset.zoomLevel);
-                zoomTimelines(timelineZoomWrapper, currentZoomLevel-0.5 );
-            });
-            zoomPlus.addEventListener('click', function() {
-                var currentZoomLevel = parseFloat(this.parentElement.parentElement.dataset.zoomLevel);
-                zoomTimelines(timelineZoomWrapper, currentZoomLevel+0.5);
-                //console.log(currentZoomLevel);
-            });
-            zoomControlsWrapper.append(zoomPlus, zoomMinus);
+            var zoomControlsInner = document.createElement('div');
+            zoomControlsInner.className = 'timelineZoomControls';
 
+            ZOOM_PRESETS.forEach(function(preset) {
+                var label = preset === 1 ? 'Fit' : preset + 'x';
+                var btn = document.createElement('button');
+                btn.className = 'button timelineZoomPreset';
+                btn.setAttribute('data-zoom', preset);
+                btn.textContent = label;
+                if (preset === 1) btn.classList.add('active');
+                zoomControlsInner.appendChild(btn);
+            });
+
+            zoomControlsInner.addEventListener('click', function(e) {
+                var btn = e.target.closest('.timelineZoomPreset');
+                if (!btn) return;
+                var newLevel = parseFloat(btn.getAttribute('data-zoom'));
+                zoomTimelines(timelineZoomWrapper, newLevel);
+                // Update active state
+                zoomControlsInner.querySelectorAll('.timelineZoomPreset').forEach(function(b) { b.classList.remove('active'); });
+                btn.classList.add('active');
+            });
+
+            zoomControlsWrapper.appendChild(zoomControlsInner);
             targetElement.appendChild(zoomControlsWrapper);
-
-            var timelineProgress = document.createElement('div');
-            timelineProgress.className = 'timelineProgressWrapper';
-            timelineProgress.innerHTML = '<div class="timelineProgressRange"></div>';
-            timelineZoomScroller.appendChild(timelineProgress);
-
-            var leftStart;
         }
 
         for (var i=0; i<collectedAnnotationsPerAspectData.length; i++) {
@@ -1176,6 +1177,9 @@
         targetElement.appendChild(timelineZoomWrapper);
 
         makeTimelinesSortable(timelineZoomScroller);
+
+        // Set up preview popup (detach to body on hover to escape overflow clipping)
+        FrameTrail.module('TimelineController').setupPreviewPopup(timelineZoomWrapper, '.compareTimelineElement');
 
     }
 
