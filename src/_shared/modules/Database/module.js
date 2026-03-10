@@ -231,6 +231,14 @@
 
         }
 
+        // No config provided and no persistent data store → use empty defaults.
+        // All config properties are accessed with falsy-safe guards, so {} = "all defaults".
+        if (configInitOptions == null && FrameTrail.getState('storageMode') === 'download') {
+            config = {};
+            FrameTrail.changeState('config', config);
+            return success.call(this);
+        }
+
         function applyConfig(data) {
             config = data;
             // Migrate legacy "theme" key → "defaultTheme"
