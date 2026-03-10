@@ -45,6 +45,7 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
         sliderRange            = null,
         sliderMax              = 0,
         sliderDragging         = false,
+        ytSeekPending          = null,
 
         highPriorityInterval   = 25,
         lowPriorityInterval    = 150,
@@ -296,6 +297,9 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
                         setCurrentTime(HypervideoModel.offsetIn);
                     }
 
+                    // Ensure video is paused after initial seek (prevent YouTube auto-play)
+                    event.target.pauseVideo();
+
                     FrameTrail.changeState('viewSize', FrameTrail.getState('viewSize'));
 
                     FrameTrail.changeState('videoWorking', false);
@@ -315,6 +319,7 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
                         case 1:
                             // playing
                             _play();
+                            onPlaySuccess();
                             FrameTrail.changeState('videoWorking', false);
                             break;
                         case 2:
@@ -867,8 +872,22 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
         var ViewVideo = FrameTrail.module('ViewVideo');
 
         if (HypervideoModel.videoType == 'youtube') {
-            var lastYoutubePlayerID = FrameTrail.getState('lastYoutubePlayerID')
-            currentTime = window.player_youtube[lastYoutubePlayerID].getCurrentTime();
+            var lastYoutubePlayerID = FrameTrail.getState('lastYoutubePlayerID');
+            var ytReportedTime = window.player_youtube[lastYoutubePlayerID].getCurrentTime();
+
+            if (ytSeekPending !== null) {
+                if (Math.abs(ytReportedTime - ytSeekPending) < 1.0) {
+                    // YouTube caught up to our seek target
+                    ytSeekPending = null;
+                    currentTime = ytReportedTime;
+                } else {
+                    // Still pending — use the seek target
+                    currentTime = ytSeekPending;
+                }
+            } else {
+                currentTime = ytReportedTime;
+            }
+
             updateProgressBar(currentTime - HypervideoModel.offsetIn);
 
             FrameTrail.triggerEvent('timeupdate', {});
@@ -1088,25 +1107,6 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 
         }
 
-        function onPlaySuccess() {
-            if ( !ViewVideo.VideoStartOverlay.classList.contains('inactive') ) {
-                ViewVideo.VideoStartOverlay.classList.add('inactive');
-                ViewVideo.VideoStartOverlay.style.display = 'none';
-            }
-
-            FrameTrail.triggerEvent('play', {});
-
-            if (HypervideoModel.events.onPlay) {
-                try {
-                    var playEvent = new Function('FrameTrail', 'hypervideo', HypervideoModel.events.onPlay);
-                    playEvent(FrameTrail, FrameTrail.module('HypervideoController'));
-                } catch (exception) {
-                    // could not parse and compile JS code!
-                    console.warn(labels['MessageEventHandlerContainsErrors'] +': '+ exception.message);
-                }
-            }
-        }
-
     };
 
 
@@ -1198,6 +1198,10 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 
         var ViewVideo = FrameTrail.module('ViewVideo');
 
+        // Clear existing intervals to prevent duplicates (e.g. YouTube state change re-entry)
+        window.clearInterval(highPriorityIntervalID);
+        window.clearInterval(lowPriorityIntervalID);
+
         highPriorityIntervalID = window.setInterval(highPriorityUpdater, highPriorityInterval);
         lowPriorityIntervalID  = window.setInterval(lowPriorityUpdater,  lowPriorityInterval);
 
@@ -1237,10 +1241,39 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
         ViewVideo.PlayButton.classList.remove('playing');
 
         isPlaying = false;
+        ytSeekPending = null;
 
         OverlaysController.syncMedia();
 
     };
+
+
+    /**
+     * I am called when playback successfully starts.
+     * I hide the video start overlay and trigger play events.
+     *
+     * @method onPlaySuccess
+     * @private
+     */
+    function onPlaySuccess() {
+        if ( !ViewVideo.VideoStartOverlay.classList.contains('inactive') ) {
+            ViewVideo.VideoStartOverlay.classList.add('inactive');
+            ViewVideo.VideoStartOverlay.style.display = 'none';
+        }
+
+        FrameTrail.triggerEvent('play', {});
+
+        if (HypervideoModel.events.onPlay) {
+            try {
+                var playEvent = new Function('FrameTrail', 'hypervideo', HypervideoModel.events.onPlay);
+                playEvent(FrameTrail, FrameTrail.module('HypervideoController'));
+            } catch (exception) {
+                // could not parse and compile JS code!
+                console.warn(labels['MessageEventHandlerContainsErrors'] +': '+ exception.message);
+            }
+        }
+    };
+
 
     /**
      * Some media types may request to stall the playback of the main video (for buffering, etc.)
@@ -1352,8 +1385,9 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
         } else if (HypervideoModel.videoType == 'youtube') {
 
             var lastYoutubePlayerID = FrameTrail.getState('lastYoutubePlayerID');
-            
+
             currentTime = aNumberAsFloat;
+            ytSeekPending = aNumberAsFloat;
             window.player_youtube[lastYoutubePlayerID].seekTo(currentTime, true);
 
         } else if (HypervideoModel.videoType == 'vimeo') {
