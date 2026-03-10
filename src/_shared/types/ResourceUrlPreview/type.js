@@ -174,7 +174,7 @@ FrameTrail.defineType(
 
                     var _thumbWrapper = document.createElement('div');
                     _thumbWrapper.innerHTML = '<div class="resourceThumb '+ tagList +'" data-license-type="'+ this.resourceData.licenseType +'" data-resourceID="'+ trueID +'" data-type="'+ this.resourceData.type +'"'+ originalTypeAttr +' style="'+ thumbBackground +'">'
-                        + '<div class="resourceOverlay"><div class="resourceIcon"><span class="icon-link-ext"></span></div></div>'
+                        + '<div class="resourceOverlay"><div class="resourceIcon"><span class="icon-link"></span></div></div>'
                         + '<div class="resourceTitle">'+ this.resourceData.name +'</div>'
                         + '</div>';
                     var thumbElement = _thumbWrapper.firstElementChild;
