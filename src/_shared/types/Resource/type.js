@@ -99,6 +99,20 @@ FrameTrail.defineType(
                         animationDiv.classList.add('resourceAnimationDiv');
                     }
 
+                    // Copy theme CSS variables from the origin so the
+                    // animation div matches the theme of its source context.
+                    var _themeVars = [
+                        '--primary-bg-color', '--secondary-bg-color',
+                        '--primary-fg-color', '--secondary-fg-color',
+                        '--semi-transparent-bg-color', '--semi-transparent-fg-color',
+                        '--semi-transparent-fg-highlight-color'
+                    ];
+                    var _cs = window.getComputedStyle(elementOrigin);
+                    _themeVars.forEach(function(v) {
+                        var val = _cs.getPropertyValue(v).trim();
+                        if (val) animationDiv.style.setProperty(v, val);
+                    });
+
                     animationDiv.style.position = 'fixed';
                     animationDiv.style.top = originTop + 'px';
                     animationDiv.style.left = originLeft + 'px';
@@ -128,6 +142,7 @@ FrameTrail.defineType(
                         var previewDialogCtrl = Dialog({
                             title:     (self.resourceData.type == 'text') ? '' : self.resourceData.name,
                             content:   previewContent,
+                            inheritTheme: elementOrigin,
                             resizable: false,
                             width:     880,
                             height:    480,

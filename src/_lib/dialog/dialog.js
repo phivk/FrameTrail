@@ -56,6 +56,7 @@ window.Dialog = function(opts) {
     var extraClasses   = opts.classes || '';
     var position       = opts.position || null;
     var closeOnEscape  = (opts.closeOnEscape !== false);
+    var inheritTheme   = opts.inheritTheme || null;
 
     // ── Build native <dialog> ──────────────────────────────────────────────
 
@@ -106,6 +107,27 @@ window.Dialog = function(opts) {
     dlg.appendChild(buttonPane);
 
     document.body.appendChild(dlg);
+
+    // ── Theme inheritance ────────────────────────────────────────────────
+    // When inheritTheme is a DOM element, copy its computed CSS theme
+    // variables onto the <dialog> so the dialog renders in the same
+    // theme as its origin context (which may differ from the default).
+
+    if (inheritTheme && inheritTheme.nodeType) {
+        var _themeVars = [
+            '--primary-bg-color', '--secondary-bg-color',
+            '--primary-fg-color', '--secondary-fg-color',
+            '--semi-transparent-bg-color', '--semi-transparent-fg-color',
+            '--semi-transparent-fg-highlight-color',
+            '--annotation-preview-bg-color', '--highlight-color',
+            '--tooltip-bg-color', '--video-background-color'
+        ];
+        var _cs = getComputedStyle(inheritTheme);
+        _themeVars.forEach(function(v) {
+            var val = _cs.getPropertyValue(v).trim();
+            if (val) dlg.style.setProperty(v, val);
+        });
+    }
 
     // ── Button rendering ───────────────────────────────────────────────────
 
