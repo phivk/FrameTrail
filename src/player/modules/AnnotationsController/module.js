@@ -1174,6 +1174,19 @@
 
         }
 
+        // Add playhead indicator
+        var playhead = document.createElement('div');
+        playhead.className = 'timelinePlayhead';
+        timelineZoomScroller.appendChild(playhead);
+
+        // Update playhead position on timeupdate
+        FrameTrail.addEventListener('timeupdate', function() {
+            var duration = FrameTrail.module('HypervideoModel').duration;
+            if (duration === 0) return;
+            var currentTime = FrameTrail.module('HypervideoController').currentTime;
+            playhead.style.left = ((currentTime / duration) * 100) + '%';
+        });
+
         targetElement.appendChild(timelineZoomWrapper);
 
         makeTimelinesSortable(timelineZoomScroller);

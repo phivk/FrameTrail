@@ -163,6 +163,17 @@
     position: relative;
 }
 
+.timelineList .timelineZoomScroller > .timelinePlayhead {
+    position: absolute;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    background-color: var(--primary-fg-color);
+    z-index: 10;
+    pointer-events: none;
+    opacity: 0.8;
+}
+
 .timelineList .userTimelineWrapper .exportTimelineDataButton {
     margin-left: 10px;
     text-decoration: none;
@@ -231,7 +242,7 @@
 }
 
 /* targets first userTimelineWrapper */
-.timelineList .timelineZoomScroller > div:nth-child(2) {
+.timelineList .timelineZoomScroller > .userTimelineWrapper:first-child {
     padding-top: 30px;
 }
 
