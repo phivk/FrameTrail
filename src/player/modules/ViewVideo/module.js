@@ -525,14 +525,13 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
             areaRightVisible    = ( inEditMode ? false : FrameTrail.getState('hv_config_areaRightVisible') );
 
         if (slidingMode == 'overlay') {
+            var _abcH = areaBottomVisible ? AreaBottomContainer.offsetHeight : 0;
+            var _atcH = areaTopVisible ? AreaTopContainer.offsetHeight : 0;
+            var _mcH = mainContainer.offsetHeight;
+            var _fb = _mcH - (areaTopVisible ? (_atcH + playerMargin) : 0) - (areaBottomVisible ? (_abcH + playerMargin) : 0) - editBorder;
             PlayerContainer.style.flexGrow = '0';
             PlayerContainer.style.flexShrink = '0';
-            PlayerContainer.style.flexBasis = (
-                mainContainer.offsetHeight
-                - ((areaTopVisible) ? (AreaTopContainer.offsetHeight + playerMargin) : 0)
-                - ((areaBottomVisible) ? (AreaBottomContainer.offsetHeight + playerMargin) : 0)
-                - editBorder
-            ) + 'px';
+            PlayerContainer.style.flexBasis = _fb + 'px';
         } else {
             PlayerContainer.style.flex = '';
         }
