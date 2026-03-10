@@ -526,6 +526,21 @@ FrameTrail.defineType(
                         self.isMouseOver = false;
                     });
 
+                    // Suppress programmatic scrolling during user-initiated scroll/touch
+                    var scrollContainer = contentViewContainer.querySelector('.contentViewScroll');
+                    if (scrollContainer) {
+                        var userScrollTimeout;
+                        scrollContainer.addEventListener('scroll', function() {
+                            self.isMouseOver = true;
+                            clearTimeout(userScrollTimeout);
+                            userScrollTimeout = setTimeout(function() {
+                                if (!scrollContainer.matches(':hover')) {
+                                    self.isMouseOver = false;
+                                }
+                            }, 2000);
+                        }, { passive: true });
+                    }
+
                     this.contentViewTab = contentViewTab;
                     this.contentViewContainer = contentViewContainer;
 
@@ -845,80 +860,11 @@ FrameTrail.defineType(
                     _w.innerHTML = '<div class="contentViewContainer"'
                                  + ' data-size="'+ self.contentViewData.contentSize +'"'
                                  + ' data-type="'+ self.contentViewData.type +'">'
-                                 + '    <div class="contentViewContents"></div>'
+                                 + '    <div class="contentViewScroll">'
+                                 + '        <div class="contentViewContents"></div>'
+                                 + '    </div>'
                                  + '</div>';
                     var containerElement = _w.firstElementChild;
-
-                    if ( self.whichArea == 'top' || self.whichArea == 'bottom' ) {
-                        var slideLeftButton = document.createElement('div');
-                        slideLeftButton.className = 'slideButton slideLeft';
-                        slideLeftButton.innerHTML = '    <span class="icon-left-open-big"></span>';
-
-                        var slideRightButton = document.createElement('div');
-                        slideRightButton.className = 'slideButton slideRight';
-                        slideRightButton.innerHTML = '    <span class="icon-right-open-big"></span>';
-
-                        slideLeftButton.addEventListener('click', function() {
-                            var container = self.contentViewContainer.querySelector('.contentViewContents'),
-                                slideAmount = container.parentElement.offsetWidth / 3,
-                                leftValue = (parseInt(container.style.left) || 0) + slideAmount;
-
-                            if ( leftValue >= 10 ) {
-                                container.style.left = '';
-                            } else {
-                                container.style.left = leftValue + 'px';
-                            }
-                        });
-                        slideRightButton.addEventListener('click', function() {
-                            var container = self.contentViewContainer.querySelector('.contentViewContents'),
-                                slideAmount = container.parentElement.offsetWidth / 3,
-                                leftValue = (parseInt(container.style.left) || 0) - slideAmount;
-
-                            if ( leftValue <= - ( container.offsetWidth - container.parentElement.offsetWidth ) ) {
-                                container.style.left = - ( container.offsetWidth - container.parentElement.offsetWidth ) + 'px';
-                            } else {
-                                container.style.left = leftValue + 'px';
-                            }
-                        });
-
-                        containerElement.appendChild(slideLeftButton);
-                        containerElement.appendChild(slideRightButton);
-
-                    } else {
-                        var slideTopButton = document.createElement('div');
-                        slideTopButton.className = 'slideButton slideTop';
-                        slideTopButton.innerHTML = '    <span class="icon-up-open-big"></span>';
-
-                        var slideBottomButton = document.createElement('div');
-                        slideBottomButton.className = 'slideButton slideBottom';
-                        slideBottomButton.innerHTML = '    <span class="icon-down-open-big"></span>';
-
-                        slideTopButton.addEventListener('click', function() {
-                            var container = self.contentViewContainer.querySelector('.contentViewContents'),
-                                slideAmount = container.parentElement.offsetHeight / 3,
-                                topValue = (parseInt(container.style.top) || 0) + slideAmount;
-
-                            if ( topValue >= 10 ) {
-                                container.style.top = '';
-                            } else {
-                                container.style.top = topValue + 'px';
-                            }
-                        });
-                        slideBottomButton.addEventListener('click', function() {
-                            var container = self.contentViewContainer.querySelector('.contentViewContents'),
-                                slideAmount = container.parentElement.offsetHeight / 3,
-                                topValue = (parseInt(container.style.top) || 0) - slideAmount;
-
-                            if ( topValue <= - ( container.offsetHeight - container.parentElement.offsetHeight ) ) {
-                                container.style.top = - ( container.offsetHeight - container.parentElement.offsetHeight ) + 'px';
-                            } else {
-                                container.style.top = topValue + 'px';
-                            }
-                        });
-
-                        containerElement.appendChild(slideTopButton);
-                        containerElement.appendChild(slideBottomButton);
-                    }
 
                     return containerElement;
 
@@ -1236,9 +1182,9 @@ FrameTrail.defineType(
                         annotations      = self.contentCollection,
                         videoDuration    = FrameTrail.module('HypervideoModel').duration,
                         offsetIn         = FrameTrail.module('HypervideoModel').offsetIn,
-                        sliderParent     = self.contentViewContainer,
+                        scrollContainer  = self.contentViewContainer.querySelector('.contentViewScroll'),
                         containerElement = self.contentViewContainer.querySelector('.contentViewContents'),
-                        containerWidth   = sliderParent.offsetWidth,
+                        containerWidth   = scrollContainer.offsetWidth,
                         gap              = 4,
                         scale            = containerWidth / videoDuration;
 
@@ -1275,12 +1221,10 @@ FrameTrail.defineType(
                             el.style.position = '';
                             el.style.left = '';
                         });
-                        containerElement.style.left = '';
                         containerElement.style.width = totalWidth + 'px';
                         return;
                     } else {
                         containerElement.style.width = '';
-                        containerElement.style.left = '';   // clear stale scroll offset from before any resize
                     }
 
                     // --- Phase 1: Build groups — items that naturally overlap are grouped ---
@@ -1363,98 +1307,41 @@ FrameTrail.defineType(
                 updateCollectionSlider: function(details) {
 
                     var self = this,
-                        widthOfSlider           = 0,
-                        heightOfSlider          = 0,
-                        gap                     = (details || self.contentViewData.contentSize == 'large') ? 10 : 4,
-                        slideAxis               = (self.whichArea == 'top' || self.whichArea == 'bottom') ? 'x' : 'y',
-                        sliderParent            = (details) ? self.contentViewDetailsContainer : self.contentViewContainer,
-                        sliderElement           = (details) ? self.contentViewDetailsContainer.querySelector('.contentViewDetailsContents') : self.contentViewContainer.querySelector('.contentViewContents');
+                        slideAxis    = (self.whichArea == 'top' || self.whichArea == 'bottom') ? 'x' : 'y',
+                        sliderParent = (details) ? self.contentViewDetailsContainer : self.contentViewContainer;
 
                     if ( self.contentCollection.length == 0
                         || ( (self.whichArea == 'left' || self.whichArea == 'right') && self.contentViewData.contentSize == 'large')
                         || !sliderParent.classList.contains('active') ) {
-
-                        if (slideAxis == 'x') {
-                            sliderElement.style.width = '';
-                            sliderElement.style.left = '';
-                        } else {
-                            sliderElement.style.height = '';
-                            sliderElement.style.top = '';
-                        }
-
-                        sliderParent.querySelectorAll('.slideButton').forEach(function(el) { el.style.display = 'none'; });
-
                         return;
                     }
 
-                    // Set sliderElement Dimensions
-
-                    if ( slideAxis == 'x' ) {
-
-                        for (var idx in self.contentCollection) {
-                            var element = (details) ? self.getDetailElementFromContentItem(self.contentCollection[idx]) : self.getContentViewElementFromContentItem(self.contentCollection[idx]);
-                            // TODO: Check why element is null after changing collection
-                            if (element) {
-                                widthOfSlider += element.offsetWidth + gap;
-                            }
-
-                        }
-
-                        if ( widthOfSlider > sliderParent.offsetWidth ) {
-                            sliderElement.style.width = widthOfSlider + 'px';
-                            sliderParent.querySelectorAll('.slideButton').forEach(function(el) { el.style.display = 'flex'; });
-                        } else {
-                            sliderElement.style.width = '';
-                            sliderElement.style.left = gap + 'px';
-                            sliderParent.querySelectorAll('.slideButton').forEach(function(el) { el.style.display = 'none'; });
-                            return;
-                        }
-
-                    } else {
-                        for (var idx in self.contentCollection) {
-                            var element = (details) ? self.getDetailElementFromContentItem(self.contentCollection[idx]) : self.getContentViewElementFromContentItem(self.contentCollection[idx]);
-                            //. TODO: Check why element is null after changing collection
-                            if (element) {
-                                heightOfSlider += element.offsetHeight + gap;
-                            }
-                        }
-
-                        if ( heightOfSlider > sliderParent.offsetHeight ) {
-                            sliderElement.style.height = heightOfSlider + 'px';
-                            sliderParent.querySelectorAll('.slideButton').forEach(function(el) { el.style.display = 'flex'; });
-                        } else {
-                            sliderElement.style.height = '';
-                            sliderElement.style.top = gap + 'px';
-                            sliderParent.querySelectorAll('.slideButton').forEach(function(el) { el.style.display = 'none'; });
-                            return;
-                        }
-
+                    // Details container still uses the old positioned approach
+                    if (details) {
+                        this._updateCollectionSliderDetails();
+                        return;
                     }
 
-                    // Slide to active Annotation Element
+                    // Main container uses native scroll
+                    var scrollContainer = self.contentViewContainer.querySelector('.contentViewScroll');
+                    if (!scrollContainer) return;
 
+                    // Check if content overflows
+                    var overflows = (slideAxis == 'x')
+                        ? scrollContainer.scrollWidth > scrollContainer.clientWidth + 1
+                        : scrollContainer.scrollHeight > scrollContainer.clientHeight + 1;
+
+                    if (!overflows) return;
+
+                    // Find active annotations
                     var activeAnnotations = [];
                     var activeAnnotationIndices = [];
 
-                    if (details) {
-
-                        self.contentViewDetailsContainer.querySelectorAll('.collectionElement.open').forEach(function(el) {
-                            activeAnnotations.push(el);
-                        });
-
-                    } else {
-
-                        for (var idx in self.contentCollection) {
-
-                            // TODO: CHECK WHY ANNOTATIONS IN IDENTICAL CONTENT COLLECTIONS ARE NOT SET ACTIVE (only first one)!
-                            // console.log(this.whichArea, this.contentCollection[idx].activeStateInContentView(this));
-
-                            if ( self.contentCollection[idx].activeStateInContentView(self) ) {
-                                activeAnnotations.push(self.contentCollection[idx]);
-                                activeAnnotationIndices.push(idx);
-                            }
+                    for (var idx in self.contentCollection) {
+                        if ( self.contentCollection[idx].activeStateInContentView(self) ) {
+                            activeAnnotations.push(self.contentCollection[idx]);
+                            activeAnnotationIndices.push(idx);
                         }
-
                     }
 
                     if (activeAnnotations.length == 0) {
@@ -1462,93 +1349,84 @@ FrameTrail.defineType(
                         return;
                     }
 
-                    // Detect which annotations just became active
+                    // Detect which annotations just became active (oscillation prevention)
                     var prevActiveIndices = self._lastActiveAnnotationIndices || [];
                     var newlyActiveIndices = activeAnnotationIndices.filter(function(idx) {
                         return prevActiveIndices.indexOf(idx) === -1;
                     });
                     self._lastActiveAnnotationIndices = activeAnnotationIndices;
 
-                    var activeAnnotationElement = (details) ? activeAnnotations[0] : self.getContentViewElementFromContentItem(activeAnnotations[0]),
-                        activeElementPosition   = { left: activeAnnotationElement.offsetLeft, top: activeAnnotationElement.offsetTop };
+                    // Only scroll when the active set changes
+                    if (newlyActiveIndices.length === 0) return;
 
-                    if ( slideAxis == 'x' ) {
+                    var newIdxInActive = activeAnnotationIndices.indexOf(newlyActiveIndices[0]);
+                    var elToCenter = self.getContentViewElementFromContentItem(activeAnnotations[newIdxInActive]);
+                    if (!elToCenter) return;
 
-                        if ( widthOfSlider > sliderParent.offsetWidth ) {
-
-                            if (details) {
-
-                                // Details path: centre on the opened item (one-time click action)
-                                var leftOffset = -1 * (     activeElementPosition.left
-                                                          - 1
-                                                          - sliderParent.clientWidth / 2
-                                                          + activeAnnotationElement.offsetWidth / 2
-                                                );
-                                sliderElement.style.left = Math.max(-(widthOfSlider - sliderParent.offsetWidth),
-                                                               Math.min(gap, leftOffset)) + 'px';
-
-                            } else {
-
-                                // Playback path: center on the first newly active annotation.
-                                // Only scroll when the active set changes to avoid oscillation
-                                // when multiple annotations are active simultaneously.
-                                if (newlyActiveIndices.length > 0) {
-                                    var newIdxInActive = activeAnnotationIndices.indexOf(newlyActiveIndices[0]);
-                                    var elToCenter = self.getContentViewElementFromContentItem(activeAnnotations[newIdxInActive]);
-                                    var leftOffset = -1 * (    elToCenter.offsetLeft
-                                                             - 1
-                                                             - sliderParent.clientWidth / 2
-                                                             + elToCenter.offsetWidth / 2
-                                                         );
-                                    sliderElement.style.left = Math.max(-(widthOfSlider - sliderParent.offsetWidth),
-                                                                   Math.min(gap, leftOffset)) + 'px';
-                                }
-                                // same active set → don't touch scroll position
-
-                            }
-
-                        }
-
-
+                    if (slideAxis == 'x') {
+                        var scrollTarget = elToCenter.offsetLeft
+                                         - scrollContainer.clientWidth / 2
+                                         + elToCenter.offsetWidth / 2;
+                        scrollContainer.scrollTo({ left: Math.max(0, scrollTarget), behavior: 'smooth' });
                     } else {
-
-                        if ( heightOfSlider > sliderParent.offsetHeight ) {
-
-                            if (details) {
-
-                                // Details path: centre on the opened item
-                                var topOffset = -1 * (      activeElementPosition.top
-                                                          - 1
-                                                          - sliderParent.clientHeight / 2
-                                                          + activeAnnotationElement.offsetHeight / 2
-                                                );
-                                sliderElement.style.top = Math.max(-(heightOfSlider - sliderParent.offsetHeight),
-                                                              Math.min(gap, topOffset)) + 'px';
-
-                            } else {
-
-                                // Playback path: center on the first newly active annotation.
-                                // Only scroll when the active set changes to avoid oscillation
-                                // when multiple annotations are active simultaneously.
-                                if (newlyActiveIndices.length > 0) {
-                                    var newIdxInActiveY = activeAnnotationIndices.indexOf(newlyActiveIndices[0]);
-                                    var elToCenterY = self.getContentViewElementFromContentItem(activeAnnotations[newIdxInActiveY]);
-                                    var topOffset = -1 * (    elToCenterY.offsetTop
-                                                            - 1
-                                                            - sliderParent.clientHeight / 2
-                                                            + elToCenterY.offsetHeight / 2
-                                                        );
-                                    sliderElement.style.top = Math.max(-(heightOfSlider - sliderParent.offsetHeight),
-                                                                  Math.min(gap, topOffset)) + 'px';
-                                }
-                                // same active set → don't touch scroll position
-
-                            }
-
-                        }
-
+                        var scrollTarget = elToCenter.offsetTop
+                                         - scrollContainer.clientHeight / 2
+                                         + elToCenter.offsetHeight / 2;
+                        scrollContainer.scrollTo({ top: Math.max(0, scrollTarget), behavior: 'smooth' });
                     }
 
+                },
+
+
+                /**
+                 * I update the details slider using the old positioned approach
+                 * (details container is not converted to native scroll).
+                 *
+                 * @method _updateCollectionSliderDetails
+                 * @private
+                 */
+                _updateCollectionSliderDetails: function() {
+
+                    var self = this,
+                        widthOfSlider  = 0,
+                        gap            = 10,
+                        sliderParent   = self.contentViewDetailsContainer,
+                        sliderElement  = sliderParent.querySelector('.contentViewDetailsContents');
+
+                    // Sum element widths (details is always horizontal / top-bottom)
+                    for (var idx in self.contentCollection) {
+                        var element = self.getDetailElementFromContentItem(self.contentCollection[idx]);
+                        if (element) {
+                            widthOfSlider += element.offsetWidth + gap;
+                        }
+                    }
+
+                    if ( widthOfSlider > sliderParent.offsetWidth ) {
+                        sliderElement.style.width = widthOfSlider + 'px';
+                        sliderParent.querySelectorAll('.slideButton').forEach(function(el) { el.style.display = 'flex'; });
+                    } else {
+                        sliderElement.style.width = '';
+                        sliderElement.style.left = gap + 'px';
+                        sliderParent.querySelectorAll('.slideButton').forEach(function(el) { el.style.display = 'none'; });
+                        return;
+                    }
+
+                    // Find opened detail element
+                    var activeAnnotations = [];
+                    sliderParent.querySelectorAll('.collectionElement.open').forEach(function(el) {
+                        activeAnnotations.push(el);
+                    });
+
+                    if (activeAnnotations.length == 0) return;
+
+                    var activeEl = activeAnnotations[0];
+                    var leftOffset = -1 * ( activeEl.offsetLeft
+                                          - 1
+                                          - sliderParent.clientWidth / 2
+                                          + activeEl.offsetWidth / 2
+                                    );
+                    sliderElement.style.left = Math.max(-(widthOfSlider - sliderParent.offsetWidth),
+                                                   Math.min(gap, leftOffset)) + 'px';
 
                 },
 
