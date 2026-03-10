@@ -29,8 +29,8 @@
         var VIDEO_URL = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
 
         // Helper to build a W3C annotation object
-        function anno(userId, userName, start, end, title, text) {
-            return {
+        function anno(userId, userName, start, end, title, text, graphDataType, graphData) {
+            var obj = {
                 '@context': [ 'http://www.w3.org/ns/anno.jsonld', { 'frametrail': 'http://frametrail.org/ns/' } ],
                 'type': 'Annotation',
                 'frametrail:type': 'Annotation',
@@ -57,6 +57,59 @@
                 },
                 'frametrail:tags': []
             };
+            if (graphDataType && graphData) {
+                obj['frametrail:graphdatatype'] = graphDataType;
+                obj['frametrail:graphdata'] = graphData;
+            }
+            return obj;
+        }
+
+        // Generate fake soundwave data (centered waveform with natural amplitude envelope)
+        function generateSoundwave(numPoints, style) {
+            var data = [];
+            for (var i = 0; i < numPoints; i++) {
+                var t = i / numPoints;
+                var envelope;
+                if (style === 'speech') {
+                    // Speech-like: bursts of activity with quiet gaps
+                    envelope = (Math.sin(t * 12) > 0.2 ? 0.6 + 0.4 * Math.sin(t * 3.7) : 0.05);
+                } else if (style === 'music') {
+                    // Music-like: gradual build with sustained levels
+                    envelope = 0.3 + 0.5 * Math.sin(t * Math.PI) + 0.2 * Math.sin(t * 6);
+                } else if (style === 'ambient') {
+                    // Ambient: low-level with occasional swells
+                    envelope = 0.15 + 0.25 * Math.pow(Math.sin(t * 4.5), 2);
+                } else {
+                    // Percussive: sharp transients
+                    envelope = Math.pow(Math.abs(Math.sin(t * 20)), 3) * 0.8 + 0.05;
+                }
+                var noise = (Math.random() * 2 - 1);
+                var val = Math.round(Math.max(1, Math.min(100, noise * envelope * 100)));
+                data.push(val);
+            }
+            return data.join(' ');
+        }
+
+        // Generate fake barchart data (values grow upward from baseline)
+        function generateBarchart(numPoints, style) {
+            var data = [];
+            for (var i = 0; i < numPoints; i++) {
+                var t = i / numPoints;
+                var val;
+                if (style === 'rising') {
+                    val = 10 + t * 70 + Math.random() * 20;
+                } else if (style === 'falling') {
+                    val = 80 - t * 60 + Math.random() * 15;
+                } else if (style === 'peaks') {
+                    val = 20 + 50 * Math.pow(Math.sin(t * Math.PI * 3), 2) + Math.random() * 15;
+                } else if (style === 'plateau') {
+                    val = (t < 0.2 ? t * 5 * 60 : t > 0.8 ? (1 - t) * 5 * 60 : 60) + Math.random() * 15;
+                } else {
+                    val = 30 + Math.random() * 40;
+                }
+                data.push(Math.round(Math.max(1, Math.min(100, val))));
+            }
+            return data.join(' ');
         }
 
         // ── Annotations: 10 users × 8-12 annotations each, spread across 0-596s ──
@@ -74,28 +127,28 @@
             anno('alice', 'Alice', 430, 480,  'Revenge sequence begins', 'The first trap is sprung. Physical comedy takes center stage.'),
             anno('alice', 'Alice', 520, 590,  'Climactic resolution',    'Each squirrel meets their comedic fate. Justice is served with slapstick flair.'),
 
-            // ─── Bob (technical/cinematography) ───
-            anno('bob', 'Bob',   5,   30, 'Rendering quality',    'Impressive subsurface scattering on the grass blades — a major step up from Elephant\'s Dream.'),
-            anno('bob', 'Bob',  50,   72, 'Camera movement',      'Smooth crane shot descending into the meadow. The depth of field is beautifully handled.'),
+            // ─── Bob (technical/cinematography) — some with soundwave/barchart ───
+            anno('bob', 'Bob',   5,   30, 'Rendering quality',    'Impressive subsurface scattering on the grass blades — a major step up from Elephant\'s Dream.', 'barchart', generateBarchart(400, 'rising')),
+            anno('bob', 'Bob',  50,   72, 'Camera movement',      'Smooth crane shot descending into the meadow. The depth of field is beautifully handled.', 'soundwave', generateSoundwave(300, 'ambient')),
             anno('bob', 'Bob', 100,  135, 'Fur simulation',       'Bunny\'s fur rendering uses strand-based simulation — groundbreaking for open-source at the time.'),
-            anno('bob', 'Bob', 160,  185, 'Lighting design',      'The warm, diffused sunlight creates a fairy-tale atmosphere. Volumetric light rays through the trees.'),
-            anno('bob', 'Bob', 220,  248, 'Particle effects',     'Dust motes and floating seeds add life to the scene. Subtle but effective environmental storytelling.'),
+            anno('bob', 'Bob', 160,  185, 'Lighting design',      'The warm, diffused sunlight creates a fairy-tale atmosphere. Volumetric light rays through the trees.', 'barchart', generateBarchart(300, 'peaks')),
+            anno('bob', 'Bob', 220,  248, 'Particle effects',     'Dust motes and floating seeds add life to the scene. Subtle but effective environmental storytelling.', 'soundwave', generateSoundwave(400, 'ambient')),
             anno('bob', 'Bob', 290,  340, 'Color grading',        'Notice the shift to cooler tones during the conflict — the color palette mirrors the emotional arc.'),
-            anno('bob', 'Bob', 370,  395, 'Physics simulation',   'The trap mechanisms use rigid body physics. Props react naturally to forces.'),
-            anno('bob', 'Bob', 440,  490, 'Motion blur',          'Excellent per-object motion blur on the fast-moving elements. Adds cinematic polish.'),
-            anno('bob', 'Bob', 530,  570, 'Compositing layers',   'Multiple render passes are composited — separate diffuse, specular, and ambient occlusion.'),
+            anno('bob', 'Bob', 370,  395, 'Physics simulation',   'The trap mechanisms use rigid body physics. Props react naturally to forces.', 'barchart', generateBarchart(300, 'falling')),
+            anno('bob', 'Bob', 440,  490, 'Motion blur',          'Excellent per-object motion blur on the fast-moving elements. Adds cinematic polish.', 'soundwave', generateSoundwave(400, 'percussive')),
+            anno('bob', 'Bob', 530,  570, 'Compositing layers',   'Multiple render passes are composited — separate diffuse, specular, and ambient occlusion.', 'barchart', generateBarchart(400, 'plateau')),
 
-            // ─── Carol (sound design notes) ───
-            anno('carol', 'Carol',   0,   18, 'Opening music',       'Orchestral score sets a whimsical tone. Strings and woodwinds evoke a pastoral setting.'),
-            anno('carol', 'Carol',  35,   55, 'Ambient sound',       'Layered bird calls, insect buzzing, and wind create a rich outdoor soundscape.'),
-            anno('carol', 'Carol',  75,  110, 'Character theme',     'Bunny\'s leitmotif — a gentle bassoon melody — plays during his introduction.'),
-            anno('carol', 'Carol', 140,  175, 'Comedic timing',      'The squirrels\' theme uses staccato pizzicato strings — mischievous and playful.'),
-            anno('carol', 'Carol', 195,  215, 'Sound effects',       'The butterfly wing flutter is a pitch-shifted recording of paper. Creative foley work.'),
-            anno('carol', 'Carol', 255,  295, 'Emotional underscore','The music drops to a minor key here, reflecting Bunny\'s sadness. Cello takes the lead.'),
-            anno('carol', 'Carol', 330,  370, 'Tension building',    'Percussion enters — tympani rolls and snare hits build anticipation for the revenge sequence.'),
-            anno('carol', 'Carol', 400,  435, 'Slapstick sounds',    'Classic cartoon sound effects: springs, bonks, and slide whistles. Homage to Looney Tunes.'),
-            anno('carol', 'Carol', 470,  510, 'Musical callback',    'Bunny\'s theme returns triumphant — now in a major key with full orchestration.'),
-            anno('carol', 'Carol', 550,  590, 'Resolution',          'The music winds down to a gentle conclusion. Birdsong returns, bookending the soundtrack.'),
+            // ─── Carol (sound design notes) — all with soundwave visualizations ───
+            anno('carol', 'Carol',   0,   18, 'Opening music',       'Orchestral score sets a whimsical tone. Strings and woodwinds evoke a pastoral setting.', 'soundwave', generateSoundwave(400, 'music')),
+            anno('carol', 'Carol',  35,   55, 'Ambient sound',       'Layered bird calls, insect buzzing, and wind create a rich outdoor soundscape.', 'soundwave', generateSoundwave(400, 'ambient')),
+            anno('carol', 'Carol',  75,  110, 'Character theme',     'Bunny\'s leitmotif — a gentle bassoon melody — plays during his introduction.', 'soundwave', generateSoundwave(500, 'music')),
+            anno('carol', 'Carol', 140,  175, 'Comedic timing',      'The squirrels\' theme uses staccato pizzicato strings — mischievous and playful.', 'soundwave', generateSoundwave(400, 'percussive')),
+            anno('carol', 'Carol', 195,  215, 'Sound effects',       'The butterfly wing flutter is a pitch-shifted recording of paper. Creative foley work.', 'soundwave', generateSoundwave(300, 'ambient')),
+            anno('carol', 'Carol', 255,  295, 'Emotional underscore','The music drops to a minor key here, reflecting Bunny\'s sadness. Cello takes the lead.', 'soundwave', generateSoundwave(500, 'music')),
+            anno('carol', 'Carol', 330,  370, 'Tension building',    'Percussion enters — tympani rolls and snare hits build anticipation for the revenge sequence.', 'soundwave', generateSoundwave(500, 'percussive')),
+            anno('carol', 'Carol', 400,  435, 'Slapstick sounds',    'Classic cartoon sound effects: springs, bonks, and slide whistles. Homage to Looney Tunes.', 'soundwave', generateSoundwave(400, 'percussive')),
+            anno('carol', 'Carol', 470,  510, 'Musical callback',    'Bunny\'s theme returns triumphant — now in a major key with full orchestration.', 'soundwave', generateSoundwave(500, 'music')),
+            anno('carol', 'Carol', 550,  590, 'Resolution',          'The music winds down to a gentle conclusion. Birdsong returns, bookending the soundtrack.', 'soundwave', generateSoundwave(500, 'ambient')),
 
             // ─── Dave (educational/context) ───
             anno('dave', 'Dave',   0,   25, 'About the project',  'Big Buck Bunny (2008) was the second open movie by the Blender Foundation, following Elephants Dream.'),
@@ -119,16 +172,16 @@
             anno('eve', 'Eve', 500,  535, 'Satisfying conclusion', 'The payoff is earned. Bunny\'s victory feels justified after the setup.'),
             anno('eve', 'Eve', 560,  593, 'Overall verdict',      'A remarkable achievement for open-source animation. Entertaining, polished, and technically impressive.'),
 
-            // ─── Frank (animation technique) ───
-            anno('frank', 'Frank',   8,   45, 'Walk cycle',           'The opening walk cycle is beautifully weighted — Bunny\'s mass is communicated through timing.'),
+            // ─── Frank (animation technique) — some with soundwave visualizations ───
+            anno('frank', 'Frank',   8,   45, 'Walk cycle',           'The opening walk cycle is beautifully weighted — Bunny\'s mass is communicated through timing.', 'soundwave', generateSoundwave(500, 'speech')),
             anno('frank', 'Frank',  70,   95, 'Squash and stretch',   'Subtle squash and stretch on the flower petals. Blender\'s lattice deformers at work.'),
-            anno('frank', 'Frank', 120,  155, 'Facial rigging',       'The blend shape system allows nuanced expressions — eyebrows, eyelids, and mouth all independent.'),
+            anno('frank', 'Frank', 120,  155, 'Facial rigging',       'The blend shape system allows nuanced expressions — eyebrows, eyelids, and mouth all independent.', 'soundwave', generateSoundwave(400, 'speech')),
             anno('frank', 'Frank', 185,  225, 'Secondary motion',     'Ears, tail, and belly jiggle follow through naturally. Great use of soft body simulation.'),
-            anno('frank', 'Frank', 265,  300, 'Posing principles',    'Strong silhouettes throughout. You can read every pose even in shadow — animation fundamentals.'),
+            anno('frank', 'Frank', 265,  300, 'Posing principles',    'Strong silhouettes throughout. You can read every pose even in shadow — animation fundamentals.', 'soundwave', generateSoundwave(400, 'music')),
             anno('frank', 'Frank', 335,  365, 'Overlap and follow-through', 'The overlapping action on Bunny\'s ears during the jump is textbook Disney principle.'),
-            anno('frank', 'Frank', 405,  450, 'Timing and spacing',   'The trap sequences use exaggerated timing — fast snaps contrasted with slow anticipation holds.'),
+            anno('frank', 'Frank', 405,  450, 'Timing and spacing',   'The trap sequences use exaggerated timing — fast snaps contrasted with slow anticipation holds.', 'soundwave', generateSoundwave(500, 'percussive')),
             anno('frank', 'Frank', 485,  530, 'Weight and balance',   'When Bunny lifts the log, the shift in center of gravity is convincingly animated.'),
-            anno('frank', 'Frank', 555,  590, 'Final pose',           'The closing pose communicates satisfaction and triumph. A strong end to the character arc.'),
+            anno('frank', 'Frank', 555,  590, 'Final pose',           'The closing pose communicates satisfaction and triumph. A strong end to the character arc.', 'soundwave', generateSoundwave(400, 'music')),
 
             // ─── Grace (comparative film studies) ───
             anno('grace', 'Grace',   0,   35, 'Genre context',         'BBB sits in the tradition of Tex Avery\'s revenge cartoons — the underdog fights back.'),
@@ -141,15 +194,15 @@
             anno('grace', 'Grace', 490,  545, 'Cultural reception',    'Over 100 million views across platforms. Used in countless technical demos and academic papers.'),
             anno('grace', 'Grace', 570,  596, 'Lasting influence',     'Inspired a generation of open-source filmmakers and established a new production model.'),
 
-            // ─── Hiro (3D modeling notes) ───
-            anno('hiro', 'Hiro',  12,   50, 'Terrain modeling',    'The landscape uses displacement mapping on a subdivided plane — efficient and detailed.'),
-            anno('hiro', 'Hiro',  65,  105, 'Vegetation system',   'Grass and flowers are particle-instanced geometry. Thousands of blades with minimal overhead.'),
+            // ─── Hiro (3D modeling notes) — some with barchart visualizations ───
+            anno('hiro', 'Hiro',  12,   50, 'Terrain modeling',    'The landscape uses displacement mapping on a subdivided plane — efficient and detailed.', 'barchart', generateBarchart(500, 'peaks')),
+            anno('hiro', 'Hiro',  65,  105, 'Vegetation system',   'Grass and flowers are particle-instanced geometry. Thousands of blades with minimal overhead.', 'barchart', generateBarchart(400, 'rising')),
             anno('hiro', 'Hiro', 130,  168, 'Character topology',  'Bunny\'s mesh has clean edge flow around the eyes and mouth — essential for good deformation.'),
-            anno('hiro', 'Hiro', 200,  250, 'Prop design',         'The tree stump uses sculpted detail with normal maps baked from a high-poly source.'),
+            anno('hiro', 'Hiro', 200,  250, 'Prop design',         'The tree stump uses sculpted detail with normal maps baked from a high-poly source.', 'barchart', generateBarchart(400, 'plateau')),
             anno('hiro', 'Hiro', 285,  330, 'Environment assets',  'Rocks, logs, and mushrooms are modular pieces, reused and scattered procedurally.'),
-            anno('hiro', 'Hiro', 355,  395, 'Trap mechanisms',     'The mechanical traps are rigged with constraints — pivots, levers, and springs modeled accurately.'),
+            anno('hiro', 'Hiro', 355,  395, 'Trap mechanisms',     'The mechanical traps are rigged with constraints — pivots, levers, and springs modeled accurately.', 'barchart', generateBarchart(400, 'falling')),
             anno('hiro', 'Hiro', 425,  470, 'LOD strategy',        'Background trees use billboard impostors at distance. Foreground trees are full geometry.'),
-            anno('hiro', 'Hiro', 505,  555, 'UV mapping',          'Consistent texel density across all assets. The UV layouts are clean and efficient.'),
+            anno('hiro', 'Hiro', 505,  555, 'UV mapping',          'Consistent texel density across all assets. The UV layouts are clean and efficient.', 'barchart', generateBarchart(500, 'peaks')),
             anno('hiro', 'Hiro', 575,  596, 'Final scene assets',  'The closing shot reuses the opening environment with adjusted lighting — elegant bookend.'),
 
             // ─── Iris (accessibility & UX) ───
@@ -163,16 +216,16 @@
             anno('iris', 'Iris', 460,  510, 'Subtitle-free design',     'No dialogue means no subtitle synchronization issues. Universal viewing experience.'),
             anno('iris', 'Iris', 540,  580, 'Cognitive load',           'Simple plot, clear cause-and-effect. Enjoyable without demanding sustained concentration.'),
 
-            // ─── Jay (production pipeline) ───
-            anno('jay', 'Jay',  20,   65, 'Pre-production',      'Storyboards were drawn in Inkscape and GIMP. The entire pre-production was open-source.'),
-            anno('jay', 'Jay',  80,  125, 'Blender version',     'Made with Blender 2.46. The particle system was overhauled specifically for this film.'),
-            anno('jay', 'Jay', 145,  195, 'Render farm',         'Rendered on a 14-node farm at the Blender Institute. Each frame took 5-20 minutes.'),
-            anno('jay', 'Jay', 225,  275, 'Compositing workflow', 'Blender\'s built-in compositor handled all post-processing — no external tools needed.'),
-            anno('jay', 'Jay', 305,  355, 'Version control',     'SVN was used for asset management. The full production files are publicly available.'),
-            anno('jay', 'Jay', 380,  435, 'Color management',    'Linear workflow with sRGB output. One of the first Blender projects to use proper color management.'),
-            anno('jay', 'Jay', 455,  515, 'Output format',       'Mastered at 1920x1080 (Full HD) — a high resolution choice for 2008 when 720p was standard.'),
-            anno('jay', 'Jay', 535,  585, 'Distribution',        'Released simultaneously on DVD, web download, and Bittorrent. Pioneered open distribution.'),
-            anno('jay', 'Jay', 160,  200, 'Team structure',      'Seven core artists with occasional community contributions. Small team, big output.')
+            // ─── Jay (production pipeline) — all with barchart visualizations ───
+            anno('jay', 'Jay',  20,   65, 'Pre-production',      'Storyboards were drawn in Inkscape and GIMP. The entire pre-production was open-source.', 'barchart', generateBarchart(400, 'rising')),
+            anno('jay', 'Jay',  80,  125, 'Blender version',     'Made with Blender 2.46. The particle system was overhauled specifically for this film.', 'barchart', generateBarchart(400, 'plateau')),
+            anno('jay', 'Jay', 145,  195, 'Render farm',         'Rendered on a 14-node farm at the Blender Institute. Each frame took 5-20 minutes.', 'barchart', generateBarchart(500, 'peaks')),
+            anno('jay', 'Jay', 225,  275, 'Compositing workflow', 'Blender\'s built-in compositor handled all post-processing — no external tools needed.', 'barchart', generateBarchart(400, 'plateau')),
+            anno('jay', 'Jay', 305,  355, 'Version control',     'SVN was used for asset management. The full production files are publicly available.', 'barchart', generateBarchart(400, 'rising')),
+            anno('jay', 'Jay', 380,  435, 'Color management',    'Linear workflow with sRGB output. One of the first Blender projects to use proper color management.', 'barchart', generateBarchart(400, 'falling')),
+            anno('jay', 'Jay', 455,  515, 'Output format',       'Mastered at 1920x1080 (Full HD) — a high resolution choice for 2008 when 720p was standard.', 'barchart', generateBarchart(500, 'peaks')),
+            anno('jay', 'Jay', 535,  585, 'Distribution',        'Released simultaneously on DVD, web download, and Bittorrent. Pioneered open distribution.', 'barchart', generateBarchart(400, 'rising')),
+            anno('jay', 'Jay', 160,  200, 'Team structure',      'Seven core artists with occasional community contributions. Small team, big output.', 'barchart', generateBarchart(300, 'plateau'))
         ];
 
         window.ftInstance = FrameTrail.init({
