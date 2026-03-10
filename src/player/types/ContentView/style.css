@@ -167,6 +167,7 @@
     box-sizing: border-box;
     background-image: none !important;
     padding-left: 160px;
+    background-color: var(--primary-bg-color);
 }
 
 .layoutArea[data-area="areaLeft"][data-size="medium"] .collectionElement .resourceThumb::before,
@@ -194,6 +195,8 @@
     position: static;
     background: transparent;
     max-height: none;
+    color: var(--primary-fg-color);
+    text-shadow: none;
 }
 
 .layoutArea[data-area="areaLeft"][data-size="medium"] .collectionElement .resourceThumb .resourceOverlay,
@@ -217,6 +220,7 @@
     left: auto;
     right: 6px;
     bottom: calc(50% - 13px);
+    background-color: var(--secondary-bg-color);
 }
 
 .layoutArea[data-area="areaLeft"][data-size="medium"] .collectionElement .resourceThumb .resourceEditButton,
