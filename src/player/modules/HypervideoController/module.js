@@ -170,7 +170,6 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
 
             initVideo(
                 function(){
-
                     HypervideoModel.offsetOut = (HypervideoModel.offsetOut) ? HypervideoModel.offsetOut : videoElement.duration;
                     HypervideoModel.durationFull = videoElement.duration;
                     HypervideoModel.duration = HypervideoModel.offsetOut - HypervideoModel.offsetIn;

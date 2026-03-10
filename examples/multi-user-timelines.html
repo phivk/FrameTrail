@@ -20,6 +20,7 @@
     <script src="../build/frametrail.min.js"></script>
     <style>
         body { margin: 0; }
+        .areaBottomContainer[data-size="large"] { flex-basis: calc(100vh - 300px); min-height: calc(100vh - 300px); }
     </style>
 </head>
 <body>
@@ -283,8 +284,7 @@
                     }],
                     contents:     [],
                     subtitles:    {},
-                    globalEvents: { onReady: '', onPlay: '', onPause: '', onEnded: '' },
-                    customCSS:    '.areaBottomContainer[data-size="large"] { flex-basis: calc(100vh - 300px); min-height: calc(100vh - 300px); }'
+                    globalEvents: { onReady: '', onPlay: '', onPause: '', onEnded: '' }
                 },
                 annotations: annotations
             }]
