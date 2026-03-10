@@ -1190,7 +1190,7 @@
         for (var i = 0; i < annotationData.length; i++) {
             var annotationContent = annotationData[i].data.name;
             if (annotationData[i].data.type == 'text') {
-                if (annotationData[i].data.attributes.text.length != 0) {
+                if (annotationData[i].data.attributes.text && annotationData[i].data.attributes.text.length != 0) {
                     var _t = document.createElement('div');
                     _t.innerHTML = annotationData[i].data.attributes.text;
                     annotationContent = _t.textContent;
