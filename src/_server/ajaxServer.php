@@ -406,8 +406,6 @@ switch($_REQUEST["a"]) {
         }
         
         if (!file_exists($conf["dir"]["data"]."/config.json")) {
-            $tmpColors = array("597081", "339966", "16a09c", "cd4436", "0073a6", "8b5180", "999933", "CC3399", "7f8c8d", "ae764d", "cf910d", "b85e02");
-
             $tmpConf = array(
                 "updateServiceURL"=> "https://update.frametrail.org",
                 "autoUpdate"=> false,
@@ -421,7 +419,6 @@ switch($_REQUEST["a"]) {
                 "allowCollaboration"=> false,
                 "allowUploads"=> true,
                 "defaultTheme"=> "",
-                "userColorCollection"=> $tmpColors,
                 "videoFit"=> "contain",
                 "defaultLanguage"=> "en"
             );

@@ -383,9 +383,12 @@ function requireLogin($role = false) {
 
 function getUserColors() {
     global $conf;
+    $defaultColors = array("597081", "339966", "16a09c", "cd4436", "0073a6", "8b5180", "999933", "CC3399", "7f8c8d", "ae764d", "cf910d", "b85e02");
     $json = file_get_contents($conf["dir"]["data"]."/config.json");
     $configDB = json_decode($json, true);
-    $return["colorCollection"] = $configDB["userColorCollection"];
+    $return["colorCollection"] = (isset($configDB["userColorCollection"]) && is_array($configDB["userColorCollection"]))
+        ? $configDB["userColorCollection"]
+        : $defaultColors;
 
     $json = file_get_contents($conf["dir"]["data"]."/users.json");
     $user = json_decode($json, true);
