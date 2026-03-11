@@ -620,10 +620,8 @@ FrameTrail.defineType(
                         var firstActiveElement = container.querySelector(activeSelector);
                         if (!firstActiveElement) { return; }
                         var activeElementPosition = firstActiveElement.offsetTop;
-                        var center = container.scrollTop + container.clientHeight / 2;
-                        if ( activeElementPosition < center || activeElementPosition > center ) {
-                            container.scrollTop = activeElementPosition - container.clientHeight / 2;
-                        }
+                        var scrollTarget = activeElementPosition - container.clientHeight / 2;
+                        container.scrollTo({ top: Math.max(0, scrollTarget), behavior: 'smooth' });
                     }
 
                     switch (self.contentViewData.type) {
