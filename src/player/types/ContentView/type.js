@@ -556,6 +556,7 @@ FrameTrail.defineType(
                     if (scrollContainer) {
                         var userScrollTimeout;
                         scrollContainer.addEventListener('scroll', function() {
+                            if (self._isProgrammaticScroll) return;
                             self.isMouseOver = true;
                             clearTimeout(userScrollTimeout);
                             userScrollTimeout = setTimeout(function() {
@@ -1374,31 +1375,44 @@ FrameTrail.defineType(
                         return;
                     }
 
-                    // Detect which annotations just became active (oscillation prevention)
+                    // Detect whether the active set changed at all
                     var prevActiveIndices = self._lastActiveAnnotationIndices || [];
-                    var newlyActiveIndices = activeAnnotationIndices.filter(function(idx) {
-                        return prevActiveIndices.indexOf(idx) === -1;
-                    });
+                    var activeSetChanged = activeAnnotationIndices.length !== prevActiveIndices.length
+                        || activeAnnotationIndices.some(function(idx, i) { return idx !== prevActiveIndices[i]; });
                     self._lastActiveAnnotationIndices = activeAnnotationIndices;
 
                     // Only scroll when the active set changes
-                    if (newlyActiveIndices.length === 0) return;
+                    if (!activeSetChanged) return;
 
-                    var newIdxInActive = activeAnnotationIndices.indexOf(newlyActiveIndices[0]);
-                    var elToCenter = self.getContentViewElementFromContentItem(activeAnnotations[newIdxInActive]);
-                    if (!elToCenter) return;
+                    // Compute midpoint of all active elements
+                    var firstEl = self.getContentViewElementFromContentItem(activeAnnotations[0]);
+                    var lastEl = self.getContentViewElementFromContentItem(activeAnnotations[activeAnnotations.length - 1]);
+                    if (!firstEl || !lastEl) return;
 
+                    self._isProgrammaticScroll = true;
                     if (slideAxis == 'x') {
-                        var scrollTarget = elToCenter.offsetLeft
-                                         - scrollContainer.clientWidth / 2
-                                         + elToCenter.offsetWidth / 2;
+                        var groupLeft = firstEl.offsetLeft;
+                        var groupRight = lastEl.offsetLeft + lastEl.offsetWidth;
+                        var groupCenter = (groupLeft + groupRight) / 2;
+                        var scrollTarget = groupCenter - scrollContainer.clientWidth / 2;
                         scrollContainer.scrollTo({ left: Math.max(0, scrollTarget), behavior: 'smooth' });
                     } else {
-                        var scrollTarget = elToCenter.offsetTop
-                                         - scrollContainer.clientHeight / 2
-                                         + elToCenter.offsetHeight / 2;
+                        var groupTop = firstEl.offsetTop;
+                        var groupBottom = lastEl.offsetTop + lastEl.offsetHeight;
+                        var groupCenter = (groupTop + groupBottom) / 2;
+                        var scrollTarget = groupCenter - scrollContainer.clientHeight / 2;
                         scrollContainer.scrollTo({ top: Math.max(0, scrollTarget), behavior: 'smooth' });
                     }
+                    // Clear flag when smooth scroll finishes
+                    if (self._scrollEndHandler) {
+                        scrollContainer.removeEventListener('scrollend', self._scrollEndHandler);
+                    }
+                    self._scrollEndHandler = function() {
+                        self._isProgrammaticScroll = false;
+                        scrollContainer.removeEventListener('scrollend', self._scrollEndHandler);
+                        self._scrollEndHandler = null;
+                    };
+                    scrollContainer.addEventListener('scrollend', self._scrollEndHandler);
 
                 },
 
