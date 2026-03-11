@@ -366,7 +366,7 @@
 
 .layoutArea .contentViewContainer .contentViewContents .customhtmlContainer {
     margin: 0px 4px 4px 4px;
-    max-height: calc(100% - 8px);
+    height: calc(100% - 8px);
     box-sizing: border-box;
     position: relative;
     padding: 7px;
