@@ -1649,12 +1649,12 @@ FrameTrail.defineType(
                                     +'        <div>'
                                     +'            <label>onClickContentItem:</label>'
                                     +'            <div class="message active">'+ self.labels['MessageHintContentViewClickItem'] +'</div>'
-                                    +'            <textarea class="contentViewData" data-property="onClickContentItem" data-value="'+ contentViewData.onClickContentItem +'" placeholder="('+ self.labels['GenericOptional'] +')">'+ contentViewData.onClickContentItem +'</textarea>'
+                                    +'            <textarea class="contentViewData" data-property="onClickContentItem" placeholder="('+ self.labels['GenericOptional'] +')"></textarea>'
                                     +'        </div>'
                                     +'    </details>'
                                     +'    <div class="typeSpecific codeEditorLarge '+ (contentViewData.type == 'CustomHTML' ? 'active' : '') +'" data-type="CustomHTML">'
                                     +'        <label>'+ self.labels['GenericCustomHTML'] +':</label>'
-                                    +'        <textarea class="contentViewData" data-property="html" data-value="'+ contentViewData.html +'">'+ contentViewData.html +'</textarea>'
+                                    +'        <textarea class="contentViewData" data-property="html"></textarea>'
                                     +'    </div>'
                                     +'    <div class="typeSpecific '+ (contentViewData.type == 'Transcript' ? 'active' : '') +'" data-type="Transcript">'
                                     +'        <label>'+ self.labels['SettingsTranscriptSource'] +':</label>'
@@ -1664,6 +1664,12 @@ FrameTrail.defineType(
                                     +'    </div>'
                                     +'    <div class="typeSpecific '+ (contentViewData.type == 'Timelines' ? 'active' : '') +'" data-type="Timelines">'
                                     +'    </div>';
+
+                    // Set textarea values programmatically to avoid HTML parsing issues
+                    var htmlTextarea = editingUI.querySelector('.contentViewData[data-property="html"]');
+                    if (htmlTextarea) { htmlTextarea.value = contentViewData.html || ''; }
+                    var onClickTextarea = editingUI.querySelector('.contentViewData[data-property="onClickContentItem"]');
+                    if (onClickTextarea) { onClickTextarea.value = contentViewData.onClickContentItem || ''; }
 
                     // Live icon preview
                     var iconInput = editingUI.querySelector('[data-property="icon"]'),
