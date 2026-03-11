@@ -1466,25 +1466,27 @@ FrameTrail.defineType(
 
                     var elementOrigin = this.contentViewPreviewElement,
                         animationDiv = elementOrigin.cloneNode(true),
+                        dialogAncestor = elementOrigin.closest('dialog'),
                         originRect = elementOrigin.getBoundingClientRect(),
-                        originOffset = { top: originRect.top + window.scrollY, left: originRect.left + window.scrollX },
+                        originTop = originRect.top,
+                        originLeft = originRect.left,
                         originWidth = elementOrigin.offsetWidth,
                         originHeight = elementOrigin.offsetHeight,
                         finalTop = (window.innerHeight/2) - 300,
-                        finalLeft = (window.innerWidth/2) - 407,
+                        finalLeft = (window.innerWidth/2) - 430,
                         self = this;
 
                     animationDiv.classList.add('contentViewAnimationDiv');
-                    animationDiv.style.position = 'absolute';
-                    animationDiv.style.top = originOffset.top + 'px';
-                    animationDiv.style.left = originOffset.left + 'px';
+                    animationDiv.style.position = 'fixed';
+                    animationDiv.style.top = originTop + 'px';
+                    animationDiv.style.left = originLeft + 'px';
                     animationDiv.style.width = originWidth + 'px';
                     animationDiv.style.height = originHeight + 'px';
                     animationDiv.style.zIndex = '99';
-                    document.body.appendChild(animationDiv);
+                    (dialogAncestor || document.body).appendChild(animationDiv);
 
                     var anim = animationDiv.animate([
-                        { top: originOffset.top + 'px', left: originOffset.left + 'px', width: originWidth + 'px', height: originHeight + 'px' },
+                        { top: originTop + 'px', left: originLeft + 'px', width: originWidth + 'px', height: originHeight + 'px' },
                         { top: finalTop + 'px', left: finalLeft + 'px', width: '860px', height: '600px' }
                     ], { duration: 300, easing: 'ease', fill: 'forwards' });
 
@@ -1511,8 +1513,8 @@ FrameTrail.defineType(
                             close: function() {
                                 editDialogCtrl.destroy();
                                 var closeAnim = animationDiv.animate([
-                                    { top: finalTop + 'px', left: finalLeft + 'px', width: '814px', height: '600px' },
-                                    { top: originOffset.top + 'px', left: originOffset.left + 'px', width: originWidth + 'px', height: originHeight + 'px' }
+                                    { top: finalTop + 'px', left: finalLeft + 'px', width: '860px', height: '600px' },
+                                    { top: originTop + 'px', left: originLeft + 'px', width: originWidth + 'px', height: originHeight + 'px' }
                                 ], { duration: 300, easing: 'ease', fill: 'forwards' });
                                 closeAnim.finished.then(function() {
                                     document.querySelectorAll('.contentViewAnimationDiv').forEach(function(el) { el.remove(); });
