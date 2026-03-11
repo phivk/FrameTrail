@@ -86,6 +86,10 @@
 
         FrameTrail.module('Database').loadConfigData(function() {
 
+            // Resource manager always uses classic theme (no per-project theming)
+            var _targetEl = document.querySelector(FrameTrail.getState('target'));
+            if (_targetEl) _targetEl.setAttribute('data-frametrail-theme', 'classic');
+
             // Apply config language before any UI is rendered
             var configLang = (FrameTrail.module('Database').config || {}).defaultLanguage;
             if (configLang) { FrameTrail.module('Localization').setLanguage(configLang); }
