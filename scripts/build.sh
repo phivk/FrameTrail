@@ -265,10 +265,13 @@ inline_font "$BUILD_DIR/frametrail.css" \
     "../fonts/FrameTrail_Icons/frametrail-icons.woff2" \
     "$FONTS_DIR/FrameTrail_Icons/frametrail-icons.woff2"
 
-# Titillium Web text font (3 weights)
+# Titillium Web text font (4 weights)
 inline_font "$BUILD_DIR/frametrail.css" \
     "../fonts/Titillium_Web/TitilliumWeb-Regular.woff2" \
     "$FONTS_DIR/Titillium_Web/TitilliumWeb-Regular.woff2"
+inline_font "$BUILD_DIR/frametrail.css" \
+    "../fonts/Titillium_Web/TitilliumWeb-SemiBold.woff2" \
+    "$FONTS_DIR/Titillium_Web/TitilliumWeb-SemiBold.woff2"
 inline_font "$BUILD_DIR/frametrail.css" \
     "../fonts/Titillium_Web/TitilliumWeb-Bold.woff2" \
     "$FONTS_DIR/Titillium_Web/TitilliumWeb-Bold.woff2"

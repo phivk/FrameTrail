@@ -61,6 +61,11 @@ input, select {
 }
 @font-face {
     font-family: 'TitilliumWeb';
+    src: url("../fonts/Titillium_Web/TitilliumWeb-SemiBold.woff2") format("woff2");
+    font-weight: 600;
+}
+@font-face {
+    font-family: 'TitilliumWeb';
     src: url("../fonts/Titillium_Web/TitilliumWeb-Bold.woff2") format("woff2");
     font-weight: bold;
 }
@@ -79,6 +84,10 @@ body > .timelineElement.previewPopupWrapper,
     font-family: TitilliumWeb,"Helvetica Neue",Helvetica,Arial,sans-serif;
     font-size: 14px;
     font-weight: 400;
+}
+
+b {
+    font-weight: 600;
 }
 
 .frametrail-body {
