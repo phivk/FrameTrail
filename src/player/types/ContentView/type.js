@@ -236,11 +236,22 @@ FrameTrail.defineType(
 
                             self._clearContentCollection();
 
+                            var _cvContents = self.contentViewContainer.querySelector('.contentViewContents');
+                            var existingContainer = _cvContents.querySelector('.customhtmlContainer');
+
+                            // Skip rebuild if the source HTML hasn't changed since last render.
+                            // This preserves DOM elements dynamically created by onReady/custom scripts.
+                            if (existingContainer && self._lastCustomHTML === self.contentViewData.html) {
+                                break;
+                            }
+
+                            var htmlChanged = (self._lastCustomHTML !== undefined && self._lastCustomHTML !== self.contentViewData.html);
+                            self._lastCustomHTML = self.contentViewData.html;
+
                             var customhtmlContainer = document.createElement('div');
                             customhtmlContainer.className = 'customhtmlContainer';
                             customhtmlContainer.innerHTML = self.contentViewData.html;
 
-                            var _cvContents = self.contentViewContainer.querySelector('.contentViewContents');
                             _cvContents.innerHTML = '';
                             _cvContents.appendChild(customhtmlContainer);
 
@@ -249,6 +260,19 @@ FrameTrail.defineType(
                                     FrameTrail.module('HypervideoController').currentTime = parseFloat(evt.target.getAttribute('data-start')) + 0.05;
                                 }
                             });
+
+                            // Re-fire onReady when HTML source changed so dynamic content is recreated
+                            if (htmlChanged) {
+                                var HypervideoModel = FrameTrail.module('HypervideoModel');
+                                if (HypervideoModel.events.onReady) {
+                                    try {
+                                        var readyEvent = new Function('FrameTrail', 'hypervideo', HypervideoModel.events.onReady);
+                                        readyEvent(FrameTrail, FrameTrail.module('HypervideoController'));
+                                    } catch (e) {
+                                        console.warn('onReady handler error after CustomHTML update: ' + e.message);
+                                    }
+                                }
+                            }
 
                             break;
 
