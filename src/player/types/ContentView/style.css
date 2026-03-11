@@ -374,11 +374,14 @@
     overflow: auto;
 }
 
+.layoutArea .contentViewContainer .contentViewContents .customhtmlContainer .timebased {
+    border-bottom: 1px solid transparent;
+    opacity: .7;
+}
+
 .layoutArea .contentViewContainer .contentViewContents .customhtmlContainer .timebased:hover, .layoutArea .contentViewContainer .contentViewContents .customhtmlContainer .timebased.active {
-    background-color: var(--secondary-fg-color);
-    color: var(--primary-bg-color);
-    border-radius: 2px;
-    opacity: 0.8;
+    border-bottom-color: var(--primary-fg-color);
+    opacity: 1;
     cursor: pointer;
 }
 
