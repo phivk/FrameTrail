@@ -219,7 +219,6 @@ body.userinactive .mainContainer:not([data-edit-mode="overlays"]):not([data-edit
     order: 0;
     align-self: stretch;
     background: var(--primary-bg-color);
-    border-bottom: 2px solid var(--primary-bg-color);
 }
 
 .areaLeftContainer {
@@ -297,6 +296,38 @@ body.userinactive .mainContainer:not([data-edit-mode="overlays"]):not([data-edit
 .areaLeftContainer[data-size="large"], .areaRightContainer[data-size="large"] {
     flex: 0 0 650px;
     min-width: 650px;
+}
+
+/* Hidden tabs: reduce area size by 36px (tab bar height) */
+
+.areaTopContainer.hiddenTabs[data-size="small"], .areaBottomContainer.hiddenTabs[data-size="small"] {
+    flex-basis: 40px;
+    min-height: 40px;
+}
+
+.areaTopContainer.hiddenTabs[data-size="medium"], .areaBottomContainer.hiddenTabs[data-size="medium"] {
+    flex-basis: 120px;
+    min-height: 120px;
+}
+
+.areaTopContainer.hiddenTabs[data-size="large"], .areaBottomContainer.hiddenTabs[data-size="large"] {
+    flex-basis: clamp(164px, calc(100vh * 0.6 - 76px), 364px);
+    min-height: clamp(164px, calc(100vh * 0.6 - 76px), 364px);
+}
+
+.areaLeftContainer.hiddenTabs[data-size="small"], .areaRightContainer.hiddenTabs[data-size="small"] {
+    flex: 0 0 52px;
+    min-width: 52px;
+}
+
+.areaLeftContainer.hiddenTabs[data-size="medium"], .areaRightContainer.hiddenTabs[data-size="medium"] {
+    flex: 0 0 414px;
+    min-width: 414px;
+}
+
+.areaLeftContainer.hiddenTabs[data-size="large"], .areaRightContainer.hiddenTabs[data-size="large"] {
+    flex: 0 0 614px;
+    min-width: 614px;
 }
 
 .areaTopContainer.closed, .areaBottomContainer.closed {

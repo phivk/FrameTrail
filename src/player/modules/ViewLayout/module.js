@@ -154,6 +154,8 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
 
         updateLayoutAreaVisibility();
 
+        updateHiddenTabs();
+
         updateManagedContent();
 
     }
@@ -165,6 +167,36 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
         FrameTrail.changeState('hv_config_areaBottomVisible', (contentViewsBottom.length != 0));
         FrameTrail.changeState('hv_config_areaLeftVisible', (contentViewsLeft.length != 0));
         FrameTrail.changeState('hv_config_areaRightVisible', (contentViewsRight.length != 0));
+
+    }
+
+
+    function updateHiddenTabs() {
+
+        var ViewVideo = FrameTrail.module('ViewVideo');
+        var areas = [
+            { views: contentViewsTop,    key: 'areaTop',    container: ViewVideo.AreaTopContainer },
+            { views: contentViewsBottom,  key: 'areaBottom', container: ViewVideo.AreaBottomContainer },
+            { views: contentViewsLeft,    key: 'areaLeft',   container: ViewVideo.AreaLeftContainer },
+            { views: contentViewsRight,   key: 'areaRight',  container: ViewVideo.AreaRightContainer }
+        ];
+
+        for (var i = 0; i < areas.length; i++) {
+            var area = areas[i];
+            var shouldHide = (area.views.length === 1
+                && !area.views[0].contentViewData.name
+                && !area.views[0].contentViewData.icon);
+
+            if (area.container) {
+                area.container.classList.toggle('hiddenTabs', shouldHide);
+            }
+
+            // Also update layout manager preview area
+            var previewArea = HypervideoLayoutContainer.querySelector('.layoutArea[data-area="' + area.key + '"]');
+            if (previewArea) {
+                previewArea.classList.toggle('hiddenTabs', shouldHide);
+            }
+        }
 
     }
 
@@ -200,6 +232,7 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
         }
 
         updateLayoutAreaVisibility();
+        updateHiddenTabs();
 
         return newContentView;
 
@@ -245,6 +278,7 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
         updateManagedContent();
 
         updateLayoutAreaVisibility();
+        updateHiddenTabs();
 
         FrameTrail.module('HypervideoModel').newUnsavedChange('layout');
 
@@ -1502,6 +1536,8 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
         initLayoutManager: initLayoutManager,
 
         reorderContentView:  reorderContentView,
+
+        updateHiddenTabs: updateHiddenTabs,
 
         getLayoutAreaData: getLayoutAreaData,
 

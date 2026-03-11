@@ -340,6 +340,7 @@ FrameTrail.defineType(
                     }
 
                     FrameTrail.module('ViewLayout').updateManagedContent();
+                    FrameTrail.module('ViewLayout').updateHiddenTabs();
 
                     window.setTimeout(function() {
                         self.resizeLayoutArea(false, suppressViewSizeChange);
