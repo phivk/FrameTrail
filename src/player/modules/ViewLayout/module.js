@@ -1070,6 +1070,8 @@ FrameTrail.defineModule('ViewLayout', function(FrameTrail){
         initLayoutAreaPreview(contentViewsLeft);
         initLayoutAreaPreview(contentViewsRight);
 
+        updateHiddenTabs();
+
         // Make preview tabs sortable within each layout area
         var sortableAreaConfig = [
             { area: 'top',    key: 'areaTop'    },
