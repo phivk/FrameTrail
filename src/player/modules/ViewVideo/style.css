@@ -1351,7 +1351,6 @@ body.userinactive .mainContainer:not([data-edit-mode="overlays"]):not([data-edit
         order: -1;
         flex: 0 0 100% !important;
         min-width: 100% !important;
-        max-height: 30%;
         border-right: none;
         border-bottom: 2px solid var(--primary-bg-color);
     }
@@ -1360,7 +1359,6 @@ body.userinactive .mainContainer:not([data-edit-mode="overlays"]):not([data-edit
         order: 1;
         flex: 0 0 100% !important;
         min-width: 100% !important;
-        max-height: 30%;
         border-left: none;
         border-top: 2px solid var(--primary-bg-color);
     }
@@ -1369,5 +1367,11 @@ body.userinactive .mainContainer:not([data-edit-mode="overlays"]):not([data-edit
         order: 0;
         flex: 1 1 100%;
         width: 100%;
+    }
+
+    .areaTopContainer[data-size="large"], 
+    .areaBottomContainer[data-size="large"] {
+        flex-basis: clamp(200px, calc(var(--ft-height, 100vh) * 0.6 - 40px), 300px);
+        min-height: clamp(200px, calc(var(--ft-height, 100vh) * 0.6 - 40px), 300px);
     }
 }
