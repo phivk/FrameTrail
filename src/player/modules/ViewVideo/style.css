@@ -1374,4 +1374,10 @@ body.userinactive .mainContainer:not([data-edit-mode="overlays"]):not([data-edit
         flex-basis: clamp(200px, calc(var(--ft-height, 100vh) * 0.6 - 40px), 300px);
         min-height: clamp(200px, calc(var(--ft-height, 100vh) * 0.6 - 40px), 300px);
     }
+
+    .viewVideo.slide-pos-top .areaTopDetails, 
+    .viewVideo.slide-pos-bottom .areaBottomDetails {
+        flex: 0 1 clamp(200px, calc(var(--ft-height, 100vh) * 0.6 - 40px), 350px);
+        min-height: clamp(200px, calc(var(--ft-height, 100vh) * 0.6 - 40px), 350px);
+    }
 }
