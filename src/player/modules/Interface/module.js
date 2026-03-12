@@ -103,10 +103,15 @@ FrameTrail.defineModule('Interface', function(FrameTrail){
         var targetEl = document.querySelector(FrameTrail.getState('target')),
             resizeTimeout = false;
 
-        window.addEventListener('resize', function(){
-
+        function onResize() {
             var width   = targetEl.offsetWidth,
                 height  = targetEl.offsetHeight;
+
+            // Expose container dimensions as CSS custom properties so
+            // stylesheets can use var(--ft-width) / var(--ft-height)
+            // instead of viewport-relative vh / vw units.
+            targetEl.style.setProperty('--ft-width', width + 'px');
+            targetEl.style.setProperty('--ft-height', height + 'px');
 
             FrameTrail.changeState('viewSize', [width, height]);
 
@@ -117,13 +122,27 @@ FrameTrail.defineModule('Interface', function(FrameTrail){
             resizeTimeout = setTimeout(function() {
                 FrameTrail.changeState('viewSizeChanged');
             }, 300);
+        }
 
+        // Primary: observe the target container itself so we detect size
+        // changes even when the window does not resize (e.g. host page
+        // layout changes, CSS transitions on the container).
+        if (typeof ResizeObserver !== 'undefined') {
+            new ResizeObserver(onResize).observe(targetEl);
+        }
+
+        // Fallback: still listen to window resize for older browsers.
+        window.addEventListener('resize', onResize);
+
+        // Mobile orientation changes may not report new dimensions
+        // immediately — re-fire after a short delay to settle.
+        window.addEventListener('orientationchange', function() {
+            setTimeout(onResize, 100);
+            setTimeout(onResize, 300);
         });
 
-
-        window.dispatchEvent(new Event('resize'));
-
-
+        // Initial measurement.
+        onResize();
 
     };
 

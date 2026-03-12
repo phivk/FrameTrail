@@ -658,7 +658,8 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         var _titlebar = _target && _target.querySelector('.titlebar');
         if (!_titlebar) { return; }
 
-        var isMobileWidth = (window.innerWidth <= 768),
+        var isMobileWidth = (_target.offsetWidth <= 768),
+            inEditMode = (FrameTrail.getState('editMode') != false && FrameTrail.getState('editMode') != 'preview' && FrameTrail.getState('editMode') != 'layout'),
             editBorder = (FrameTrail.getState('editMode') != false) ? (parseInt(getComputedStyle(domElement).borderTopWidth)*2) : 0,
             mainContainerWidth  = _target.offsetWidth
                                     - ((FrameTrail.getState('sidebarOpen') && !FrameTrail.getState('fullscreen')) ? FrameTrail.module('Sidebar').width : 0)
@@ -668,6 +669,10 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
                                     - editBorder,
             _video              = Video,
             videoFit            = (FrameTrail.module('Database').config.videoFit) ? FrameTrail.module('Database').config.videoFit : 'contain';
+
+        // Toggle narrow-layout class for CSS stacking of side areas.
+        // Only in player mode — editor keeps the side-by-side layout.
+        domElement.classList.toggle('narrow-layout', isMobileWidth && !inEditMode);
 
         if (animate) {
             restoreTransitions([VideoContainer, Hypervideo]);
@@ -680,7 +685,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
 
         var videoContainerWidth;
 
-        if ( ( FrameTrail.getState('editMode') != false && FrameTrail.getState('editMode') != 'preview' && FrameTrail.getState('editMode') != 'layout' ) ) {
+        if ( inEditMode ) {
             videoContainerWidth = mainContainerWidth - InfoAreaRight.offsetWidth;
         } else {
             videoContainerWidth = mainContainerWidth

@@ -282,9 +282,11 @@ FrameTrail.defineModule('TimelineController', function(FrameTrail) {
             var left = rect.left + (rect.width / 2) - (previewWidth / 2);
             var top = rect.top - previewHeight - 8;
 
-            // Clamp to viewport
-            if (left < 4) left = 4;
-            if (left + previewWidth > window.innerWidth - 4) left = window.innerWidth - 4 - previewWidth;
+            // Clamp to container (or viewport as fallback)
+            var targetEl = document.querySelector(FrameTrail.getState('target'));
+            var containerRect = targetEl ? targetEl.getBoundingClientRect() : { left: 0, right: window.innerWidth };
+            if (left < containerRect.left + 4) left = containerRect.left + 4;
+            if (left + previewWidth > containerRect.right - 4) left = containerRect.right - 4 - previewWidth;
             if (top < 4) {
                 top = rect.bottom + 8;
             }

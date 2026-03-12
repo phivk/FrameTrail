@@ -31,7 +31,7 @@
     transform: rotate(-90deg);
     text-align: right;
     right: 36px;
-    width: 100vh;
+    width: var(--ft-height, 100vh);
 }
 
 .layoutArea[data-area="areaRight"] .layoutAreaTabs {
@@ -39,7 +39,7 @@
     transform: rotate(-90deg);
     text-align: right;
     right: 100%;
-    width: 100vh;
+    width: var(--ft-height, 100vh);
 }
 
 .layoutArea .layoutAreaTabs .contentViewTab {

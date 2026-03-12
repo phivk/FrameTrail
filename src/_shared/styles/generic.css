@@ -97,11 +97,17 @@ b {
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
-    height: 100vh;
+    height: 100%;
     width: 100%;
     justify-content: flex-start;
     align-content: stretch;
     align-items: flex-start;
+}
+
+/* Full-page mode: when the target is <body> itself, size to the viewport. */
+body > .frametrail-body {
+    height: 100vh;
+    height: 100dvh;
 }
 
 .frametrail-body.editActive {
