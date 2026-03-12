@@ -282,13 +282,13 @@ body.userinactive .mainContainer:not([data-edit-mode="overlays"]):not([data-edit
 }
 
 .areaLeftContainer[data-size="medium"], .areaRightContainer[data-size="medium"] {
-    flex: 0 0 450px;
-    min-width: 450px;
+    flex: 0 0 clamp(300px, 25vw, 450px);
+    min-width: clamp(300px, 25vw, 450px);
 }
 
 .areaLeftContainer[data-size="large"], .areaRightContainer[data-size="large"] {
-    flex: 0 0 650px;
-    min-width: 650px;
+    flex: 0 0 clamp(350px, 35vw, 650px);
+    min-width: clamp(350px, 35vw, 650px);
 }
 
 /* Hidden tabs: reduce area size by 36px (tab bar height) */
@@ -314,13 +314,13 @@ body.userinactive .mainContainer:not([data-edit-mode="overlays"]):not([data-edit
 }
 
 .areaLeftContainer.hiddenTabs[data-size="medium"], .areaRightContainer.hiddenTabs[data-size="medium"] {
-    flex: 0 0 414px;
-    min-width: 414px;
+    flex: 0 0 clamp(264px, calc(25vw - 36px), 414px);
+    min-width: clamp(264px, calc(25vw - 36px), 414px);
 }
 
 .areaLeftContainer.hiddenTabs[data-size="large"], .areaRightContainer.hiddenTabs[data-size="large"] {
-    flex: 0 0 614px;
-    min-width: 614px;
+    flex: 0 0 clamp(314px, calc(35vw - 36px), 614px);
+    min-width: clamp(314px, calc(35vw - 36px), 614px);
 }
 
 .areaTopContainer.closed, .areaBottomContainer.closed {
