@@ -670,10 +670,6 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
             _video              = Video,
             videoFit            = (FrameTrail.module('Database').config.videoFit) ? FrameTrail.module('Database').config.videoFit : 'contain';
 
-        // Toggle narrow-layout class for CSS stacking of side areas.
-        // Only in player mode — editor keeps the side-by-side layout.
-        domElement.classList.toggle('narrow-layout', isMobileWidth && !inEditMode);
-
         if (animate) {
             restoreTransitions([VideoContainer, Hypervideo]);
         } else {

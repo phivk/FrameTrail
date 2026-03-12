@@ -1287,77 +1287,85 @@ body.userinactive .mainContainer:not([data-edit-mode="overlays"]):not([data-edit
     display: block;
 }
 
-/* Media Queries
- * flex-basis / min-height for area details and large containers are now expressed
- * as a single smooth clamp() formula on the base rules above, eliminating the
- * discrete staircase jumps that caused a one-frame flicker in adjustLayout when
- * crossing a breakpoint boundary during resize.
- * Only collectionElement widths (which don't affect adjustLayout) are kept here. */
+/* Prevent detail-area collectionElements from overflowing the container.
+ * Their parent (.contentViewDetailsContents) is a mega-wide slider, so
+ * max-width: 100% is meaningless — we cap against --ft-width instead. */
+.areaTopDetails .collectionElement,
+.areaBottomDetails .collectionElement {
+    max-width: calc(var(--ft-width, 100vw) - 40px);
+}
 
-@media (min-height: 920px) {
+/* Container Queries — collectionElement widths respond to the .mainContainer
+ * height (ft-main) rather than the viewport, so they work correctly when
+ * FrameTrail is embedded in a container smaller than the browser window. */
+
+@container ft-main (min-height: 920px) {
     .areaBottomDetails .collectionElement, .areaTopDetails .collectionElement, .areaTopContainer[data-size="large"] .collectionElement, .areaBottomContainer[data-size="large"] .collectionElement {
         width: 700px;
     }
 }
 
-@media (min-height: 820px) and (max-height: 920px) {
+@container ft-main (min-height: 820px) and (max-height: 920px) {
     .areaBottomDetails .collectionElement, .areaTopDetails .collectionElement, .areaTopContainer[data-size="large"] .collectionElement, .areaBottomContainer[data-size="large"] .collectionElement {
         width: 520px;
     }
 }
 
-@media (min-height: 680px) and (max-height: 820px) {
+@container ft-main (min-height: 680px) and (max-height: 820px) {
     .areaBottomDetails .collectionElement, .areaTopDetails .collectionElement, .areaTopContainer[data-size="large"] .collectionElement, .areaBottomContainer[data-size="large"] .collectionElement {
         width: 380px;
     }
 }
 
-@media (min-height: 540px) and (max-height: 680px) {
+@container ft-main (min-height: 540px) and (max-height: 680px) {
     .areaBottomDetails .collectionElement, .areaTopDetails .collectionElement, .areaTopContainer[data-size="large"] .collectionElement, .areaBottomContainer[data-size="large"] .collectionElement {
         width: 350px;
     }
 }
 
-@media (min-height: 400px) and (max-height: 540px) {
+@container ft-main (min-height: 400px) and (max-height: 540px) {
     .areaBottomDetails .collectionElement, .areaTopDetails .collectionElement, .areaTopContainer[data-size="large"] .collectionElement, .areaBottomContainer[data-size="large"] .collectionElement {
         width: 320px;
     }
 }
 
-@media (max-height: 400px) {
+@container ft-main (max-height: 400px) {
     .areaBottomDetails .collectionElement, .areaTopDetails .collectionElement, .areaTopContainer[data-size="large"] .collectionElement, .areaBottomContainer[data-size="large"] .collectionElement {
         width: 300px;
     }
 }
 
 /* Narrow container layout: stack side areas above/below the video.
-   The .narrow-layout class is toggled by JS in adjustHypervideo()
-   when the container width is <= 768px and we are not in edit mode. */
+   Uses container query on ft-root so it responds to the FrameTrail
+   container width, not the browser viewport. Only affects player mode
+   (edit mode sets its own layout via the editActive branch in JS). */
 
-.viewVideo.narrow-layout .hypervideoContainer {
-    flex-wrap: wrap;
-}
+@container ft-root (max-width: 768px) {
+    .hypervideoContainer {
+        flex-wrap: wrap;
+    }
 
-.viewVideo.narrow-layout .areaLeftContainer {
-    order: -1;
-    flex: 0 0 100% !important;
-    min-width: 100% !important;
-    max-height: 30%;
-    border-right: none;
-    border-bottom: 2px solid var(--primary-bg-color);
-}
+    .areaLeftContainer {
+        order: -1;
+        flex: 0 0 100% !important;
+        min-width: 100% !important;
+        max-height: 30%;
+        border-right: none;
+        border-bottom: 2px solid var(--primary-bg-color);
+    }
 
-.viewVideo.narrow-layout .areaRightContainer {
-    order: 1;
-    flex: 0 0 100% !important;
-    min-width: 100% !important;
-    max-height: 30%;
-    border-left: none;
-    border-top: 2px solid var(--primary-bg-color);
-}
+    .areaRightContainer {
+        order: 1;
+        flex: 0 0 100% !important;
+        min-width: 100% !important;
+        max-height: 30%;
+        border-left: none;
+        border-top: 2px solid var(--primary-bg-color);
+    }
 
-.viewVideo.narrow-layout .videoContainer {
-    order: 0;
-    flex: 1 1 100%;
-    width: 100%;
+    .videoContainer {
+        order: 0;
+        flex: 1 1 100%;
+        width: 100%;
+    }
 }

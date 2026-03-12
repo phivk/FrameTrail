@@ -102,6 +102,8 @@ b {
     justify-content: flex-start;
     align-content: stretch;
     align-items: flex-start;
+    container-type: inline-size;
+    container-name: ft-root;
 }
 
 /* Full-page mode: when the target is <body> itself, size to the viewport. */

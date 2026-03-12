@@ -44,20 +44,20 @@
     grid-column: span 6;
 }
 
-/* Responsive grid columns for hypervideo thumbs */
-@media (min-width: 768px) {
+/* Responsive grid columns for hypervideo thumbs (container-relative) */
+@container ft-root (min-width: 768px) {
     .viewOverview .overviewList .hypervideoThumb {
         grid-column: span 4;
     }
 }
 
-@media (min-width: 992px) {
+@container ft-root (min-width: 992px) {
     .viewOverview .overviewList .hypervideoThumb {
         grid-column: span 4;
     }
 }
 
-@media (min-width: 1200px) {
+@container ft-root (min-width: 1200px) {
     .viewOverview .overviewList .hypervideoThumb {
         grid-column: span 3;
     }

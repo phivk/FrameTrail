@@ -10,6 +10,8 @@
     overflow: hidden;
     transition: margin-left 200ms linear, width 200ms linear;
     color: var(--primary-fg-color);
+    container-type: size;
+    container-name: ft-main;
 }
 
 
