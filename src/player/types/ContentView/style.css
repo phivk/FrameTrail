@@ -430,6 +430,7 @@
     height: 100%;
     background: var(--secondary-bg-color);
     box-sizing: border-box;
+    overflow: clip;
     display: none;
 }
 

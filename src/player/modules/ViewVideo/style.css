@@ -233,28 +233,21 @@ body.userinactive .mainContainer:not([data-edit-mode="overlays"]):not([data-edit
     position: relative;
     width: 100%;
     order: 0;
-    flex: 0 1 clamp(200px, calc(100vh * 0.6 - 40px), 450px);
-    min-height: clamp(200px, calc(100vh * 0.6 - 40px), 450px);
+    flex: 0 0 0px;
+    min-height: 0;
     align-self: auto;
     background: transparent;
     z-index: 2;
     overflow: hidden;
-    /* Keep invisible by default — revealed only when slidePosition is top/bottom.
-       The 210ms delay on visibility lets the exit slide animation finish
-       before the area is hidden again. The 210ms slightly exceeds the
-       slideArea's 200ms margin-top transition so the content is visible throughout. */
     visibility: hidden;
-    transition: margin-top 500ms, visibility 0s 210ms;
+    transition: margin-top 500ms;
 }
 
-.viewVideo.slide-pos-top .areaTopDetails {
-    visibility: visible;
-    transition: margin-top 500ms; /* show immediately; no visibility delay */
-}
-
+.viewVideo.slide-pos-top .areaTopDetails,
 .viewVideo.slide-pos-bottom .areaBottomDetails {
+    flex: 0 1 clamp(200px, calc(100vh * 0.6 - 40px), 450px);
+    min-height: clamp(200px, calc(100vh * 0.6 - 40px), 450px);
     visibility: visible;
-    transition: margin-top 500ms; /* show immediately */
 }
 
 /* LayoutArea Sizes */

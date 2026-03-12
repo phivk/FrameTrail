@@ -399,9 +399,11 @@ FrameTrail.defineType(
                                 var _detailEls = self.contentViewDetailsContainer.querySelectorAll('.collectionElement');
                                 if (_detailEls[_idx]) _detailEls[_idx].classList.add('open');
 
-                                self.updateCollectionSlider(true);
-
                                 FrameTrail.module('ViewVideo').shownDetails = self.whichArea;
+
+                                requestAnimationFrame(function() {
+                                    self.updateCollectionSlider(true);
+                                });
 
                                 var annoData = contentItem.data;
                                 FrameTrail.triggerEvent('userAction', {
