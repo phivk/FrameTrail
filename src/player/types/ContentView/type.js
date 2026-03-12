@@ -937,6 +937,108 @@ FrameTrail.defineType(
                         }
                     });
 
+                    // Horizontal swipe to navigate between collection elements.
+                    // Uses touchstart/touchmove because <video controls> swallows
+                    // pointer events at the browser level (even capture phase on
+                    // ancestors never fires). Touch events DO still propagate.
+                    // Vertical scroll is preserved by only acting when the gesture
+                    // is predominantly horizontal.
+                    (function() {
+                        var startX = 0, startY = 0, swiping = false, decided = false;
+                        var THRESHOLD = 40;     // min px to trigger a swipe
+                        var ANGLE_LIMIT = 30;   // max degrees from horizontal
+
+                        detailsContainerElement.addEventListener('touchstart', function(e) {
+                            if (e.touches.length !== 1) return;
+                            startX = e.touches[0].clientX;
+                            startY = e.touches[0].clientY;
+                            swiping = true;
+                            decided = false;
+                        }, true);
+
+                        detailsContainerElement.addEventListener('touchmove', function(e) {
+                            if (!swiping || decided) return;
+                            var touch = e.touches[0];
+                            var dx = touch.clientX - startX;
+                            var dy = touch.clientY - startY;
+                            var dist = Math.sqrt(dx * dx + dy * dy);
+                            if (dist < THRESHOLD) return;
+
+                            decided = true;
+                            var angle = Math.abs(Math.atan2(dy, dx) * 180 / Math.PI);
+                            if (angle > ANGLE_LIMIT && angle < (180 - ANGLE_LIMIT)) {
+                                swiping = false;
+                                return;
+                            }
+
+                            swiping = false;
+                            e.preventDefault();
+
+                            var activeElement = self.contentViewContainer.querySelector('.collectionElement.open');
+                            if (!activeElement) return;
+
+                            if (dx < 0) {
+                                var next = activeElement.nextElementSibling;
+                                while (next && !next.classList.contains('collectionElement')) { next = next.nextElementSibling; }
+                                if (next) next.click();
+                            } else {
+                                var prev = activeElement.previousElementSibling;
+                                while (prev && !prev.classList.contains('collectionElement')) { prev = prev.previousElementSibling; }
+                                if (prev) prev.click();
+                            }
+                        }, true);
+
+                        detailsContainerElement.addEventListener('touchend', function() { swiping = false; decided = false; }, true);
+                        detailsContainerElement.addEventListener('touchcancel', function() { swiping = false; decided = false; }, true);
+
+                        // Also support mouse-based swipe (desktop, non-touch)
+                        detailsContainerElement.addEventListener('pointerdown', function(e) {
+                            if (e.pointerType === 'touch') return; // handled by touch events above
+                            if (e.button !== 0) return;
+                            startX = e.clientX;
+                            startY = e.clientY;
+                            swiping = true;
+                            decided = false;
+                        }, true);
+
+                        detailsContainerElement.addEventListener('pointermove', function(e) {
+                            if (e.pointerType === 'touch') return;
+                            if (!swiping || decided) return;
+                            var dx = e.clientX - startX;
+                            var dy = e.clientY - startY;
+                            var dist = Math.sqrt(dx * dx + dy * dy);
+                            if (dist < THRESHOLD) return;
+
+                            decided = true;
+                            var angle = Math.abs(Math.atan2(dy, dx) * 180 / Math.PI);
+                            if (angle > ANGLE_LIMIT && angle < (180 - ANGLE_LIMIT)) {
+                                swiping = false;
+                                return;
+                            }
+
+                            swiping = false;
+                            var activeElement = self.contentViewContainer.querySelector('.collectionElement.open');
+                            if (!activeElement) return;
+
+                            if (dx < 0) {
+                                var next = activeElement.nextElementSibling;
+                                while (next && !next.classList.contains('collectionElement')) { next = next.nextElementSibling; }
+                                if (next) next.click();
+                            } else {
+                                var prev = activeElement.previousElementSibling;
+                                while (prev && !prev.classList.contains('collectionElement')) { prev = prev.previousElementSibling; }
+                                if (prev) prev.click();
+                            }
+                        }, true);
+
+                        detailsContainerElement.addEventListener('pointerup', function(e) {
+                            if (e.pointerType !== 'touch') { swiping = false; decided = false; }
+                        }, true);
+                        detailsContainerElement.addEventListener('pointercancel', function(e) {
+                            if (e.pointerType !== 'touch') { swiping = false; decided = false; }
+                        }, true);
+                    })();
+
                     return detailsContainerElement;
 
                 },
