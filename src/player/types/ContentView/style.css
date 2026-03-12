@@ -385,6 +385,17 @@
     cursor: pointer;
 }
 
+/* Content View Details — Swipe Overlay */
+
+.contentViewDetailsContainer .swipeOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+}
+
 /* Content View Details */
 
 .layoutAreaDetails .slideButton {

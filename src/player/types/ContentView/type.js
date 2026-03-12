@@ -910,6 +910,7 @@ FrameTrail.defineType(
                         _wd = document.createElement('div');
                     _wd.innerHTML = '<div class="contentViewDetailsContainer">'
                                   + '    <div class="contentViewDetailsContents"></div>'
+                                  + '    <div class="swipeOverlay"></div>'
                                   + '    <div class="slideButton slideLeft" title="'+ self.labels['MessageHintTryUsingArrowKeys'] +'">'
                                   + '        <span class="icon-left-open-big"></span>'
                                   + '    </div>'
@@ -937,46 +938,44 @@ FrameTrail.defineType(
                         }
                     });
 
-                    // Horizontal swipe to navigate between collection elements.
-                    // Uses touchstart/touchmove because <video controls> swallows
-                    // pointer events at the browser level (even capture phase on
-                    // ancestors never fires). Touch events DO still propagate.
-                    // Vertical scroll is preserved by only acting when the gesture
-                    // is predominantly horizontal.
+                    // Swipe overlay: a transparent element on top of the content
+                    // that intercepts touch/pointer events for horizontal swipe
+                    // navigation. Cross-origin iframes and <video controls> don't
+                    // propagate events to ancestors, so we need an overlay that
+                    // sits above them in the parent document.
+                    //
+                    // Behavior:
+                    //   Horizontal swipe → navigate to prev/next collection element
+                    //   Tap / click       → dismiss overlay + forward click to content
+                    //   Vertical gesture  → dismiss overlay so user can scroll content
+                    //
+                    // The overlay reactivates when navigation occurs (swipe,
+                    // slideButton, keyboard) or after 8 s of inactivity.
                     (function() {
-                        var startX = 0, startY = 0, swiping = false, decided = false;
-                        var THRESHOLD = 40;     // min px to trigger a swipe
-                        var ANGLE_LIMIT = 30;   // max degrees from horizontal
+                        var swipeOverlay = detailsContainerElement.querySelector('.swipeOverlay');
+                        var startX = 0, startY = 0, startTime = 0;
+                        var swiping = false, decided = false, didSwipe = false;
+                        var THRESHOLD = 40;
+                        var ANGLE_LIMIT = 30;
+                        var TAP_THRESHOLD = 10;
+                        var TAP_TIMEOUT = 300;
+                        var REACTIVATE_DELAY = 8000;
+                        var reactivateTimer = null;
 
-                        detailsContainerElement.addEventListener('touchstart', function(e) {
-                            if (e.touches.length !== 1) return;
-                            startX = e.touches[0].clientX;
-                            startY = e.touches[0].clientY;
-                            swiping = true;
-                            decided = false;
-                        }, true);
+                        function reactivateOverlay() {
+                            clearTimeout(reactivateTimer);
+                            swipeOverlay.style.pointerEvents = '';
+                        }
 
-                        detailsContainerElement.addEventListener('touchmove', function(e) {
-                            if (!swiping || decided) return;
-                            var touch = e.touches[0];
-                            var dx = touch.clientX - startX;
-                            var dy = touch.clientY - startY;
-                            var dist = Math.sqrt(dx * dx + dy * dy);
-                            if (dist < THRESHOLD) return;
+                        function dismissOverlay() {
+                            swipeOverlay.style.pointerEvents = 'none';
+                            clearTimeout(reactivateTimer);
+                            reactivateTimer = setTimeout(reactivateOverlay, REACTIVATE_DELAY);
+                        }
 
-                            decided = true;
-                            var angle = Math.abs(Math.atan2(dy, dx) * 180 / Math.PI);
-                            if (angle > ANGLE_LIMIT && angle < (180 - ANGLE_LIMIT)) {
-                                swiping = false;
-                                return;
-                            }
-
-                            swiping = false;
-                            e.preventDefault();
-
+                        function navigate(dx) {
                             var activeElement = self.contentViewContainer.querySelector('.collectionElement.open');
                             if (!activeElement) return;
-
                             if (dx < 0) {
                                 var next = activeElement.nextElementSibling;
                                 while (next && !next.classList.contains('collectionElement')) { next = next.nextElementSibling; }
@@ -986,22 +985,100 @@ FrameTrail.defineType(
                                 while (prev && !prev.classList.contains('collectionElement')) { prev = prev.previousElementSibling; }
                                 if (prev) prev.click();
                             }
+                            reactivateOverlay();
+                        }
+
+                        // Re-activate overlay on any navigation (transition of
+                        // the detail contents slider signals a new element opened).
+                        detailsContainerElement.querySelector('.contentViewDetailsContents')
+                            .addEventListener('transitionend', reactivateOverlay);
+
+                        // While overlay is dismissed, extend the timer on new
+                        // touches so it doesn't reactivate mid-interaction.
+                        detailsContainerElement.addEventListener('touchstart', function() {
+                            if (swipeOverlay.style.pointerEvents === 'none') {
+                                clearTimeout(reactivateTimer);
+                                reactivateTimer = setTimeout(reactivateOverlay, REACTIVATE_DELAY);
+                            }
+                        }, true);
+                        detailsContainerElement.addEventListener('pointerdown', function(e) {
+                            if (e.pointerType === 'touch') return;
+                            if (swipeOverlay.style.pointerEvents === 'none') {
+                                clearTimeout(reactivateTimer);
+                                reactivateTimer = setTimeout(reactivateOverlay, REACTIVATE_DELAY);
+                            }
                         }, true);
 
-                        detailsContainerElement.addEventListener('touchend', function() { swiping = false; decided = false; }, true);
-                        detailsContainerElement.addEventListener('touchcancel', function() { swiping = false; decided = false; }, true);
+                        // --- Touch events (mobile / touch screens) ---
 
-                        // Also support mouse-based swipe (desktop, non-touch)
-                        detailsContainerElement.addEventListener('pointerdown', function(e) {
-                            if (e.pointerType === 'touch') return; // handled by touch events above
+                        swipeOverlay.addEventListener('touchstart', function(e) {
+                            if (e.touches.length !== 1) return;
+                            startX = e.touches[0].clientX;
+                            startY = e.touches[0].clientY;
+                            startTime = Date.now();
+                            swiping = true;
+                            decided = false;
+                        });
+
+                        swipeOverlay.addEventListener('touchmove', function(e) {
+                            if (!swiping || decided) return;
+                            var dx = e.touches[0].clientX - startX;
+                            var dy = e.touches[0].clientY - startY;
+                            var dist = Math.sqrt(dx * dx + dy * dy);
+                            if (dist < THRESHOLD) return;
+
+                            decided = true;
+                            var angle = Math.abs(Math.atan2(dy, dx) * 180 / Math.PI);
+                            if (angle > ANGLE_LIMIT && angle < (180 - ANGLE_LIMIT)) {
+                                // Vertical gesture — dismiss overlay for content interaction
+                                swiping = false;
+                                dismissOverlay();
+                                return;
+                            }
+
+                            // Horizontal swipe — navigate
+                            swiping = false;
+                            e.preventDefault();
+                            navigate(dx);
+                        }, { passive: false });
+
+                        swipeOverlay.addEventListener('touchend', function(e) {
+                            if (swiping && !decided) {
+                                // Minimal movement — treat as tap
+                                var touch = e.changedTouches[0];
+                                var dx = touch.clientX - startX;
+                                var dy = touch.clientY - startY;
+                                if (Math.sqrt(dx * dx + dy * dy) < TAP_THRESHOLD
+                                    && (Date.now() - startTime) < TAP_TIMEOUT) {
+                                    // Dismiss overlay and forward the click
+                                    var cx = touch.clientX, cy = touch.clientY;
+                                    dismissOverlay();
+                                    var target = document.elementFromPoint(cx, cy);
+                                    if (target) target.click();
+                                }
+                            }
+                            swiping = false;
+                            decided = false;
+                        });
+
+                        swipeOverlay.addEventListener('touchcancel', function() {
+                            swiping = false;
+                            decided = false;
+                        });
+
+                        // --- Pointer events (mouse / pen, not touch) ---
+
+                        swipeOverlay.addEventListener('pointerdown', function(e) {
+                            if (e.pointerType === 'touch') return;
                             if (e.button !== 0) return;
                             startX = e.clientX;
                             startY = e.clientY;
                             swiping = true;
                             decided = false;
-                        }, true);
+                            didSwipe = false;
+                        });
 
-                        detailsContainerElement.addEventListener('pointermove', function(e) {
+                        swipeOverlay.addEventListener('pointermove', function(e) {
                             if (e.pointerType === 'touch') return;
                             if (!swiping || decided) return;
                             var dx = e.clientX - startX;
@@ -1017,26 +1094,25 @@ FrameTrail.defineType(
                             }
 
                             swiping = false;
-                            var activeElement = self.contentViewContainer.querySelector('.collectionElement.open');
-                            if (!activeElement) return;
+                            didSwipe = true;
+                            navigate(dx);
+                        });
 
-                            if (dx < 0) {
-                                var next = activeElement.nextElementSibling;
-                                while (next && !next.classList.contains('collectionElement')) { next = next.nextElementSibling; }
-                                if (next) next.click();
-                            } else {
-                                var prev = activeElement.previousElementSibling;
-                                while (prev && !prev.classList.contains('collectionElement')) { prev = prev.previousElementSibling; }
-                                if (prev) prev.click();
-                            }
-                        }, true);
+                        swipeOverlay.addEventListener('pointerup', function(e) {
+                            if (e.pointerType !== 'touch') { swiping = false; decided = false; }
+                        });
+                        swipeOverlay.addEventListener('pointercancel', function(e) {
+                            if (e.pointerType !== 'touch') { swiping = false; decided = false; }
+                        });
 
-                        detailsContainerElement.addEventListener('pointerup', function(e) {
-                            if (e.pointerType !== 'touch') { swiping = false; decided = false; }
-                        }, true);
-                        detailsContainerElement.addEventListener('pointercancel', function(e) {
-                            if (e.pointerType !== 'touch') { swiping = false; decided = false; }
-                        }, true);
+                        // Mouse click: dismiss overlay + forward click to content
+                        swipeOverlay.addEventListener('click', function(e) {
+                            if (didSwipe) { didSwipe = false; return; }
+                            var cx = e.clientX, cy = e.clientY;
+                            dismissOverlay();
+                            var target = document.elementFromPoint(cx, cy);
+                            if (target && target !== swipeOverlay) target.click();
+                        });
                     })();
 
                     return detailsContainerElement;

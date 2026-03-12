@@ -1363,6 +1363,11 @@ body.userinactive .mainContainer:not([data-edit-mode="overlays"]):not([data-edit
         border-top: 2px solid var(--primary-bg-color);
     }
 
+    .areaLeftContainer .layoutAreaToggleCloseButton,
+    .areaRightContainer .layoutAreaToggleCloseButton {
+        display: none !important;
+    }
+
     .videoContainer {
         order: 0;
         flex: 1 1 100%;
