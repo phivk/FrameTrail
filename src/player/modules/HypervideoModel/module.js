@@ -411,10 +411,12 @@
                         "left":     protoData.position.left,
                         "width":    protoData.position.width,
                         "height":   protoData.position.height
-                    },
-                    "events": {
-                        "onStart": "FrameTrail.module('HypervideoController').pause();"
                     }
+                }
+                if ( protoData.type == 'quiz' || protoData.type == 'hotspot' ) {
+                    newData.events = {
+                        "onStart": "FrameTrail.module('HypervideoController').pause();"
+                    };
                 }
             } else {
                 newData = {
