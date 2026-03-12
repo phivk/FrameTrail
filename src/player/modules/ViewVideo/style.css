@@ -1287,11 +1287,13 @@ body.userinactive .mainContainer:not([data-edit-mode="overlays"]):not([data-edit
     display: block;
 }
 
-/* Prevent detail-area collectionElements from overflowing the container.
+/* Prevent detail-area and top/bottom large collectionElements from overflowing the container.
  * Their parent (.contentViewDetailsContents) is a mega-wide slider, so
  * max-width: 100% is meaningless — we cap against --ft-width instead. */
 .areaTopDetails .collectionElement,
-.areaBottomDetails .collectionElement {
+.areaBottomDetails .collectionElement, 
+.layoutArea[data-area="areaBottom"][data-size="large"] .collectionElement, 
+.layoutArea[data-area="areaTop"][data-size="large"] .collectionElement {
     max-width: calc(var(--ft-width, 100vw) - 40px);
 }
 
