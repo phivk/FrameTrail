@@ -1370,6 +1370,10 @@ body.userinactive .mainContainer:not([data-edit-mode="overlays"]):not([data-edit
         display: none !important;
     }
 
+    .startEditButton {
+        display: none !important;
+    }
+
     .videoContainer {
         order: 0;
         flex: 1 1 100%;
