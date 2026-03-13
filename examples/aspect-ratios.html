@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<!--
+  EXAMPLE: Embedding in different aspect ratios
+  ──────────────────────────────────────────────
+  Requirements: HTTP serving (fetches remote data via fetch API — cannot load from file://).
+  Serve the repo root, e.g.: python3 -m http.server 8080
+
+  Demonstrates:
+  - FrameTrail adapts its layout to any container aspect ratio
+  - Two iframed instances: 16:9 (widescreen) and 9:19.5 (portrait/mobile)
+  - Each iframe gets its own document, avoiding shared-state conflicts
+  - Uses CSS aspect-ratio on the container divs
+  - Both iframes load the remote "Zoom in on DNA" example from GitHub Pages
+-->
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>FrameTrail – Aspect Ratios</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 24px; background: #111; color: #ccc; font-family: system-ui, sans-serif; }
+        h1 { font-size: 18px; margin: 0 0 20px; }
+        .grid { display: flex; flex-wrap: wrap; gap: 24px; max-width: 1200px; margin: 0 auto; align-items: start; }
+        .cell { position: relative; }
+        .cell label { display: block; font-size: 13px; color: #888; margin-bottom: 6px; }
+        .player-box { position: relative; overflow: hidden; border: 0; }
+        .w-full   { width: 100%; }
+        .ratio-16-9 { aspect-ratio: 16/9; }
+        .ratio-portrait { width: 360px; aspect-ratio: 9/19.5; }
+    </style>
+</head>
+<body>
+    <h1>Embedding in Different Aspect Ratios</h1>
+    <div class="grid">
+        <div class="cell w-full">
+            <label>16:9 — Standard Widescreen</label>
+            <iframe class="player-box ratio-16-9 w-full" src="https://openhypervideo.github.io/FrameTrail-Examples/zoom-in-on-dna/"></iframe>
+        </div>
+        <div class="cell">
+            <label>Portrait / Mobile</label>
+            <iframe class="player-box ratio-portrait" src="https://openhypervideo.github.io/FrameTrail-Examples/zoom-in-on-dna/"></iframe>
+        </div>
+    </div>
+</body>
+</html>

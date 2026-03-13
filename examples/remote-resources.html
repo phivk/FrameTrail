@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<!--
+  EXAMPLE: Mixing local and remote resource indices
+  ──────────────────────────────────────────────────
+  Requirements: HTTP serving (fetches remote JSON via fetch API — cannot load from file://).
+  Serve the repo root, e.g.: python3 -m http.server 8080
+  The remote host must serve CORS headers (GitHub Pages does this by default).
+
+  Demonstrates:
+  - Loading a resource index from a remote URL (GitHub Pages)
+  - Merging it with a local JSON file and inline resources
+  - Relative src/thumb paths in the remote index are automatically
+    resolved against the remote base URL (no manual URL rewriting needed)
+  - Resources from all sources are merged — entries from earlier sources
+    take precedence on ID collision
+
+  Remote index used:
+  https://openhypervideo.github.io/FrameTrail-Examples/zoom-in-on-dna/_data/resources/_index.json
+-->
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>FrameTrail – Remote Resources</title>
+    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@frametrail/frametrail/frametrail.min.css"> -->
+    <link rel="stylesheet" href="../build/frametrail.min.css">
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@frametrail/frametrail/frametrail.min.js"></script> -->
+    <script src="../build/frametrail.min.js"></script>
+    <style>
+        body { margin: 0; }
+        body > div { width: 100%; height: 100vh; }
+    </style>
+</head>
+<body>
+    <div id="player"></div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        var REMOTE_INDEX = 'https://openhypervideo.github.io/FrameTrail-Examples/zoom-in-on-dna/_data/resources/_index.json';
+
+        window.ftInstance = FrameTrail.init({
+            target:  '#player',
+            startID: '0',
+
+            resources: [
+                // Source 1: Local JSON file (same as other examples)
+                {
+                    label: 'Local Sample Resources',
+                    type:  'frametrail',
+                    data:  'sample-resources.json'
+                },
+                // Source 2: Remote resource index from GitHub Pages.
+                // Relative src/thumb paths in the remote data are resolved
+                // against the remote URL automatically.
+                {
+                    label: 'DNA Example (Remote)',
+                    type:  'frametrail',
+                    data:  REMOTE_INDEX
+                }
+            ],
+
+            contents: [{
+                hypervideo: {
+                    meta: {
+                        name:        'Zoom in on DNA',
+                        description: 'Demonstrates merging local and remote resource indices',
+                        thumb:       '',
+                        creator:     'Demo',
+                        creatorId:   'demo',
+                        created:     1700000000000,
+                        lastchanged: 1700000000000
+                    },
+                    config: {
+                        layoutArea:  { areaTop: [], areaBottom: [], areaLeft: [], areaRight: [] },
+                        hidden:      false,
+                        slidingMode: 'overlay'
+                    },
+                    clips: [{
+                        // "Zoom in on DNA" YouTube video (resource "1" from remote index)
+                        src:      'https://www.youtube.com/embed/wZozOrFluiw',
+                        duration: 255,
+                        start:    0,
+                        end:      255
+                    }],
+                    contents: [
+                        // Overlay: YouTube video "DNA Replication" (resource "2" from remote index)
+                        {
+                            '@context': [ 'http://www.w3.org/ns/anno.jsonld', { 'frametrail': 'http://frametrail.org/ns/' } ],
+                            'type': 'Annotation', 'frametrail:type': 'Overlay',
+                            'creator': { 'nickname': 'Demo', 'type': 'Person', 'id': 'demo' },
+                            'created': '2024-01-01T00:00:00Z',
+                            'target': {
+                                'type': 'Video',
+                                'source': 'https://www.youtube.com/embed/wZozOrFluiw',
+                                'selector': { 'type': 'FragmentSelector', 'conformsTo': 'http://www.w3.org/TR/media-frags/', 'value': 't=30,90&xywh=percent:55,5,40,55' }
+                            },
+                            'body': {
+                                'type': 'Video', 'frametrail:type': 'youtube', 'format': 'text/html',
+                                'source': 'https://www.youtube.com/embed/TNKWgcFPHqw',
+                                'frametrail:name': 'DNA Replication',
+                                'frametrail:thumb': 'https://img.youtube.com/vi/TNKWgcFPHqw/hqdefault.jpg',
+                                'frametrail:resourceId': '2',
+                                'frametrail:attributes': {}
+                            },
+                            'frametrail:tags': []
+                        }
+                    ],
+                    subtitles:    {},
+                    globalEvents: { onReady: '', onPlay: '', onPause: '', onEnded: '' },
+                    customCSS:    ''
+                },
+                annotations: [
+                    // Annotation using a text resource (inline data, no remote dependency)
+                    {
+                        '@context': [ 'http://www.w3.org/ns/anno.jsonld', { 'frametrail': 'http://frametrail.org/ns/' } ],
+                        'type': 'Annotation', 'frametrail:type': 'Annotation',
+                        'creator': { 'nickname': 'Demo', 'type': 'Person', 'id': 'demo' },
+                        'created': '2024-01-01T00:01:00Z',
+                        'target': {
+                            'type': 'Video',
+                            'source': 'https://www.youtube.com/embed/wZozOrFluiw',
+                            'selector': { 'type': 'FragmentSelector', 'conformsTo': 'http://www.w3.org/TR/media-frags/', 'value': 't=5,30' }
+                        },
+                        'body': {
+                            'type': 'TextualBody', 'frametrail:type': 'text', 'format': 'text/html',
+                            'value': '<p>This demo loads resources from both a <strong>local</strong> JSON file and a <strong>remote</strong> index on GitHub Pages. Open the resource manager to browse all merged resources.</p>',
+                            'frametrail:name': 'About this demo',
+                            'frametrail:thumb': null,
+                            'frametrail:resourceId': null,
+                            'frametrail:attributes': { 'text': '<p>This demo loads resources from both a <strong>local</strong> JSON file and a <strong>remote</strong> index on GitHub Pages. Open the resource manager to browse all merged resources.</p>' }
+                        },
+                        'frametrail:tags': []
+                    },
+                    // Annotation using Big Buck Bunny YouTube video from local sample-resources.json
+                    {
+                        '@context': [ 'http://www.w3.org/ns/anno.jsonld', { 'frametrail': 'http://frametrail.org/ns/' } ],
+                        'type': 'Annotation', 'frametrail:type': 'Annotation',
+                        'creator': { 'nickname': 'Demo', 'type': 'Person', 'id': 'demo' },
+                        'created': '2024-01-01T00:02:00Z',
+                        'target': {
+                            'type': 'Video',
+                            'source': 'https://www.youtube.com/embed/wZozOrFluiw',
+                            'selector': { 'type': 'FragmentSelector', 'conformsTo': 'http://www.w3.org/TR/media-frags/', 'value': 't=100,150' }
+                        },
+                        'body': {
+                            'type': 'Video', 'frametrail:type': 'youtube', 'format': 'text/html',
+                            'source': 'https://www.youtube.com/embed/YE7VzlLtp-4',
+                            'frametrail:name': 'Big Buck Bunny (from local index)',
+                            'frametrail:thumb': '',
+                            'frametrail:resourceId': 'yt-bbb',
+                            'frametrail:attributes': {}
+                        },
+                        'frametrail:tags': []
+                    }
+                ]
+            }]
+        }, 'PlayerLauncher');
+    });
+    </script>
+</body>
+</html>
