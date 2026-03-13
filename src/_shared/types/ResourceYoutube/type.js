@@ -53,7 +53,7 @@ FrameTrail.defineType(
                     }
 
                     var _iframeWrapper = document.createElement('div');
-                    _iframeWrapper.innerHTML = '<iframe frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen src="'
+                    _iframeWrapper.innerHTML = '<iframe frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" webkitAllowFullScreen mozallowfullscreen allowFullScreen src="'
                         +   uri
                         +   '?enablejsapi=1&rel=0&theme=light&color=white&showinfo=0&modestbranding=1&autohide=1&start='+ timecode +'">'
                         +    '</iframe>';

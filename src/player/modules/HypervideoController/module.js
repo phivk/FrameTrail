@@ -234,6 +234,7 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
             var yt_id_match = /(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)([^\&\?\/]+)/.exec(HypervideoModel.sourcePath);
             yt_iframe.src = 'https://www.youtube.com/embed/' + (yt_id_match ? yt_id_match[1] : HypervideoModel.sourcePath) + '?' + yt_options;
             yt_iframe.setAttribute('frameborder', '0');
+            yt_iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
             yt_iframe.allowFullscreen = true;
             videoElement.insertAdjacentElement('afterend', yt_iframe);
 
