@@ -1564,17 +1564,25 @@ FrameTrail.defineType(
                     // Only scroll when the active set changes
                     if (!activeSetChanged) return;
 
-                    // Compute midpoint of all active elements
+                    // Compute scroll target from active elements
                     var firstEl = self.getContentViewElementFromContentItem(activeAnnotations[0]);
                     var lastEl = self.getContentViewElementFromContentItem(activeAnnotations[activeAnnotations.length - 1]);
                     if (!firstEl || !lastEl) return;
 
                     self._isProgrammaticScroll = true;
                     if (slideAxis == 'x') {
-                        var groupLeft = firstEl.offsetLeft;
-                        var groupRight = lastEl.offsetLeft + lastEl.offsetWidth;
-                        var groupCenter = (groupLeft + groupRight) / 2;
-                        var scrollTarget = groupCenter - scrollContainer.clientWidth / 2;
+                        var containerWidth = FrameTrail.getState('viewSize')[0];
+                        if (containerWidth < 768 || activeAnnotations.length === 1) {
+                            // Small container: center only the first active element
+                            var elCenter = firstEl.offsetLeft + firstEl.offsetWidth / 2;
+                            var scrollTarget = elCenter - scrollContainer.clientWidth / 2;
+                        } else {
+                            // Large container: center the midpoint of all active elements
+                            var groupLeft = firstEl.offsetLeft;
+                            var groupRight = lastEl.offsetLeft + lastEl.offsetWidth;
+                            var groupCenter = (groupLeft + groupRight) / 2;
+                            var scrollTarget = groupCenter - scrollContainer.clientWidth / 2;
+                        }
                         scrollContainer.scrollTo({ left: Math.max(0, scrollTarget), behavior: 'smooth' });
                     } else {
                         var groupTop = firstEl.offsetTop;
