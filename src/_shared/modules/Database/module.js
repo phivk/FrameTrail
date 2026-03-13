@@ -333,45 +333,65 @@
             return success.call(this);
         }
 
+        function _isAbsoluteURL(url) {
+            return /^https?:|^\/\/|^file:|^blob:|^data:/.test(url);
+        }
+
         for (var i = 0, l = countdown; i < l; i++) {
 
-            if (initOptionsResources[i].type === 'frametrail') {
+            (function(source) {
 
-                if (typeof initOptionsResources[i].data === 'string') {
+                if (source.type === 'frametrail') {
 
-                    _ajax({
-                        url:      initOptionsResources[i].data,
-                        dataType: 'json'
-                    }, function (data) {
-                        resources = Object.assign(resources, data.resources);
-                        //console.log('resources', resources);
+                    if (typeof source.data === 'string') {
+
+                        var fetchURL = source.data;
+
+                        _ajax({
+                            url:      fetchURL,
+                            dataType: 'json'
+                        }, function (data) {
+                            // When fetching from a remote URL, resolve relative src/thumb
+                            // paths against the remote base URL so they don't break
+                            if (_isAbsoluteURL(fetchURL) && data.resources) {
+                                var baseURL = fetchURL.substring(0, fetchURL.lastIndexOf('/') + 1);
+                                for (var id in data.resources) {
+                                    var res = data.resources[id];
+                                    if (res.src && !_isAbsoluteURL(res.src)) {
+                                        res.src = baseURL + res.src;
+                                    }
+                                    if (res.thumb && !_isAbsoluteURL(res.thumb)) {
+                                        res.thumb = baseURL + res.thumb;
+                                    }
+                                }
+                            }
+                            resources = Object.assign(resources, data.resources);
+                            ready();
+                        }, function () {
+                            fail(labels['ErrorNoResourcesIndexFile']);
+                        });
+
+                    } else if (typeof source.data === 'object' && source.data !== null) {
+
+                        resources = Object.assign(resources, source.data);
                         ready();
-                    }, function () {
-                        fail(labels['ErrorNoResourcesIndexFile']);
-                    });
 
-                } else if (typeof initOptionsResources[i].data === 'object' && initOptionsResources[i].data !== null) {
+                    }
 
-                    resources = Object.assign(resources, initOptionsResources[i].data);
+                } else if (source.type === 'iiif') {
+
+                    // TODO
                     ready();
 
+                } else {
+                    fail(labels['ErrorUnknownResourceDataEndpoint']);
                 }
 
-
-
-            } else if (initOptionsResources[i].type === 'iiif') {
-
-                // TODO
-                ready();
-
-            } else {
-                fail(labels['ErrorUnknownResourceDataEndpoint']);
-            }
+            })(initOptionsResources[i]);
 
             function ready() {
                 if (--countdown === 0) {
                     success.call(this);
-                    //console.log('resources', resources);
                 }
             }
 
