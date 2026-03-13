@@ -147,12 +147,13 @@
                 }
             }
 
-            // TODO: Check if this belongs here
+            if (!resolvedTarget) resolvedTarget = 'body';
+
             var _targetEl = (typeof resolvedTarget === 'string') ? document.querySelector(resolvedTarget) : resolvedTarget;
             if (_targetEl) _targetEl.classList.add('frametrail-body');
 
             state = {
-                target:             resolvedTarget || 'body',
+                target:             resolvedTarget,
                 fullscreenTarget:   options.fullscreenTarget || null,
                 contentTargets:     options.contentTargets || {},
                 contents:           options.contents !== undefined ? options.contents : null,
