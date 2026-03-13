@@ -844,26 +844,28 @@ body.userinactive .mainContainer:not([data-edit-mode="overlays"]):not([data-edit
 }
 
 .hypervideoContainer .videoContainer .videoStartOverlay .playButtonBig {
+    --play-button-size: 80px;
     background-color: var(--primary-bg-color);
     border: none;
     border-radius: 50%;
-    height: 80px;
+    height: var(--play-button-size);
     left: 50%;
-    margin-left: -41px;
-    margin-top: -41px;
-    position: absolute;
     top: 50%;
-    width: 80px;
+    translate: -50% -50%;
+    position: absolute;
+    width: var(--play-button-size);
     z-index: 29;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
 }
 
 .hypervideoContainer .videoContainer .videoStartOverlay .playButtonBig [class^="icon-"]::before, .hypervideoContainer .videoContainer .videoStartOverlay .playButtonBig [class*=" icon-"]::before {
     transition-duration: 600ms;
     transition-property: opacity;
     color: var(--primary-fg-color);
-    font-size: 86px;
-    margin-top: -3px;
-    margin-left: -3px;
+    font-size: calc(var(--play-button-size) * 1.075);
     opacity: .7;
 }
 
@@ -1382,9 +1384,13 @@ body.userinactive .mainContainer:not([data-edit-mode="overlays"]):not([data-edit
         min-height: clamp(200px, calc(var(--ft-height, 100vh) * 0.6 - 40px), 300px);
     }
 
-    .viewVideo.slide-pos-top .areaTopDetails, 
+    .viewVideo.slide-pos-top .areaTopDetails,
     .viewVideo.slide-pos-bottom .areaBottomDetails {
         flex: 0 1 clamp(200px, calc(var(--ft-height, 100vh) * 0.6 - 40px), 350px);
         min-height: clamp(200px, calc(var(--ft-height, 100vh) * 0.6 - 40px), 350px);
+    }
+
+    .hypervideoContainer .videoContainer .videoStartOverlay .playButtonBig {
+        --play-button-size: 50px;
     }
 }
