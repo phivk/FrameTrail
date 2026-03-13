@@ -722,12 +722,13 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
 
         var isMobileWidth = (_target.offsetWidth <= 768),
             inEditMode = (FrameTrail.getState('editMode') != false && FrameTrail.getState('editMode') != 'preview' && FrameTrail.getState('editMode') != 'layout'),
+            autohideTitlebar = (FrameTrail.getState('hv_config_autohideControls') && FrameTrail.getState('editMode') == false),
             editBorder = (FrameTrail.getState('editMode') != false) ? (parseInt(getComputedStyle(domElement).borderTopWidth)*2) : 0,
             mainContainerWidth  = _target.offsetWidth
                                     - ((FrameTrail.getState('sidebarOpen') && !FrameTrail.getState('fullscreen')) ? FrameTrail.module('Sidebar').width : 0)
                                     - editBorder,
             mainContainerHeight = _target.offsetHeight
-                                    - _titlebar.offsetHeight
+                                    - (autohideTitlebar ? 0 : _titlebar.offsetHeight)
                                     - editBorder,
             _video              = Video,
             videoFit            = (FrameTrail.module('Database').config.videoFit) ? FrameTrail.module('Database').config.videoFit : 'contain';
@@ -1163,12 +1164,15 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
      */
     function toggleConfig_autohideControls(newState, oldState) {
 
+        var _target = document.querySelector(FrameTrail.getState('target'));
         if (newState) {
-            document.body.classList.add('autohideControls');
+            _target.classList.add('autohideControls');
         } else {
-            document.body.classList.remove('autohideControls');
-            document.body.classList.remove('userinactive');
+            _target.classList.remove('autohideControls');
+            _target.classList.remove('userinactive');
         }
+
+        adjustHypervideo();
 
     };
 
@@ -1532,10 +1536,11 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
     function toggleUserActive(activeState) {
 
         if (FrameTrail.getState('hv_config_autohideControls')) {
+            var _target = document.querySelector(FrameTrail.getState('target'));
             if (activeState) {
-                document.body.classList.remove('userinactive');
+                _target.classList.remove('userinactive');
             } else {
-                document.body.classList.add('userinactive');
+                _target.classList.add('userinactive');
             }
         }
 

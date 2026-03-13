@@ -8,11 +8,10 @@
     color: #cececb;
     font-weight: 100;
     z-index: 4;
-    /*box-shadow: 0 0 2px 1px #000;*/
-    -webkit-transition: all 200ms linear; /* Firefox */
-    -moz-transition: all 200ms linear; /* WebKit */
-    -o-transition: all 200ms linear; /* Opera */
-    transition: all 200ms linear; /* Standard */
+    transition: all 200ms linear;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: thin;
 }
 
 .sidebar.open {
