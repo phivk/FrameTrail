@@ -1470,7 +1470,9 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         
         if (element.requestFullscreen) {
             if ((!forceState && !document.fullscreen) || (forceState && forceState == 'open')) {
-                element.requestFullscreen();
+                element.requestFullscreen().catch(function(err) {
+                    console.warn('Fullscreen request denied:', err.message);
+                });
             } else if (!forceState || forceState == 'close') {
                 document.exitFullscreen();
             }
