@@ -32,7 +32,6 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
                             + '      <button class="startEditButton" data-tooltip-bottom-right="'+ labels['GenericEditStart'] +'"><span class="icon-edit"></span></button>'
                             + '      <button class="leaveEditModeButton" data-tooltip-bottom-right="'+ labels['GenericEditEnd'] +'"><span class="icon-ok-squared"></span></button>'
                             + '  </div>'
-                            + '  <div class="sharingWidget"><button class="sharingWidgetButton" data-tooltip-bottom-right="'+ labels['GenericShareEmbed'] +'"><span class="icon-share"></span></button></div>'
                             + '</div>';
     var domElement = _tbWrapper.firstElementChild;
 
@@ -44,12 +43,7 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
         AdminSettingsButton     = domElement.querySelector('.adminSettingsButton'),
         StartEditButton         = domElement.querySelector('.startEditButton'),
         LeaveEditModeButton     = domElement.querySelector('.leaveEditModeButton'),
-        UserSettingsButton      = domElement.querySelector('.userSettingsButton'),
-        SharingWidget           = domElement.querySelector('.sharingWidget');
-
-    if (window.location.protocol === 'file:' || window.FrameTrail.instances.length > 1) {
-        SharingWidget.style.display = 'none';
-    }
+        UserSettingsButton      = domElement.querySelector('.userSettingsButton');
 
     StartEditButton.addEventListener('click', function(){
 
@@ -99,62 +93,6 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
         if (btn) { FrameTrail.changeState('viewMode', btn.getAttribute('data-viewmode')); }
     });
 
-
-
-    SharingWidget.querySelector('.sharingWidgetButton').addEventListener('click', function(){
-        if (window.FrameTrail.instances.length > 1) { return; }
-
-        var RouteNavigation = FrameTrail.module('RouteNavigation'),
-            baseUrl = window.location.href.split('?')[0].split('#'),
-            url = baseUrl[0] + '#',
-            secUrl = window.location.protocol + '//' + window.location.host + window.location.pathname,
-            iframeUrl = secUrl + '#';
-
-        if ( FrameTrail.getState('viewMode') == 'video' && RouteNavigation.hypervideoID ) {
-            url += 'hypervideo='+ RouteNavigation.hypervideoID;
-            iframeUrl += 'hypervideo='+ RouteNavigation.hypervideoID;
-        }
-
-        var hypervideoTitle = (FrameTrail.getState('viewMode') == 'video' && RouteNavigation.hypervideoID)
-            ? FrameTrail.module('HypervideoModel').hypervideoName.replace(/"/g, '&quot;')
-            : '';
-
-        var _sdWrapper = document.createElement('div');
-        _sdWrapper.innerHTML = '<div class="shareDialog">'
-                        + '    <div>Link</div>'
-                        + '    <input type="text" value="'+ url +'"/>'
-                        + '    <div>Embed Code</div>'
-                        + '    <textarea style="height: 100px;" readonly><iframe width="800" height="600" src="'+ iframeUrl +'" title="'+ hypervideoTitle +'" frameborder="0" allow="fullscreen" allowfullscreen></iframe></textarea>'
-                        + '</div>';
-        var shareDialog = _sdWrapper.firstElementChild;
-
-        shareDialog.querySelectorAll('input[type="text"], textarea').forEach(function(el) {
-            el.addEventListener('click', function() {
-                this.focus();
-                this.select();
-            });
-        });
-
-        var shareDialogCtrl = Dialog({
-            title:     labels['GenericShareEmbed'],
-            content:   shareDialog,
-            modal:     true,
-            resizable: false,
-            width:     500,
-            height:    360,
-            close: function() {
-                shareDialogCtrl.destroy();
-            },
-            buttons: [
-                { text: 'OK',
-                    click: function() {
-                        shareDialogCtrl.close();
-                    }
-                }
-            ]
-        });
-
-    });
 
     domElement.querySelector('.logoutButton').addEventListener('click', function(){
 
@@ -225,7 +163,6 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
         toggleEditMode(FrameTrail.getState('editMode'));
 
         if ( FrameTrail.getState('embed') ) {
-            //domElement.find('#SidebarToggleButton, #SharingWidgetButton').hide();
         }
 
         document.querySelector(FrameTrail.getState('target')).append(domElement);
@@ -331,7 +268,6 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
                 StartEditButton.style.display = 'none';
                 LeaveEditModeButton.style.display = '';
                 ManageResourcesButton.style.display = '';
-                SharingWidget.style.display = 'none';
 
                 // Show hypervideo edit/delete buttons if in video view and user has permission
                 if (FrameTrail.getState('viewMode') === 'video' && FrameTrail.module('RouteNavigation').hypervideoID && canEditCurrentHypervideo()) {
@@ -369,7 +305,6 @@ FrameTrail.defineModule('Titlebar', function(FrameTrail){
             HypervideoEditButton.classList.remove('active');
             HypervideoDeleteButton.classList.remove('active');
             AdminSettingsButton.style.display = 'none';
-            SharingWidget.style.display = (window.FrameTrail.instances.length > 1) ? 'none' : '';
 
             // Hide user settings and logout buttons when leaving edit mode
             UserSettingsButton.style.display = 'none';

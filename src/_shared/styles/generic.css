@@ -204,7 +204,7 @@ input[type="range"] {
 }
 
 input[readonly], textarea[readonly] {
-    background-color: #cfcfcf;
+    background-color: rgba(100,100,100,.3);
 }
 
 details > summary {

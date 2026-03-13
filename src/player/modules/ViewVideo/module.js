@@ -87,6 +87,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
                         + '                    </div>'
                         + '                </div>'
                         + '                <div class="rightControlPanel">'
+                        + '                    <div class="sharingWidget playerControl" data-tooltip-bottom-right="'+ labels['GenericShareEmbed'] +'"><span class="icon-share"></span></div>'
                         + '                    <div class="annotationSearchButton playerControl contextButton">'
                         + '                        <span class="icon-search"></span>'
                         + '                        <div class="annotationSearchContainer contextButtonContainer">'
@@ -143,6 +144,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         CodeSnippetTimeline         = domElement.querySelector('.codeSnippetTimeline'),
 
         Controls                    = domElement.querySelector('.controls'),
+        SharingWidget               = domElement.querySelector('.sharingWidget'),
         AnnotationSearchButton      = domElement.querySelector('.annotationSearchButton'),
         InfoAreaRight               = domElement.querySelector('.infoAreaRight'),
         EditingOptions              = domElement.querySelector('.editingOptions'),
@@ -243,6 +245,66 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
             el.style.OTransitionDuration = '';
         });
     }
+
+    // Sharing Widget: hide when running from file:// or with multiple instances
+    if (window.location.protocol === 'file:' || window.FrameTrail.instances.length > 1) {
+        SharingWidget.style.display = 'none';
+    }
+
+    SharingWidget.addEventListener('click', function() {
+        if (window.FrameTrail.instances.length > 1) { return; }
+
+        var RouteNavigation = FrameTrail.module('RouteNavigation'),
+            baseUrl = window.location.href.split('?')[0].split('#'),
+            url = baseUrl[0] + '#',
+            secUrl = window.location.protocol + '//' + window.location.host + window.location.pathname,
+            iframeUrl = secUrl + '#';
+
+        if ( FrameTrail.getState('viewMode') == 'video' && RouteNavigation.hypervideoID ) {
+            url += 'hypervideo='+ RouteNavigation.hypervideoID;
+            iframeUrl += 'hypervideo='+ RouteNavigation.hypervideoID;
+        }
+
+        var hypervideoTitle = (FrameTrail.getState('viewMode') == 'video' && RouteNavigation.hypervideoID)
+            ? FrameTrail.module('HypervideoModel').hypervideoName.replace(/"/g, '&quot;')
+            : '';
+
+        var _sdWrapper = document.createElement('div');
+        _sdWrapper.innerHTML = '<div class="shareDialog">'
+                        + '    <div>Link</div>'
+                        + '    <input type="text" value="'+ url +'"/>'
+                        + '    <div>Embed Code</div>'
+                        + '    <textarea style="height: 100px;" readonly><iframe width="800" height="600" src="'+ iframeUrl +'" title="'+ hypervideoTitle +'" frameborder="0" allow="fullscreen" allowfullscreen></iframe></textarea>'
+                        + '</div>';
+        var shareDialog = _sdWrapper.firstElementChild;
+
+        shareDialog.querySelectorAll('input[type="text"], textarea').forEach(function(el) {
+            el.addEventListener('click', function() {
+                this.focus();
+                this.select();
+            });
+        });
+
+        var shareDialogCtrl = Dialog({
+            title:     labels['GenericShareEmbed'],
+            content:   shareDialog,
+            inheritTheme: SharingWidget,
+            modal:     true,
+            resizable: false,
+            width:     500,
+            height:    360,
+            close: function() {
+                shareDialogCtrl.destroy();
+            },
+            buttons: [
+                { text: 'OK',
+                    click: function() {
+                        shareDialogCtrl.close();
+                    }
+                }
+            ]
+        });
+    });
 
     ExpandButton.addEventListener('click', function() {
         showDetails(false);
@@ -830,6 +892,13 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
             case 'annotations':
                 enterAnnotationMode();
                 break;
+        }
+
+        // Hide sharing widget during editing, show when leaving
+        if (editMode) {
+            SharingWidget.style.display = 'none';
+        } else {
+            SharingWidget.style.display = (window.FrameTrail.instances.length > 1) ? 'none' : '';
         }
 
         if ( editMode && !VideoStartOverlay.classList.contains('inactive') ) {

@@ -164,7 +164,7 @@
     opacity: 1;
 }
 
-.titlebar .titlebarActionButtonContainer, .titlebar .sharingWidget {
+.titlebar .titlebarActionButtonContainer {
     float: right;
 }
 

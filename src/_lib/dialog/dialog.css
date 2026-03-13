@@ -16,6 +16,7 @@
     overflow: visible;
     background: #fff;
     color: var(--primary-bg-color);
+    background: var(--primary-fg-color);
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.7);
     min-width: 280px;
     max-width: 90vw;
