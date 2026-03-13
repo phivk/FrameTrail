@@ -11,8 +11,8 @@
     in-memory edits, Save As export
   - No user management or file uploads (no server= option)
 
-  This example points dataPath at the built-in slavin example data directory.
-  In production, you would point dataPath at a CDN or static host with CORS enabled.
+  This example points dataPath at a remotely hosted example data directory.
+  In production, you would point dataPath at your own CDN or static host with CORS enabled.
 -->
 <html lang="en">
 <head>
@@ -32,9 +32,9 @@
     document.addEventListener('DOMContentLoaded', function() {
         window.ftInstance = FrameTrail.init({
             // Base URL of the _data/ directory.
-            // Here we use the built-in slavin example data from the repo.
+            // Here we point at a remotely hosted example on GitHub Pages.
             // In production, point this at a CDN or static host with CORS headers.
-            dataPath: '../src/_data-examples/slavin/_data/',
+            dataPath: 'https://openhypervideo.github.io/FrameTrail-Examples/zoom-in-on-dna/_data/',
 
             // No `server` option. StorageManager detects the combination of an
             // explicit dataPath + no server and sets storageMode to 'static'.
