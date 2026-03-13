@@ -20,25 +20,24 @@
         * { box-sizing: border-box; }
         body { margin: 0; padding: 24px; background: #111; color: #ccc; font-family: system-ui, sans-serif; }
         h1 { font-size: 18px; margin: 0 0 20px; }
-        .grid { display: flex; flex-wrap: wrap; gap: 24px; max-width: 1200px; margin: 0 auto; align-items: start; }
-        .cell { position: relative; }
+        .grid { display: flex; gap: 24px; max-width: 1200px; align-items: start; height: calc(100vh - 90px); }
+        .cell { position: relative; height: 100%; }
         .cell label { display: block; font-size: 13px; color: #888; margin-bottom: 6px; }
-        .player-box { position: relative; overflow: hidden; border: 0; }
-        .w-full   { width: 100%; }
+        .player-box { position: relative; overflow: hidden; border: 0; height: calc(100% - 25px); }
         .ratio-16-9 { aspect-ratio: 16/9; }
-        .ratio-portrait { width: 360px; aspect-ratio: 9/19.5; }
+        .ratio-portrait { aspect-ratio: 9/19.5; }
     </style>
 </head>
 <body>
     <h1>Embedding in Different Aspect Ratios</h1>
     <div class="grid">
-        <div class="cell w-full">
-            <label>16:9 — Standard Widescreen</label>
-            <iframe class="player-box ratio-16-9 w-full" src="https://openhypervideo.github.io/FrameTrail-Examples/zoom-in-on-dna/" allowfullscreen allow="fullscreen"></iframe>
-        </div>
         <div class="cell">
             <label>Portrait / Mobile</label>
             <iframe class="player-box ratio-portrait" src="https://openhypervideo.github.io/FrameTrail-Examples/zoom-in-on-dna/" allowfullscreen allow="fullscreen"></iframe>
+        </div>
+        <div class="cell" style="flex: 1;">
+            <label>16:9 — Standard Widescreen</label>
+            <iframe class="player-box ratio-16-9" src="https://openhypervideo.github.io/FrameTrail-Examples/zoom-in-on-dna/" allowfullscreen allow="fullscreen"></iframe>
         </div>
     </div>
 </body>
