@@ -37,7 +37,6 @@ FrameTrail/
 │   ├── resourcemanager/
 │   │   └── modules/ResourceManagerLauncher/
 │   ├── _server/                    # PHP backend
-│   └── _data-examples/             # Example data directories (each with _data/)
 ├── scripts/
 │   └── build.sh                    # Production build script
 ├── .github/workflows/
@@ -319,7 +318,7 @@ git push origin v2.0.0
 
 **Data Directory Resolution (`dataPath`):**
 
-The PHP backend supports a client-provided `dataPath` parameter to select which `_data` directory to use. This allows multiple data directories to coexist under the same server root (e.g. `src/_data-examples/*/`).
+The PHP backend supports a client-provided `dataPath` parameter to select which `_data` directory to use. This allows multiple data directories to coexist under the same server root.
 
 Resolution order:
 1. Request parameter (`$_REQUEST["dataPath"]`) — sent by the client with every request
