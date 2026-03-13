@@ -621,8 +621,10 @@ FrameTrail.defineType(
                         if (!self.contentViewContainer.classList.contains('active')) { return; }
                         var firstActiveElement = container.querySelector(activeSelector);
                         if (!firstActiveElement) { return; }
-                        var activeElementPosition = firstActiveElement.offsetTop;
-                        var scrollTarget = activeElementPosition - container.clientHeight / 2;
+                        var containerRect = container.getBoundingClientRect();
+                        var elementRect = firstActiveElement.getBoundingClientRect();
+                        var elementCenter = (elementRect.top + elementRect.bottom) / 2 - containerRect.top + container.scrollTop - 10;
+                        var scrollTarget = elementCenter - container.clientHeight / 2;
                         container.scrollTo({ top: Math.max(0, scrollTarget), behavior: 'smooth' });
                     }
 
