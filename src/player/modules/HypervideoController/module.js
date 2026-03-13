@@ -237,18 +237,9 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
             yt_iframe.allowFullscreen = true;
             videoElement.insertAdjacentElement('afterend', yt_iframe);
 
-            if (!window.YT) {
-                var tag = document.createElement('script');
-                tag.src = "https://www.youtube.com/iframe_api";
-                var firstScriptTag = document.getElementsByTagName('script')[0];
-                firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-            } else {
-                window.onYouTubeIframeAPIReady();
-            }
-
-            window.onYouTubeIframeAPIReady = function() {
+            // Per-instance init closure (captures this instance's FrameTrail, callbacks, etc.)
+            var initThisPlayer = function() {
                 var YouTubePlayerID = FrameTrail.getState('lastYoutubePlayerID');
-                //console.log('YOUTUBE API READY', YouTubePlayerID);
                 window.player_youtube[YouTubePlayerID] = new window.YT.Player(YouTubePlayerID, {
                     events: {
                         'onReady': onPlayerReady,
@@ -356,14 +347,38 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
                             // owner does not allow embedding
                             FrameTrail.module('InterfaceModal').showErrorMessage('Youtube '+ labels['ErrorOwnerDoesNotAllowEmbed']);
                             break;
-                        case 101:
-                            // owner does not allow embedding
-                            FrameTrail.module('InterfaceModal').showErrorMessage('Youtube '+ labels['ErrorOwnerDoesNotAllowEmbed']);
-                            break;
                         default:
                         // default
-                    } 
+                    }
                 }
+            };
+
+            // Queue-based YouTube API initialization to support multiple instances
+            if (!window.YT || !window.YT.Player) {
+                // API not loaded yet — queue this instance's init
+                if (!window._ftYouTubeQueue) {
+                    window._ftYouTubeQueue = [];
+                }
+                window._ftYouTubeQueue.push(initThisPlayer);
+
+                // Load the API script only once
+                if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
+                    var tag = document.createElement('script');
+                    tag.src = "https://www.youtube.com/iframe_api";
+                    var firstScriptTag = document.getElementsByTagName('script')[0];
+                    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+                }
+
+                // Set the global callback to flush the queue
+                window.onYouTubeIframeAPIReady = function() {
+                    var queue = window._ftYouTubeQueue.splice(0);
+                    for (var q = 0; q < queue.length; q++) {
+                        queue[q]();
+                    }
+                };
+            } else {
+                // API already loaded — init immediately
+                initThisPlayer();
             }
 
         } else if (HypervideoModel.videoType == 'vimeo') {
