@@ -141,6 +141,20 @@ FrameTrail.defineModule('Interface', function(FrameTrail){
             setTimeout(onResize, 300);
         });
 
+        // When the tab/window becomes visible (e.g. opened via "open in
+        // new tab"), layout calculations done while hidden may be stale.
+        // Re-measure once the page is actually shown.
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                onResize();
+            }
+        });
+
+        // Also handle the pageshow event for bfcache restores.
+        window.addEventListener('pageshow', function() {
+            onResize();
+        });
+
         // Initial measurement.
         onResize();
 
