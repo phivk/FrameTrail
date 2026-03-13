@@ -9,7 +9,7 @@
     font-weight: 100;
     z-index: 4;
     transition: all 200ms linear;
-    overflow-x: hidden;
+    overflow-x: visible;
     overflow-y: auto;
     scrollbar-width: thin;
 }
