@@ -8,6 +8,7 @@ set -e
 SRC_DIR="$(cd "$(dirname "$0")/.." && pwd)/src"
 BUILD_DIR="$(cd "$(dirname "$0")/.." && pwd)/build"
 VERSION="${1:-dev}"
+NPM_VERSION="${VERSION#v}"  # Strip leading 'v' (npm requires plain semver)
 
 BANNER_MULTI="/*!\n * FrameTrail ${VERSION} — Open Hypervideo Environment\n * https://github.com/OpenHypervideo/FrameTrail\n * MIT OR GPL-3.0-or-later\n */"
 BANNER_SINGLE="/*! FrameTrail ${VERSION} | https://github.com/OpenHypervideo/FrameTrail | MIT OR GPL-3.0-or-later */"
@@ -461,8 +462,6 @@ rm -f "$BUILD_DIR/README.md.bak"
 #  Only frametrail.min.js and frametrail.min.css
 #  are published. Publishing happens in CI via
 #  `npm publish build/` — not from this script.
-
-NPM_VERSION="${VERSION#v}"  # Strip leading 'v' (npm requires plain semver)
 
 cat > "$BUILD_DIR/package.json" << PKGJSON
 {
