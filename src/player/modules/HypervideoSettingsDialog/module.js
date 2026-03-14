@@ -260,7 +260,8 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
                                 name: hypervideo.name || '',
                                 captionsVisible: captionsVisible,
                                 autohideControls: autohideControls,
-                                showExistingSubtitles: true
+                                showExistingSubtitles: true,
+                                showExtendedSettings: true
                             })
                         + '    <hr>'
                         + formBuilder.generateVideoSourceSection({

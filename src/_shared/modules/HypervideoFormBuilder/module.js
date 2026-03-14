@@ -56,7 +56,8 @@ FrameTrail.defineModule('HypervideoFormBuilder', function(FrameTrail){
      *   name: '',
      *   captionsVisible: false,
      *   autohideControls: false,
-     *   showExistingSubtitles: false
+     *   showExistingSubtitles: false,
+     *   showExtendedSettings: false
      * }
      * @return {String} HTML string
      */
@@ -67,6 +68,7 @@ FrameTrail.defineModule('HypervideoFormBuilder', function(FrameTrail){
         var captionsVisible = options.captionsVisible || false;
         var autohideControls = options.autohideControls || false;
         var showExistingSubtitles = options.showExistingSubtitles || false;
+        var showExtendedSettings = options.showExtendedSettings || false;
 
         var html = '<div class="layoutRow">'
                  // Row 1: Name (full width)
@@ -74,8 +76,10 @@ FrameTrail.defineModule('HypervideoFormBuilder', function(FrameTrail){
                  + '        <label for="name">'+ labels['GenericName'] +'</label>'
                  + '        <input type="text" name="name" placeholder="'+ labels['SettingsHypervideoName'] +'" value="'+ name +'">'
                  + '    </div>'
-                 + '</div>'
-                 + '<div class="layoutRow" style="margin-top: 7px;">'
+                 + '</div>';
+
+        if (showExtendedSettings) {
+            html += '<div class="layoutRow" style="margin-top: 7px;">'
                  // Row 2, Column 1: Checkboxes
                  + '    <div class="column-6">'
                  + '        <div class="checkboxRow"><label class="switch"><input type="checkbox" name="config[captionsVisible]" id="captionsVisible" value="true" '+ (captionsVisible ? 'checked' : '') +'><span class="slider round"></span></label><label for="captionsVisible">'+ labels['SettingsSubtitlesShowByDefault'] +'</label></div>'
@@ -87,14 +91,15 @@ FrameTrail.defineModule('HypervideoFormBuilder', function(FrameTrail){
                  + '            <div>'+ labels['GenericSubtitles'] +' ('+ labels['MessageSubtitlesAlsoUsedForInteractiveTranscripts'] +')</div>'
                  + '            <button class="subtitlesPlus" type="button">'+ labels['GenericAdd'] +' <span class="icon-plus"></span></button>';
 
-        if (showExistingSubtitles) {
-            html += '            <div class="existingSubtitlesContainer"></div>';
-        }
+            if (showExistingSubtitles) {
+                html += '            <div class="existingSubtitlesContainer"></div>';
+            }
 
-        html += '            <div class="newSubtitlesContainer"></div>'
-              + '        </div>'
-              + '    </div>'
-              + '</div>';
+            html += '            <div class="newSubtitlesContainer"></div>'
+                  + '        </div>'
+                  + '    </div>'
+                  + '</div>';
+        }
 
         return html;
     }
@@ -123,7 +128,6 @@ FrameTrail.defineModule('HypervideoFormBuilder', function(FrameTrail){
         var isEditMode = options.isEditMode || false;
 
         var html = '<div class="videoSourceSection">'
-                 + '    <div class="message active mb-0">'+ labels['SettingsVideoSource'] +'</div>'
                  + '    <div class="videoSourceTabs">'
                  + '        <ul>'
                  + '            <li><a href="#ChooseVideo">'+ labels['SettingsChooseVideo'] +'</a></li>'
@@ -132,7 +136,7 @@ FrameTrail.defineModule('HypervideoFormBuilder', function(FrameTrail){
                  + '        <div id="ChooseVideo">';
 
         if (showUploadButton) {
-            html += '            <button type="button" class="uploadNewVideoResource">'+ labels['ResourceUploadVideo'] +'</button>';
+            html += '            <button type="button" class="uploadNewVideoResource"><span class="icon-plus"></span> '+ labels['ResourceUploadVideo'] +'</button>';
         }
 
         html += '            <div class="videoResourceList"></div>'
@@ -200,6 +204,9 @@ FrameTrail.defineModule('HypervideoFormBuilder', function(FrameTrail){
      */
     function attachSubtitleHandlers(formElement) {
         var el = (formElement instanceof Element) ? formElement : formElement[0];
+
+        // No subtitle elements when extended settings are hidden
+        if (!el.querySelector('.subtitlesPlus')) return;
 
         // Add new subtitle item
         el.querySelector('.subtitlesPlus').addEventListener('click', function() {
