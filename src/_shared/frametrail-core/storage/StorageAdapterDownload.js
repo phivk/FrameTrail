@@ -88,6 +88,21 @@ class StorageAdapterDownload extends StorageAdapter {
             hvData.config.theme = fullConfig.defaultTheme;
         }
 
+        // Ensure clips have inline src so the standalone HTML doesn't depend on a resources index
+        var HypervideoModel = this._frameTrailInstance.module('HypervideoModel');
+        if (hvData.clips && HypervideoModel) {
+            for (var c = 0; c < hvData.clips.length; c++) {
+                if (!hvData.clips[c].src && hvData.clips[c].resourceId != null) {
+                    var res = Database.resources[hvData.clips[c].resourceId];
+                    if (res) {
+                        hvData.clips[c].src = res.src;
+                    } else if (HypervideoModel.sourcePath) {
+                        hvData.clips[c].src = HypervideoModel.sourcePath;
+                    }
+                }
+            }
+        }
+
         var annotations = Database.getAnnotationsW3C();
         var contentItem = { hypervideo: hvData };
         if (annotations.length > 0) {
