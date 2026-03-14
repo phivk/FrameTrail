@@ -181,10 +181,16 @@
 
         for (var idx in database.overlays) {
 
+            var overlayData = database.overlays[idx];
+            var resourceTypeName = 'Resource' + overlayData.type.charAt(0).toUpperCase() + overlayData.type.slice(1);
+
+            if (!FrameTrail.type(resourceTypeName)) {
+                console.warn('Skipping overlay with unknown resource type: ' + overlayData.type);
+                continue;
+            }
+
             overlays.push(
-                FrameTrail.newObject('Overlay',
-                    database.overlays[idx]
-                )
+                FrameTrail.newObject('Overlay', overlayData)
             );
 
         }
@@ -235,10 +241,16 @@
         //console.log(database.annotations);
         for (var idx in database.annotations) {
 
+            var annotationData = database.annotations[idx];
+            var resourceTypeName = 'Resource' + annotationData.type.charAt(0).toUpperCase() + annotationData.type.slice(1);
+
+            if (!FrameTrail.type(resourceTypeName)) {
+                console.warn('Skipping annotation with unknown resource type: ' + annotationData.type);
+                continue;
+            }
+
             annotations.push(
-                FrameTrail.newObject('Annotation',
-                    database.annotations[idx]
-                )
+                FrameTrail.newObject('Annotation', annotationData)
             );
 
         }
