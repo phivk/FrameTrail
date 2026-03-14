@@ -841,8 +841,7 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
      */
     function toogleUnsavedChanges(aBoolean) {
 
-        var noDirectSave = FrameTrail.getState('storageMode') === 'download' ||
-                           FrameTrail.module('UserManagement').isGuestMode();
+        var noDirectSave = !FrameTrail.module('StorageManager').canSave();
 
         if (aBoolean) {
             domElement.querySelectorAll('button[data-viewmode="video"]').forEach(function(el) { el.classList.add('unsavedChanges'); });
@@ -919,8 +918,8 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
 
                 var _canSave = FrameTrail.module('StorageManager').canSave();
                 var _isGuest = FrameTrail.module('UserManagement').isGuestMode();
-                NewHypervideoButton.forEach(function(btn) { btn.style.display = ''; btn.disabled = _isGuest; });
-                ForkButton.style.display = ''; ForkButton.disabled = _isGuest;
+                NewHypervideoButton.forEach(function(btn) { btn.style.display = ''; btn.disabled = _isGuest && !_canSave; });
+                ForkButton.style.display = ''; ForkButton.disabled = _isGuest && !_canSave;
                 ExportButton.forEach(function(btn) { btn.style.display = 'none'; });
                 SaveButton.style.display = ''; SaveButton.disabled = !_canSave;
                 SaveAsButton.style.display = '';
