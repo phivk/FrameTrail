@@ -665,14 +665,14 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
         _oeWrapper.innerHTML = '<div class="overlayEditingTabs">'
                             +  '    <ul>'
                             +  '        <li>'
-                            +  '            <a href="#CustomOverlay">'+ labels['ResourceAddCustomOverlay'] +'</a>'
-                            +  '        </li>'
-                            +  '        <li>'
                             +  '            <a href="#ResourceList">'+ labels['ResourceChoose'] +'</a>'
                             +  '        </li>'
+                            +  '        <li>'
+                            +  '            <a href="#CustomOverlay">'+ labels['ResourceAddCustomOverlay'] +'</a>'
+                            +  '        </li>'
                             +  '    </ul>'
-                            +  '    <div id="CustomOverlay"></div>'
                             +  '    <div id="ResourceList"></div>'
+                            +  '    <div id="CustomOverlay"></div>'
                             +  '</div>';
         var overlayEditingOptions = _oeWrapper.firstElementChild;
         FTTabs(overlayEditingOptions, { heightStyle: 'fill' }); // Phase 2 bridge

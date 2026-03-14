@@ -522,11 +522,11 @@
         var _aew = document.createElement('div');
         _aew.innerHTML = '<div class="overlayEditingTabs">'
                        +   '    <ul>'
-                       +   '        <li><a href="#CustomAnnotation">'+ labels['ResourceAddCustomAnnotation'] +'</a></li>'
                        +   '        <li><a href="#ResourceList">'+ labels['ResourceChoose'] +'</a></li>'
+                       +   '        <li><a href="#CustomAnnotation">'+ labels['ResourceAddCustomAnnotation'] +'</a></li>'
                        +   '    </ul>'
-                       +   '    <div id="CustomAnnotation"></div>'
                        +   '    <div id="ResourceList"></div>'
+                       +   '    <div id="CustomAnnotation"></div>'
                        +   '</div>';
         var annotationsEditingOptions = _aew.firstElementChild;
         FTTabs(annotationsEditingOptions, {
