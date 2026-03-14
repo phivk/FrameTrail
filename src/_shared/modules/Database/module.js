@@ -1370,9 +1370,49 @@
                 "clipTimeVisible": hypervideos[thisHypervideoID].config.clipTimeVisible,
                 "hidden": hypervideos[thisHypervideoID].hidden,
                 "theme": hypervideos[thisHypervideoID].config.theme || "",
-                "layoutArea": (FrameTrail.module('ViewLayout') && FrameTrail.module('ViewLayout').getLayoutAreaData)
-                    ? FrameTrail.module('ViewLayout').getLayoutAreaData()
-                    : hypervideos[thisHypervideoID].config.layoutArea
+                "layoutArea": (function () {
+                    var layoutArea = (FrameTrail.module('ViewLayout') && FrameTrail.module('ViewLayout').getLayoutAreaData)
+                        ? FrameTrail.module('ViewLayout').getLayoutAreaData()
+                        : hypervideos[thisHypervideoID].config.layoutArea;
+
+                    // Convert Transcript contentViews to CustomHTML so exports are self-contained
+                    var areas = ['areaTop', 'areaBottom', 'areaLeft', 'areaRight'];
+                    for (var a = 0; a < areas.length; a++) {
+                        var areaKey = areas[a];
+                        if (!layoutArea[areaKey]) continue;
+                        for (var cv = 0; cv < layoutArea[areaKey].length; cv++) {
+                            var cvData = layoutArea[areaKey][cv];
+                            if (cvData.type === 'Transcript' && cvData.transcriptSource) {
+                                var subs = subtitles[cvData.transcriptSource];
+                                if (subs && subs.cues) {
+                                    var html = '<div class="transcriptContainer">';
+                                    for (var c = 0; c < subs.cues.length; c++) {
+                                        var cue = subs.cues[c];
+                                        html += '<span class="timebased" data-start="' + cue.startTime + '" data-end="' + cue.endTime + '">'
+                                            + cue.text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                                            + ' </span>';
+                                    }
+                                    html += '</div>';
+                                    layoutArea[areaKey][cv] = {
+                                        type: 'CustomHTML',
+                                        name: cvData.name,
+                                        icon: cvData.icon,
+                                        cssClass: cvData.cssClass,
+                                        html: html,
+                                        collectionFilter: cvData.collectionFilter,
+                                        contentSize: cvData.contentSize,
+                                        onClickContentItem: cvData.onClickContentItem,
+                                        initClosed: cvData.initClosed,
+                                        filterAspect: cvData.filterAspect,
+                                        zoomControls: cvData.zoomControls
+                                    };
+                                }
+                            }
+                        }
+                    }
+
+                    return layoutArea;
+                })()
             },
             "clips": hypervideos[thisHypervideoID].clips,
             "globalEvents": (codeSnippets.globalEvents) ? codeSnippets.globalEvents : {},
