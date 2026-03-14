@@ -1071,8 +1071,7 @@ input:checked + .slider:before {
     color: var(--primary-bg-color);
     opacity: .8;
     background: var(--primary-fg-color);
-    border-radius: 50rem;
-    border: 1px solid var(--secondary-bg-color);
+    border-bottom: 1px solid var(--secondary-bg-color);
     padding: 6px 11px;
     margin-right: 2px;
 }
@@ -1082,11 +1081,10 @@ input:checked + .slider:before {
 }
 
 .ui-tabs .ui-tabs-nav li.ui-state-active a {
-    color: var(--primary-fg-color);
     opacity: 1;
     outline: none;
-    background: var(--primary-bg-color);
     border-color: var(--primary-bg-color);
+    font-weight: 600;
 }
 
 .ui-tabs .ui-tabs-panel {
