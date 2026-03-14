@@ -72,6 +72,7 @@ window.FrameTrail_L10n['de'] = {
     "ErrorNotLoggedIn": "Du bist nicht eingeloggt",
     "ErrorNotLoggedInAnymore": "Du bist nicht mehr eingeloggt.",
     "ErrorOwnerDoesNotAllowEmbed": "Fehler: Besitzer:in erlaubt das Einbetten dieses Videos nicht.",
+    "ErrorYouTubeRequiresHTTP": "YouTube-Videos können nicht eingebettet werden, wenn die Seite als lokale Datei geöffnet wird. Bitte verwende einen Webserver (z.B. localhost) oder eine Videodatei.",
     "ErrorPlaybackError": "Fehler beim Abspielen des Videos.",
     "ErrorSavingData": "Fehler: Daten konnten nicht gespeichert werden",
     "ErrorSelectVideoFromList": "Bitte wähle ein Video aus der Liste aus.",

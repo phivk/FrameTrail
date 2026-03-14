@@ -72,6 +72,7 @@ window.FrameTrail_L10n['en'] = {
     "ErrorNotLoggedIn": "You are not logged in",
     "ErrorNotLoggedInAnymore": "You are not logged in anymore.",
     "ErrorOwnerDoesNotAllowEmbed": "Error: owner does not allow embedding this video.",
+    "ErrorYouTubeRequiresHTTP": "YouTube videos cannot be embedded when opening from a local file. Please use a web server (e.g. localhost) or a video file instead.",
     "ErrorPlaybackError": "Error: playback error.",
     "ErrorSavingData": "Error: Could not save data",
     "ErrorSelectVideoFromList": "Please select a video from the list.",

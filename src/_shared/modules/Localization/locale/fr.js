@@ -72,6 +72,7 @@ window.FrameTrail_L10n['fr'] = {
     "ErrorNotLoggedIn": "Vous n'êtes pas connecté",
     "ErrorNotLoggedInAnymore": "Vous n'êtes plus connecté.",
     "ErrorOwnerDoesNotAllowEmbed": "Erreur : le propriétaire n'autorise pas l'intégration de cette vidéo.",
+    "ErrorYouTubeRequiresHTTP": "Les vidéos YouTube ne peuvent pas être intégrées lorsque la page est ouverte en tant que fichier local. Veuillez utiliser un serveur web (par ex. localhost) ou un fichier vidéo.",
     "ErrorPlaybackError": "Erreur : erreur de lecture.",
     "ErrorSavingData": "Erreur : impossible d'enregistrer les données",
     "ErrorSelectVideoFromList": "Veuillez sélectionner une vidéo dans la liste.",

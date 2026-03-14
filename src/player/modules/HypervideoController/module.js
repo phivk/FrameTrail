@@ -224,6 +224,12 @@ FrameTrail.defineModule('HypervideoController', function(FrameTrail){
             FrameTrail.changeState('videoWorking', true);
             var lastYoutubePlayerID = 'yt_' + Date.now();
             FrameTrail.changeState('lastYoutubePlayerID', lastYoutubePlayerID);
+            if (window.location.protocol === 'file:') {
+                FrameTrail.changeState('videoWorking', false);
+                FrameTrail.module('InterfaceModal').hideLoadingScreen();
+                FrameTrail.module('InterfaceModal').showErrorMessage(labels['ErrorYouTubeRequiresHTTP']);
+                return;
+            }
             var yt_options = 'autoplay=0&controls=0&rel=0&disablekb=1&enablejsapi=1&fs=0&modestbranding=1&playsinline=1&color=white&origin='+ window.location.origin;
             var yt_iframe = document.createElement('iframe');
             yt_iframe.id = lastYoutubePlayerID;
