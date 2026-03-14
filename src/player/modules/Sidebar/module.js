@@ -393,6 +393,16 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
             thumb.classList.add('selected');
             newDialog.querySelector('input[name="resourcesID"]').value = thumb.dataset.resourceid;
 
+            // Show YouTube warning when selecting a YouTube resource
+            var ytWarning = newDialogCtrl && newDialogCtrl.widget().querySelector('.youtubeLocalWarning');
+            if (ytWarning) {
+                if (thumb.dataset.type === 'youtube') {
+                    ytWarning.classList.add('active');
+                } else {
+                    ytWarning.classList.remove('active');
+                }
+            }
+
             // Update button state when video is selected
             updateAddButtonState();
         };
@@ -612,8 +622,14 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
             content:  newDialog,
             autoOpen: false,
             open: function() {
-                newDialogCtrl.widget().querySelector('.ft-dialog-buttonpane').append(newDialog.querySelector('.message.error'));
-                addHypervideoButton = newDialogCtrl.widget().querySelector('.ft-dialog-buttonpane button');
+                var buttonPane = newDialogCtrl.widget().querySelector('.ft-dialog-buttonpane');
+                var ytWarningEl = document.createElement('div');
+                ytWarningEl.className = 'youtubeLocalWarning message warning mt-1';
+                ytWarningEl.style.flexBasis = '100%';
+                ytWarningEl.textContent = labels['WarningYouTubeSource'];
+                buttonPane.prepend(ytWarningEl);
+                buttonPane.append(newDialog.querySelector('.message.error'));
+                addHypervideoButton = buttonPane.querySelector('button');
                 addHypervideoButton.disabled = true;
                 updateAddButtonState();
             },

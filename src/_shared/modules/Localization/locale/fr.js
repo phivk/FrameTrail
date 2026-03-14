@@ -369,5 +369,6 @@ window.FrameTrail_L10n['fr'] = {
     "UserRegister": "Inscrire un nouvel utilisateur",
     "UserRoleAdmin": "Admin",
     "UserRoleUser": "Utilisateur",
-    "UserSelect": "Sélectionner un utilisateur"
+    "UserSelect": "Sélectionner un utilisateur",
+    "WarningYouTubeSource": "Si vous choisissez une vidéo YouTube comme source, l'hypervidéo ne fonctionnera pas lorsque vous l'exporterez en tant que fichier HTML et l'ouvrez localement (YouTube empêche cela)."
 }

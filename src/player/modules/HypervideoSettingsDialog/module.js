@@ -345,14 +345,24 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
             if (!_thumb) return;
             EditHypervideoForm.querySelectorAll('.videoResourceList .resourceThumb').forEach(function(el) { el.classList.remove('selected'); });
             _thumb.classList.add('selected');
-            
+
             var resourceId = _thumb.dataset.resourceid;
             var resource = database.resources[resourceId];
-            
+
             EditHypervideoForm.querySelector('input[name="newResourceId"]').value = resourceId;
             EditHypervideoForm.querySelector('input[name="newResourceSrc"]').value = resource ? resource.src : '';
             // Duration will be determined when video loads - for now use 0 as placeholder
             EditHypervideoForm.querySelector('input[name="newResourceDuration"]').value = resource ? (resource.duration || 0) : 0;
+
+            // Show YouTube warning when selecting a YouTube resource
+            var ytWarning = hypervideoDialogCtrl && hypervideoDialogCtrl.widget().querySelector('.youtubeLocalWarning');
+            if (ytWarning) {
+                if (_thumb.dataset.type === 'youtube') {
+                    ytWarning.classList.add('active');
+                } else {
+                    ytWarning.classList.remove('active');
+                }
+            }
         });
 
         // Helper to get new empty video duration
@@ -942,6 +952,19 @@ FrameTrail.defineModule('HypervideoSettingsDialog', function(FrameTrail){
                 }
             ]
         });
+
+        // Add YouTube warning to buttonpane
+        var buttonPane = hypervideoDialogCtrl.widget().querySelector('.ft-dialog-buttonpane');
+        var ytWarningEl = document.createElement('div');
+        ytWarningEl.className = 'youtubeLocalWarning message warning mt-1';
+        ytWarningEl.style.flexBasis = '100%';
+        ytWarningEl.textContent = labels['WarningYouTubeSource'];
+        buttonPane.prepend(ytWarningEl);
+
+        // Show warning if current source is YouTube
+        if (originalResourceId && database.resources[originalResourceId] && database.resources[originalResourceId].type === 'youtube') {
+            ytWarningEl.classList.add('active');
+        }
     }
 
     /**
