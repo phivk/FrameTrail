@@ -228,7 +228,7 @@ window.FrameTrail_L10n['de'] = {
     "ResourceLicensesAll": "Alle Lizenzen",
     "ResourceUploadFiles": "Dateien hochladen",
     "ResourceUploadStart": "Upload starten",
-    "ResourceUploadVideo": "Video hochladen",
+    "ResourceUploadVideo": "Neues Video hinzufügen",
     "ResourceUploading": "Lädt hoch...",
     "ResourcesManage": "Ressourcen verwalten",
     "ResourceEditButton": "Bearbeiten",

@@ -228,7 +228,7 @@ window.FrameTrail_L10n['en'] = {
     "ResourceLicensesAll": "All Licenses",
     "ResourceUploadFiles": "Upload Files",
     "ResourceUploadStart": "Start Upload",
-    "ResourceUploadVideo": "Upload Video",
+    "ResourceUploadVideo": "Add new video",
     "ResourceUploading": "Uploading...",
     "ResourcesManage": "Manage Resources",
     "ResourceEditButton": "Edit",
