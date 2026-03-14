@@ -1,5 +1,6 @@
 <?php
 error_reporting(E_ALL ^ E_NOTICE ^ E_WARNING);
+ini_set('display_errors', '0');
 
 $_isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
          || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
