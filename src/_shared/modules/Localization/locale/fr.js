@@ -124,6 +124,7 @@ window.FrameTrail_L10n['fr'] = {
     "GenericJumpBackward": "Reculer",
     "GenericJumpForward": "Avancer",
     "GenericLanguage": "Langue",
+    "GenericLayoutAreas": "Zones de mise en page",
     "GenericLastChanged": "Dernière modification",
     "GenericName": "Titre",
     "GenericNoDiscard": "Ignorer",

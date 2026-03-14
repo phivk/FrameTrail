@@ -124,6 +124,7 @@ window.FrameTrail_L10n['de'] = {
     "GenericJumpBackward": "Springe zurück",
     "GenericJumpForward": "Springe vorwärts",
     "GenericLanguage": "Sprache",
+    "GenericLayoutAreas": "Layoutbereiche",
     "GenericLastChanged": "Zuletzt geändert",
     "GenericName": "Name",
     "GenericNoDiscard": "Verwerfen",

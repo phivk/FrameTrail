@@ -93,6 +93,10 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
                         + '                        <div class="annotationSearchContainer contextButtonContainer">'
                         + '                        </div>'
                         + '                    </div>'
+                        + '                    <div class="layoutAreasButton playerControl">'
+                        + '                        <span class="icon-th-large-1"></span>'
+                        + '                        <div class="layoutAreasPanel"></div>'
+                        + '                    </div>'
                         + '                    <div class="captionsButton playerControl">'
                         + '                        <span class="icon-captions-off"></span>'
                         + '                        <div class="captionSelectContainer">'
@@ -339,22 +343,160 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         }
     }
 
-    Controls.querySelector('.captionsButton').addEventListener('click', function() {
+    var layoutAreasButton = Controls.querySelector('.layoutAreasButton');
+    var layoutAreasPanel = layoutAreasButton.querySelector('.layoutAreasPanel');
+    layoutAreasButton.style.display = 'none';
+
+    layoutAreasButton.addEventListener('click', function(evt) {
+        evt.stopPropagation();
+
+        Controls.querySelectorAll('.rightControlPanel .active:not([data-config]):not(.layoutAreasButton):not(.layoutAreasPanel)').forEach(function(el) { el.classList.remove('active'); });
+        closeCaptionPanel();
+
+        if (!layoutAreasPanel.classList.contains('active')) {
+            updateLayoutAreasPanel();
+            layoutAreasPanel.classList.add('active');
+            addOutsideClickHandler();
+        } else {
+            layoutAreasPanel.classList.remove('active');
+        }
+
+    });
+
+    layoutAreasPanel.addEventListener('click', function(evt) {
+        evt.stopPropagation();
+    });
+
+    function updateLayoutAreasPanel() {
+        layoutAreasPanel.innerHTML = '';
+
+        var schematic = document.createElement('div');
+        schematic.className = 'layoutAreasSchematic';
+
+        var hasTop = FrameTrail.getState('hv_config_areaTopVisible');
+        var hasBottom = FrameTrail.getState('hv_config_areaBottomVisible');
+        var hasLeft = FrameTrail.getState('hv_config_areaLeftVisible');
+        var hasRight = FrameTrail.getState('hv_config_areaRightVisible');
+
+        if (hasTop) {
+            var topEl = document.createElement('div');
+            topEl.className = 'schematicArea schematicAreaTop';
+            topEl.setAttribute('data-size', AreaTopContainer.getAttribute('data-size') || 'small');
+            if (!AreaTopContainer.classList.contains('closed')) topEl.classList.add('active');
+            topEl.addEventListener('click', function() {
+                AreaTopContainer.classList.toggle('closed');
+                this.classList.toggle('active');
+                FrameTrail.changeState('slidePosition', 'middle');
+                window.setTimeout(function() { adjustHypervideo(); }, 250);
+            });
+            schematic.appendChild(topEl);
+        }
+
+        var middleRow = document.createElement('div');
+        middleRow.className = 'schematicMiddleRow';
+
+        if (hasLeft) {
+            var leftEl = document.createElement('div');
+            leftEl.className = 'schematicArea schematicAreaLeft';
+            leftEl.setAttribute('data-size', AreaLeftContainer.getAttribute('data-size') || 'small');
+            if (!AreaLeftContainer.classList.contains('closed')) leftEl.classList.add('active');
+            leftEl.addEventListener('click', function() {
+                AreaLeftContainer.classList.toggle('closed');
+                this.classList.toggle('active');
+                FrameTrail.changeState('slidePosition', 'middle');
+                window.setTimeout(function() { adjustHypervideo(); }, 250);
+            });
+            middleRow.appendChild(leftEl);
+        }
+
+        var centerEl = document.createElement('div');
+        centerEl.className = 'schematicCenter';
+        centerEl.innerHTML = '<span class="icon-play-1"></span>';
+        middleRow.appendChild(centerEl);
+
+        if (hasRight) {
+            var rightEl = document.createElement('div');
+            rightEl.className = 'schematicArea schematicAreaRight';
+            rightEl.setAttribute('data-size', AreaRightContainer.getAttribute('data-size') || 'small');
+            if (!AreaRightContainer.classList.contains('closed')) rightEl.classList.add('active');
+            rightEl.addEventListener('click', function() {
+                AreaRightContainer.classList.toggle('closed');
+                this.classList.toggle('active');
+                FrameTrail.changeState('slidePosition', 'middle');
+                window.setTimeout(function() { adjustHypervideo(); }, 250);
+            });
+            middleRow.appendChild(rightEl);
+        }
+
+        schematic.appendChild(middleRow);
+
+        if (hasBottom) {
+            var bottomEl = document.createElement('div');
+            bottomEl.className = 'schematicArea schematicAreaBottom';
+            bottomEl.setAttribute('data-size', AreaBottomContainer.getAttribute('data-size') || 'small');
+            if (!AreaBottomContainer.classList.contains('closed')) bottomEl.classList.add('active');
+            bottomEl.addEventListener('click', function() {
+                AreaBottomContainer.classList.toggle('closed');
+                this.classList.toggle('active');
+                FrameTrail.changeState('slidePosition', 'middle');
+                window.setTimeout(function() { adjustHypervideo(); }, 250);
+            });
+            schematic.appendChild(bottomEl);
+        }
+
+        layoutAreasPanel.appendChild(schematic);
+    }
+
+    function updateLayoutAreasButtonVisibility() {
+        var hasAny = FrameTrail.getState('hv_config_areaTopVisible')
+                  || FrameTrail.getState('hv_config_areaBottomVisible')
+                  || FrameTrail.getState('hv_config_areaLeftVisible')
+                  || FrameTrail.getState('hv_config_areaRightVisible');
+        layoutAreasButton.style.display = hasAny ? '' : 'none';
+    }
+
+    var captionsButton = Controls.querySelector('.captionsButton');
+    var captionContainer = captionsButton.querySelector('.captionSelectContainer');
+
+    captionsButton.addEventListener('click', function(evt) {
+        evt.stopPropagation();
 
         Controls.querySelectorAll('.rightControlPanel .active:not([data-config]):not(.captionsButton):not(.captionSelectContainer):not(.annotationSetButton)').forEach(function(el) { el.classList.remove('active'); });
+        layoutAreasPanel.classList.remove('active');
 
-        var captionContainer = this.querySelector('.captionSelectContainer');
         if ( !captionContainer.classList.contains('active') ) {
             captionContainer.classList.add('active');
             VideoContainer.style.opacity = '0.3';
             domElement.querySelectorAll('.areaLeftContainer, .areaRightContainer').forEach(function(el) { el.style.opacity = '0.3'; });
+            addOutsideClickHandler();
         } else {
-            captionContainer.classList.remove('active');
-            VideoContainer.style.opacity = '1';
-            domElement.querySelectorAll('.areaLeftContainer, .areaRightContainer').forEach(function(el) { el.style.opacity = '1'; });
+            closeCaptionPanel();
         }
 
     });
+
+    captionContainer.addEventListener('click', function(evt) {
+        evt.stopPropagation();
+    });
+
+    function closeCaptionPanel() {
+        captionContainer.classList.remove('active');
+        VideoContainer.style.opacity = '1';
+        domElement.querySelectorAll('.areaLeftContainer, .areaRightContainer').forEach(function(el) { el.style.opacity = '1'; });
+    }
+
+    function closeAllPanels() {
+        layoutAreasPanel.classList.remove('active');
+        closeCaptionPanel();
+    }
+
+    function addOutsideClickHandler() {
+        var handler = function() {
+            closeAllPanels();
+            document.removeEventListener('click', handler);
+        };
+        document.addEventListener('click', handler);
+    }
 
     Controls.querySelector('.captionSelect.none').addEventListener('click', function() {
         FrameTrail.changeState('hv_config_captionsVisible', false);
@@ -944,6 +1086,9 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         AreaLeftContainer.style.display = 'none';
         AreaRightContainer.style.display = 'none';
 
+        layoutAreasButton.style.display = 'none';
+        layoutAreasPanel.classList.remove('active');
+
         // Timeline visibility is handled by CSS rules based on .editActive[data-edit-mode]
         // Don't use .show() here as it sets inline display:block that persists after leaving edit mode
 
@@ -1080,6 +1225,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         if ( FrameTrail.getState('slidePosition') != 'middle' ) {
             FrameTrail.changeState('slidePosition', 'middle');
         }
+        updateLayoutAreasButtonVisibility();
     };
 
     /**
@@ -1100,6 +1246,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         if ( FrameTrail.getState('slidePosition') != 'middle' ) {
             FrameTrail.changeState('slidePosition', 'middle');
         }
+        updateLayoutAreasButtonVisibility();
     };
 
     /**
@@ -1117,6 +1264,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         } else {
             AreaLeftContainer.style.display = 'none';
         }
+        updateLayoutAreasButtonVisibility();
     };
 
     /**
@@ -1134,6 +1282,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
         } else {
             AreaRightContainer.style.display = 'none';
         }
+        updateLayoutAreasButtonVisibility();
     };
 
     /**
