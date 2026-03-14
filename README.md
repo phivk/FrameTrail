@@ -95,10 +95,11 @@ For public deployments, use Apache (`.htaccess` included) or nginx with PHP-FPM.
 
 ```bash
 git clone https://github.com/OpenHypervideo/FrameTrail.git
-cd FrameTrail
+cd FrameTrail/src
+php -S localhost:8080
 ```
 
-Point your web server at the `src/` directory. Open in your browser, complete the setup wizard, and start editing. Changes to source files take effect on reload — no build step needed for development.
+Open `http://localhost:8080` in your browser and complete the setup wizard. 
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the full development guide.
 
