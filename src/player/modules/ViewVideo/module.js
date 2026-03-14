@@ -88,24 +88,24 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
                         + '                </div>'
                         + '                <div class="rightControlPanel">'
                         + '                    <div class="sharingWidget playerControl" data-tooltip-bottom-right="'+ labels['GenericShareEmbed'] +'"><span class="icon-share"></span></div>'
-                        + '                    <div class="annotationSearchButton playerControl contextButton">'
+                        + '                    <div class="annotationSearchButton playerControl contextButton" data-tooltip-bottom-right="'+ labels['GenericSearch'] +'">'
                         + '                        <span class="icon-search"></span>'
                         + '                        <div class="annotationSearchContainer contextButtonContainer">'
                         + '                        </div>'
                         + '                    </div>'
-                        + '                    <div class="layoutAreasButton playerControl">'
+                        + '                    <div class="layoutAreasButton playerControl" data-tooltip-bottom-right="'+ labels['GenericLayoutAreas'] +'">'
                         + '                        <span class="icon-th-large-1"></span>'
                         + '                        <div class="layoutAreasPanel"></div>'
                         + '                    </div>'
-                        + '                    <div class="captionsButton playerControl">'
+                        + '                    <div class="captionsButton playerControl" data-tooltip-bottom-right="'+ labels['GenericSubtitles'] +'">'
                         + '                        <span class="icon-captions-off"></span>'
                         + '                        <div class="captionSelectContainer">'
                         + '                            <div class="captionSelect none" data-lang="" data-config="hv_config_captionsVisible">'+ labels['GenericNone'] +'</div>'
                         + '                            <div class="captionSelectList"></div>'
                         + '                        </div>'
                         + '                    </div>'
-                        + '                    <div class="volumeButton playerControl"><span class="icon-volume-up"></span></div>'
-                        + '                    <div class="fullscreenButton playerControl"><span class="icon-resize-full-alt"></span></div>'
+                        + '                    <div class="volumeButton playerControl" data-tooltip-bottom-right="'+ labels['GenericVolume'] +'"><span class="icon-volume-up"></span></div>'
+                        + '                    <div class="fullscreenButton playerControl" data-tooltip-bottom-right="'+ labels['GenericFullscreen'] +'"><span class="icon-resize-full-alt"></span></div>'
                         + '                </div>'
                         + '            </div>'
                         + '            <div class="annotationTimeline timeline"></div>'
@@ -278,7 +278,7 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
                         + '    <div>Link</div>'
                         + '    <input type="text" value="'+ url +'"/>'
                         + '    <div>Embed Code</div>'
-                        + '    <textarea style="height: 100px;" readonly><iframe width="800" height="600" src="'+ iframeUrl +'" title="'+ hypervideoTitle +'" frameborder="0" allow="fullscreen" allowfullscreen></iframe></textarea>'
+                        + '    <textarea class="m-0" style="height: 100px;" readonly><iframe width="800" height="600" src="'+ iframeUrl +'" title="'+ hypervideoTitle +'" frameborder="0" allow="fullscreen" allowfullscreen></iframe></textarea>'
                         + '</div>';
         var shareDialog = _sdWrapper.firstElementChild;
 
@@ -296,17 +296,10 @@ FrameTrail.defineModule('ViewVideo', function(FrameTrail){
             modal:     true,
             resizable: false,
             width:     500,
-            height:    360,
+            height:    "auto",
             close: function() {
                 shareDialogCtrl.destroy();
-            },
-            buttons: [
-                { text: 'OK',
-                    click: function() {
-                        shareDialogCtrl.close();
-                    }
-                }
-            ]
+            }
         });
     });
 
