@@ -1385,14 +1385,13 @@
                             if (cvData.type === 'Transcript' && cvData.transcriptSource) {
                                 var subs = subtitles[cvData.transcriptSource];
                                 if (subs && subs.cues) {
-                                    var html = '<div class="transcriptContainer">';
+                                    var html = '';
                                     for (var c = 0; c < subs.cues.length; c++) {
                                         var cue = subs.cues[c];
                                         html += '<span class="timebased" data-start="' + cue.startTime + '" data-end="' + cue.endTime + '">'
                                             + cue.text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
                                             + ' </span>';
                                     }
-                                    html += '</div>';
                                     layoutArea[areaKey][cv] = {
                                         type: 'CustomHTML',
                                         name: cvData.name,

@@ -337,34 +337,7 @@
     padding-top: 4px;
 }
 
-.layoutArea .contentViewContainer .contentViewContents .transcriptContainer {
-    margin: 0px 4px 4px 4px;
-    max-height: calc(100% - 8px);
-    box-sizing: border-box;
-    position: relative;
-    padding: 10px;
-    overflow-y: auto;
-    overflow-x: hidden;
-}
-
-.layoutArea .contentViewContainer .contentViewContents .transcriptContainer span {
-    position: relative;
-    padding: 1px 0px 1px 0px;
-    opacity: .6;
-}
-
-.layoutArea .contentViewContainer .contentViewContents .transcriptContainer span:first-child {
-    padding-left: 0px;
-}
-
-.layoutArea .contentViewContainer .contentViewContents .transcriptContainer span:hover, .layoutArea .contentViewContainer .contentViewContents .transcriptContainer span.active {
-    background-color: var(--secondary-fg-color);
-    color: var(--primary-bg-color);
-    border-radius: 2px;
-    opacity: 0.8;
-    cursor: pointer;
-}
-
+.layoutArea .contentViewContainer .contentViewContents .transcriptContainer,
 .layoutArea .contentViewContainer .contentViewContents .customhtmlContainer {
     margin: 0px 4px 4px 4px;
     height: calc(100% - 8px);
@@ -374,12 +347,16 @@
     overflow: auto;
 }
 
+.layoutArea .contentViewContainer .contentViewContents .transcriptContainer span,
 .layoutArea .contentViewContainer .contentViewContents .customhtmlContainer .timebased {
     border-bottom: 1px solid transparent;
     opacity: .7;
 }
 
-.layoutArea .contentViewContainer .contentViewContents .customhtmlContainer .timebased:hover, .layoutArea .contentViewContainer .contentViewContents .customhtmlContainer .timebased.active {
+.layoutArea .contentViewContainer .contentViewContents .transcriptContainer span:hover,
+.layoutArea .contentViewContainer .contentViewContents .transcriptContainer span.active,
+.layoutArea .contentViewContainer .contentViewContents .customhtmlContainer .timebased:hover,
+.layoutArea .contentViewContainer .contentViewContents .customhtmlContainer .timebased.active {
     border-bottom-color: var(--primary-fg-color);
     opacity: 1;
     cursor: pointer;

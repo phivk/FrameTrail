@@ -312,6 +312,7 @@ window.FrameTrail_L10n['fr'] = {
     "SettingsQuizQuestionLabel": "Question",
     "SettingsSelectColorTheme": "Sélectionner un thème de couleur",
     "SettingsSelectContents": "Sélectionner les contenus",
+    "SettingsStartCollapsed": "Démarrer replié",
     "SettingsSubtitlesShowByDefault": "Afficher les sous-titres par défaut (si présent)",
     "SettingsSynchronization": "Synchroniser avec l'Hypervideo",
     "SettingsTestCode": "Tester le code",

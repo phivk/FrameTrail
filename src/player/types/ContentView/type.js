@@ -181,6 +181,15 @@ FrameTrail.defineType(
                     self.contentViewContainer.setAttribute('data-type', self.contentViewData.type);
                     self.contentViewContainer.setAttribute('data-size', self.contentViewData.contentSize);
 
+                    // Sync cssClass on container
+                    if (self._prevCssClass && self._prevCssClass !== self.contentViewData.cssClass) {
+                        self.contentViewContainer.classList.remove(self._prevCssClass);
+                    }
+                    if (self.contentViewData.cssClass) {
+                        self.contentViewContainer.classList.add(self.contentViewData.cssClass);
+                    }
+                    self._prevCssClass = self.contentViewData.cssClass;
+
                     if (self.contentViewData.initClosed) {
                         self.getLayoutAreaContainer().classList.add('closed');
                     }
@@ -893,6 +902,10 @@ FrameTrail.defineType(
                                  + '    </div>'
                                  + '</div>';
                     var containerElement = _w.firstElementChild;
+
+                    if (self.contentViewData.cssClass) {
+                        containerElement.classList.add(self.contentViewData.cssClass);
+                    }
 
                     return containerElement;
 
@@ -1799,7 +1812,7 @@ FrameTrail.defineType(
                         editingUI = document.createElement('div');
                     editingUI.className = 'contentViewEditingUI';
                     editingUI.innerHTML = '    <div class="layoutRow">'
-                                    +'        <div class="generic column-8">'
+                                    +'        <div class="generic column-4">'
                                     +'            <label>'+ self.labels['GenericName'] +':</label>'
                                     +'            <input type="text" class="contentViewData" data-property="name" value="'+ contentViewData.name +'" placeholder="('+ self.labels['GenericOptional'] +')">'
                                     +'        </div>'
@@ -1807,8 +1820,16 @@ FrameTrail.defineType(
                                     +'            <label>Icon:</label>'
                                     +'            <div class="iconInputRow">'
                                     +'                <span class="iconPreview '+ contentViewData.icon +'"></span>'
-                                    +'                <input type="text" class="contentViewData" data-property="icon" value="'+ contentViewData.icon +'" placeholder="(optional)">'
+                                    +'                <input type="text" class="contentViewData" data-property="icon" value="'+ contentViewData.icon +'" placeholder="('+ self.labels['GenericOptional'] +')">'
                                     +'            </div>'
+                                    +'        </div>'
+                                    +'        <div class="generic column-2">'
+                                    +'            <label>CSS Class:</label>'
+                                    +'            <input type="text" class="contentViewData" data-property="cssClass" value="'+ contentViewData.cssClass +'" placeholder="('+ self.labels['GenericOptional'] +')">'
+                                    +'        </div>'
+                                    +'        <div class="generic column-2">'
+                                    +'            <label>'+ self.labels['SettingsStartCollapsed'] +':</label>'
+                                    +'            <div class="checkboxRow"><label class="switch"><input type="checkbox" class="contentViewData" data-property="initClosed" '+ (contentViewData.initClosed ? 'checked' : '') +'><span class="slider round"></span></label></div>'
                                     +'        </div>'
                                     +'    </div>'
                                     +'    <hr>'
@@ -1828,10 +1849,6 @@ FrameTrail.defineType(
                                     +'                <div '+ (contentViewData.contentSize == 'large' ? 'class="active"' : '') +' data-value="large">'+ self.labels['SettingsContentViewLarge'] +'</div>'
                                     +'            </div>'
                                     +'        </div>'
-                                    +'    </div>'
-                                    +'    <div class="generic" style="display: none;">'
-                                    +'        <label>CSS Class:</label>'
-                                    +'        <input type="text" class="contentViewData" data-property="cssClass" data-value="'+ contentViewData.cssClass +'" value="'+ contentViewData.cssClass +'" placeholder="('+ self.labels['GenericOptional'] +')">'
                                     +'    </div>'
                                     +'    <hr>'
                                     +'    <div class="typeSpecific '+ (contentViewData.type == 'TimedContent' ? 'active' : '') +'" data-type="TimedContent">'
@@ -2224,7 +2241,9 @@ FrameTrail.defineType(
                     editingUIContainer.querySelectorAll('.contentViewData').forEach(function(el) {
 
                         var newValue;
-                        if ( el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' ) {
+                        if ( el.tagName === 'INPUT' && el.type === 'checkbox' ) {
+                            newValue = el.checked;
+                        } else if ( el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' ) {
                             newValue = el.value;
                             if ( el.getAttribute('data-property').indexOf('collectionFilter') != -1 && el.getAttribute('data-property') != 'collectionFilter-text' ) {
                                 if ( el.value.length != 0 ) {
