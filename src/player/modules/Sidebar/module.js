@@ -113,8 +113,8 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                 "slidingMode": "adjust",
                 "slidingTrigger": "key",
                 "theme": "",
-                "autohideControls": newDialogCtrl.element.querySelector('input[name="config[autohideControls]"]').checked,
-                "captionsVisible": newDialogCtrl.element.querySelector('input[name="config[captionsVisible]"]').checked,
+                "autohideControls": (newDialogCtrl.element.querySelector('input[name="config[autohideControls]"]') || {}).checked || false,
+                "captionsVisible": (newDialogCtrl.element.querySelector('input[name="config[captionsVisible]"]') || {}).checked || false,
                 "clipTimeVisible": false,
                 "layoutArea": {
                     "areaTop": [],
@@ -220,13 +220,21 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                     }
                 });
 
-                return Promise.all(writeTasks);
+                return Promise.all(writeTasks).then(function() {
+                    return newID;
+                });
             });
-        }).then(function() {
+        }).then(function(newID) {
+            var wasEditMode = FrameTrail.getState('editMode');
             newDialogCtrl.close();
             FrameTrail.module('Database').loadHypervideoData(
                 function() {
                     FrameTrail.module('ViewOverview').refreshList();
+                    history.pushState({ editMode: wasEditMode }, '', '#hypervideo=' + newID);
+                    if (wasEditMode) {
+                        FrameTrail.changeState('editMode', false);
+                    }
+                    FrameTrail.module('HypervideoModel').updateHypervideo(newID, wasEditMode, true);
                 },
                 function() {}
             );
@@ -476,8 +484,8 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
                     "slidingMode": "adjust",
                     "slidingTrigger": "key",
                     "theme": "",
-                    "autohideControls": newDialog.querySelector('input[name="config[autohideControls]"]').checked,
-                    "captionsVisible": newDialog.querySelector('input[name="config[captionsVisible]"]').checked,
+                    "autohideControls": (newDialog.querySelector('input[name="config[autohideControls]"]') || {}).checked || false,
+                    "captionsVisible": (newDialog.querySelector('input[name="config[captionsVisible]"]') || {}).checked || false,
                     "clipTimeVisible": false,
                     "layoutArea": {
                         "areaTop": [],
@@ -538,10 +546,17 @@ FrameTrail.defineModule('Sidebar', function(FrameTrail){
             .then(function(response) {
                 switch(response['code']) {
                     case 0:
+                        var newID = response['newHypervideoID'];
+                        var wasEditMode = FrameTrail.getState('editMode');
                         newDialogCtrl.close();
                         FrameTrail.module('Database').loadHypervideoData(
                             function(){
                                 FrameTrail.module('ViewOverview').refreshList();
+                                history.pushState({ editMode: wasEditMode }, '', '#hypervideo=' + newID);
+                                if (wasEditMode) {
+                                    FrameTrail.changeState('editMode', false);
+                                }
+                                FrameTrail.module('HypervideoModel').updateHypervideo(newID, wasEditMode, true);
                             },
                             function(){}
                         );
