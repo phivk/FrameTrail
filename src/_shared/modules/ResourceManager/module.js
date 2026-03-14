@@ -1928,10 +1928,14 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 
         for (var id in array) {
 
+            var resourceTypeName = 'Resource' + array[id].type.charAt(0).toUpperCase() + array[id].type.slice(1);
+            if (!FrameTrail.type(resourceTypeName)) {
+                console.warn('Skipping resource with unknown type: ' + array[id].type);
+                continue;
+            }
+
             var resourceThumb = FrameTrail.newObject(
-                (   'Resource'
-                  + array[id].type.charAt(0).toUpperCase()
-                  + array[id].type.slice(1)),
+                resourceTypeName,
                 array[id]
             ).renderThumb(id);
 
@@ -2113,10 +2117,14 @@ FrameTrail.defineModule('ResourceManager', function(FrameTrail){
 
         for (var i in resourceDatabase) {
 
+            var resourceTypeName = 'Resource' + resourceDatabase[i].type.charAt(0).toUpperCase() + resourceDatabase[i].type.slice(1);
+            if (!FrameTrail.type(resourceTypeName)) {
+                console.warn('Skipping resource with unknown type: ' + resourceDatabase[i].type);
+                continue;
+            }
+
             resourceThumb = FrameTrail.newObject(
-                (   'Resource'
-                  + resourceDatabase[i].type.charAt(0).toUpperCase()
-                  + resourceDatabase[i].type.slice(1)),
+                resourceTypeName,
                 resourceDatabase[i]
             ).renderThumb();
 
