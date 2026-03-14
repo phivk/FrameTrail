@@ -126,7 +126,7 @@ This creates a `build/` directory with concatenated and minified JS/CSS bundles.
 
 ## Contributors
 
-Joscha Jäger, Michael J. Zeder, Michael Morgenstern, Olivier Aubert
+Joscha Jäger, Michael J. Zeder, Michael Morgenstern, Olivier Aubert, Philo van Kemenade
 
 ---
 
