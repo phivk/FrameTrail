@@ -370,5 +370,6 @@ window.FrameTrail_L10n['fr'] = {
     "UserRoleAdmin": "Admin",
     "UserRoleUser": "Utilisateur",
     "UserSelect": "Sélectionner un utilisateur",
+    "WarningYouTubeExport": "Les vidéos YouTube ne peuvent pas être intégrées dans des fichiers HTML exportés ouverts localement — l'hypervidéo ne sera pas lue, sauf si le fichier HTML est hébergé sur un serveur web.",
     "WarningYouTubeSource": "Si vous choisissez une vidéo YouTube comme source, l'hypervidéo ne fonctionnera pas lorsque vous l'exporterez en tant que fichier HTML et l'ouvrez localement (YouTube empêche cela)."
 }

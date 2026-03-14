@@ -370,5 +370,6 @@ window.FrameTrail_L10n['en'] = {
     "UserRoleAdmin": "Admin",
     "UserRoleUser": "User",
     "UserSelect": "Select a User",
+    "WarningYouTubeExport": "YouTube videos cannot be embedded in exported HTML files opened locally — the hypervideo will not play unless the HTML file is hosted on a web server.",
     "WarningYouTubeSource": "If you choose a YouTube video as a source, the hypervideo will not work when exported as an HTML file and opened locally (YouTube prevents that)."
 }

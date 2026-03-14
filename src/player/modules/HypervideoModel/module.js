@@ -1098,10 +1098,7 @@
             + '<label><input type="radio" name="downloadFormat" value="html" checked> HTML</label>'
             + '<label><input type="radio" name="downloadFormat" value="json"> JSON</label>'
             + '</div>'
-            + '<div style="margin-top: 6px;">'
-            + '<small>' + labels['DownloadResourceBaseUrl'] + '</small>'
-            + '<input type="text" name="htmlDataPath" placeholder="https://example.com/_data/" style="margin-top: 2px;">'
-            + '</div>'
+            + (videoType === 'youtube' ? '<div class="message warning active youtubeExportWarning" style="margin-top: 8px;">' + labels['WarningYouTubeExport'] + '</div>' : '')
             + '</div>'
             + '<div class="downloadOptionsSection" style="display: none;">'
             + '<div class="checkboxRow">'
@@ -1117,11 +1114,15 @@
 
         var formatSection      = saveAsDialog.querySelector('.downloadFormatSection');
         var optionsSection     = saveAsDialog.querySelector('.downloadOptionsSection');
+        var ytWarning          = saveAsDialog.querySelector('.youtubeExportWarning');
 
-        // Default htmlDataPath to the absolute URL of the current _data/ directory
-        var _dataPathInput = saveAsDialog.querySelector('[name="htmlDataPath"]');
-        var _resolvedDataURL = FrameTrail.module('RouteNavigation').resolveDataURL('');
-        _dataPathInput.value = new URL(_resolvedDataURL, window.location.href).href;
+        saveAsDialog.querySelectorAll('[name="downloadFormat"]').forEach(function(radio) {
+            radio.addEventListener('change', function() {
+                if (ytWarning) {
+                    ytWarning.style.display = radio.value === 'html' && radio.checked ? '' : 'none';
+                }
+            });
+        });
 
         saveAsDialog.querySelectorAll('[name="downloadScope"]').forEach(function(radio) {
             radio.addEventListener('change', function() {
@@ -1171,11 +1172,12 @@
                 }
             } else {
                 var format = saveAsDialog.querySelector('[name="downloadFormat"]:checked').value;
-                var dataPath = saveAsDialog.querySelector('[name="htmlDataPath"]').value.trim();
                 if (format === 'html') {
+                    var _resolvedDataURL = FrameTrail.module('RouteNavigation').resolveDataURL('');
+                    var dataPath = new URL(_resolvedDataURL, window.location.href).href;
                     downloadAdapter._generateStandaloneHTML(hvID, dataPath);
                 } else {
-                    downloadAdapter._performDownload(hvID, dataPath);
+                    downloadAdapter._performDownload(hvID);
                 }
             }
 
