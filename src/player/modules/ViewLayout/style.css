@@ -309,6 +309,7 @@
     background-color: var(--primary-bg-color);
     border: 1px solid #999;
     padding: 30px;
+    overflow: hidden;
 }
 
 .layoutManagerContainer .settingsContainer {
@@ -525,13 +526,13 @@ body > .contentViewTemplate .contentViewTemplateLabel {
 }
 
 .layoutManager .layoutArea[data-area="areaLeft"][data-size="medium"], .layoutManager .layoutArea[data-area="areaRight"][data-size="medium"] {
-    flex: 0 0 400px;
-    min-width: 400px;
+    flex: 0 1 400px;
+    min-width: 110px;
 }
 
 .layoutManager .layoutArea[data-area="areaLeft"][data-size="large"], .layoutManager .layoutArea[data-area="areaRight"][data-size="large"] {
-    flex: 0 0 400px;
-    min-width: 400px;
+    flex: 0 1 400px;
+    min-width: 110px;
 }
 
 /* Hidden tabs: reduce layout manager area sizes (remove 38px tab bar) */
@@ -559,14 +560,14 @@ body > .contentViewTemplate .contentViewTemplateLabel {
 
 .layoutManager .layoutArea.hiddenTabs[data-area="areaLeft"][data-size="medium"],
 .layoutManager .layoutArea.hiddenTabs[data-area="areaRight"][data-size="medium"] {
-    flex: 0 0 364px;
-    min-width: 364px;
+    flex: 0 1 364px;
+    min-width: 74px;
 }
 
 .layoutManager .layoutArea.hiddenTabs[data-area="areaLeft"][data-size="large"],
 .layoutManager .layoutArea.hiddenTabs[data-area="areaRight"][data-size="large"] {
-    flex: 0 0 364px;
-    min-width: 364px;
+    flex: 0 1 364px;
+    min-width: 74px;
 }
 
 /* Sortable preview tabs */
