@@ -80,6 +80,14 @@ class StorageAdapterDownload extends StorageAdapter {
             : '';
         var cdnBase = 'https://cdn.jsdelivr.net/npm/@frametrail/frametrail' + version + '/';
 
+        // If the hypervideo has no per-hypervideo theme, write the global defaultTheme
+        // into the exported data so the standalone HTML uses the correct theme.
+        var hvConfig = Database.hypervideos[hypervideoID] && Database.hypervideos[hypervideoID].config;
+        if (hvConfig && !hvConfig.theme && fullConfig.defaultTheme) {
+            hvData.config = hvData.config || {};
+            hvData.config.theme = fullConfig.defaultTheme;
+        }
+
         var annotations = Database.getAnnotationsW3C();
         var contentItem = { hypervideo: hvData };
         if (annotations.length > 0) {
