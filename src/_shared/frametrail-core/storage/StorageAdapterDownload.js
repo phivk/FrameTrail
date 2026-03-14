@@ -146,10 +146,14 @@ class StorageAdapterDownload extends StorageAdapter {
     /**
      * Download current hypervideo as a flat hypervideo.json (matches on-disk server format).
      * @param {String} hypervideoID
+     * @param {String} [dataPath] - Optional base URL for resources
      */
-    _performDownload(hypervideoID) {
+    _performDownload(hypervideoID, dataPath) {
         var Database = this._frameTrailInstance.module('Database');
         var hvData   = Database.convertToDatabaseFormat(hypervideoID);
+        if (dataPath) {
+            hvData.dataPath = dataPath;
+        }
         var hvName   = (Database.hypervideos[hypervideoID] && Database.hypervideos[hypervideoID].name) || 'hypervideo';
         var filename = hvName.replace(/[^a-z0-9]/gi, '_').substring(0, 50) + '.json';
         this._triggerDownload(JSON.stringify(hvData, null, 2), filename, 'application/json');

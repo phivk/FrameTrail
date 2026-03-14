@@ -1075,27 +1075,15 @@
             + '</div>'
             + '</div>'
 
-            // Scope row — separate layoutRow so the grid equalizes heights across all three columns
+            // Download scope row — aligned to download column via empty placeholders
             + '<div class="layoutRow" style="margin-bottom: 4px;">'
-            + '<div class="column-4" style="display: flex;">'
-            + '<button class="' + (canSaveToServer ? 'pressed' : '') + '" style="flex: 1; padding: 8px; text-align: center; pointer-events: none;"'
-            + (canSaveToServer ? '' : ' disabled') + '>'
-            + labels['DownloadAllData']
-            + '</button>'
+            + '<div class="column-4"></div>'
+            + '<div class="column-4"></div>'
+            + '<div class="column-4">'
+            + '<div style="display: flex; gap: 12px;">'
+            + '<label><input type="radio" name="downloadScope" value="currentHv" checked> ' + labels['DownloadCurrentHypervideo'] + '</label>'
+            + '<label><input type="radio" name="downloadScope" value="allData"> ' + labels['DownloadAllData'] + '</label>'
             + '</div>'
-            + '<div class="column-4" style="display: flex;">'
-            + '<button class="' + (canSaveToLocal ? 'pressed' : '') + '" style="flex: 1; padding: 8px; text-align: center; pointer-events: none;"'
-            + (canSaveToLocal ? '' : ' disabled') + '>'
-            + labels['DownloadAllData']
-            + '</button>'
-            + '</div>'
-            + '<div class="column-4" style="display: flex;">'
-            + '<button class="scopeCurrentHv pressed" style="flex: 1; padding: 8px; text-align: center;">'
-            + labels['DownloadCurrentHypervideo']
-            + '</button>'
-            + '<button class="scopeAllData" style="flex: 1; padding: 8px; text-align: center; margin-left: -2px;">'
-            + labels['DownloadAllData']
-            + '</button>'
             + '</div>'
             + '</div>'
 
@@ -1107,10 +1095,10 @@
             + '<div class="downloadFormatSection">'
             + '<small>' + labels['DownloadFormat'] + '</small>'
             + '<div style="display: flex; gap: 12px; margin-top: 4px;">'
-            + '<label><input type="radio" name="downloadFormat" value="json" checked> JSON</label>'
-            + '<label><input type="radio" name="downloadFormat" value="html"> HTML</label>'
+            + '<label><input type="radio" name="downloadFormat" value="html" checked> HTML</label>'
+            + '<label><input type="radio" name="downloadFormat" value="json"> JSON</label>'
             + '</div>'
-            + '<div class="downloadHtmlDataPath" style="display: none; margin-top: 6px;">'
+            + '<div style="margin-top: 6px;">'
             + '<small>' + labels['DownloadResourceBaseUrl'] + '</small>'
             + '<input type="text" name="htmlDataPath" placeholder="https://example.com/_data/" style="margin-top: 2px;">'
             + '</div>'
@@ -1127,10 +1115,7 @@
             + '</div>';
         var saveAsDialog = _saveAsWrapper.firstElementChild;
 
-        var scopeCurrentHvBtn  = saveAsDialog.querySelector('.scopeCurrentHv');
-        var scopeAllDataBtn    = saveAsDialog.querySelector('.scopeAllData');
         var formatSection      = saveAsDialog.querySelector('.downloadFormatSection');
-        var htmlDataPathDiv    = saveAsDialog.querySelector('.downloadHtmlDataPath');
         var optionsSection     = saveAsDialog.querySelector('.downloadOptionsSection');
 
         // Default htmlDataPath to the absolute URL of the current _data/ directory
@@ -1138,24 +1123,11 @@
         var _resolvedDataURL = FrameTrail.module('RouteNavigation').resolveDataURL('');
         _dataPathInput.value = new URL(_resolvedDataURL, window.location.href).href;
 
-        scopeCurrentHvBtn.addEventListener('click', function() {
-            scopeCurrentHvBtn.classList.add('pressed');
-            scopeAllDataBtn.classList.remove('pressed');
-            formatSection.style.display = '';
-            optionsSection.style.display = 'none';
-        });
-
-        scopeAllDataBtn.addEventListener('click', function() {
-            scopeAllDataBtn.classList.add('pressed');
-            scopeCurrentHvBtn.classList.remove('pressed');
-            formatSection.style.display = 'none';
-            optionsSection.style.display = '';
-        });
-
-        // Show/hide dataPath input when HTML format is selected
-        formatSection.querySelectorAll('[name="downloadFormat"]').forEach(function(radio) {
+        saveAsDialog.querySelectorAll('[name="downloadScope"]').forEach(function(radio) {
             radio.addEventListener('change', function() {
-                htmlDataPathDiv.style.display = (radio.value === 'html' && radio.checked) ? '' : 'none';
+                var isAllData = radio.value === 'allData' && radio.checked;
+                formatSection.style.display = isAllData ? 'none' : '';
+                optionsSection.style.display = isAllData ? '' : 'none';
             });
         });
 
@@ -1182,7 +1154,7 @@
             var hvID = FrameTrail.module('RouteNavigation').hypervideoID;
             downloadAdapter._frameTrailInstance = FrameTrail;
 
-            var isAllData = scopeAllDataBtn.classList.contains('pressed');
+            var isAllData = saveAsDialog.querySelector('[name="downloadScope"][value="allData"]').checked;
 
             if (isAllData) {
                 var includeMedia = saveAsDialog.querySelector('[name="includeMedia"]').checked;
@@ -1199,11 +1171,11 @@
                 }
             } else {
                 var format = saveAsDialog.querySelector('[name="downloadFormat"]:checked').value;
+                var dataPath = saveAsDialog.querySelector('[name="htmlDataPath"]').value.trim();
                 if (format === 'html') {
-                    var dataPath = saveAsDialog.querySelector('[name="htmlDataPath"]').value.trim();
                     downloadAdapter._generateStandaloneHTML(hvID, dataPath);
                 } else {
-                    downloadAdapter._performDownload(hvID);
+                    downloadAdapter._performDownload(hvID, dataPath);
                 }
             }
 
