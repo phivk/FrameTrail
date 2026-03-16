@@ -64,7 +64,7 @@ FrameTrail.defineModule('UserTraces', function(FrameTrail){
                 newObject.start = evt.detail.annotation.start;
                 newObject.end = evt.detail.annotation.end;
                 
-                if (evt.detail.annotation.type == 'text') {
+                if (evt.detail.annotation.type == 'text' || evt.detail.annotation.type == 'html') {
                     newObject.text = evt.detail.annotation.attributes.text;
                 } else if (evt.detail.annotation.src) {
                     newObject.source = evt.detail.annotation.src;
@@ -77,8 +77,8 @@ FrameTrail.defineModule('UserTraces', function(FrameTrail){
                 newObject.type = evt.detail.overlay.type;
                 newObject.start = evt.detail.overlay.start;
                 newObject.end = evt.detail.overlay.end;
-                
-                if (evt.detail.overlay.type == 'text') {
+
+                if (evt.detail.overlay.type == 'text' || evt.detail.overlay.type == 'html') {
                     newObject.text = evt.detail.overlay.attributes.text;
                 } else if (evt.detail.overlay.src) {
                     newObject.source = evt.detail.overlay.src;

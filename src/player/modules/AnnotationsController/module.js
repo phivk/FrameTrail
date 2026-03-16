@@ -552,6 +552,15 @@
                 + '              </div>';
         var textElement = _tew.firstElementChild;
 
+        var _hlew = document.createElement('div');
+        _hlew.innerHTML = '<div class="resourceThumb" data-type="html">'
+                + '                  <div class="resourceOverlay">'
+                + '                      <div class="resourceIcon"><span class="icon-file-code"></span></div>'
+                + '                  </div>'
+                + '                  <div class="resourceTitle">'+ labels['ResourceCustomHTML'] +'</div>'
+                + '              </div>';
+        var htmlElement = _hlew.firstElementChild;
+
         (function() {
             var dragClone = null;
             interact(textElement).draggable({
@@ -587,7 +596,42 @@
             });
         }());
 
-        annotationsEditingOptions.querySelector('#CustomAnnotation').appendChild(textElement);
+        (function() {
+            var dragClone = null;
+            interact(htmlElement).draggable({
+                listeners: {
+                    start: function(e) {
+                        var rect = e.target.getBoundingClientRect();
+                        dragClone = e.target.cloneNode(true);
+                        dragClone.style.position = 'fixed';
+                        dragClone.style.zIndex = '1000';
+                        dragClone.style.pointerEvents = 'auto';
+                        dragClone.style.boxSizing = 'border-box';
+                        dragClone.style.width = rect.width + 'px';
+                        dragClone.style.height = rect.height + 'px';
+                        dragClone.style.left = rect.left + 'px';
+                        dragClone.style.top = rect.top + 'px';
+                        dragClone.classList.add('ft-drag-clone');
+                        document.body.appendChild(dragClone);
+                        e.target.classList.add('dragPlaceholder');
+                        document.body.classList.add('ft-dragging');
+                    },
+                    move: function(e) {
+                        if (dragClone) {
+                            dragClone.style.left = (parseFloat(dragClone.style.left) + e.dx) + 'px';
+                            dragClone.style.top  = (parseFloat(dragClone.style.top)  + e.dy) + 'px';
+                        }
+                    },
+                    end: function(e) {
+                        e.target.classList.remove('dragPlaceholder');
+                        if (dragClone) { dragClone.remove(); dragClone = null; }
+                        document.body.classList.remove('ft-dragging');
+                    }
+                }
+            });
+        }());
+
+        annotationsEditingOptions.querySelector('#CustomAnnotation').append(textElement, htmlElement);
 
         /* Render other users' annotation timelines in the main view container */
         var otherUsersContainer = ViewVideo.OtherUsersContainer;
@@ -674,6 +718,14 @@
                         if (dragged.getAttribute('data-type') == 'text') {
                             newAnnotation = FrameTrail.module('HypervideoModel').newAnnotation({
                                 "name":       labels['ResourceCustomTextHTML'],
+                                "type":       dragged.getAttribute('data-type'),
+                                "start":      startTime,
+                                "end":        endTime,
+                                "attributes": { "text": "" }
+                            });
+                        } else if (dragged.getAttribute('data-type') == 'html') {
+                            newAnnotation = FrameTrail.module('HypervideoModel').newAnnotation({
+                                "name":       labels['ResourceCustomHTML'],
                                 "type":       dragged.getAttribute('data-type'),
                                 "start":      startTime,
                                 "end":        endTime,
@@ -1206,7 +1258,7 @@
 
         for (var i = 0; i < annotationData.length; i++) {
             var annotationContent = annotationData[i].data.name;
-            if (annotationData[i].data.type == 'text') {
+            if (annotationData[i].data.type == 'text' || annotationData[i].data.type == 'html') {
                 if (annotationData[i].data.attributes.text && annotationData[i].data.attributes.text.length != 0) {
                     var _t = document.createElement('div');
                     _t.innerHTML = annotationData[i].data.attributes.text;

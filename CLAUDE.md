@@ -28,7 +28,7 @@ FrameTrail/
 │   │   │   ├── _templateModule.js  # Module boilerplate template
 │   │   │   └── _templateType.js    # Type boilerplate template
 │   │   ├── modules/                # 12 shared modules
-│   │   ├── types/                  # 22 resource type definitions
+│   │   ├── types/                  # 23 resource type definitions
 │   │   ├── styles/                 # Global CSS (variables, generic, webfont)
 │   │   └── fonts/                  # Webfonts (woff2 only)
 │   ├── player/
@@ -181,7 +181,7 @@ _data/
 
 ### Resource Types
 
-All 22 resource types inherit from the base `Resource` type in `src/_shared/types/Resource/`:
+All 23 resource types inherit from the base `Resource` type in `src/_shared/types/Resource/`:
 
 | Type | Description |
 |------|-------------|
@@ -198,7 +198,8 @@ All 22 resource types inherit from the base `Resource` type in `src/_shared/type
 | ResourceWebpage | Generic iframe embeds |
 | ResourceWikipedia | Wikipedia article embeds |
 | ResourcePDF | PDF document viewer |
-| ResourceText | Rich HTML text |
+| ResourceText | Rich text (WYSIWYG via Quill + HTML editor) |
+| ResourceHtml | Raw HTML (CodeMirror HTML editor only, no sanitisation) |
 | ResourceLocation | OpenStreetMap (via Leaflet) |
 | ResourceQuiz | Interactive quiz |
 | ResourceHotspot | Clickable hotspot |

@@ -341,15 +341,15 @@ FrameTrail.defineType(
                 */
                 scaleOverlayElement: function() {
 
-                    if (this.data.type == 'wikipedia' || this.data.type == 'webpage' || this.data.type == 'text' || this.data.type == 'quiz' || this.data.type == 'mastodon' || this.data.type == 'urlpreview') {
+                    if (this.data.type == 'wikipedia' || this.data.type == 'webpage' || this.data.type == 'text' || this.data.type == 'html' || this.data.type == 'quiz' || this.data.type == 'mastodon' || this.data.type == 'urlpreview') {
 
                         var elementToScale = this.overlayElement ? this.overlayElement.querySelector('.resourceDetail') : null,
                             wrapperElement = this.overlayElement,
-                            scaleBase = (this.data.type == 'text') ? 800 : 400;
+                            scaleBase = (this.data.type == 'text' || this.data.type == 'html') ? 800 : 400;
 
                         if (!elementToScale) { return; }
 
-                        if (scaleBase / wrapperElement.offsetWidth < 1 && this.data.type != 'text') {
+                        if (scaleBase / wrapperElement.offsetWidth < 1 && this.data.type != 'text' && this.data.type != 'html') {
                             elementToScale.style.top             = '';
                             elementToScale.style.left            = '';
                             elementToScale.style.height          = '';
@@ -360,10 +360,10 @@ FrameTrail.defineType(
                             return;
                         }
 
-                        var referenceWidth = (this.data.type == 'text') ? FrameTrail.module('ViewVideo').OverlayContainer.offsetWidth : wrapperElement.offsetWidth;
+                        var referenceWidth = (this.data.type == 'text' || this.data.type == 'html') ? FrameTrail.module('ViewVideo').OverlayContainer.offsetWidth : wrapperElement.offsetWidth;
                             scale = referenceWidth / scaleBase,
                             negScale = 1/scale,
-                            newWidth = (this.data.type == 'text') ? wrapperElement.offsetWidth * negScale : scaleBase;
+                            newWidth = (this.data.type == 'text' || this.data.type == 'html') ? wrapperElement.offsetWidth * negScale : scaleBase;
 
                         elementToScale.style.top             = '50%';
                         elementToScale.style.left            = '50%';

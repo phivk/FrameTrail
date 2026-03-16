@@ -208,6 +208,7 @@ Resource (abstract base)
 ├── ResourceWikipedia
 ├── ResourcePDF
 ├── ResourceText
+├── ResourceHtml
 ├── ResourceLocation
 ├── ResourceQuiz
 ├── ResourceHotspot

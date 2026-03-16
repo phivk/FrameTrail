@@ -459,10 +459,14 @@ body > .timelineElement .previewWrapper .resourceThumb .resourceTitle {
     box-sizing: border-box;
 }
 
-.compareTimelineElement .previewWrapper .resourceThumb[data-type="text"] .resourceTitle, 
-.timelineElement .previewWrapper .resourceThumb[data-type="text"] .resourceTitle, 
+.compareTimelineElement .previewWrapper .resourceThumb[data-type="text"] .resourceTitle,
+.timelineElement .previewWrapper .resourceThumb[data-type="text"] .resourceTitle,
 body > .compareTimelineElement .previewWrapper .resourceThumb[data-type="text"] .resourceTitle,
-body > .timelineElement .previewWrapper .resourceThumb[data-type="text"] .resourceTitle {
+body > .timelineElement .previewWrapper .resourceThumb[data-type="text"] .resourceTitle,
+.compareTimelineElement .previewWrapper .resourceThumb[data-type="html"] .resourceTitle,
+.timelineElement .previewWrapper .resourceThumb[data-type="html"] .resourceTitle,
+body > .compareTimelineElement .previewWrapper .resourceThumb[data-type="html"] .resourceTitle,
+body > .timelineElement .previewWrapper .resourceThumb[data-type="html"] .resourceTitle {
     display: none;
 }
 
@@ -492,7 +496,9 @@ body > .timelineElement .previewWrapper .resourceThumb .resourceOverlay .resourc
 }
 
 .compareTimelineElement .previewWrapper .resourceThumb[data-type="text"] .resourceTextPreview,
-.timelineElement .previewWrapper .resourceThumb[data-type="text"] .resourceTextPreview {
+.timelineElement .previewWrapper .resourceThumb[data-type="text"] .resourceTextPreview,
+.compareTimelineElement .previewWrapper .resourceThumb[data-type="html"] .resourceTextPreview,
+.timelineElement .previewWrapper .resourceThumb[data-type="html"] .resourceTextPreview {
     padding: 2px 4px;
     font-size: 8px;
     font-family: monospace;

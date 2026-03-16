@@ -407,7 +407,7 @@
             if (protoData.created) {
                 // Restoring from saved data - use as-is
                 newData = JSON.parse(JSON.stringify(protoData));
-            } else if ( protoData.type == 'text' || protoData.type == 'quiz' || protoData.type == 'hotspot' ) {
+            } else if ( protoData.type == 'text' || protoData.type == 'html' || protoData.type == 'quiz' || protoData.type == 'hotspot' ) {
                 newData = {
                     "name":         protoData.name,
                     "creator":      FrameTrail.getState('username'),
@@ -544,7 +544,7 @@
             if (protoData.created) {
                 // Restoring from saved data - use as-is
                 newData = JSON.parse(JSON.stringify(protoData));
-            } else if ( protoData.type == 'text' ) {
+            } else if ( protoData.type == 'text' || protoData.type == 'html' ) {
                 newData = {
                     "name":         protoData.name,
                     "creator":      FrameTrail.getState('username'),

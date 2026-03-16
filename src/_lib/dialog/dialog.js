@@ -15,6 +15,7 @@
  *       close:    function() { ... },        // 'this' = content element
  *       open:     function() { ... },        // 'this' = content element
  *       classes:  'custom-class',            // extra CSS class(es) on <dialog>
+ *       titlebar: false,                     // show the title bar (default true)
  *       resizable: false,                    // ignored (native <dialog> not resizable by default)
  *       autoOpen: true                       // default true
  *   });
@@ -57,6 +58,7 @@ window.Dialog = function(opts) {
     var position       = opts.position || null;
     var closeOnEscape  = (opts.closeOnEscape !== false);
     var inheritTheme   = opts.inheritTheme || null;
+    var showTitlebar   = (opts.titlebar !== false);
 
     // ── Build native <dialog> ──────────────────────────────────────────────
 
@@ -102,7 +104,9 @@ window.Dialog = function(opts) {
     var buttonPane = document.createElement('div');
     buttonPane.className = 'ft-dialog-buttonpane';
 
-    dlg.appendChild(titlebar);
+    if (showTitlebar) {
+        dlg.appendChild(titlebar);
+    }
     dlg.appendChild(contentWrapper);
     dlg.appendChild(buttonPane);
 

@@ -889,7 +889,7 @@ FrameTrail.defineType(
                         }
                     }
 
-                    if (this.data.type == 'text' || this.data.type == 'entity') {
+                    if (this.data.type == 'text' || this.data.type == 'html' || this.data.type == 'entity') {
                         var _dh = document.createElement('div');
                         _dh.innerHTML = this.data.attributes.text || '';
                         var decoded_string = _dh.textContent;

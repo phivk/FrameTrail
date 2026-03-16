@@ -438,6 +438,12 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
                                 "start": startTime, "end": endTime, "attributes": { "text": "" },
                                 "position": { "top": overlayPositionTop, "left": overlayPositionLeft, "width": 30, "height": 30 }
                             });
+                        } else if ($dragged.dataset.type == 'html') {
+                            newOverlay = FrameTrail.module('HypervideoModel').newOverlay({
+                                "name": labels['ResourceCustomHTML'], "type": $dragged.dataset.type,
+                                "start": startTime, "end": endTime, "attributes": { "text": "" },
+                                "position": { "top": overlayPositionTop, "left": overlayPositionLeft, "width": 30, "height": 30 }
+                            });
                         } else if ($dragged.dataset.type == 'quiz') {
                             newOverlay = FrameTrail.module('HypervideoModel').newOverlay({
                                 "name": labels['ResourceTypeQuiz'], "type": $dragged.dataset.type,
@@ -694,6 +700,15 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
                 + '</div>';
         var textElement = _tw.firstElementChild;
 
+        var _hlw = document.createElement('div');
+        _hlw.innerHTML = '<div class="resourceThumb" data-type="html">'
+                + '    <div class="resourceOverlay">'
+                + '        <div class="resourceIcon"><span class="icon-file-code"></div>'
+                + '    </div>'
+                + '    <div class="resourceTitle">'+ labels['ResourceCustomHTML'] +'</div>'
+                + '</div>';
+        var htmlElement = _hlw.firstElementChild;
+
         var _qw = document.createElement('div');
         _qw.innerHTML = '<div class="resourceThumb" data-type="quiz">'
                 + '    <div class="resourceOverlay">'
@@ -743,11 +758,11 @@ FrameTrail.defineModule('OverlaysController', function(FrameTrail){
                 }
             }
         };
-        [textElement, quizElement, hotspotElement].forEach(function(el) {
+        [textElement, htmlElement, quizElement, hotspotElement].forEach(function(el) {
             interact(el).draggable(thumbDraggableOpts);
         });
 
-        overlayEditingOptions.querySelector('#CustomOverlay').append(textElement, quizElement, hotspotElement);
+        overlayEditingOptions.querySelector('#CustomOverlay').append(textElement, htmlElement, quizElement, hotspotElement);
 
     };
 

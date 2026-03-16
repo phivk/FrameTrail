@@ -140,7 +140,7 @@ FrameTrail.defineType(
                         previewContent.appendChild(contentEl);
 
                         var previewDialogCtrl = Dialog({
-                            title:     (self.resourceData.type == 'text') ? '' : self.resourceData.name,
+                            title:     (self.resourceData.type == 'text' || self.resourceData.type == 'html') ? '' : self.resourceData.name,
                             content:   previewContent,
                             inheritTheme: elementOrigin,
                             resizable: false,
